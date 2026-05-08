@@ -1,5 +1,5 @@
 // Global Currency State
-window.currentCurrency = 'ETB'; 
+window.currentCurrency = 'ETB'; // Default to ETB as requested for local/diaspora
 window.exchangeRates = {
     'USD': { rate: 1, symbol: '$' },
     'ETB': { rate: 120, symbol: 'ETB ' },
@@ -7,16 +7,13 @@ window.exchangeRates = {
 };
 
 window.formatPrice = function(priceUSD) {
-    const currency = window.exchangeRates[currentCurrency];
+    const currency = exchangeRates[currentCurrency];
     const converted = priceUSD * currency.rate;
     return currency.symbol + converted.toLocaleString('en-US', {
         minimumFractionDigits: currentCurrency === 'ETB' ? 0 : 2,
         maximumFractionDigits: currentCurrency === 'ETB' ? 0 : 2
     });
 };
-
-const API_URL = '/api';
-
 
 window.changeCurrency = function(currency) {
     if (exchangeRates[currency]) {
@@ -128,6 +125,7 @@ function initMagnifier() {
     const targets = document.querySelectorAll('.artisan-photo-wrap');
     
     targets.forEach(container => {
+        // Prevent duplicate lenses
         if (container.querySelector('.magnifier-lens')) return;
         
         const lens = document.createElement('div');
@@ -141,15 +139,20 @@ function initMagnifier() {
         container.addEventListener('mousemove', (e) => {
             lens.style.display = 'block';
             const rect = container.getBoundingClientRect();
+            
+            // Calculate position
             let x = e.clientX - rect.left;
             let y = e.clientY - rect.top;
             
+            // Center the lens
             lens.style.left = (x - lens.offsetWidth / 2) + 'px';
             lens.style.top = (y - lens.offsetHeight / 2) + 'px';
             
+            // Set background
             lens.style.backgroundImage = `url('${img.src}')`;
             lens.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
             
+            // Move background
             let bx = (x * zoom) - (lens.offsetWidth / 2);
             let by = (y * zoom) - (lens.offsetHeight / 2);
             lens.style.backgroundPosition = `-${bx}px -${by}px`;
@@ -174,6 +177,7 @@ function renderProducts(category) {
     if (sortSelect && sortSelect.value === 'alpha') {
         filtered.sort((a, b) => a.name.localeCompare(b.name));
     } else {
+        // default by id / newest
         filtered.sort((a, b) => a.id - b.id);
     }
 
@@ -183,6 +187,7 @@ function renderProducts(category) {
         card.className = 'product-card';
         card.innerHTML = `
             <div class="product-image-wrap artisan-photo-wrap">
+
                 <button class="save-item-btn ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave(${product.id}, this)">
                     ${isSaved ? '♥' : '♡'}
                 </button>
@@ -198,6 +203,7 @@ function renderProducts(category) {
                     <span class="product-price">${formatPrice(product.price)}</span>
                 </div>
                 <div class="product-info-row">
+
                     <button class="add-to-cart-btn" onclick="addToCart(${product.id})">ADD TO CART</button>
                 </div>
             </div>
@@ -210,6 +216,7 @@ function renderProducts(category) {
 // Filter by category
 window.filterByCategory = function(category, clickedEl) {
     activeCategory = category;
+    // Update active state on all filter items
     document.querySelectorAll('.filter-list li').forEach(li => li.classList.remove('active'));
     if (clickedEl) clickedEl.classList.add('active');
     renderProducts(category);
@@ -253,12 +260,11 @@ window.changeQuantity = function(productId, delta) {
 };
 
 function updateCartUI() {
-    if (!cartItemsContainer) return;
     cartItemsContainer.innerHTML = '';
     
     if (cart.length === 0) {
         cartItemsContainer.innerHTML = '<div class="cart-empty">Your cart is empty.</div>';
-        if (cartTotalDisplay) cartTotalDisplay.textContent = formatPrice(0);
+        cartTotalDisplay.textContent = formatPrice(0);
         updateCartCount(0);
         return;
     }
@@ -286,12 +292,11 @@ function updateCartUI() {
             </div>
             <div class="cart-item-line-price">
                 ${formatPrice(item.price * item.quantity)}
-            </div>
         `;
         cartItemsContainer.appendChild(itemEl);
     });
 
-    if (cartTotalDisplay) cartTotalDisplay.textContent = formatPrice(total);
+    cartTotalDisplay.textContent = formatPrice(total);
     updateCartCount(count);
 }
 
@@ -304,20 +309,20 @@ function updateCartCount(num) {
 
 // Drawer Toggles
 function openCart() {
-    if (cartDrawer) cartDrawer.classList.remove('hidden');
-    if (cartOverlay) cartOverlay.classList.remove('hidden');
+    cartDrawer.classList.remove('hidden');
+    cartOverlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
 
 function closeCart() {
-    if (cartDrawer) cartDrawer.classList.add('hidden');
-    if (cartOverlay) cartOverlay.classList.add('hidden');
+    cartDrawer.classList.add('hidden');
+    cartOverlay.classList.add('hidden');
     document.body.style.overflow = '';
 }
 
-if (cartButton) cartButton.addEventListener('click', openCart);
-if (closeCartBtn) closeCartBtn.addEventListener('click', closeCart);
-if (cartOverlay) cartOverlay.addEventListener('click', closeCart);
+cartButton.addEventListener('click', openCart);
+closeCartBtn.addEventListener('click', closeCart);
+cartOverlay.addEventListener('click', closeCart);
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
@@ -326,121 +331,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateCartCount(0);
 
+    // Auth Submission Handling
     const loginForm = document.getElementById('form-login');
     const registerForm = document.getElementById('form-register');
 
     if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
+        loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-pass').value;
-
-            try {
-                const response = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    localStorage.setItem('authToken', data.token);
-                    localStorage.setItem('userName', data.user.name);
-                    window.location.href = 'account.html';
-                } else {
-                    alert(data.message || 'Login failed');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Connection error. Is the server running?');
-            }
+            localStorage.setItem('isLoggedIn', 'true');
+            window.location.href = 'account.html';
         });
     }
 
     if (registerForm) {
-        registerForm.addEventListener('submit', async (e) => {
+        registerForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-pass').value;
-
-            try {
-                const response = await fetch(`${API_URL}/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    alert('Registration successful! Please login.');
-                    window.switchAuthTab('login');
-                } else {
-                    alert(data.message || 'Registration failed');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Connection error');
-            }
+            const nameInput = document.getElementById('reg-name');
+            if(nameInput) localStorage.setItem('userName', nameInput.value);
+            localStorage.setItem('isLoggedIn', 'true');
+            window.location.href = 'account.html';
         });
     }
 
+    // Logout Handling
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('authToken');
+            localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('userName');
             window.location.href = 'login.html';
         });
     }
 
-    const protectedLinks = document.querySelectorAll('.auth-protected-link, a[href="account.html"]');
+    // Intercept protected links
+    const protectedLinks = document.querySelectorAll('a[href="account.html"]');
     protectedLinks.forEach(link => {
         link.addEventListener('click', (e) => {
-            const token = localStorage.getItem('authToken');
-            if (!token) {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (!isLoggedIn) {
                 e.preventDefault();
                 window.location.href = 'login.html';
             }
         });
     });
 
+    // Protect account.html directly
     if (window.location.pathname.endsWith('account.html')) {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        if (!isLoggedIn) {
             window.location.href = 'login.html';
         } else {
-            // Fetch latest user info from server
-            fetch(`${API_URL}/me`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            .then(res => res.json())
-            .then(user => {
-                if (user.id) {
-                    const nameFields = document.querySelectorAll('.user-display-name');
-                    nameFields.forEach(f => f.textContent = user.name);
-                    
-                    const nameInput = document.getElementById('account-name-input');
-                    if (nameInput) nameInput.value = user.name;
-                    const emailInput = document.getElementById('account-email-input');
-                    if (emailInput) emailInput.value = user.email;
-                } else {
-                    // Token likely invalid
-                    localStorage.removeItem('authToken');
-                    window.location.href = 'login.html';
-                }
-            })
-            .catch(() => {
-                const userName = localStorage.getItem('userName');
-                if (userName) {
-                    const nameFields = document.querySelectorAll('.user-display-name');
-                    nameFields.forEach(f => f.textContent = userName);
-                }
-            });
+            const userName = localStorage.getItem('userName');
+            if (userName) {
+                const nameFields = document.querySelectorAll('input[type="text"]');
+                if (nameFields.length > 0) nameFields[0].value = userName;
+            }
             renderSavedItems();
         }
     }
-
 
     // Scroll Animations Observer
     const observerOptions = {
@@ -453,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('active');
-                observer.unobserve(entry.target);
+                observer.unobserve(entry.target); // Stop observing once revealed
             }
         });
     }, observerOptions);
@@ -464,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     initMagnifier();
 
+    // Mobile Navigation Toggle
     const hamburgerBtn = document.getElementById('hamburger-btn');
     const mobileNav = document.getElementById('mobile-nav');
     const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
@@ -485,12 +434,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mobileNavClose) mobileNavClose.addEventListener('click', closeMobileNav);
     if (mobileNavOverlay) mobileNavOverlay.addEventListener('click', closeMobileNav);
     
+    // Close mobile nav when a navigation link is clicked
     const mobileNavLinks = mobileNav ? mobileNav.querySelectorAll('a') : [];
     mobileNavLinks.forEach(link => {
         link.addEventListener('click', closeMobileNav);
     });
 });
 
+// Auth Toggle Logic
 window.switchAuthTab = function(tabName) {
     const loginTab = document.getElementById('tab-login');
     const registerTab = document.getElementById('tab-register');
@@ -512,6 +463,7 @@ window.switchAuthTab = function(tabName) {
     }
 };
 
+// Account Tab Logic
 window.switchAccountTab = function(tabName) {
     const tabs = ['details', 'orders', 'saved', 'impact', 'shipping'];
     tabs.forEach(t => {
@@ -529,6 +481,7 @@ window.switchAccountTab = function(tabName) {
     });
 };
 
+// Save Item Logic
 window.toggleSave = function(productId, btn) {
     const key = 'saved_' + productId;
     const isSaved = localStorage.getItem(key) === 'true';
@@ -544,6 +497,7 @@ window.toggleSave = function(productId, btn) {
     renderSavedItems();
 };
 
+// Render Saved Items on Account Page
 function renderSavedItems() {
     const container = document.getElementById('saved-items-container');
     if (!container) return;
@@ -561,6 +515,7 @@ function renderSavedItems() {
         card.className = 'product-card';
         card.innerHTML = `
             <div class="product-image-wrap artisan-photo-wrap">
+
                 <button class="save-item-btn saved" onclick="event.stopPropagation(); unsaveFromAccount(${product.id}, this)" title="Remove from saved">♥</button>
                 <img src="${product.image}" alt="${product.name}">
             </div>
@@ -574,6 +529,7 @@ function renderSavedItems() {
                     <span class="product-price">${formatPrice(product.price)}</span>
                 </div>
                 <div class="product-info-row">
+
                     <button class="add-to-cart-btn" onclick="addToCart(${product.id})">ADD TO CART</button>
                 </div>
             </div>
@@ -581,6 +537,7 @@ function renderSavedItems() {
         container.appendChild(card);
     });
 }
+
 
 window.unsaveFromAccount = function(productId, btn) {
     localStorage.removeItem('saved_' + productId);
@@ -591,6 +548,7 @@ let currentAudio = null;
 let currentAudioBtn = null;
 
 window.playAudio = function(url, btn) {
+    // If the same audio is already playing, just pause it and return
     if (currentAudio && currentAudio.src.includes(url)) {
         currentAudio.pause();
         if (currentAudioBtn) {
@@ -602,6 +560,7 @@ window.playAudio = function(url, btn) {
         return;
     }
 
+    // If a different audio is playing, stop it first
     if (currentAudio) {
         currentAudio.pause();
         if (currentAudioBtn) {
@@ -610,8 +569,9 @@ window.playAudio = function(url, btn) {
         }
     }
 
+    // Play new audio
     currentAudio = new Audio(url);
-    currentAudio.play().catch(e => console.log('Audio playback failed:', e));
+    currentAudio.play().catch(e => console.log('Audio playback failed (maybe no file yet):', e));
     
     btn.textContent = '⏸';
     btn.classList.add('playing');
