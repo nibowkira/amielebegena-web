@@ -45,22 +45,22 @@ const products = [
     // STRINGS
     {
         id: 1, name: "በገና (Begena)", desc: "Ten-Stringed Harp of David",
-        price: 450.00, badge: "በገና", category: "strings",
+        price: 100.00, badge: "በገና", category: "strings",
         image: "image/photo_2025-10-01_07-26-53.jpg", aboutId: "begena", audio: "audio/begena.mp3"
     },
     {
         id: 2, name: "ክራር (Kirar)", desc: "Traditional 6-String Lyre",
-        price: 180.00, badge: "ክራር", category: "strings",
+        price: 70.83, badge: "ክራር", category: "strings",
         image: "image/photo_2025-02-27_17-33-38.jpg", aboutId: "kirar", audio: "audio/kirar.mp3"
     },
     {
         id: 3, name: "ማሲንቆ (Masinko)", desc: "One-Stringed Fiddle & Bow",
-        price: 120.00, badge: "ማሲንቆ", category: "strings",
+        price: 58.33, badge: "ማሲንቆ", category: "strings",
         image: "image/photo_2025-02-24_22-03-09.jpg", aboutId: "masinko", audio: "audio/masinko.mp3"
     },
     {
         id: 4, name: "Electric Kirar", desc: "Solid Wood Modern Variant",
-        price: 220.00, badge: "ኤሌክትሪክ ክራር", category: "strings",
+        price: 83.33, badge: "ኤሌክትሪክ ክራር", category: "strings",
         image: "image/photo_2025-10-01_07-26-53.jpg", aboutId: "electric-kirar", audio: "audio/kirar_electric.mp3"
     },
     // PERCUSSION & WIND
