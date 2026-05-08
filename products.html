@@ -12,9 +12,9 @@
 <body>
     <header class="navbar">
         <div class="nav-left">
-            <span class="logo">ዓሚኤል በገና</span>
+            <a href="index.html" style="text-decoration:none;"><span class="logo">ዓሚኤል በገና</span></a>
         </div>
-        <nav class="nav-center">
+        <nav class="nav-center" id="main-nav">
             <a href="index.html">Home</a>
             <a href="products.html">Products</a>
             <a href="about.html">About Our Products</a>
@@ -32,8 +32,20 @@
                 <span class="cart-count">0</span>
             </button>
             <a href="account.html" class="icon-btn" style="text-decoration:none;">👤</a>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </header>
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+    <nav class="mobile-nav" id="mobile-nav">
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="about.html">About Our Products</a>
+        <a href="about-us.html">About Us</a>
+    </nav>
 
     <main style="padding-top: 0;">
         <section class="apothecary-section" id="catalog">

@@ -411,6 +411,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     initMagnifier();
+
+    // Mobile Navigation Toggle
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const mobileNav = document.getElementById('mobile-nav');
+    const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+    const mobileNavClose = document.getElementById('mobile-nav-close');
+
+    function openMobileNav() {
+        if (mobileNav) mobileNav.classList.add('active');
+        if (mobileNavOverlay) mobileNavOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileNav() {
+        if (mobileNav) mobileNav.classList.remove('active');
+        if (mobileNavOverlay) mobileNavOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    if (hamburgerBtn) hamburgerBtn.addEventListener('click', openMobileNav);
+    if (mobileNavClose) mobileNavClose.addEventListener('click', closeMobileNav);
+    if (mobileNavOverlay) mobileNavOverlay.addEventListener('click', closeMobileNav);
+    
+    // Close mobile nav when a navigation link is clicked
+    const mobileNavLinks = mobileNav ? mobileNav.querySelectorAll('a') : [];
+    mobileNavLinks.forEach(link => {
+        link.addEventListener('click', closeMobileNav);
+    });
 });
 
 // Auth Toggle Logic

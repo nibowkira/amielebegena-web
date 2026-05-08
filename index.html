@@ -12,9 +12,9 @@
 <body>
     <header class="navbar">
         <div class="nav-left">
-            <span class="logo">ዓሚኤል በገና</span>
+            <a href="index.html" style="text-decoration:none;"><span class="logo">ዓሚኤል በገና</span></a>
         </div>
-        <nav class="nav-center">
+        <nav class="nav-center" id="main-nav">
             <a href="index.html">Home</a>
             <a href="products.html">Products</a>
             <a href="about.html">About Our Products</a>
@@ -32,8 +32,20 @@
                 <span class="cart-count">0</span>
             </button>
             <a href="account.html" class="icon-btn" style="text-decoration:none;">👤</a>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </header>
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+    <nav class="mobile-nav" id="mobile-nav">
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="about.html">About Our Products</a>
+        <a href="about-us.html">About Us</a>
+    </nav>
 
     <main>
         <section class="hero-section">
@@ -47,14 +59,14 @@
 
 
         <!-- Top Rated Section -->
-        <section class="rated-section" style="padding: 8rem 4rem; background-color: var(--parchment-shade);">
+        <section class="rated-section">
             <div class="section-header reveal" style="text-align: center; margin-bottom: 5rem;">
                 <span class="hero-subtitle">CUSTOMER FAVORITES</span>
                 <h2 style="font-family: 'Benaiah', sans-serif; font-size: 3rem; margin-top: 1rem;">ምንጊዜም ተመራጭ መሣሪያዎች</h2>
                 <p style="color: #6a6e6b; max-width: 600px; margin: 1rem auto;">The most loved instruments in our collection, curated based on depth of sound and artisan quality.</p>
             </div>
 
-            <div class="product-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; max-width: 1200px; margin: 0 auto;">
+            <div class="product-grid rated-product-grid">
                 <!-- Product 1 -->
                 <div class="rated-card reveal" style="text-align: center;">
                     <div class="artisan-photo-wrap" style="height: 350px; background: var(--parchment); border-radius: 12px; margin-bottom: 1.5rem;">
