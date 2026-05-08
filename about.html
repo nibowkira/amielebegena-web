@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Instrument Registry - amielebegena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="about-page">
+    <header class="navbar">
+        <div class="nav-left">
+            <span class="logo">ዓሚኤል በገና</span>
+        </div>
+        <nav class="nav-center">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="about.html">About Our Products</a>
+            <a href="about-us.html">About Us</a>
+        </nav>
+        <div class="nav-right">
+            <select class="currency-switcher" onchange="changeCurrency(this.value)">
+                <option value="ETB">ETB</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+            </select>
+
+            <button id="cart-button" class="icon-btn">
+                🛒
+                <span class="cart-count">0</span>
+            </button>
+            <a href="account.html" class="icon-btn" style="text-decoration:none;">👤</a>
+        </div>
+    </header>
+
+    <main style="max-width: 1200px; margin: 0 auto; padding: 6rem 4rem;">
+
+        <div class="registry-grid">
+            <!-- 1. BEGENA -->
+            <div id="begena" class="registry-item detailed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="image/photo_2025-10-01_07-26-53.jpg" alt="Begena (በገና)">
+                    </div>
+                    <div class="registry-text">
+                        <h2>በገና፡ የመንፈሳዊነትና የዝምታ ድምፅ</h2>
+                        <p class="main-desc">
+                            በገና በዓለም ላይ ካሉ ጥንታዊ የሙዚቃ መሣሪያዎች አንዱ ሲሆን፣ በኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተክርስቲያን መንፈሳዊ አገልግሎት ውስጥ ትልቅ ቦታ አለው። "የዳዊት በገና" በመባልም ይታወቃል።
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>ታሪካዊ አመጣጥ</h4>
+                        <div class="detail-point">
+                            <strong>የንጉሥ ዳዊት መሣሪያ፦</strong>
+                            <p>በኢትዮጵያ ታሪክና ትውፊት መሠረት፣ በገና ለመጀመሪያ ጊዜ ወደ ኢትዮጵያ የገባው በቀዳማዊ ምኒልክ አማካኝነት ከእስራኤል እንደሆነ ይታመናል። ይህ መሣሪያ ንጉሥ ዳዊት እግዚአብሔርን ለማመስገንና የንጉሥ ሳኦልን መንፈስ ለማረጋጋት ይጠቀምበት የነበረው መሣሪያ እንደሆነ ይነገራል።</p>
+                        </div>
+                        <div class="detail-point">
+                            <strong>መንፈሳዊ ትርጉም፦</strong>
+                            <p>በገና "የመላእክት መሣሪያ" ተብሎ ይጠራል። ድምፁ ረጋ ያለና ወደ ውስጥ የሚመስጥ በመሆኑ፣ ሰውን ከፈጣሪው ጋር የሚያገናኝ ድልድይ ተደርጎ ይወሰዳል።</p>
+                        </div>
+                    </div>
+
+                    <div class="details-column">
+                        <h4>የበገና ቅርጽና አሠራር</h4>
+                        <div class="detail-point">
+                            <strong>አካሉና አውታሮች፦</strong>
+                            <p>በገና አራት ማዕዘን ቅርጽ ያለው ትልቅ መሣሪያ ነው። ከአሥሩ አውታሮች መካከል የሚመቱት አምስቱ ወይም ስድስቱ ብቻ ናቸው። የበገና ልዩ መለያ የሚሰጠው "ውሻሻ (Ushasha)" በመባል የሚታወቀው የንዝረት ድምፅ ነው።</p>
+                        </div>
+                        <div class="detail-point">
+                            <strong>በገና በኢትዮጵያ ባሕል</strong>
+                            <p>በገና ለዓለማዊ ጭፈራ በፍጹም አይውልም። በተለይ በዓቢይ ጾም ወቅት ለጸጸትና ለማሰላሰል (Meditation) ያገለግላል። ከበገና ጋር የሚቀርቡ ቅኔዎች "ሰምና ወርቅ" የተባለውን ጥልቅ ጥበብ የተከተሉ ናቸው።</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. KIRAR -->
+            <div id="kirar" class="registry-item detailed reversed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="image/photo_2025-02-27_17-33-38.jpg" alt="Kirar (ክራር)">
+                    </div>
+                    <div class="registry-text">
+                        <h2>ክራር በመንፈሳዊ አገልግሎት</h2>
+                        <p class="main-desc">
+                            ክራር በመዝሙርና በምስጋና ጊዜ ጥቅም ላይ የሚውል ሲሆን፣ የራሱ የሆነ ጥልቅ ተምሳሌትና ታሪክ አለው። በመዝሙር 150 ላይ "በመሰንቆና በገና አመስግኑት" ተብሎ እንደተጻፈው፣ ለምስጋና ዝማሬዎች ዋነኛ መሣሪያ ነው።
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>ተምሳሌታዊ ትርጉሙ</h4>
+                        <div class="detail-point">
+                            <strong>አምስቱ አዕማደ ሃይማኖት፦</strong>
+                            <p>የክርስትና እምነት መሠረት የሆኑት አምስቱ ምሰሶዎች።</p>
+                        </div>
+                        <div class="detail-point">
+                            <strong>አምስቱ ቅስለታት፦</strong>
+                            <p>ጌታችን ኢየሱስ ክርስቶስ በመስቀል ላይ የተቀበላቸው አምስቱ ቁስሎች።</p>
+                        </div>
+                    </div>
+
+                    <div class="details-column">
+                        <h4>የክራር አሠራርና ክፍሎች</h4>
+                        <div class="detail-point">
+                            <strong>ሳጥንና ምሰሶዎች፦</strong>
+                            <p>ድምፁ ጎልቶ እንዲወጣ የሚያደርግ በቆዳ የተሸፈነ የእንጨት ክፍል (Resonator) እና አውታሮቹን የሚሸከሙ ጠንካራ ምሰሶዎች አውታሮች።</p>
+                        </div>
+                        <div class="detail-point">
+                            <strong>ውሻሻ (The Bridge)፦</strong>
+                            <p>አውታሮቹ ከሳጥኑ ጋር ተነክተው የሚርገበገቡበትና ድምፁን የሚያስተካክለው ወሳኝ ክፍል ነው።</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. MASINKO -->
+            <div id="masinko" class="registry-item detailed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="image/photo_2025-02-24_22-03-09.jpg" alt="Masinko (መሰንቆ)">
+                    </div>
+                    <div class="registry-text">
+                        <h2>መሰንቆ በኢትዮጵያ ታሪክና ትውፊት</h2>
+                        <p class="main-desc">
+                            መሰንቆ ከአዝማሪዎች ጋር የሚገናኝና ለሕዝባዊ ግጥሞችና ዜማዎች የታወቀ ቢሆንም፣ በታሪክና በሃይማኖታዊ ተምሳሌትነትም ትልቅ ቦታ አለው። በተለይም ከዕዝራ (Ezra) ታሪክ ጋር ተያይዞ "መሰንቆ ለዕዝራ - በገና ለዳዊት" ተብሎ ይጠቀሳል።
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>ታሪካዊ አመጣጥና ተምሳሌት</h4>
+                        <div class="detail-point">
+                            <strong>የዕዝራ መሣሪያ፦</strong>
+                            <p>በኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተክርስቲያን ትውፊት መሠረት፣ በገና ለቅዱስ ዳዊት እንደተሰጠው ሁሉ መሰንቆ ደግሞ ለዕዝራ እንደተሰጠ ይታመናል። ይህም መሣሪያው ጥንታዊና መንፈሳዊ መሠረት እንዳለው ያረጋግጣል።</p>
+                        </div>
+                        <div class="detail-point">
+                            <strong>የአንድነት ምልክት፦</strong>
+                            <p>መሰንቆ አንድ አውታር (String) ብቻ ያለው መሆኑ የአንድነትና የ"አንድ እምነት" (One Faith) ተምሳሌት ተደርጎ ይወሰዳል።</p>
+                        </div>
+                    </div>
+
+                    <div class="details-column">
+                        <h4>የመሰንቆ አሠራርና ክፍልፋዮች</h4>
+                        <div class="detail-point">
+                            <strong>አምሳለ መስቀል፦</strong>
+                            <p>የመሰንቆው አናት (Pegbox) መስቀል ቅርጽ ያለው ሲሆን፣ ይህም ክርስትና በመሣሪያው ጥበብ ውስጥ ያለውን ቦታ ያሳያል።</p>
+                        </div>
+                        <div class="detail-point">
+                            <strong>የአዝማሪዎች ጥበብ</strong>
+                            <p>መሰንቆ በሕዝባዊ ሕይወት ውስጥ የዜና ማስተላለፊያ፣ የማህበራዊ ትችትና የታሪክ ትረካ መሣሪያ ሆኖ ሲያገለግል ቆይቷል። የአዝማሪዎች ብቃት በዚሁ መሣሪያና በሚቀኙት ቅኔ ይለካል።</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. ELECTRIC KIRAR -->
+            <div id="electric-kirar" class="registry-item detailed reversed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="image/photo_2025-10-01_07-26-53.jpg" alt="Electric Kirar">
+                    </div>
+                    <div class="registry-text">
+                        <h2>ኤሌክትሪክ ክራር፡ የቅርሱ ዘመናዊ ድልድይ</h2>
+                        <p class="main-desc">
+                            የጥንቱን የክራር ድምፅ ከዘመናዊው የቴክኖሎጂ አሠራር ጋር በማዋሃድ፣ ለዛሬው ትውልድና መድረክ የሚመጥን ድምፅ የሚፈጥር መሣሪያ ነው። ይህ መሣሪያ በባሕላዊ ዜማዎች ውስጥ አዳዲስ የቀለም ቅላጼዎችን ለመጨመር ይረዳል።
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>ዘመናዊነትና ቅርስ</h4>
+                        <div class="detail-point">
+                            <strong>የቴክኖሎጂ ውሕደት፦</strong>
+                            <p>ባሕላዊ አሠራሩ ሳይቀየር፣ የኤሌክትሪክ ማንሻዎች (Pickups) ተጨምረውለት በትልቅ የሙዚቃ ኮንሰርቶችና መድረኮች ላይ ጎልቶ እንዲሰማ ተደርጎ የተሠራ ነው።</p>
+                        </div>
+                        <div class="detail-point">
+                            <strong>ሁለገብነት፦</strong>
+                            <p>ኤሌክትሪክ ክራር ለባሕላዊ ዜማዎች ብቻ ሳይሆን፣ ለጃዝ (Jazz) እና ለሮክ (Rock) ሙዚቃዎችም ጭምር ተስማሚ ሆኖ ተዘጋጅቷል።</p>
+                        </div>
+                    </div>
+
+                    <div class="details-column">
+                        <h4>ጥራትና ጥንካሬ</h4>
+                        <div class="detail-point">
+                            <strong>ከተመረጠ እንጨት፦</strong>
+                            <p>መሣሪያው እንዳይሰነጣጠቅና ዘላቂ እንዲሆን ከደረቁና ለኤሌክትሪክ መሣሪያ በሚመጥኑ የእንጨት ዝርያዎች ይሠራል።</p>
+                        </div>
+                        <div class="detail-point">
+                            <strong>የኢትዮጵያ ጃዝ</strong>
+                            <p>በዓለም አቀፍ ደረጃ የሚታወቁት የኢትዮጵያ ሙዚቀኞች ይህንን መሣሪያ በመጠቀም የኢትዮጵያን ድምፅ ለዓለም አስተዋውቀዋል።</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. KEBERO -->
+            <div id="kebero" class="registry-item detailed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="kebero_drum_1776882856760.png" alt="Kebero (ከበሮ)">
+                    </div>
+                    <div class="registry-text">
+                        <h2>ከበሮ፡ የአንድነትና የመለኮት ተምሳሌት</h2>
+                        <p class="main-desc">
+                            ከበሮ በኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተክርስቲያን መንፈሳዊ አገልግሎት ውስጥ ወሳኝ መሣሪያ ነው። ድምፁ የምስጋናና የዝማሬ ማጀቢያ ብቻ ሳይሆን፣ ጥልቅ ምስጢራዊ ትርጉምም አለው።
+                        </p>
+                    </div>
+                </div>
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>መንፈሳዊ ተምሳሌት</h4>
+                        <div class="detail-point">
+                            <strong>ሁለቱ ገጾች፦</strong>
+                            <p>የከበሮው ሁለት ገጾች የጌታችንን መለኮትና ትስብእት (Divinity and Humanity) ይወክላሉ። ትልቁ ገጽ መለኮትን፣ ትንሹ ገጽ ደግሞ ትስብእትን (ሰው መሆኑን) ያመለክታሉ።</p>
+                        </div>
+                    </div>
+                    <div class="details-column">
+                        <h4>የቅርስ አሠራር</h4>
+                        <div class="detail-point">
+                            <strong>የብሉይና የሐዲስ ኪዳን አንድነት፦</strong>
+                            <p>እንዲሁም ሁለቱ ገጾች የብሉይና የሐዲስ ኪዳን አንድነትንና ስምምነትን ይገልጻሉ። በቆዳው ላይ ያሉት ሽንሸናዎች (Weaving) ክርስቶስ የተቀበለውን ገረፋ ያስታውሳሉ።</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. WASHINT -->
+            <div id="washint" class="registry-item detailed reversed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="washint_flute_v2_1776883145689.png" alt="Washint (ዋሽንት)">
+                    </div>
+                    <div class="registry-text">
+                        <h2>ዋሽንት፡ የወንጌላውያን ድምፅ</h2>
+                        <p class="main-desc">
+                            ዋሽንት ከቀርከሃ የሚሠራና አምስት ወይም አራት ቀዳዳዎች ያሉት ጥንታዊ የኢትዮጵያ የንፋስ መሣሪያ ነው። ይህ መሣሪያ በዋናነት በጎልማሶችና በእረኞች ዘንድ ቢታወቅም፣ በቤተክርስቲያን ታሪክ ውስጥም ቦታ አለው።
+                        </p>
+                    </div>
+                </div>
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>ተምሳሌታዊ ትርጉም</h4>
+                        <div class="detail-point">
+                            <strong>አራቱ ወንጌላውያን፦</strong>
+                            <p>የዋሽንት አራት ቀዳዳዎች አራቱን ወንጌላውያን (ማቴዎስ፣ ማርቆስ፣ ሉቃስና ዮሐንስ) ይወክላሉ። የቀዳዳዎቹ አንድነት ደግሞ የወንጌልን አንድነት ያሳያል።</p>
+                        </div>
+                    </div>
+                    <div class="details-column">
+                        <h4>ሃይማኖታዊ ፋይዳ</h4>
+                        <div class="detail-point">
+                            <strong>አምስቱ አዕማደ ሃይማኖት፦</strong>
+                            <p>አምስት ቀዳዳዎች ካሉት ደግሞ የክርስትና እምነት መሠረት የሆኑትን አምስቱን አዕማደ ሃይማኖት ተምሳሌት አድርገው ይወሰዳሉ።</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. SANASEL -->
+            <div id="sanasel" class="registry-item detailed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="sanasel_sistrum_v2_1776883236206.png" alt="Sanasel (ጸናጽል)">
+                    </div>
+                    <div class="registry-text">
+                        <h2>ጸናጽል፡ የቅዱስ ያሬድ ምስጋና</h2>
+                        <p class="main-desc">
+                            ጸናጽል በኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተክርስቲያን ውስጥ ለዝማሬ አገልግሎት የሚውል መሣሪያ ነው። ይህ መሣሪያ በተለይ ከቅዱስ ያሬድ ዜማ ጋር ጥብቅ ቁርኝት አለው።
+                        </p>
+                    </div>
+                </div>
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>ተምሳሌት</h4>
+                        <div class="detail-point">
+                            <strong>የመላእክት ምስጋና፦</strong>
+                            <p>የጸናጽሉ ድምፅ መላእክት እግዚአብሔርን የሚያመሰግኑበትን ድምፅ ተምሳሌት እንደሆነ ይነገራል። ይህም ለምስጋናና ለታላላቅ በዓላት ልዩ ውበት ይሰጣል።</p>
+                        </div>
+                    </div>
+                    <div class="details-column">
+                        <h4>አወቃቀሩ</h4>
+                        <div class="detail-point">
+                            <strong>ቅድስት ሥላሴ፦</strong>
+                            <p>በጸናጽሉ ላይ ያሉት ሦስት ዘንጎች የሥላሴን ሦስትነትና አንድነት (Trinity) እንደሚያመለክቱ ይታመናል።</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 8. MELEKET -->
+            <div id="meleket" class="registry-item detailed reversed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="meleket_trumpet_v2_1776883415170.png" alt="Meleket (መለከት)">
+                    </div>
+                    <div class="registry-text">
+                        <h2>መለከት፡ የንግሥናና የክብር ድምፅ</h2>
+                        <p class="main-desc">
+                            መለከት ከቀርከሃና ከቆዳ የሚሠራ ረጅም መሣሪያ ሲሆን፣ በታሪክ ከፍተኛ የክብርና የንግሥና ድምፅ ተደርጎ ይወሰዳል።
+                        </p>
+                    </div>
+                </div>
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>ታሪካዊ ፋይዳ</h4>
+                        <div class="detail-point">
+                            <strong>የዜና ማስተላለፊያ፦</strong>
+                            <p>ታላላቅ የንግሥና አዋጆች፣ ጦርነቶችና ሃይማኖታዊ በዓላት ሲኖሩ ለሕዝቡ መልእክት ለማድረስ መለከት ይነፋ ነበር።</p>
+                        </div>
+                    </div>
+                    <div class="details-column">
+                        <h4>የቅዱስ ያሬድ ዜማ</h4>
+                        <div class="detail-point">
+                            <strong>የዜማ ምልክት፦</strong>
+                            <p>በቅዱስ ያሬድ የዜማ ምልክቶች (Melekets) ውስጥ መለከት የራሱ የሆነ የዜማ ስልትና መለያ ምልክት አለው።</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 9. TUNING PEGS -->
+            <div id="tuning-pegs" class="registry-item detailed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="https://images.unsplash.com/photo-1550985543-f47f38aeee65?q=80&w=400&auto=format&fit=crop" alt="Tuning Pegs">
+                    </div>
+                    <div class="registry-text">
+                        <h2>Artisan Tuning Pegs</h2>
+                        <p class="main-desc">
+                            የክራርና የበገና አውታሮችን ለማጥበቅና ድምፃቸውን ለማስተካከል የሚያገለግሉ በጥንካሬያቸው የታወቁ የእንጨት ውጤቶች ናቸው።
+                        </p>
+                    </div>
+                </div>
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>ጥራት</h4>
+                        <p>ከጥቁር እንጨትና ከዋንዛ የሚሠሩ በመሆናቸው ለረጅም ጊዜ አገልግሎት ይሰጣሉ።</p>
+                    </div>
+                    <div class="details-column">
+                        <h4>አወቃቀር</h4>
+                        <p>አውታሩ እንዳይላላና ድምፅ እንዳይቀይር በጥብቅ እንዲይዙ ተደርገው ይታረባሉ።</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 10. SHEEP-GUT STRINGS -->
+            <div id="sheep-gut-strings" class="registry-item detailed reversed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=400&auto=format&fit=crop" alt="Sheep-Gut Strings">
+                    </div>
+                    <div class="registry-text">
+                        <h2>Sheep-Gut Strings</h2>
+                        <p class="main-desc">
+                            ከበግ አንጀት የሚሠሩና ለየት ያለና የሚማርክ ድምፅ ያላቸው ተፈጥሯዊ አውታሮች ናቸው።
+                        </p>
+                    </div>
+                </div>
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>ድምፅ</h4>
+                        <p>ተፈጥሯዊው አውታር ከናይለንና ከብረት አውታሮች ይልቅ ወደ ውስጥ የሚመስጥና ጥልቅ የሆነ ድምፅ አለው።</p>
+                    </div>
+                    <div class="details-column">
+                        <h4>ዝግጅት</h4>
+                        <p>አንጀቱ በባሕላዊ መንገድ ተለፍቶና ተከርክሞ ለሙዚቃ ዝግጁ እንዲሆን ይደረጋል።</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 11. CONDITIONING WAX -->
+            <div id="wax" class="registry-item detailed">
+                <div class="registry-detailed-header">
+                    <div class="registry-image artisan-photo-wrap" style="width: 350px; height: 320px;">
+                        <img src="https://images.unsplash.com/photo-1542868725-783aafa0d5fe?q=80&w=400&auto=format&fit=crop" alt="Conditioning Wax">
+                    </div>
+                    <div class="registry-text">
+                        <h2>Conditioning Wax</h2>
+                        <p class="main-desc">
+                            መሣሪያዎቹ እንዳይሰነጣጠቁና ለረጅም ጊዜ እንዲያገለግሉ የሚቀቡ ባሕላዊ ዘይቶችና ቅባቶች ናቸው።
+                        </p>
+                    </div>
+                </div>
+                <div class="registry-details-grid">
+                    <div class="details-column">
+                        <h4>ጥበቃ</h4>
+                        <p>እንጨቱ በአየሩ ሁኔታ ምክንያት እንዳይሰነጣጥቅና ቆዳው እንዳይደርቅ ይከላከላል።</p>
+                    </div>
+                    <div class="details-column">
+                        <h4>ግብዓት</h4>
+                        <p>ከተፈጥሮ ንብ ሰምና ከሊንሲድ ዘይት የተዘጋጀ ነው።</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    
+    <script src="script.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - amielebegena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-left">
+            <span class="logo">ዓሚኤል በገና</span>
+        </div>
+        <nav class="nav-center">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="about.html">About Our Products</a>
+            <a href="about-us.html">About Us</a>
+        </nav>
+        <div class="nav-right">
+            <select class="currency-switcher" onchange="changeCurrency(this.value)">
+                <option value="ETB">ETB</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+            </select>
+
+            <button id="cart-button" class="icon-btn">
+                🛒
+                <span class="cart-count">0</span>
+            </button>
+            <a href="account.html" class="icon-btn auth-protected-link" style="text-decoration:none;">👤</a>
+        </div>
+    </header>
+
+    <main class="auth-page-wrapper">
+        <div class="auth-card">
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">LOGIN</button>
+                <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">SIGN UP</button>
+            </div>
+            
+            <form id="form-login" class="auth-form active">
+                <div class="form-group mb-4">
+                    <label>EMAIL ADDRESS</label>
+                    <input type="email" class="account-input" id="login-email" required placeholder="Enter your email">
+                </div>
+                <div class="form-group mb-4">
+                    <label>PASSWORD</label>
+                    <input type="password" class="account-input" id="login-pass" required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="btn-primary w-full" style="margin-top: 1.5rem;">LOGIN</button>
+            </form>
+            
+            <form id="form-register" class="auth-form hidden">
+                <div class="form-group mb-4">
+                    <label>FULL NAME</label>
+                    <input type="text" class="account-input" id="reg-name" required placeholder="Jane Doe">
+                </div>
+                <div class="form-group mb-4">
+                    <label>EMAIL ADDRESS</label>
+                    <input type="email" class="account-input" id="reg-email" required placeholder="jane@archives.org">
+                </div>
+                <div class="form-group mb-4">
+                    <label>PASSWORD</label>
+                    <input type="password" class="account-input" id="reg-pass" required placeholder="Create a password">
+                </div>
+                <button type="submit" class="btn-primary w-full" style="margin-top: 1.5rem;">SIGN UP</button>
+            </form>
+        </div>
+        
+        <div id="cart-overlay" class="cart-overlay hidden"></div>
+        <div id="cart-drawer" class="cart-drawer hidden">
+            <div class="cart-header">
+                <h3>Your Cart</h3>
+                <button id="close-cart" class="close-btn">&times;</button>
+            </div>
+            <div id="cart-items" class="cart-items-container">
+                <!-- Cart items JS -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total-row">
+                    <span>Total</span>
+                    <span id="cart-total-display">$0.00</span>
+                </div>
+                <button class="btn-primary w-full">Checkout</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <h3>ዓሚኤል በገና</h3>
+                <p style="font-size: 0.85rem; color: #a1a6a3; margin-top: 1rem; max-width: 250px;">Dedicated to the preservation of traditional Ethiopian musical instruments and the cultural resonance they carry.</p>
+            </div>
+            <div class="footer-links">
+                <div class="link-col">
+                    <h4>DISCOVERY</h4>
+                    <a href="#">Catalog</a>
+                </div>
+                <div class="link-col">
+                    <h4>LEGALS</h4>
+                    <a href="#">Privacy Policy</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom" style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); justify-content: space-between;">
+            <p>&copy; 2026 amielebegena. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

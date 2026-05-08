@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instruments - amielebegena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-left">
+            <span class="logo">ዓሚኤል በገና</span>
+        </div>
+        <nav class="nav-center">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="about.html">About Our Products</a>
+            <a href="about-us.html">About Us</a>
+        </nav>
+        <div class="nav-right">
+            <select class="currency-switcher" onchange="changeCurrency(this.value)">
+                <option value="ETB">ETB</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+            </select>
+
+            <button id="cart-button" class="icon-btn">
+                🛒
+                <span class="cart-count">0</span>
+            </button>
+            <a href="account.html" class="icon-btn" style="text-decoration:none;">👤</a>
+        </div>
+    </header>
+
+    <main style="padding-top: 0;">
+        <section class="apothecary-section" id="catalog">
+            <div class="section-header">
+                <span class="section-subtitle">ALL ITEMS</span>
+                <div class="section-header-row">
+                    <h2>Our Products</h2>
+                    <div class="sort-by">
+                        Sort by: <select class="sort-select" id="sortSelect" onchange="handleSort()"><option value="newest">Newest Arrivals</option><option value="alpha">Alphabetical (A-Z)</option></select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="product-layout">
+                <aside class="sidebar-filters">
+                    <div class="filter-group">
+                        <h4>COLLECTIONS</h4>
+                        <p class="filter-subtitle">Filter by Category</p>
+                        <ul class="filter-list">
+                            <li class="active" onclick="filterByCategory('strings', this)" style="font-family: 'Benaiah', sans-serif;"><span>🎻</span> በገና እና ክራር</li>
+                            <li onclick="filterByCategory('percussion', this)" style="font-family: 'Benaiah', sans-serif;"><span>🥁</span> ከበሮ እና ሌሎች</li>
+                            <li onclick="filterByCategory('accessories', this)" style="font-family: 'Benaiah', sans-serif;"><span>⚙️</span> የበገና እና የክራር እቃዎች</li>
+                            <li onclick="filterByCategory('books', this)" style="font-family: 'Benaiah', sans-serif;"><span>📚</span> መጽሃፍት</li>
+                            <li onclick="filterByCategory('all', this)" style="font-family: 'Benaiah', sans-serif;"><span>🗂️</span> ሁሉም እቃዎች</li>
+                        </ul>
+                    </div>
+                </aside>
+
+                <div class="product-grid" id="product-container">
+                    <!-- Products injected via JS -->
+                </div>
+            </div>
+        </section>
+        
+        <div id="cart-overlay" class="cart-overlay hidden"></div>
+        <div id="cart-drawer" class="cart-drawer hidden">
+            <div class="cart-header">
+                <h3>Your Cart</h3>
+                <button id="close-cart" class="close-btn">&times;</button>
+            </div>
+            <div id="cart-items" class="cart-items-container">
+                <!-- Cart items JS -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total-row">
+                    <span>Total</span>
+                    <span id="cart-total-display">$0.00</span>
+                </div>
+                <button class="btn-primary w-full">Checkout</button>
+            </div>
+        </div>
+    </main>
+
+    
+
+    <script src="script.js"></script>
+</body>
+</html>
+

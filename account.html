@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Account - amielebegena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-left">
+            <span class="logo">ዓሚኤል በገና</span>
+        </div>
+        <nav class="nav-center">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="about.html">About Our Products</a>
+            <a href="about-us.html">About Us</a>
+        </nav>
+        <div class="nav-right">
+            <select class="currency-switcher" onchange="changeCurrency(this.value)">
+                <option value="ETB">ETB</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+            </select>
+
+
+            <button id="cart-button" class="icon-btn">
+                🛒
+                <span class="cart-count">0</span>
+            </button>
+            <a href="account.html" class="icon-btn" style="text-decoration:none;">👤</a>
+        </div>
+    </header>
+
+    <main class="account-page-wrapper">
+        <div class="account-header-top">
+            <span class="section-subtitle">CURATOR WORKSPACE</span>
+            <h1>Your Account.</h1>
+        </div>
+
+        <div class="account-container">
+            <aside class="account-sidebar">
+                <ul class="sidebar-nav">
+                    <li id="nav-details" class="active" onclick="switchAccountTab('details')">Account Details</li>
+                    <li id="nav-orders" onclick="switchAccountTab('orders')">Order History</li>
+                    <li id="nav-saved" onclick="switchAccountTab('saved')">Saved Items</li>
+                    <li id="nav-impact" onclick="switchAccountTab('impact')">Cultural Impact</li>
+                    <li id="nav-shipping" onclick="switchAccountTab('shipping')">Shipping Addresses</li>
+                </ul>
+                <div class="archivist-level-card">
+                    <span class="level-label">ARCHIVIST LEVEL</span>
+                    <h3>Master Artisan</h3>
+                    <p>You've preserved 12 units of musical heritage this year.</p>
+                    <div class="progress-bar-placeholder"></div>
+                </div>
+            </aside>
+
+            <section class="account-main">
+                <div id="sec-details" class="account-tab-content active">
+                    <div class="account-section">
+                        <h2>Account Details</h2>
+                        <form class="account-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>FULL NAME</label>
+                                    <input type="text" class="account-input" value="Elena V. Thorne">
+                                </div>
+                                <div class="form-group">
+                                    <label>EMAIL REFERENCE</label>
+                                    <input type="email" class="account-input" value="elena.thorne@archives.org">
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>BIOGRAPHY / NOTE TO CURATOR</label>
+                                <textarea class="account-textarea">Devoted collector of traditional strings and a student of ancient highland resonance techniques.</textarea>
+                            </div>
+                            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                <button type="button" class="btn-primary">UPDATE ARCHIVE</button>
+                                <button type="button" id="logout-btn" class="btn-primary" style="background-color: transparent; border: 1px solid var(--dark-green); color: var(--dark-green);">LOG OUT</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="sec-impact" class="account-tab-content">
+                    <div class="sustainability-banner">
+                        <div class="banner-content">
+                            <span class="banner-subtitle">CULTURAL IMPACT REPORT</span>
+                            <h2>Your Archive Participation is Growing.</h2>
+                            <p>Through your support, we've funded 14 weeks of artisan training in traditional wood carving and string tensioning.</p>
+                        </div>
+                        <div class="banner-stats">
+                            <div class="stat-box">
+                                <span class="stat-number">14</span>
+                                <span class="stat-label">ARTISANS SUPPORTED</span>
+                            </div>
+                            <div class="stat-box">
+                                <span class="stat-number">32kg</span>
+                                <span class="stat-label">HERITAGE WOOD SAVED</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sec-saved" class="account-tab-content">
+                    <div class="account-section">
+                        <h2>Saved Items</h2>
+                        <div id="saved-items-container" class="product-grid" style="margin-top: 1.5rem;">
+                            <!-- Saved items injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sec-orders" class="account-tab-content">
+                    <div class="account-section">
+                        <div class="section-header-row" style="margin-bottom: 1.5rem;">
+                            <h2>Order History</h2>
+                            <a href="#" class="link">View All Archive Shipments</a>
+                        </div>
+                        <div class="order-list">
+                            <div class="order-item">
+                                <div class="order-image" style="background-image: url('https://images.unsplash.com/photo-1597481499750-3e6b22637e12?q=80&w=150&auto=format&fit=crop');"></div>
+                                <div class="order-details">
+                                    <span class="order-date">NOV 14, 2023 • #HA-0829</span>
+                                    <h4>Hand-Carved Begena (10-String)</h4>
+                                    <span class="order-status">1 item • Delivered</span>
+                                </div>
+                                <div class="order-price">$450.00</div>
+                                <button class="order-btn btn-light-green">DETAILS</button>
+                            </div>
+                            <div class="order-item">
+                                <div class="order-image" style="background-image: url('https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?q=80&w=150&auto=format&fit=crop');"></div>
+                                <div class="order-details">
+                                    <span class="order-date">OCT 22, 2023 • #HA-7410</span>
+                                    <h4>Sheep-Gut Strings (Set of 6)</h4>
+                                    <span class="order-status">1 item • Shipped</span>
+                                </div>
+                                <div class="order-price">$42.00</div>
+                                <button class="order-btn btn-light-green">TRACK</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="sec-shipping" class="account-tab-content">
+                    <div class="account-section">
+                        <h2>Shipping Addresses</h2>
+                        <div class="address-grid">
+                            <div class="address-card">
+                                <div class="address-card-header">
+                                    <span class="address-type">RESIDENTIAL STUDIO</span>
+                                    <span class="address-badge">PRIMARY</span>
+                                </div>
+                                <div class="address-body">
+                                    <strong>Elena Thorne</strong><br>
+                                    1422 Mossy Glen Way<br>
+                                    Suite 48, Silverlake<br>
+                                    California, 90026
+                                </div>
+                                <div class="address-actions">
+                                    <span class="action-link">EDIT</span>
+                                    <span class="action-link">REMOVE</span>
+                                </div>
+                            </div>
+                            <div class="address-card add-new-card">
+                                <div class="add-icon">+</div>
+                                <span class="add-text">ADD NEW REPOSITORY</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <div id="cart-overlay" class="cart-overlay hidden"></div>
+        <div id="cart-drawer" class="cart-drawer hidden">
+            <div class="cart-header">
+                <h3>Your Cart</h3>
+                <button id="close-cart" class="close-btn">&times;</button>
+            </div>
+            <div id="cart-items" class="cart-items-container">
+                <!-- Cart items JS -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total-row">
+                    <span>Total</span>
+                    <span id="cart-total-display">$0.00</span>
+                </div>
+                <button class="btn-primary w-full">Checkout</button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <h3>ዓሚኤል በገና</h3>
+                <p style="font-size: 0.85rem; color: #a1a6a3; margin-top: 1rem; max-width: 250px;">Dedicated to the preservation of traditional Ethiopian musical instruments and the cultural stories they echo. Join our community of curators.</p>
+            </div>
+            <div class="footer-links">
+                <div class="link-col">
+                    <h4>DISCOVERY</h4>
+                    <a href="#">Catalog</a>
+                    <a href="#">Journal</a>
+                </div>
+                <div class="link-col">
+                    <h4>LEGALS</h4>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms</a>
+                </div>
+                <div class="link-col">
+                    <h4>SOCIAL</h4>
+                    <a href="#">Instagram</a>
+                    <a href="#">Pinterest</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom" style="margin-top: 4rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); justify-content: space-between;">
+            <p>&copy; 2026 amielebegena. All Rights Reserved.</p>
+            <div style="display: flex; gap: 1rem; opacity: 0.7;">
+                <span style="font-size: 1.2rem;">🕊️</span>
+                <span style="font-size: 1.2rem;">🌍</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
