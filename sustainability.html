@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sustainability | ዓሚኤል በገና</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .sustainability-page {
+            background-color: var(--parchment);
+            color: var(--text-dark);
+        }
+        .sus-hero {
+            padding: 8rem 4rem 4rem;
+            background-color: var(--dark-green);
+            color: var(--text-light);
+            text-align: center;
+        }
+        .sus-hero h1 {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+        .sus-hero p {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.5rem;
+            opacity: 0.9;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .sus-container {
+            max-width: 900px;
+            margin: -4rem auto 6rem;
+            background: white;
+            padding: 5rem;
+            box-shadow: var(--shadow-soft);
+            border-radius: 4px;
+            position: relative;
+            z-index: 2;
+        }
+        .sus-item {
+            margin-bottom: 4rem;
+        }
+        .sus-item h2 {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark-green);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .sus-item p {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.3rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .sus-item ul {
+            list-style: none;
+            padding: 0;
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.3rem;
+            color: #333;
+        }
+        .sus-item li {
+            margin-bottom: 12px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .sus-item li::before {
+            content: "✦";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+        .commitment-box {
+            background: rgba(20, 35, 27, 0.05);
+            padding: 3rem;
+            border-radius: 12px;
+            border: 1px dashed var(--dark-green);
+            text-align: center;
+            margin-top: 4rem;
+        }
+        .commitment-box h2 {
+            border: none;
+            justify-content: center;
+        }
+        .commitment-box p {
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.5rem;
+            font-style: italic;
+            font-family: 'Benaiah', sans-serif;
+            color: var(--dark-green);
+        }
+        @media (max-width: 768px) {
+            .sus-container { padding: 2rem; margin: 0 1rem 4rem; }
+            .sus-hero h1 { font-size: 2.5rem; }
+            .sus-hero { padding: 8rem 2rem 4rem; }
+        }
+    </style>
+</head>
+<body class="sustainability-page">
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="index.html" style="text-decoration:none;"><span class="logo">ዓሚኤል በገና</span></a>
+        </div>
+        <nav class="nav-center" id="main-nav">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="about.html">About Our Products</a>
+            <a href="about-us.html">About Us</a>
+        </nav>
+        <div class="nav-right">
+            <select class="currency-switcher" onchange="changeCurrency(this.value)">
+                <option value="ETB">ETB</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+            </select>
+            <button id="cart-button" class="icon-btn">
+                🛒 <span class="cart-count">0</span>
+            </button>
+            <a href="account.html" class="icon-btn" style="text-decoration:none;">👤</a>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <section class="sus-hero">
+            <h1>
+                <span class="amharic-content">ዘላቂነት</span>
+                <span class="english-content">Sustainability</span>
+            </h1>
+            <p>
+                <span class="amharic-content">በዓሚኤል በገና፣ ዘላቂነት ፋሽን አይደለም—ለ3,000 ዓመታት ስንሠራበት የቆየንበት መንገድ ነው። የእኛን መሣሪያዎች ሲመርጡ፣ ተፈጥሯዊ ግብዓቶችን፣ የአገር ውስጥ ባለሙያዎችን እና የኢትዮጵያን መንፈሳዊና ባሕላዊ ቅርስ መጠበቅን ይደግፋሉ።</span>
+                <span class="english-content">At Amiele Begena, sustainability isn't a trend—it's how we've operated for 3,000 years. By choosing our instruments, you support natural materials, local artisans, and the preservation of Ethiopia's soulful cultural heritage.</span>
+            </p>
+        </section>
+
+        <section class="sus-container">
+            <!-- 1. OUR MATERIALS -->
+            <div class="sus-item">
+                <h2>
+                    <span class="amharic-content">የምንጠቀምባቸው ግብዓቶች</span>
+                    <span class="english-content">Our Materials</span>
+                </h2>
+                <p>
+                    <span class="amharic-content">ተፈጥሮ የሰጠችንን ብቻ በመጠቀም ምድራችንን እናከብራለን። በዎርክሾፓችን ውስጥ ምንም ዓይነት ሰው ሠራሽ ፕላስቲክ ወይም መርዛማ ሙጫዎች አይገኙም።</span>
+                    <span class="english-content">We honor the earth by using only what nature provides. No synthetic plastics or toxic glues are found in our workshop.</span>
+                </p>
+                <ul>
+                    <li>
+                        <span class="amharic-content">መሣሪያዎቹ የሚሠሩት በጥንቃቄ ከተመረጠ የዋንዛ እንጨት ነው።</span>
+                        <span class="english-content">Instruments crafted from seasoned <strong>Wanza</strong> (Cordia Africana) wood.</span>
+                    </li>
+                    <li>
+                        <span class="amharic-content">የመሣሪያዎቹ አካል በንጹህ የበሬ ቆዳ ይሸፈናል።</span>
+                        <span class="english-content">Resonators covered with authentic bull hide.</span>
+                    </li>
+                    <li>
+                        <span class="amharic-content">አውታሮች (Strings) ከተፈጥሮ የበግ አንጀት የሚፈተሉ ናቸው።</span>
+                        <span class="english-content">Strings hand-spun from natural sheep gut.</span>
+                    </li>
+                    <li>
+                        <span class="amharic-content">መሣሪያዎቹን ለመንከባከብ የምንጠቀመው ቅባት ከተፈጥሮ ንብ ሰምና ከሊንሲድ ዘይት ይዘጋጃል።</span>
+                        <span class="english-content">Conditioning wax made from pure beeswax and linseed oil.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 2. SUPPORTING ARTISANS -->
+            <div class="sus-item">
+                <h2>
+                    <span class="amharic-content">የአገር ውስጥ ባለሙያዎችን መደገፍ</span>
+                    <span class="english-content">Supporting Local Artisans</span>
+                </h2>
+                <p>
+                    <span class="amharic-content">እያንዳንዱ ሽያጭ ባሕላችንን ለሚያስቀጥሉ ባለሙያዎች ቀጥተኛ የገቢ ምንጭ ይሆናል።</span>
+                    <span class="english-content">Every purchase directly impacts the lives of the master craftsmen who keep our traditions alive.</span>
+                </p>
+                <ul>
+                    <li>
+                        <span class="amharic-content">100% በአዲስ አበባ በባለሙያዎች እጅ የሚመረቱ።</span>
+                        <span class="english-content">100% handmade in our Addis Ababa workshops.</span>
+                    </li>
+                    <li>
+                        <span class="amharic-content">ያለ ምንም ደላላ ለባለሙያዎቹ ተገቢውን ክፍያ እንሰጣለን።</span>
+                        <span class="english-content">Fair wages paid directly to craftsmen—no middlemen involved.</span>
+                    </li>
+                    <li>
+                        <span class="amharic-content">የባለሙያ ቤተሰቦችንና ማህበረሰቡን መደገፍ።</span>
+                        <span class="english-content">Supporting artisan families and neighborhood stability.</span>
+                    </li>
+                    <li>
+                        <span class="amharic-content">ጥንታዊው ጥበብ ለቀጣዩ ትውልድ እንዲተላለፍ ማድረግ።</span>
+                        <span class="english-content">Ensuring traditional skills are passed to the next generation.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 3. BUILT TO LAST -->
+            <div class="sus-item">
+                <h2>
+                    <span class="amharic-content">ለረጅም ጊዜ የሚያገለግሉ</span>
+                    <span class="english-content">Built to Last</span>
+                </h2>
+                <p>
+                    <span class="amharic-content">ጊዜያዊና ጥራት የሌላቸውን መሣሪያዎች አናመርትም። መሣሪያዎቻችን ለትውልድ እንዲያገለግሉ ሆነው የተሠሩ ናቸው።</span>
+                    <span class="english-content">We refuse the "throwaway" culture of modern manufacturing. Our instruments are designed for lifetimes, not seasons.</span>
+                </p>
+                <p>
+                    <span class="amharic-content">ጥሩ በገና ወይም ክራር ለትውልድ የሚተላለፍ ቅርስ ነው። አንድ ጊዜ መግዛት የሕይወት ዘመን ዋጋና መንፈሳዊ እርካታን ይሰጣል።</span>
+                    <span class="english-content">A quality Begena or Krar is a heritage piece that improves with age and can be passed down through generations. One purchase represents a lifetime of value and musical companionship.</span>
+                </p>
+            </div>
+
+            <!-- 4. CULTURAL PRESERVATION -->
+            <div class="sus-item">
+                <h2>
+                    <span class="amharic-content">ባሕላዊ ቅርስን መጠበቅ</span>
+                    <span class="english-content">Cultural Preservation</span>
+                </h2>
+                <p>
+                    <span class="amharic-content">እነዚህ መሣሪያዎች የኢትዮጵያ የ3,000 ዓመታት የዜማ ጥበብና የኦርቶዶክስ ተዋሕዶ ቤተክርስቲያን ቅርስ መገለጫዎች ናቸው።</span>
+                    <span class="english-content">These instruments are the heartbeat of Ethiopia's 3,000-year-old musical tradition and Orthodox Christian heritage.</span>
+                </p>
+                <p>
+                    <span class="amharic-content">እኛ መሣሪያዎቹን በማቅረብ ጥንታዊው ዕውቀት ሳይጠፋ እንዲቆይ ድልድይ እንሆናለን። ጥንታዊውን ዓለም ከዘመናዊው ጋር እናገናኛለን።</span>
+                    <span class="english-content">By maintaining a marketplace for these crafts, we ensure that the ancient knowledge of instrument making doesn't vanish into history. We are a bridge between the ancient world and the modern one.</span>
+                </p>
+            </div>
+
+            <!-- 5. RESPONSIBLE PACKAGING -->
+            <div class="sus-item">
+                <h2>
+                    <span class="amharic-content">ኃላፊነት የተሞላበት አሸሻግ</span>
+                    <span class="english-content">Responsible Packaging</span>
+                </h2>
+                <p>
+                    <span class="amharic-content">ዘላቂነት እስከ አሸሻግ ሂደታችን ድረስ ይዘልቃል። የፕላስቲክ አጠቃቀምን በመቀነስ መሣሪያዎቹን በጥንቃቄ እንልካለን።</span>
+                    <span class="english-content">Sustainability extends to how we ship. We avoid plastic waste wherever possible while ensuring maximum safety.</span>
+                </p>
+                <p>
+                    <span class="amharic-content">እያንዳንዱ መሣሪያ በጥንቃቄ ይታሸጋል። እንደ በገና ያሉ ተሰባሪ መሣሪያዎች ሳይሰበሩ ያሉበት እንዲደርሱ ልዩ ጥበቃ ይደረግላቸዋል።</span>
+                    <span class="english-content">All instruments are carefully hand-packaged. Fragile items like the Begena receive reinforced, protective layers to ensure they arrive in perfect condition without the need for excessive synthetic fillers.</span>
+                </p>
+            </div>
+
+            <!-- 6. COMMITMENT -->
+            <div class="commitment-box">
+                <h2>
+                    <span class="amharic-content">ቃላችን</span>
+                    <span class="english-content">Our Commitment</span>
+                </h2>
+                <p>
+                    <span class="amharic-content">"ለጥራት፣ ለትክክለኛነትና ለባሕል ኩራት እንቆማለን። ቃላችን ለማህበረሰባችንና ለቅርሳችን ነው—ሁልጊዜም እንደ ድምፃቸው ንጹህና ተፈጥሯዊ የሆኑ መሣሪያዎችን እናቀርባለን።"</span>
+                    <span class="english-content">"We stand for quality, authenticity, and cultural pride. Our commitment is to our community and our heritage—to always provide instruments that are as honest and natural as the sounds they produce."</span>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <h3>ዓሚኤል በገና</h3>
+                <p>Preserving the soulful resonance and historical craftsmanship of traditional Ethiopian instruments through a meticulously curated archive.</p>
+            </div>
+            <div class="footer-links">
+                <div class="link-col">
+                    <h4>DISCOVERY</h4>
+                    <a href="sustainability.html">Sustainability</a>
+                    <a href="shipping.html">Shipping</a>
+                    <a href="about-us.html">About Us</a>
+                    <a href="#">Contact</a>
+                </div>
+                <div class="link-col">
+                    <h4>SOCIAL</h4>
+                    <div class="social-icons">
+                        <a href="https://www.instagram.com/amielebegena" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@amielebegena" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://www.youtube.com/@amielebegena" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://t.me/orttodooxtewahdoo" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                    </div>
+                </div>
+                <div class="link-col">
+                    <h4>CONTACT</h4>
+                    <a href="tel:0964261817">0964261817</a>
+                    <a href="tel:0969189470">0969189470</a>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.75rem; margin-top: 10px; line-height: 1.4;">Mexico Square,<br>Addis Ababa, Ethiopia</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 ዓሚኤል በገና. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="whatsapp-widget.js"></script>
+    <script src="language-toggle.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

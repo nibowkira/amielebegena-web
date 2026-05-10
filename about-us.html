@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         .about-us-page {
             background-color: var(--parchment);
@@ -23,6 +24,11 @@
             font-family: 'Benaiah', sans-serif;
             font-size: 4rem;
             margin-bottom: 2rem;
+        }
+        .hero-story p {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.5rem;
+            opacity: 0.9;
         }
         .story-container {
             max-width: 900px;
@@ -46,7 +52,8 @@
             padding-bottom: 0.5rem;
         }
         .story-block p {
-            font-size: 1.1rem;
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.3rem;
             line-height: 1.8;
             color: #333;
         }
@@ -55,6 +62,9 @@
             grid-template-columns: 1fr 1fr;
             gap: 4rem;
             margin-top: 2rem;
+        }
+        .craft-details p {
+            font-family: 'Benaiah', sans-serif;
         }
         .craft-img {
             width: 100%;
@@ -178,17 +188,19 @@
             <div class="footer-links">
                 <div class="link-col">
                     <h4>DISCOVERY</h4>
-                    <a href="#">Sustainability</a>
-                    <a href="#">Shipping</a>
+                    <a href="sustainability.html">Sustainability</a>
+                    <a href="shipping.html">Shipping</a>
                     <a href="about-us.html">About Us</a>
                     <a href="#">Contact</a>
                 </div>
                 <div class="link-col">
                     <h4>SOCIAL</h4>
-                    <a href="https://www.instagram.com/amielebegena" target="_blank">Instagram</a>
-                    <a href="https://www.tiktok.com/@amielebegena" target="_blank">TikTok</a>
-                    <a href="https://www.youtube.com/@amielebegena" target="_blank">YouTube</a>
-                    <a href="https://t.me/orttodooxtewahdoo" target="_blank">Telegram</a>
+                    <div class="social-icons">
+                        <a href="https://www.instagram.com/amielebegena" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@amielebegena" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://www.youtube.com/@amielebegena" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://t.me/orttodooxtewahdoo" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                    </div>
                 </div>
                 <div class="link-col">
                     <h4>CONTACT</h4>
@@ -208,6 +220,7 @@
         <a href="tel:0964261817" class="floating-btn" title="Call Us Directly">📞</a>
     </div>
 
+    <script src="whatsapp-widget.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

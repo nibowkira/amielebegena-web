@@ -2203,3 +2203,23 @@ img {
         font-size: 2.2rem;
     }
 }
+/* FOOTER SOCIAL ICONS */
+.social-icons {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    align-items: center;
+}
+
+.social-icons a {
+    color: rgba(255,255,255,0.6);
+    font-size: 1.6rem; /* Slightly larger than text */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    display: inline-flex;
+}
+
+.social-icons a:hover {
+    color: #fff; /* Brighten on hover */
+    transform: translateY(-3px);
+}
