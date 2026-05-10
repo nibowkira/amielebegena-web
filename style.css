@@ -15,9 +15,13 @@
     --text-dark: #111;
     --text-light: #f5f4f0;
     --accent: #d4af37; /* Warm Gold */
+    --accent-glow: rgba(212, 175, 55, 0.3);
+    --glass: rgba(249, 248, 244, 0.7);
+    --glass-border: rgba(20, 35, 27, 0.1);
     --font-heading: 'Cormorant Garamond', serif;
     --font-body: 'Outfit', sans-serif;
 }
+
 
 .section-header {
     text-align: center;
@@ -107,7 +111,7 @@ img {
     display: block;
 }
 
-/* NAVBAR */
+/* NAVBAR - Glassmorphism */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -117,6 +121,19 @@ img {
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar.scrolled {
+    padding: 1rem 4rem;
+    background-color: var(--glass);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--glass-border);
+    margin: 1rem 2rem;
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    top: 10px;
 }
 
 /* ABOUT PAGE GLOBAL FONT OVERRIDE */
@@ -508,7 +525,35 @@ img {
 }
 
 .product-card:hover .product-image-wrap img {
-    transform: scale(1.05);
+    transform: scale(1.08) translateY(-10px);
+}
+
+/* Wood Shimmer Effect */
+.wood-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.wood-shimmer::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 20%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 80%
+    );
+    transform: rotate(30deg);
+    transition: transform 0.8s ease;
+    pointer-events: none;
+}
+
+.product-card:hover .wood-shimmer::after {
+    transform: rotate(30deg) translate(20%, 20%);
 }
 
 .product-badge {
@@ -578,6 +623,50 @@ img {
     background: var(--dark-green);
     color: var(--text-light);
     border-color: var(--dark-green);
+}
+
+.whatsapp-btn {
+    background-color: #25D366;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    width: 100%;
+}
+
+.product-card:hover .whatsapp-btn,
+.rated-card:hover .whatsapp-btn {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.whatsapp-btn:hover {
+    background-color: #128C7E;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
 }
 
 .details-link {
