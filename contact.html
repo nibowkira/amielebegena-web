@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | ዓሚኤል በገና</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .contact-page {
+            background-color: var(--parchment);
+            color: var(--text-dark);
+        }
+        .contact-hero {
+            padding: 8rem 4rem 4rem;
+            background-color: var(--dark-green);
+            color: var(--text-light);
+            text-align: center;
+        }
+        .contact-hero h1 {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--text-light); /* Changed for readability */
+        }
+        .contact-hero p {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.5rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .contact-container {
+            max-width: 1000px;
+            margin: -4rem auto 6rem;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            background: white;
+            box-shadow: var(--shadow-soft);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+        }
+        .contact-info-panel {
+            background-color: var(--dark-green);
+            color: var(--text-light);
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+        .contact-form-panel {
+            padding: 4rem;
+            background: #fff;
+        }
+        .info-group h3 {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        .info-group p, .info-group a {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .info-group a:hover {
+            color: var(--accent);
+        }
+        .contact-socials {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .contact-socials a {
+            font-size: 1.5rem;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+        }
+        .contact-socials a:hover {
+            color: var(--accent);
+        }
+        .big-wa-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background-color: #25D366;
+            color: white !important;
+            padding: 1.2rem;
+            border-radius: 50px;
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+        .big-wa-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+        }
+        .contact-form h2 {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 2rem;
+            color: var(--dark-green);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            font-family: 'Benaiah', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+        }
+        .contact-input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.1rem;
+            transition: border-color 0.3s ease;
+        }
+        .contact-input:focus {
+            outline: none;
+            border-color: var(--dark-green);
+        }
+        .contact-textarea {
+            height: 150px;
+            resize: none;
+        }
+        .submit-btn {
+            width: 100%;
+            background-color: var(--dark-green);
+            color: white;
+            border: none;
+            padding: 1.2rem;
+            border-radius: 4px;
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .submit-btn:hover {
+            background-color: #25D366;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+        .availability-badge {
+            display: inline-block;
+            background: rgba(37, 211, 102, 0.1);
+            color: #25D366;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-family: 'Benaiah', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 850px) {
+            .contact-container { grid-template-columns: 1fr; }
+            .contact-hero h1 { font-size: 3rem; }
+            .contact-info-panel, .contact-form-panel { padding: 3rem 2rem; }
+        }
+    </style>
+</head>
+<body class="contact-page">
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="index.html" style="text-decoration:none;"><span class="logo">ዓሚኤል በገና</span></a>
+        </div>
+        <nav class="nav-center" id="main-nav">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="about.html">About Our Products</a>
+            <a href="about-us.html">About Us</a>
+        </nav>
+        <div class="nav-right">
+            <select class="currency-switcher" onchange="changeCurrency(this.value)">
+                <option value="ETB">ETB</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+            </select>
+            <button id="cart-button" class="icon-btn">
+                🛒 <span class="cart-count">0</span>
+            </button>
+            <a href="account.html" class="icon-btn" style="text-decoration:none;">👤</a>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <section class="contact-hero">
+            <h1>
+                <span class="amharic-content">ያግኙን</span>
+                <span class="english-content">Contact Us</span>
+            </h1>
+            <p>
+                <span class="amharic-content">ለማንኛውም ጥያቄ ወይም መረጃ እኛን ለማነጋገር አያመንቱ።</span>
+                <span class="english-content">We are here to answer your questions and guide you in finding your perfect instrument.</span>
+            </p>
+        </section>
+
+        <section class="contact-container">
+            <!-- Left Side: Info -->
+            <div class="contact-info-panel">
+                <div class="availability-badge">
+                    <i class="fas fa-clock"></i> OPEN 24/7 • ዓመቱን ሙሉ ክፍት ነን
+                </div>
+
+                <a href="https://wa.me/251969189470?text=Hi,%20I%20want%20to%20know%20more%20about%20your%20instruments" class="big-wa-btn" target="_blank">
+                    <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+
+                <div class="info-group">
+                    <h3>Phone Numbers</h3>
+                    <a href="tel:0964261817"><i class="fas fa-phone"></i> 0964261817</a>
+                    <a href="tel:0969189470"><i class="fas fa-phone"></i> 0969189470</a>
+                </div>
+
+                <div class="info-group">
+                    <h3>Email Address</h3>
+                    <a href="mailto:tadessenibowkira@gmail.com"><i class="fas fa-envelope"></i> tadessenibowkira@gmail.com</a>
+                </div>
+
+                <div class="info-group">
+                    <h3>Our Location</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> Mexico Square, Addis Ababa, Ethiopia</p>
+                    <a href="https://www.google.com/maps?q=Mexico+Square,+Addis+Ababa" target="_blank" style="font-size: 1rem; color: var(--accent); text-decoration: underline;">
+                        View on Google Maps
+                    </a>
+                </div>
+
+                <div class="info-group">
+                    <h3>Social Media</h3>
+                    <div class="contact-socials">
+                        <a href="https://www.instagram.com/amielebegena" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@amielebegena" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://www.youtube.com/@amielebegena" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://t.me/orttodooxtewahdoo" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Form -->
+            <div class="contact-form-panel">
+                <div class="contact-form">
+                    <h2>Send a Message</h2>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="contact-name" class="contact-input" placeholder="Your Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone or Email</label>
+                        <input type="text" id="contact-detail" class="contact-input" placeholder="How can we reach you?">
+                    </div>
+                    <div class="form-group">
+                        <label>Your Message</label>
+                        <textarea id="contact-message" class="contact-input contact-textarea" placeholder="How can we help you?"></textarea>
+                    </div>
+                    <button type="button" class="submit-btn" onclick="sendToWhatsApp()">
+                        <i class="fab fa-whatsapp"></i> SEND VIA WHATSAPP
+                    </button>
+                    <p style="font-family: 'Benaiah', sans-serif; font-size: 1rem; color: #555; margin-top: 1rem; text-align: center;">
+                        Clicking send will open your WhatsApp with the message ready.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <h3>ዓሚኤል በገና</h3>
+                <p>Preserving the soulful resonance and historical craftsmanship of traditional Ethiopian instruments through a meticulously curated archive.</p>
+            </div>
+            <div class="footer-links">
+                <div class="link-col">
+                    <h4>DISCOVERY</h4>
+                    <a href="sustainability.html">Sustainability</a>
+                    <a href="shipping.html">Shipping</a>
+                    <a href="about-us.html">About Us</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="link-col">
+                    <h4>SOCIAL</h4>
+                    <div class="social-icons">
+                        <a href="https://www.instagram.com/amielebegena" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@amielebegena" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <a href="https://www.youtube.com/@amielebegena" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://t.me/orttodooxtewahdoo" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                    </div>
+                </div>
+                <div class="link-col">
+                    <h4>CONTACT</h4>
+                    <a href="tel:0964261817">0964261817</a>
+                    <a href="tel:0969189470">0969189470</a>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 10px; line-height: 1.4;">Mexico Square,<br>Addis Ababa, Ethiopia</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 ዓሚኤል በገና. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="whatsapp-widget.js"></script>
+    <script src="language-toggle.js"></script>
+    <script>
+        function sendToWhatsApp() {
+            const name = document.getElementById('contact-name').value;
+            const detail = document.getElementById('contact-detail').value;
+            const message = document.getElementById('contact-message').value;
+            
+            if (!name || !message) {
+                alert("Please fill in your name and message.");
+                return;
+            }
+
+            const phone = "251969189470";
+            const text = `Hi Amiele Begena,%0A%0AMy Name: ${encodeURIComponent(name)}%0AContact Info: ${encodeURIComponent(detail)}%0A%0AMessage:%0A${encodeURIComponent(message)}`;
+            
+            window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
