@@ -1436,6 +1436,33 @@ img {
         gap: 0.8rem;
     }
 
+    /* Account Sidebar Mobile */
+    .sidebar-nav {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        gap: 1rem;
+        border-bottom: 1px solid var(--parchment-shade);
+        margin-bottom: 2rem;
+        scrollbar-width: none; /* Hide scrollbar Firefox */
+    }
+
+    .sidebar-nav::-webkit-scrollbar {
+        display: none; /* Hide scrollbar Chrome/Safari */
+    }
+
+    .sidebar-nav li {
+        white-space: nowrap;
+        margin-bottom: 0;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.85rem;
+    }
+
+    .sidebar-nav li::before {
+        display: none;
+    }
+
 
     /* Footer */
     .main-footer {
@@ -1597,6 +1624,30 @@ img {
 @media (max-width: 480px) {
     .navbar {
         padding: 0.8rem 1rem;
+    }
+
+    .logo {
+        font-size: 1.3rem;
+    }
+
+    .hero-story h1 {
+        font-size: 2rem;
+    }
+
+    .story-container {
+        padding: 1.5rem;
+    }
+
+    /* Footer Mobile Stacking */
+    .footer-links {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: left;
+    }
+
+    .social-icons {
+        justify-content: flex-start;
     }
 
     .nav-left .logo {
