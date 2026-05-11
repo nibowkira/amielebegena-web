@@ -135,8 +135,8 @@ img {
     top: 10px;
 }
 
-/* ABOUT PAGE GLOBAL FONT OVERRIDE */
-.about-page, .about-page * {
+/* ABOUT PAGE GLOBAL FONT OVERRIDE - Exclude Font Awesome icons from being broken */
+.about-page, .about-page *:not(i):not([class*="fa-"]) {
     font-family: 'Benaiah', sans-serif !important;
 }
 
