@@ -914,4 +914,32 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (touchEndX - touchStartX > 50) prevSlide();
         startAutoSlide();
     }, { passive: true });
+
+    // Newsletter Subscription Logic
+    const newsletterBtn = document.getElementById('newsletter-btn');
+    const newsletterEmail = document.getElementById('newsletter-email');
+
+    if (newsletterBtn && newsletterEmail) {
+        newsletterBtn.addEventListener('click', function() {
+            const email = newsletterEmail.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address. / እባክዎን ትክክለኛ ኢሜይል ያስገቡ።');
+                return;
+            }
+
+            // Pre-fill WhatsApp message
+            const phone = "251969189470";
+            const message = encodeURIComponent(`Hi, I want to subscribe to Amiele Begena newsletter. My email: ${email}`);
+            const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
+
+            // Open WhatsApp
+            window.open(whatsappUrl, '_blank');
+
+            // Show thank you and clear input
+            newsletterEmail.value = '';
+            alert('Thank you for subscribing! / አመሰግናለሁ!');
+        });
+    }
 });
