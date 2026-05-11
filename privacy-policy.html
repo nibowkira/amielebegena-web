@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Amiele Begena</title>
+    <!-- Core stylesheet for site design -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Language toggle stylesheet (if any) – re‑use existing styles -->
+    <link rel="stylesheet" href="language-toggle.css">
+    <!-- Existing language toggle script -->
+    <script src="language-toggle.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .privacy-page {
+            background-color: var(--parchment);
+            color: var(--text-dark);
+        }
+
+        /* ── Hero Banner ── */
+        .privacy-hero {
+            padding: 8rem 4rem 6rem;
+            background-color: var(--dark-green);
+            color: var(--text-light);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .privacy-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.04) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .privacy-hero h1 {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        .privacy-hero p {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.15rem;
+            color: #aebdb4;
+            max-width: 550px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* ── Elevated Content Card ── */
+        .privacy-content {
+            max-width: 900px;
+            margin: -4rem auto 6rem;
+            background: white;
+            padding: 5rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            border-radius: 6px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .privacy-content .english-content h1,
+        .privacy-content .amharic-content h1 {
+            display: none; /* hidden because the hero already shows the title */
+        }
+
+        /* ── Section Headings ── */
+        .privacy-content h2 {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.8rem;
+            margin: 3rem 0 1.2rem;
+            color: var(--dark-green);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.6rem;
+        }
+        .privacy-content h2:first-of-type {
+            margin-top: 0;
+        }
+
+        /* ── Body Text ── */
+        .privacy-content p {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.15rem;
+            line-height: 1.85;
+            color: #444;
+            margin-bottom: 0.75rem;
+        }
+
+        /* ── Lists ── */
+        .privacy-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 0.5rem 0 1.5rem;
+        }
+        .privacy-content ul li {
+            font-family: 'Benaiah', sans-serif;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #444;
+            padding: 0.6rem 0 0.6rem 1.8rem;
+            position: relative;
+            border-bottom: 1px solid rgba(0,0,0,0.04);
+        }
+        .privacy-content ul li:last-child {
+            border-bottom: none;
+        }
+        .privacy-content ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--dark-green);
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        /* ── Links ── */
+        .privacy-content a {
+            color: var(--dark-green);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(20, 35, 27, 0.25);
+            transition: border-color 0.3s ease, opacity 0.3s ease;
+        }
+        .privacy-content a:hover {
+            border-bottom-color: var(--dark-green);
+            opacity: 0.8;
+        }
+
+        /* ── Last Updated Tag ── */
+        .privacy-content p:last-child {
+            margin-top: 2rem;
+            font-size: 0.95rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .privacy-hero {
+                padding: 6rem 2rem 5rem;
+            }
+            .privacy-hero h1 {
+                font-size: 2.5rem;
+            }
+            .privacy-content {
+                padding: 3rem 2rem;
+                margin: -3rem 1rem 4rem;
+            }
+            .privacy-content h2 {
+                font-size: 1.5rem;
+            }
+            .privacy-content p,
+            .privacy-content ul li {
+                font-size: 1rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .privacy-hero {
+                padding: 5rem 1.5rem 4rem;
+            }
+            .privacy-hero h1 {
+                font-size: 2rem;
+            }
+            .privacy-content {
+                padding: 2rem 1.25rem;
+                margin: -2rem 0.75rem 3rem;
+                border-radius: 4px;
+            }
+        }
+    </style>
+</head>
+<body class="privacy-page">
+    <!-- Navbar – copied from other pages to keep consistent branding -->
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="index.html" style="text-decoration:none;"><span class="logo">ዓሚኤል በገና</span></a>
+        </div>
+        <nav class="nav-center" id="main-nav">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="about.html">About Our Products</a>
+            <a href="about-us.html">About Us</a>
+        </nav>
+        <div class="nav-right">
+            <select class="currency-switcher" onchange="changeCurrency(this.value)">
+                <option value="ETB">ETB</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+            </select>
+            <button id="cart-button" class="icon-btn">🛒<span class="cart-count">0</span></button>
+            <a href="account.html" class="icon-btn" style="text-decoration:none;">👤</a>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu"><span></span><span></span><span></span></button>
+        </div>
+    </header>
+    <!-- Mobile Navigation Drawer (identical to other pages) -->
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+    <nav class="mobile-nav" id="mobile-nav">
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="about.html">About Our Products</a>
+        <a href="about-us.html">About Us</a>
+    </nav>
+    <main>
+        <!-- Language toggle injected by language-toggle.js – no manual markup needed -->
+        <section class="privacy-hero">
+            <h1>
+                <span class="english-content">Privacy Policy</span>
+                <span class="amharic-content">የግል መረጃ ፖሊሲ</span>
+            </h1>
+            <p>
+                <span class="english-content">Your trust matters to us — here's how we protect your information.</span>
+                <span class="amharic-content">እምነትዎ ለእኛ ይጠቅማል — መረጃዎን እንዴት እንደምንጠብቅ እነሆ።</span>
+            </p>
+        </section>
+        <section class="privacy-content">
+            <!-- English version – visible by default -->
+            <div class="english-content">
+                <h1>Privacy Policy</h1>
+                <h2>1. Introduction</h2>
+                <p>Amiele Begena is committed to protecting your privacy. This policy explains what information we collect and how we use it.</p>
+                <p>Location: Mexico Square, Addis Ababa, Ethiopia</p>
+                <p>Contact: <a href="mailto:tadessenibowkira@gmail.com">tadessenibowkira@gmail.com</a></p>
+                <h2>2. Information We Collect</h2>
+                <ul>
+                    <li>Name, phone number, email when you contact us</li>
+                    <li>WhatsApp messages when you place an order</li>
+                    <li>No payment information is stored on our website</li>
+                </ul>
+                <h2>3. How We Use Your Information</h2>
+                <ul>
+                    <li>To process and deliver your order</li>
+                    <li>To respond to your questions and inquiries</li>
+                    <li>To improve our products and services</li>
+                    <li>We never sell your information to third parties</li>
+                </ul>
+                <h2>4. Cookies</h2>
+                <p>Our website uses minimal cookies for basic functionality only. We do not use tracking or advertising cookies.</p>
+                <h2>5. Third Party Services</h2>
+                <ul>
+                    <li>We use Vercel for website hosting</li>
+                    <li>We use WhatsApp for order communication</li>
+                    <li>We use Chapa/Telebirr for payments (coming soon)</li>
+                </ul>
+                <h2>6. Your Rights</h2>
+                <ul>
+                    <li>You can request to see your personal data</li>
+                    <li>You can request we delete your data</li>
+                    <li>Contact us at: <a href="mailto:tadessenibowkira@gmail.com">tadessenibowkira@gmail.com</a></li>
+                </ul>
+                <h2>7. Changes to This Policy</h2>
+                <p>We may update this policy from time to time.</p>
+                <p>Last updated: May 2026</p>
+                <h2>8. Contact Us</h2>
+                <ul>
+                    <li>Email: <a href="mailto:tadessenibowkira@gmail.com">tadessenibowkira@gmail.com</a></li>
+                    <li>Phone: 0964261817 / 0969189470</li>
+                    <li>WhatsApp: 251969189470</li>
+                    <li>Location: Mexico Square, Addis Ababa, Ethiopia</li>
+                </ul>
+            </div>
+            <!-- Amharic version – hidden by default, will be toggled via language-toggle.js -->
+            <div class="amharic-content">
+                <h1>የግል መረጃ ፖሊሲ</h1>
+                <h2>1. መግቢያ</h2>
+                <p>አሚኤል በገና ግል መረጃዎትን ለመጠበቅ ተገደበ። ይህ ፖሊሲ ምን መረጃ እንደምናሰባሰብ እና እንዴት እንደምንጠቀምበት ይገልጻል።</p>
+                <p>አካባቢ፡ ሚክስጎስ ስክዌር፣ አዲስ አበባ፣ ኢትዮጵያ</p>
+                <p>እውቂያ፡ <a href="mailto:tadessenibowkira@gmail.com">tadessenibowkira@gmail.com</a></p>
+                <h2>2. የምናሰባሰብበት መረጃ</h2>
+                <ul>
+                    <li>ስም፣ ስልክ ቁጥር፣ ኢሜይል በእርስዎ ሲደውሉ</li>
+                    <li>ወደ WhatsApp የሚልኩት መልዕክቶች በትዕዛዝ ሲሰጡ</li>
+                    <li>በድርጅቱ ላይ የክፍያ መረጃ አይቀመጥም</li>
+                </ul>
+                <h2>3. መረጃዎን እንዴት እንጠቀምበታለን</h2>
+                <ul>
+                    <li>ትዕዛዝዎትን ለማቅረብና ለማስተላለፍ</li>
+                    <li>ጥያቄዎችንና ጥያቄዎችን ለማስተናገድ</li>
+                    <li>ምርቶችምና አገልግሎቶችን ለማሻሻል</li>
+                    <li>ንግዶችን ወደ ሶስተኛ ወገኖች አንሰጥም</li>
+                </ul>
+                <h2>4. Cookies</h2>
+                <p>ድርገበታችን ለመሰረባዊ ተግባር ብዙልቁንም የለም ችልም ቀለል ቁልፎችን ተጠቅሞ ነው። የክትትል ወይም የማስታወቂያ ቁልፍ አይጠቀምም።</p>
+                <h2>5. የሦስተኛ ወገኖች አገልግሎቶች</h2>
+                <ul>
+                    <li>ለመስተካከል ድርገበታችንን Vercel እንጠቀማለን</li>
+                    <li>ትዕዛዙን በ WhatsApp እንላክ</li>
+                    <li>ስለሚቀጥለው Chapa/Telebirr ክፍያዎች (በቅርብ ጊዜ)</li>
+                </ul>
+                <h2>6. የእርስዎ መብቶች</h2>
+                <ul>
+                    <li>የግል መረጃዎችዎን ለማየት መጠየቅ ይችላሉ</li>
+                    <li>መረጃዎችዎን ለማጥፋት መጠየቅ ይችላሉ</li>
+                    <li>በ <a href="mailto:tadessenibowkira@gmail.com">tadessenibowkira@gmail.com</a> እኛ ይደውሉ</li>
+                </ul>
+                <h2>7. የፖሊሲው ለውጦች</h2>
+                <p>ይህን ፖሊሲ ከጊዜው ወደ ጊዜ ሊያደርግ ይችላል።</p>
+                <p>መጨረሻ ዘመን፡ ሜይ 2026</p>
+                <h2>8. ያግኙን</h2>
+                <ul>
+                    <li>ኢሜይል፡ <a href="mailto:tadessenibowkira@gmail.com">tadessenibowkira@gmail.com</a></li>
+                    <li>ስልክ፡ 0964261817 / 0969189470</li>
+                    <li>WhatsApp፡ 251969189470</li>
+                    <li>አካባቢ፡ ሚክስጎስ ስክዌር፣ አዲስ አበባ፣ ኢትዮጵያ</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+    <!-- Footer – identical to other pages -->
+    <footer class="main-footer">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <h3>ዓሚኤል በገና</h3>
+                <p>Preserving the soulful resonance and historical craftsmanship of traditional Ethiopian instruments through a meticulously curated archive.</p>
+            </div>
+            <div class="footer-links">
+                <div class="link-col">
+                    <h4>DISCOVERY</h4>
+                    <a href="sustainability.html">Sustainability</a>
+                    <a href="shipping.html">Shipping</a>
+                    <a href="about-us.html">About Us</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="link-col">
+                    <h4>SOCIAL</h4>
+                    <div class="social-icons">
+                        <a href="https://www.instagram.com/amielebegena" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@amielebegena" target="_blank" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+                        <a href="https://www.youtube.com/@amielebegena" target="_blank" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="https://t.me/orttodooxtewahdoo" target="_blank" aria-label="Telegram"><i class="fa-brands fa-telegram"></i></a>
+                    </div>
+                </div>
+                <div class="link-col">
+                    <h4>CONTACT</h4>
+                    <a href="tel:0964261817">0964261817</a>
+                    <a href="tel:0969189470">0969189470</a>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin-top: 10px; line-height: 1.4;">Mexico Square,<br>Addis Ababa, Ethiopia</p>
+                </div>
+            </div>
+            <div class="footer-newsletter">
+                <h4>THE REGISTRY</h4>
+                <p>Subscribe for seasonal archive drops and cultural history studies.</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Your email address">
+                    <button type="button">Join</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 amielebegena. ALL RIGHTS RESERVED.</p>
+            <div class="legal-links">
+                <a href="privacy-policy.html">PRIVACY POLICY</a>
+                <a href="terms-of-archive.html">TERMS OF ARCHIVE</a>
+            </div>
+        </div>
+    </footer>
+    <!-- Existing scripts – keep order for proper loading -->
+    <script src="whatsapp-widget.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

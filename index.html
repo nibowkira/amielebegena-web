@@ -16,7 +16,7 @@
             <a href="index.html" style="text-decoration:none;"><span class="logo">ዓሚኤል በገና</span></a>
         </div>
         <nav class="nav-center" id="main-nav">
-            <a href="index.html">Home</a>
+            <a href="index.html" class="active">Home</a>
             <a href="products.html">Products</a>
             <a href="about.html">About Our Products</a>
             <a href="about-us.html">About Us</a>
@@ -42,7 +42,7 @@
     <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
     <nav class="mobile-nav" id="mobile-nav">
         <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">&times;</button>
-        <a href="index.html">Home</a>
+        <a href="index.html" class="active">Home</a>
         <a href="products.html">Products</a>
         <a href="about.html">About Our Products</a>
         <a href="about-us.html">About Us</a>
@@ -120,51 +120,108 @@
                 <p>Trusted by musicians, churches, and cultural institutions across Ethiopia.</p>
             </div>
 
-            <div class="testimonials-grid">
-                <!-- Testimonial 1 -->
-                <div class="testimonial-card reveal">
-                    <div class="testimonial-quote">"</div>
-                    <div class="testimonial-stars">★★★★★</div>
-                    <p class="testimonial-text">በገናው በጣም ጥራት ያለውና ድምጹ ልዩ ነው። ለቤተ ክርስቲያናችን ትልቅ በረከት ሆኗል። እግዚአብሔር ይባርካቸው!</p>
-                    <p class="testimonial-text-en">"The Begena has exceptional quality and a unique sound. It has been a great blessing for our church."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">ዘ</div>
-                        <div class="author-info">
-                            <strong>ዘማሪ ተስፋዬ ወርቁ</strong>
-                            <span>በገና (Begena)</span>
+            <div class="testimonials-slider-wrapper">
+                <button class="slider-nav-btn prev-btn" aria-label="Previous review">❮</button>
+                
+                <div class="testimonials-slider-container">
+                    <div class="testimonials-track">
+                        <!-- Testimonial 1 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-quote">"</div>
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">በገናው በጣም ጥራት ያለውና ድምጹ ልዩ ነው። ለቤተ ክርስቲያናችን ትልቅ በረከት ሆኗል። እግዚአብሔር ይባርካቸው!</p>
+                            <p class="testimonial-text-en">"The Begena has exceptional quality and a unique sound. It has been a great blessing for our church. God bless them!"</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">ዘ</div>
+                                <div class="author-info">
+                                    <strong>ዘማሪ ተስፋዬ ወርቁ</strong>
+                                    <span>በገና (Begena)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Testimonial 2 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-quote">"</div>
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">ክራሩን ስገዛ ትክክለኛ ምርጫ ማድረጌን ተረድቻለሁ። ድምጹ ንጹሕና ለስላሳ ነው፣ ማድረስም ነጻ ነበር!</p>
+                            <p class="testimonial-text-en">"I knew I made the right choice when I got the Krar. The sound is pure and smooth — and delivery was free!"</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">ሰ</div>
+                                <div class="author-info">
+                                    <strong>ሰላማዊት አበበ</strong>
+                                    <span>ክራር (Kirar)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Testimonial 3 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-quote">"</div>
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">መሰንቆውን ለትምህርት ቤት ፕሮግራም ገዛሁ። ልጆቹ ባሕላቸውን እንዲማሩ ትልቅ እገዛ ሆኗል። አመሰግናለሁ!</p>
+                            <p class="testimonial-text-en">"Bought the Masinko for a school program. It has been a great help for kids to learn their culture. Thank you!"</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">ዳ</div>
+                                <div class="author-info">
+                                    <strong>ዳንኤል ገብረ ማሪያም</strong>
+                                    <span>ማሲንቆ (Masinko)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Testimonial 4 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-quote">"</div>
+                            <div class="testimonial-stars">★★★★☆</div>
+                            <p class="testimonial-text">ለልጄ ባህላዊ ሙዚቃ እንዲማር ክራር አዝዤለት ነበር። ጥራቱ እጅግ በጣም ጥሩ ነው - ገመዶቹ ለስላሳ ናቸው ድምጹም ጥልቅ እና እውነተኛ። ዓሚኤል በገናን በጣም እመክራለሁ።</p>
+                            <p class="testimonial-text-en">"I ordered a Krar for my son who is learning traditional music. The quality is exceptional — the strings are smooth and the sound is rich and authentic. Delivery was fast and the packaging was very careful. Highly recommend Amiele Begena."</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">ዳ</div>
+                                <div class="author-info">
+                                    <strong>ዳዊት ኃይሌ (Dawit Haile)</strong>
+                                    <span>ክራር (Krar)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Testimonial 5 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-quote">"</div>
+                            <div class="testimonial-stars">★★★★★</div>
+                            <p class="testimonial-text">ከፍተኛ ጥራት ያለው በገና ለዓመታት ስፈልግ ነበር። ዓሚኤል በገና ከጠበኩት በላይ ሆኖ አግኝቼዋለሁ - የእጅ ሥራው ውብ ነው ፣ ድምጹም ጥልቅ መንፈሳዊ እና ኃይለኛ ነው። በእያንዳንዱ ገመድ ውስጥ ባህሉን ሊሰማዎት ይችላል። ባለቤቱ በዋትስአፕ በጣም ረዳት እና ምላሽ ሰጪ ነበር። ኦሪጅናል የኢትዮጵያ የሙዚቃ መሣሪያዎችን ለመግዛት በአዲስ አበባ ውስጥ ይህ ምርጡ ቦታ ነው። እጅግ አመሰግናለሁ!</p>
+                            <p class="testimonial-text-en">"I have been searching for a high quality Begena for years. Amiele Begena exceeded all my expectations — the craftsmanship is beautiful, the sound is deeply spiritual and powerful. You can feel the tradition in every string. The owner was very helpful and responsive on WhatsApp. This is the best place in Addis to buy authentic Ethiopian instruments. እጅግ አመሰግናለሁ!"</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">ሰ</div>
+                                <div class="author-info">
+                                    <strong>ሰላም ታደሰ (Selam Tadesse)</strong>
+                                    <span>በገና (Begena)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Testimonial 6 -->
+                        <div class="testimonial-card">
+                            <div class="testimonial-quote">"</div>
+                            <div class="testimonial-stars">★★★★☆</div>
+                            <p class="testimonial-text">ከበሮው በጣም ጥሩ ነው። ድምፁ ትክክለኛ እና ጠንካራ ነው።</p>
+                            <p class="testimonial-text-en">"The Kebero I received was beautifully crafted with genuine hide. Perfect for our cultural celebrations. I will definitely order again from Amiele Begena!"</p>
+                            <div class="testimonial-author">
+                                <div class="author-avatar">ቢ</div>
+                                <div class="author-info">
+                                    <strong>ብሩክ ተስፋዬ (Biruk Tesfaye)</strong>
+                                    <span>ከበሮ (Kebero)</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Testimonial 2 -->
-                <div class="testimonial-card reveal" style="transition-delay: 0.1s;">
-                    <div class="testimonial-quote">"</div>
-                    <div class="testimonial-stars">★★★★★</div>
-                    <p class="testimonial-text">ክራሩን ስገዛ ትክክለኛ ምርጫ ማድረጌን ተረድቻለሁ። ድምጹ ንጹሕና ለስላሳ ነው፣ ማድረስም ነጻ ነበር!</p>
-                    <p class="testimonial-text-en">"I knew I made the right choice when I got the Krar. The sound is pure and smooth — and delivery was free!"</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">ሰ</div>
-                        <div class="author-info">
-                            <strong>ሰላማዊት አበበ</strong>
-                            <span>ክራር (Kirar)</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Testimonial 3 -->
-                <div class="testimonial-card reveal" style="transition-delay: 0.2s;">
-                    <div class="testimonial-quote">"</div>
-                    <div class="testimonial-stars">★★★★★</div>
-                    <p class="testimonial-text">መሰንቆውን ለትምህርት ቤት ፕሮግራም ገዛሁ። ልጆቹ ባሕላቸውን እንዲማሩ ትልቅ እገዛ ሆኗል። አመሰግናለሁ!</p>
-                    <p class="testimonial-text-en">"I bought the Masinko for a school program. It has been a great help for kids to learn their culture."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">ዳ</div>
-                        <div class="author-info">
-                            <strong>ዳንኤል ገብረ ማሪያም</strong>
-                            <span>ማሲንቆ (Masinko)</span>
-                        </div>
-                    </div>
-                </div>
+                <button class="slider-nav-btn next-btn" aria-label="Next review">❯</button>
+            </div>
+            
+            <div class="slider-dots">
+                <!-- Dots added by JS -->
             </div>
         </section>
 
@@ -187,6 +244,65 @@
         </div>
     </main>
 
+        <!-- Customer Review Section -->
+        <section class="customer-reviews-section reveal" id="reviews-section">
+            <div class="reviews-container">
+                <!-- Review Form -->
+                <div class="review-form-wrapper">
+                    <div class="form-header">
+                        <h2>Share Your Experience / ልምድዎን ያጋሩ</h2>
+                        <p>Your feedback helps us preserve Ethiopian musical heritage. Submit via WhatsApp.</p>
+                    </div>
+                    
+                    <form id="customer-review-form" class="review-form">
+                        <div class="form-group">
+                            <label for="review-name">Full Name / ሙሉ ስም *</label>
+                            <input type="text" id="review-name" name="name" placeholder="Enter your name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Your Rating / የእርስዎ ደረጃ *</label>
+                            <div class="star-rating" id="star-rating-input">
+                                <span class="star" data-value="1"><i class="fas fa-star"></i></span>
+                                <span class="star" data-value="2"><i class="fas fa-star"></i></span>
+                                <span class="star" data-value="3"><i class="fas fa-star"></i></span>
+                                <span class="star" data-value="4"><i class="fas fa-star"></i></span>
+                                <span class="star" data-value="5"><i class="fas fa-star"></i></span>
+                            </div>
+                            <input type="hidden" id="selected-rating" name="rating" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="review-instrument">What instrument did you buy? / የትኛውን መሣሪያ ገዙ? *</label>
+                            <select id="review-instrument" name="instrument" required>
+                                <option value="" disabled selected>Select an instrument</option>
+                                <option value="Begena">Begena</option>
+                                <option value="Krar">Krar</option>
+                                <option value="Masinko">Masinko</option>
+                                <option value="Kebero">Kebero</option>
+                                <option value="Washint">Washint</option>
+                                <option value="Sanasel">Sanasel</option>
+                                <option value="Meleket">Meleket</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="review-message">Your Review / የእርስዎ አስተያየት *</label>
+                            <textarea id="review-message" name="message" rows="4" placeholder="Tell us about your experience..." required></textarea>
+                        </div>
+
+                        <button type="submit" class="submit-review-btn">
+                            <span>Send Review</span>
+                            <i class="fab fa-whatsapp"></i>
+                        </button>
+
+                        <div id="form-feedback" class="form-feedback hidden"></div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
     <footer class="main-footer">
         <div class="footer-top">
             <div class="footer-brand">
@@ -204,10 +320,10 @@
                 <div class="link-col">
                     <h4>SOCIAL</h4>
                     <div class="social-icons">
-                        <a href="https://www.instagram.com/amielebegena" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://www.tiktok.com/@amielebegena" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
-                        <a href="https://www.youtube.com/@amielebegena" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                        <a href="https://t.me/orttodooxtewahdoo" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                        <a href="https://www.instagram.com/amielebegena" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@amielebegena" target="_blank" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+                        <a href="https://www.youtube.com/@amielebegena" target="_blank" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="https://t.me/orttodooxtewahdoo" target="_blank" aria-label="Telegram"><i class="fa-brands fa-telegram"></i></a>
                     </div>
                 </div>
                 <div class="link-col">
@@ -229,8 +345,8 @@
         <div class="footer-bottom">
             <p>&copy; 2026 amielebegena. ALL RIGHTS RESERVED.</p>
             <div class="legal-links">
-                <a href="#">PRIVACY POLICY</a>
-                <a href="#">TERMS OF ARCHIVE</a>
+                <a href="privacy-policy.html">PRIVACY POLICY</a>
+                <a href="terms-of-archive.html">TERMS OF ARCHIVE</a>
             </div>
         </div>
     </footer>

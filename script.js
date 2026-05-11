@@ -142,8 +142,19 @@ const cartItemsContainer = document.getElementById('cart-items');
 const cartTotalDisplay = document.getElementById('cart-total-display');
 const cartCountBadges = document.querySelectorAll('.cart-count');
 
+
 // Luxury Magnifier Logic
 function initMagnifier() {
+    // Disable on touch devices
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        document.querySelectorAll('.artisan-photo-wrap').forEach(container => {
+            container.classList.remove('magnifier-container');
+            const lens = container.querySelector('.magnifier-lens');
+            if (lens) lens.remove();
+        });
+        return;
+    }
+
     const targets = document.querySelectorAll('.artisan-photo-wrap');
     
     targets.forEach(container => {
@@ -636,3 +647,271 @@ window.playAudio = function(url, btn) {
         currentAudioBtn = null;
     });
 };
+
+// ==========================================
+// CUSTOMER REVIEW FORM LOGIC
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const starInput = document.getElementById('star-rating-input');
+    if (!starInput) return; // Only run on pages with the review form
+
+    const stars = starInput.querySelectorAll('.star');
+    const ratingHiddenInput = document.getElementById('selected-rating');
+    const reviewForm = document.getElementById('customer-review-form');
+    const feedbackDiv = document.getElementById('form-feedback');
+
+    /**
+     * STAR RATING INTERACTION
+     * Handles clicking, hovering, and resetting stars.
+     */
+    stars.forEach(star => {
+        // Handle Click (Set Rating)
+        star.addEventListener('click', () => {
+            const rating = star.getAttribute('data-value');
+            ratingHiddenInput.value = rating;
+            updateStars(rating);
+        });
+
+        // Handle Hover (Preview Rating)
+        star.addEventListener('mouseover', () => {
+            const rating = star.getAttribute('data-value');
+            updateStars(rating);
+        });
+
+        // Handle Mouse Out (Reset to selected rating)
+        star.addEventListener('mouseout', () => {
+            const currentRating = ratingHiddenInput.value;
+            updateStars(currentRating);
+        });
+    });
+
+    /**
+     * Updates the visual state of stars based on a rating value.
+     * @param {number} rating - The number of stars to highlight.
+     */
+    function updateStars(rating) {
+        stars.forEach(star => {
+            const value = star.getAttribute('data-value');
+            if (value <= rating) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    /**
+     * FORM SUBMISSION HANDLER
+     * Validates data and redirects to WhatsApp.
+     */
+    reviewForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // Get Form Values
+        const name = document.getElementById('review-name').value.trim();
+        const rating = ratingHiddenInput.value;
+        const instrument = document.getElementById('review-instrument').value;
+        const message = document.getElementById('review-message').value.trim();
+
+        // Validation Check
+        if (!name || rating === "0" || !instrument || !message) {
+            showFeedback('Please fill all required fields and provide a star rating. / እባክዎን ሁሉንም አስፈላጊ መስኮች ይሙሉ እና ኮከቦችን ይምረጡ።', 'error');
+            return;
+        }
+
+        // Create Star Emoji String (e.g., ★★★★★)
+        const starEmoji = "★".repeat(rating) + "☆".repeat(5 - rating);
+        
+        // WhatsApp Integration Details
+        const whatsappNumber = "251969189470";
+        const text = `⭐ New Review from Amiele Begena Website!\n\nName: ${name}\nInstrument: ${instrument}\nRating: [${starEmoji}]\n\nReview: ${message}`;
+        const encodedText = encodeURIComponent(text);
+        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedText}`;
+
+        // Show Success Message and 'Thank You' in Amharic
+        showFeedback('Thank you for your review! Redirecting to WhatsApp... / አመሰግናለሁ! ወደ ዋትስአፕ እየወሰድንዎት ነው...', 'success');
+        
+        // Open WhatsApp in a new tab after a brief delay for the user to see the success message
+        setTimeout(() => {
+            window.open(whatsappUrl, '_blank');
+            
+            // Reset form for next time
+            reviewForm.reset();
+            updateStars(0);
+            ratingHiddenInput.value = 0;
+            feedbackDiv.classList.add('hidden');
+        }, 2000);
+    });
+
+    /**
+     * Displays success or error feedback to the user.
+     * @param {string} msg - The message text.
+     * @param {string} type - 'success' or 'error'.
+     */
+    function showFeedback(msg, type) {
+        feedbackDiv.textContent = msg;
+        feedbackDiv.className = `form-feedback ${type}`;
+        feedbackDiv.classList.remove('hidden');
+        
+        // Auto-hide errors after 5 seconds
+        if (type === 'error') {
+            setTimeout(() => {
+                feedbackDiv.classList.add('hidden');
+            }, 5000);
+        }
+    }
+});
+
+// ==========================================
+// TESTIMONIALS SLIDER LOGIC (TRUE INFINITE)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const track = document.querySelector('.testimonials-track');
+    let cards = Array.from(document.querySelectorAll('.testimonial-card'));
+    const nextBtn = document.querySelector('.next-btn');
+    const prevBtn = document.querySelector('.prev-btn');
+    const dotsContainer = document.querySelector('.slider-dots');
+    const sliderWrapper = document.querySelector('.testimonials-slider-wrapper');
+
+    if (!track || cards.length === 0) return;
+
+    const originalCount = cards.length;
+    let currentIndex = 0;
+    let cardsToShow = getCardsToShow();
+    let autoSlideInterval;
+
+    // Clone cards for infinite loop
+    function setupClones() {
+        // Remove old clones if any
+        const clones = track.querySelectorAll('.clone');
+        clones.forEach(c => c.remove());
+
+        // Clone first and last sets
+        const firstClones = cards.slice(0, cardsToShow).map(card => {
+            const clone = card.cloneNode(true);
+            clone.classList.add('clone');
+            return clone;
+        });
+        const lastClones = cards.slice(-cardsToShow).map(card => {
+            const clone = card.cloneNode(true);
+            clone.classList.add('clone');
+            return clone;
+        });
+
+        firstClones.forEach(clone => track.appendChild(clone));
+        lastClones.reverse().forEach(clone => track.insertBefore(clone, track.firstChild));
+        
+        // Initial position (offset by the prepended clones)
+        currentIndex = cardsToShow;
+        updateSlider(false); // No transition for initial setup
+    }
+
+    function getCardsToShow() {
+        if (window.innerWidth <= 768) return 1;
+        if (window.innerWidth <= 1200) return 2;
+        return 3;
+    }
+
+    function initDots() {
+        if (!dotsContainer) return;
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < originalCount; i++) {
+            const dot = document.createElement('span');
+            dot.classList.add('dot');
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => {
+                currentIndex = i + cardsToShow;
+                updateSlider();
+                resetAutoSlide();
+            });
+            dotsContainer.appendChild(dot);
+        }
+    }
+
+    function updateSlider(transition = true) {
+        const style = window.getComputedStyle(track);
+        const gap = parseFloat(style.gap) || 0;
+        const cardWidth = cards[0].getBoundingClientRect().width + gap;
+        
+        track.style.transition = transition ? 'transform 0.7s cubic-bezier(0.165, 0.84, 0.44, 1)' : 'none';
+        track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+        
+        // Update dots logic
+        const dots = document.querySelectorAll('.dot');
+        const activeDotIndex = (currentIndex - cardsToShow + originalCount) % originalCount;
+        dots.forEach((dot, idx) => {
+            dot.classList.toggle('active', idx === activeDotIndex);
+        });
+    }
+
+    // Handle the "instant jump" for infinite effect
+    track.addEventListener('transitionend', () => {
+        if (currentIndex >= originalCount + cardsToShow) {
+            currentIndex = cardsToShow;
+            updateSlider(false);
+        }
+        if (currentIndex <= 0) {
+            currentIndex = originalCount;
+            updateSlider(false);
+        }
+    });
+
+    function nextSlide() {
+        currentIndex++;
+        updateSlider();
+    }
+
+    function prevSlide() {
+        currentIndex--;
+        updateSlider();
+    }
+
+    function startAutoSlide() {
+        stopAutoSlide();
+        autoSlideInterval = setInterval(nextSlide, 4000);
+    }
+
+    function stopAutoSlide() {
+        clearInterval(autoSlideInterval);
+    }
+
+    function resetAutoSlide() {
+        stopAutoSlide();
+        startAutoSlide();
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
+    }
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
+    }
+
+    if (sliderWrapper) {
+        sliderWrapper.addEventListener('mouseenter', stopAutoSlide);
+        sliderWrapper.addEventListener('mouseleave', startAutoSlide);
+    }
+
+    window.addEventListener('resize', () => {
+        const newCardsToShow = getCardsToShow();
+        if (newCardsToShow !== cardsToShow) {
+            cardsToShow = newCardsToShow;
+            setupClones();
+            initDots();
+        }
+    });
+
+    setupClones();
+    initDots();
+    startAutoSlide();
+
+    // Swipe Support
+    let touchStartX = 0;
+    track.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; stopAutoSlide(); }, { passive: true });
+    track.addEventListener('touchend', e => {
+        const touchEndX = e.changedTouches[0].screenX;
+        if (touchStartX - touchEndX > 50) nextSlide();
+        else if (touchEndX - touchStartX > 50) prevSlide();
+        startAutoSlide();
+    }, { passive: true });
+});
