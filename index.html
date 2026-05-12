@@ -9,6 +9,69 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="scroll-animations.css">
+    <style>
+        /* 
+           PARALLAX DEPTH EFFECT
+           We add these styles here to specifically target the hero section background.
+           By using a CSS variable (--parallax-y), we allow JavaScript to communicate
+           with the CSS engine at high performance.
+        */
+        .hero-section {
+            --parallax-y: 0px;
+            position: relative;
+            overflow: hidden; /* Clips the background movement so it stays within the hero */
+        }
+
+        .hero-section::before {
+            /* 
+               BASE APPROACH: background-attachment: fixed
+               This provides a high-quality static parallax on supported browsers.
+            */
+            background-attachment: fixed !important;
+            
+            /* 
+               PERFORMANCE: will-change
+               Hints the browser's rendering engine that this element will move,
+               triggering GPU acceleration for smoother frames.
+            */
+            will-change: transform;
+            
+            /* 
+               MOTION: transform
+               This takes the offset calculated in parallax.js and applies it.
+               Using transform is much faster than updating 'top' or 'background-position'.
+            */
+            transform: translateY(var(--parallax-y));
+            
+            /* 
+               OVERSCAN:
+               We make the element slightly larger than the container (120%) 
+               and offset it (-10%) to ensure there's enough "extra image" 
+               to show when it slides up or down, avoiding white gaps.
+            */
+            height: 125% !important;
+            top: -12.5% !important;
+            
+            /* Disable transitions to keep the motion synced perfectly with the mouse wheel */
+            transition: none !important;
+        }
+
+        /* 
+           MOBILE OPTIMIZATION (Graceful Fallback)
+           Fixed backgrounds are notoriously buggy on iOS (iPhone/iPad).
+           We reset the background to scroll normally and disable the JS effect
+           to ensure a premium, glitch-free experience on mobile devices.
+        */
+        @media (max-width: 768px) {
+            .hero-section::before {
+                background-attachment: scroll !important;
+                transform: none !important;
+                height: 100% !important;
+                top: 0 !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <header class="navbar">
@@ -51,10 +114,10 @@
     <main>
         <section class="hero-section">
             <div class="hero-content">
-                <span class="hero-subtitle">ከሺህ ዓመታት ጥበብ የተቀዳ የዛሬው ብርሃን</span>
-                <h1>ለጸሎት፣ ለምስጋናና ለንስሐ የሚሆኑ ጥራት ያላቸው በገናዎች፣ ክራሮችና መሰንቆዎችን ከእኛ ዘንድ ያገኛሉ ።</h1>
-                <p>ሕያው የታሪክ መዝገብ እና የኢትዮጵያ ባህላዊ አውታሮች መገኛ። ጥንታዊ ጥበብን ጠብቀን በማቆየት፣ እውነተኛ ግብዓቶችን ተጠቅመን የዜማ መሣሪያዎችን እናዘጋጃለን፤ የኢትዮጵያን ጥልቅ የነፍስ ዜማም ለዓለም እናካፍላለን።</p>
-                <a href="products.html" style="text-decoration:none;"><button class="btn-primary">መሣሪያዎቹን ይመልከቱ <span>&rarr;</span></button></a>
+                <span class="hero-subtitle animate-fade">ከሺህ ዓመታት ጥበብ የተቀዳ የዛሬው ብርሃን</span>
+                <h1 class="animate-bottom">ለጸሎት፣ ለምስጋናና ለንስሐ የሚሆኑ ጥራት ያላቸው በገናዎች፣ ክራሮችና መሰንቆዎችን ከእኛ ዘንድ ያገኛሉ ።</h1>
+                <p class="animate-bottom">ሕያው የታሪክ መዝገብ እና የኢትዮጵያ ባህላዊ አውታሮች መገኛ። ጥንታዊ ጥበብን ጠብቀን በማቆየት፣ እውነተኛ ግብዓቶችን ተጠቅመን የዜማ መሣሪያዎችን እናዘጋጃለን፤ የኢትዮጵያን ጥልቅ የነፍስ ዜማም ለዓለም እናካፍላለን።</p>
+                <a href="products.html" style="text-decoration:none;"><button class="btn-primary animate-scale">መሣሪያዎቹን ይመልከቱ <span>&rarr;</span></button></a>
             </div>
         </section>
 
@@ -62,50 +125,50 @@
         <!-- Top Rated Section -->
         <section class="rated-section">
             <div class="section-header reveal" style="text-align: center; margin-bottom: 5rem;">
-                <span class="hero-subtitle">CUSTOMER FAVORITES</span>
-                <h2 style="font-family: 'Benaiah', sans-serif; font-size: 3rem; margin-top: 1rem;">ምንጊዜም ተመራጭ መሣሪያዎች</h2>
-                <p style="color: #6a6e6b; max-width: 600px; margin: 1rem auto;">The most loved instruments in our collection, curated based on depth of sound and artisan quality.</p>
+                <span class="hero-subtitle animate-fade">CUSTOMER FAVORITES</span>
+                <h2 class="animate-bottom" style="font-family: 'Benaiah', sans-serif; font-size: 3rem; margin-top: 1rem;">ምንጊዜም ተመራጭ መሣሪያዎች</h2>
+                <p class="animate-bottom" style="color: #6a6e6b; max-width: 600px; margin: 1rem auto;">The most loved instruments in our collection, curated based on depth of sound and artisan quality.</p>
             </div>
 
             <div class="product-grid rated-product-grid">
                 <!-- Product 1 -->
-                <div class="rated-card reveal" style="text-align: center;">
+                <div class="rated-card reveal animate-left" style="text-align: center;">
                     <div class="artisan-photo-wrap wood-shimmer" style="height: 350px; background: var(--parchment); border-radius: 12px; margin-bottom: 1.5rem;">
-                        <img src="image/photo_2025-10-01_07-26-53.jpg" alt="Begena" style="max-height: 100%; width: auto; object-fit: contain; padding: 2rem;">
+                        <img src="image/photo_2025-10-01_07-26-53.jpg" alt="Begena" class="animate-fade" style="max-height: 100%; width: auto; object-fit: contain; padding: 2rem;">
                     </div>
                     <div class="stars" style="color: #d4af37; font-size: 1.2rem; margin-bottom: 0.5rem; letter-spacing: 2px;">★★★★★</div>
-                    <h3 style="font-family: 'Benaiah', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem;">በገና (Begena)</h3>
+                    <h3 class="animate-bottom" style="font-family: 'Benaiah', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem;">በገና (Begena)</h3>
                     <p style="color: #6a6e6b; font-size: 0.95rem; margin-bottom: 1rem;">Expertly carved Wanza wood with premium bull hide.</p>
                     <span class="dynamic-price" data-usd="100" style="font-weight: 700; font-size: 1.2rem; color: var(--dark-green);">ETB 12,000</span>
-                    <a href="#" class="whatsapp-btn" data-product-name="በገና (Begena)" data-product-price="100">
+                    <a href="#" class="whatsapp-btn animate-scale" data-product-name="በገና (Begena)" data-product-price="100">
                         Order via WhatsApp
                     </a>
                 </div>
 
                 <!-- Product 2 -->
-                <div class="rated-card reveal" style="text-align: center; transition-delay: 0.1s;">
+                <div class="rated-card reveal animate-left" style="text-align: center; transition-delay: 0.1s;">
                     <div class="artisan-photo-wrap wood-shimmer" style="height: 350px; background: var(--parchment); border-radius: 12px; margin-bottom: 1.5rem;">
-                        <img src="image/photo_2025-02-27_17-33-38.jpg" alt="Krar" style="max-height: 100%; width: auto; object-fit: contain; padding: 2rem;">
+                        <img src="image/photo_2025-02-27_17-33-38.jpg" alt="Krar" class="animate-fade" style="max-height: 100%; width: auto; object-fit: contain; padding: 2rem;">
                     </div>
                     <div class="stars" style="color: #d4af37; font-size: 1.2rem; margin-bottom: 0.5rem; letter-spacing: 2px;">★★★★★</div>
-                    <h3 style="font-family: 'Benaiah', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem;">ክራር (Kirar)</h3>
+                    <h3 class="animate-bottom" style="font-family: 'Benaiah', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem;">ክራር (Kirar)</h3>
                     <p style="color: #6a6e6b; font-size: 0.95rem; margin-bottom: 1rem;">Warm resonance with authentic horse-hair strings.</p>
                     <span class="dynamic-price" data-usd="70.83" style="font-weight: 700; font-size: 1.2rem; color: var(--dark-green);">ETB 8,500</span>
-                    <a href="#" class="whatsapp-btn" data-product-name="ክራር (Kirar)" data-product-price="70.83">
+                    <a href="#" class="whatsapp-btn animate-scale" data-product-name="ክራር (Kirar)" data-product-price="70.83">
                         Order via WhatsApp
                     </a>
                 </div>
 
                 <!-- Product 3 -->
-                <div class="rated-card reveal wood-shimmer" style="text-align: center; transition-delay: 0.2s;">
+                <div class="rated-card reveal wood-shimmer animate-left" style="text-align: center; transition-delay: 0.2s;">
                     <div class="artisan-photo-wrap" style="height: 350px; background: var(--parchment); border-radius: 12px; margin-bottom: 1.5rem;">
-                        <img src="image/photo_2025-02-24_22-03-09.jpg" alt="Masinko" style="max-height: 100%; width: auto; object-fit: contain; padding: 2rem;">
+                        <img src="image/photo_2025-02-24_22-03-09.jpg" alt="Masinko" class="animate-fade" style="max-height: 100%; width: auto; object-fit: contain; padding: 2rem;">
                     </div>
                     <div class="stars" style="color: #d4af37; font-size: 1.2rem; margin-bottom: 0.5rem; letter-spacing: 2px;">★★★★★</div>
-                    <h3 style="font-family: 'Benaiah', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem;">ማሲንቆ (Masinko)</h3>
+                    <h3 class="animate-bottom" style="font-family: 'Benaiah', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem;">ማሲንቆ (Masinko)</h3>
                     <p style="color: #6a6e6b; font-size: 0.95rem; margin-bottom: 1rem;">Hand-crafted one-string fiddle for soulful melodies.</p>
                     <span class="dynamic-price" data-usd="58.33" style="font-weight: 700; font-size: 1.2rem; color: var(--dark-green);">ETB 7,000</span>
-                    <a href="#" class="whatsapp-btn" data-product-name="ማሲንቆ (Masinko)" data-product-price="58.33">
+                    <a href="#" class="whatsapp-btn animate-scale" data-product-name="ማሲንቆ (Masinko)" data-product-price="58.33">
                         Order via WhatsApp
                     </a>
                 </div>
@@ -115,9 +178,9 @@
         <!-- Customer Testimonials Section -->
         <section class="testimonials-section">
             <div class="testimonials-header reveal">
-                <span class="section-subtitle">WHAT OUR CUSTOMERS SAY</span>
-                <h2>ደንበኞቻችን ምን ይላሉ?</h2>
-                <p>Trusted by musicians, churches, and cultural institutions across Ethiopia.</p>
+                <span class="section-subtitle animate-fade">WHAT OUR CUSTOMERS SAY</span>
+                <h2 class="animate-bottom">ደንበኞቻችን ምን ይላሉ?</h2>
+                <p class="animate-bottom">Trusted by musicians, churches, and cultural institutions across Ethiopia.</p>
             </div>
 
             <div class="testimonials-slider-wrapper">
@@ -126,13 +189,13 @@
                 <div class="testimonials-slider-container">
                     <div class="testimonials-track">
                         <!-- Testimonial 1 -->
-                        <div class="testimonial-card">
+                        <div class="testimonial-card animate-right">
                             <div class="testimonial-quote">"</div>
                             <div class="testimonial-stars">★★★★★</div>
                             <p class="testimonial-text">በገናው በጣም ጥራት ያለውና ድምጹ ልዩ ነው። ለቤተ ክርስቲያናችን ትልቅ በረከት ሆኗል። እግዚአብሔር ይባርካቸው!</p>
                             <p class="testimonial-text-en">"The Begena has exceptional quality and a unique sound. It has been a great blessing for our church. God bless them!"</p>
                             <div class="testimonial-author">
-                                <div class="author-avatar">ዘ</div>
+                                <div class="author-avatar animate-scale">ዘ</div>
                                 <div class="author-info">
                                     <strong>ዘማሪ ተስፋዬ ወርቁ</strong>
                                     <span>በገና (Begena)</span>
@@ -141,13 +204,13 @@
                         </div>
 
                         <!-- Testimonial 2 -->
-                        <div class="testimonial-card">
+                        <div class="testimonial-card animate-right">
                             <div class="testimonial-quote">"</div>
                             <div class="testimonial-stars">★★★★★</div>
                             <p class="testimonial-text">ክራሩን ስገዛ ትክክለኛ ምርጫ ማድረጌን ተረድቻለሁ። ድምጹ ንጹሕና ለስላሳ ነው፣ ማድረስም ነጻ ነበር!</p>
                             <p class="testimonial-text-en">"I knew I made the right choice when I got the Krar. The sound is pure and smooth — and delivery was free!"</p>
                             <div class="testimonial-author">
-                                <div class="author-avatar">ሰ</div>
+                                <div class="author-avatar animate-scale">ሰ</div>
                                 <div class="author-info">
                                     <strong>ሰላማዊት አበበ</strong>
                                     <span>ክራር (Kirar)</span>
@@ -156,13 +219,13 @@
                         </div>
 
                         <!-- Testimonial 3 -->
-                        <div class="testimonial-card">
+                        <div class="testimonial-card animate-right">
                             <div class="testimonial-quote">"</div>
                             <div class="testimonial-stars">★★★★★</div>
                             <p class="testimonial-text">መሰንቆውን ለትምህርት ቤት ፕሮግራም ገዛሁ። ልጆቹ ባሕላቸውን እንዲማሩ ትልቅ እገዛ ሆኗል። አመሰግናለሁ!</p>
                             <p class="testimonial-text-en">"Bought the Masinko for a school program. It has been a great help for kids to learn their culture. Thank you!"</p>
                             <div class="testimonial-author">
-                                <div class="author-avatar">ዳ</div>
+                                <div class="author-avatar animate-scale">ዳ</div>
                                 <div class="author-info">
                                     <strong>ዳንኤል ገብረ ማሪያም</strong>
                                     <span>ማሲንቆ (Masinko)</span>
@@ -171,13 +234,13 @@
                         </div>
 
                         <!-- Testimonial 4 -->
-                        <div class="testimonial-card">
+                        <div class="testimonial-card animate-right">
                             <div class="testimonial-quote">"</div>
                             <div class="testimonial-stars">★★★★☆</div>
                             <p class="testimonial-text">ለልጄ ባህላዊ ሙዚቃ እንዲማር ክራር አዝዤለት ነበር። ጥራቱ እጅግ በጣም ጥሩ ነው - ገመዶቹ ለስላሳ ናቸው ድምጹም ጥልቅ እና እውነተኛ። ዓሚኤል በገናን በጣም እመክራለሁ።</p>
                             <p class="testimonial-text-en">"I ordered a Krar for my son who is learning traditional music. The quality is exceptional — the strings are smooth and the sound is rich and authentic. Delivery was fast and the packaging was very careful. Highly recommend Amiele Begena."</p>
                             <div class="testimonial-author">
-                                <div class="author-avatar">ዳ</div>
+                                <div class="author-avatar animate-scale">ዳ</div>
                                 <div class="author-info">
                                     <strong>ዳዊት ኃይሌ (Dawit Haile)</strong>
                                     <span>ክራር (Krar)</span>
@@ -186,13 +249,13 @@
                         </div>
 
                         <!-- Testimonial 5 -->
-                        <div class="testimonial-card">
+                        <div class="testimonial-card animate-right">
                             <div class="testimonial-quote">"</div>
                             <div class="testimonial-stars">★★★★★</div>
                             <p class="testimonial-text">ከፍተኛ ጥራት ያለው በገና ለዓመታት ስፈልግ ነበር። ዓሚኤል በገና ከጠበኩት በላይ ሆኖ አግኝቼዋለሁ - የእጅ ሥራው ውብ ነው ፣ ድምጹም ጥልቅ መንፈሳዊ እና ኃይለኛ ነው። በእያንዳንዱ ገመድ ውስጥ ባህሉን ሊሰማዎት ይችላል። ባለቤቱ በዋትስአፕ በጣም ረዳት እና ምላሽ ሰጪ ነበር። ኦሪጅናል የኢትዮጵያ የሙዚቃ መሣሪያዎችን ለመግዛት በአዲስ አበባ ውስጥ ይህ ምርጡ ቦታ ነው። እጅግ አመሰግናለሁ!</p>
                             <p class="testimonial-text-en">"I have been searching for a high quality Begena for years. Amiele Begena exceeded all my expectations — the craftsmanship is beautiful, the sound is deeply spiritual and powerful. You can feel the tradition in every string. The owner was very helpful and responsive on WhatsApp. This is the best place in Addis to buy authentic Ethiopian instruments. እጅግ አመሰግናለሁ!"</p>
                             <div class="testimonial-author">
-                                <div class="author-avatar">ሰ</div>
+                                <div class="author-avatar animate-scale">ሰ</div>
                                 <div class="author-info">
                                     <strong>ሰላም ታደሰ (Selam Tadesse)</strong>
                                     <span>በገና (Begena)</span>
@@ -201,13 +264,13 @@
                         </div>
 
                         <!-- Testimonial 6 -->
-                        <div class="testimonial-card">
+                        <div class="testimonial-card animate-right">
                             <div class="testimonial-quote">"</div>
                             <div class="testimonial-stars">★★★★☆</div>
                             <p class="testimonial-text">ከበሮው በጣም ጥሩ ነው። ድምፁ ትክክለኛ እና ጠንካራ ነው።</p>
                             <p class="testimonial-text-en">"The Kebero I received was beautifully crafted with genuine hide. Perfect for our cultural celebrations. I will definitely order again from Amiele Begena!"</p>
                             <div class="testimonial-author">
-                                <div class="author-avatar">ቢ</div>
+                                <div class="author-avatar animate-scale">ቢ</div>
                                 <div class="author-info">
                                     <strong>ብሩክ ተስፋዬ (Biruk Tesfaye)</strong>
                                     <span>ከበሮ (Kebero)</span>
@@ -250,8 +313,8 @@
                 <!-- Review Form -->
                 <div class="review-form-wrapper">
                     <div class="form-header">
-                        <h2>Share Your Experience / ልምድዎን ያጋሩ</h2>
-                        <p>Your feedback helps us preserve Ethiopian musical heritage. Submit via WhatsApp.</p>
+                        <h2 class="animate-bottom">Share Your Experience / ልምድዎን ያጋሩ</h2>
+                        <p class="animate-bottom">Your feedback helps us preserve Ethiopian musical heritage. Submit via WhatsApp.</p>
                     </div>
                     
                     <form id="customer-review-form" class="review-form">
@@ -292,7 +355,7 @@
                             <textarea id="review-message" name="message" rows="4" placeholder="Tell us about your experience..." required></textarea>
                         </div>
 
-                        <button type="submit" class="submit-review-btn">
+                        <button type="submit" class="submit-review-btn animate-scale">
                             <span>Send Review</span>
                             <i class="fa-brands fa-whatsapp"></i>
                         </button>
@@ -355,6 +418,8 @@
 
 
     <script src="whatsapp-widget.js"></script>
+    <script src="parallax.js"></script>
+    <script src="scroll-animations.js" defer></script>
     <script src="script.js"></script>
 </body>
 </html>

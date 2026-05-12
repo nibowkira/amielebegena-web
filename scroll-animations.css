@@ -1,0 +1,89 @@
+/* 
+   SCROLL ANIMATIONS SYSTEM 
+   This file contains the initial states and transition rules for our animations.
+   We use CSS transitions for hardware-accelerated performance.
+*/
+
+/* 1. FADE IN FROM BOTTOM (Titles) */
+.animate-bottom {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s cubic-bezier(0.2, 0.6, 0.3, 1), 
+                transform 0.6s cubic-bezier(0.2, 0.6, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+/* 2. FADE IN FROM LEFT (Product Cards) */
+.animate-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity 0.6s cubic-bezier(0.2, 0.6, 0.3, 1), 
+                transform 0.6s cubic-bezier(0.2, 0.6, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+/* 3. FADE IN FROM RIGHT (Reviews) */
+.animate-right {
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.6s cubic-bezier(0.2, 0.6, 0.3, 1), 
+                transform 0.6s cubic-bezier(0.2, 0.6, 0.3, 1);
+    will-change: opacity, transform;
+}
+
+/* 4. FADE IN (Images) */
+.animate-fade {
+    opacity: 0;
+    transition: opacity 0.8s ease-out;
+    will-change: opacity;
+}
+
+/* 5. SCALE UP (Buttons & Icons) */
+.animate-scale {
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: opacity, transform;
+}
+
+/* THE TRIGGER CLASS (Added by JS when visible) */
+.show-animation {
+    opacity: 1 !important;
+    transform: translate(0, 0) scale(1) !important;
+}
+
+/* Ensure animations only happen once by removing transitions after they complete 
+   or just keeping the state. The instructions say trigger ONCE. */
+
+/* Performance optimization: Avoid layout thrashing */
+.animate-bottom, .animate-left, .animate-right, .animate-scale {
+    backface-visibility: hidden;
+}
+
+/* 📱 MOBILE OPTIMIZATION
+   On smaller screens, we reduce the translation distance to avoid 
+   horizontal scrollbar issues and make the movement feel more natural.
+*/
+@media (max-width: 768px) {
+    .animate-bottom {
+        transform: translateY(20px);
+    }
+    
+    .animate-left {
+        transform: translateX(-20px);
+    }
+    
+    .animate-right {
+        transform: translateX(20px);
+    }
+
+    .animate-scale {
+        transform: scale(0.9);
+    }
+    
+    /* Slightly faster transitions on mobile for snappiness */
+    .animate-bottom, .animate-left, .animate-right, .animate-scale {
+        transition-duration: 0.5s;
+    }
+}

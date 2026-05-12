@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="scroll-animations.css">
     <style>
         .shipping-page {
             background-color: var(--parchment);
@@ -117,7 +118,7 @@
 
     <main>
         <section class="hero-section">
-            <h1>
+            <h1 class="animate-bottom">
                 <span class="amharic-content">አሸሻግና አቅርቦት</span>
                 <span class="english-content">Shipping & Delivery</span>
             </h1>
@@ -130,7 +131,7 @@
         <section class="shipping-container">
             <!-- 1. LOCAL DELIVERY -->
             <div class="info-block">
-                <h2>
+                <h2 class="animate-bottom">
                     <span class="amharic-content">አዲስ አበባ ውስጥ ያሉ አቅርቦቶች</span>
                     <span class="english-content">Local Delivery (Inside Addis Ababa)</span>
                 </h2>
@@ -146,7 +147,7 @@
                     <strong><span class="amharic-content">ዋጋ፦</span><span class="english-content">Cost:</span></strong> 
                     <span class="amharic-content">እንደየአካባቢው ርቀት ይለያያል።</span><span class="english-content">Depends on your specific location within the city.</span>
                 </p>
-                <a href="https://wa.me/251969189470?text=Hi,%20I'd%20like%20to%20know%20the%20delivery%20cost%20to%20my%20location." class="whatsapp-btn">
+                <a href="https://wa.me/251969189470?text=Hi,%20I'd%20like%20to%20know%20the%20delivery%20cost%20to%20my%20location." class="whatsapp-btn animate-scale">
                     <span class="amharic-content">💬 ለዋጋ መረጃ ያግኙን</span>
                     <span class="english-content">💬 Contact for Delivery Quote</span>
                 </a>
@@ -154,7 +155,7 @@
 
             <!-- 2. DOMESTIC SHIPPING -->
             <div class="info-block">
-                <h2>
+                <h2 class="animate-bottom">
                     <span class="amharic-content">ወደ ሌሎች የኢትዮጵያ ከተሞች</span>
                     <span class="english-content">Domestic Shipping (Other Ethiopian Cities)</span>
                 </h2>
@@ -172,7 +173,7 @@
 
             <!-- 3. INTERNATIONAL SHIPPING -->
             <div class="info-block">
-                <h2>
+                <h2 class="animate-bottom">
                     <span class="amharic-content">ዓለም አቀፍ አሸሻግ</span>
                     <span class="english-content">International Shipping</span>
                 </h2>
@@ -188,7 +189,7 @@
                     <strong><span class="amharic-content">የመድረሻ ጊዜ፦</span><span class="english-content">Delivery Time:</span></strong> 
                     <span class="amharic-content">እንደ አገሩና እንደመረጡት አገልግሎት ይለያያል።</span><span class="english-content">Varies by destination country and chosen service.</span>
                 </p>
-                <a href="https://wa.me/251969189470?text=Hi,%20I'd%20like%20an%20international%20shipping%20quote%20to%20[COUNTRY]." class="whatsapp-btn">
+                <a href="https://wa.me/251969189470?text=Hi,%20I'd%20like%20an%20international%20shipping%20quote%20to%20[COUNTRY]." class="whatsapp-btn animate-scale">
                     <span class="amharic-content">🌍 ዓለም አቀፍ ዋጋ ለመጠየቅ</span>
                     <span class="english-content">🌍 Request Worldwide Quote</span>
                 </a>
@@ -196,7 +197,7 @@
 
             <!-- 4. PACKAGING -->
             <div class="info-block">
-                <h2>
+                <h2 class="animate-bottom">
                     <span class="amharic-content">የአሸሻግ ጥራታችን</span>
                     <span class="english-content">Our Packaging Standards</span>
                 </h2>
@@ -214,7 +215,7 @@
 
             <!-- 5. CONTACT -->
             <div class="info-block" style="margin-bottom: 0;">
-                <h2>
+                <h2 class="animate-bottom">
                     <span class="amharic-content">ጥያቄ ካለዎት ያግኙን</span>
                     <span class="english-content">Questions? Contact Us</span>
                 </h2>
@@ -222,7 +223,7 @@
                     <div>
                         <p><strong>WhatsApp:</strong> +251 969 189 470</p>
                         <p><strong>Phone:</strong> 0964261817 / 0969189470</p>
-                        <a href="https://wa.me/251969189470?text=Hi,%20I%20have%20a%20question%20about%20shipping." class="whatsapp-btn">
+                        <a href="https://wa.me/251969189470?text=Hi,%20I%20have%20a%20question%20about%20shipping." class="whatsapp-btn animate-scale">
                             <span class="amharic-content">💬 በዋትስአፕ ያግኙን</span>
                             <span class="english-content">💬 Message on WhatsApp</span>
                         </a>
@@ -287,6 +288,7 @@
 
     <script src="whatsapp-widget.js"></script>
     <script src="language-toggle.js"></script>
+    <script src="scroll-animations.js" defer></script>
     <script src="script.js"></script>
 </body>
 </html>

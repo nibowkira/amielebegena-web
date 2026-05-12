@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="scroll-animations.css">
     <style>
         .contact-page {
             background-color: var(--parchment);
@@ -206,7 +207,7 @@
 
     <main>
         <section class="contact-hero">
-            <h1>
+            <h1 class="animate-bottom">
                 <span class="amharic-content">ያግኙን</span>
                 <span class="english-content">Contact Us</span>
             </h1>
@@ -223,12 +224,12 @@
                     <i class="fas fa-clock"></i> OPEN 24/7 • ዓመቱን ሙሉ ክፍት ነን
                 </div>
 
-                <a href="https://wa.me/251969189470?text=Hi,%20I%20want%20to%20know%20more%20about%20your%20instruments" class="big-wa-btn" target="_blank">
+                <a href="https://wa.me/251969189470?text=Hi,%20I%20want%20to%20know%20more%20about%20your%20instruments" class="big-wa-btn animate-scale" target="_blank">
                     <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
                 </a>
 
                 <div class="info-group">
-                    <h3>Phone Numbers</h3>
+                    <h3 class="animate-bottom">Phone Numbers</h3>
                     <a href="tel:0964261817"><i class="fas fa-phone"></i> 0964261817</a>
                     <a href="tel:0969189470"><i class="fas fa-phone"></i> 0969189470</a>
                 </div>
@@ -260,7 +261,7 @@
             <!-- Right Side: Form -->
             <div class="contact-form-panel">
                 <div class="contact-form">
-                    <h2>Send a Message</h2>
+                    <h2 class="animate-bottom">Send a Message</h2>
                     <div class="form-group">
                         <label>Full Name</label>
                         <input type="text" id="contact-name" class="contact-input" placeholder="Your Name">
@@ -273,7 +274,7 @@
                         <label>Your Message</label>
                         <textarea id="contact-message" class="contact-input contact-textarea" placeholder="How can we help you?"></textarea>
                     </div>
-                    <button type="button" class="submit-btn" onclick="sendToWhatsApp()">
+                    <button type="button" class="submit-btn animate-scale" onclick="sendToWhatsApp()">
                         <i class="fa-brands fa-whatsapp"></i> SEND VIA WHATSAPP
                     </button>
                     <p style="font-family: 'Benaiah', sans-serif; font-size: 1rem; color: #555; margin-top: 1rem; text-align: center;">
@@ -352,6 +353,7 @@
             window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
         }
     </script>
+    <script src="scroll-animations.js" defer></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -217,29 +217,29 @@ function renderProducts(category) {
     filtered.forEach((product, index) => {
         const isSaved = localStorage.getItem('saved_' + product.id) === 'true';
         const card = document.createElement('div');
-        card.className = 'product-card reveal';
+        card.className = 'product-card reveal animate-left';
         card.style.transitionDelay = `${(index % 4) * 0.1}s`; // Staggered entrance
         card.innerHTML = `
             <div class="product-image-wrap artisan-photo-wrap wood-shimmer">
 
-                <button class="save-item-btn ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave(${product.id}, this)">
+                <button class="save-item-btn animate-scale ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave(${product.id}, this)">
                     ${isSaved ? '♥' : '♡'}
                 </button>
-                <img src="${product.image}" alt="${product.name}">
+                <img src="${product.image}" alt="${product.name}" class="animate-fade">
             </div>
             <div class="product-info">
                 <div class="product-info-row">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <span class="product-title">${product.name}</span>
                         ${product.aboutId ? `<a href="about.html#${product.aboutId}" class="details-link" title="View Details">Details</a>` : ''}
-                        ${product.audio ? `<button class="audio-btn" onclick="playAudio('${product.audio}', this)" title="Play Audio Preview">▶</button>` : ''}
+                        ${product.audio ? `<button class="audio-btn animate-scale" onclick="playAudio('${product.audio}', this)" title="Play Audio Preview">▶</button>` : ''}
                     </div>
                     <span class="product-price">${formatPrice(product.price)}</span>
                 </div>
                 <div class="product-info-row">
 
-                    <button class="add-to-cart-btn" onclick="addToCart(${product.id})">ADD TO CART</button>
-                    <a href="${getWhatsAppUrl(product.name, product.price)}" target="_blank" class="whatsapp-btn">
+                    <button class="add-to-cart-btn animate-scale" onclick="addToCart(${product.id})">ADD TO CART</button>
+                    <a href="${getWhatsAppUrl(product.name, product.price)}" target="_blank" class="whatsapp-btn animate-scale">
                         ${whatsappIcon} Order via WhatsApp
                     </a>
                 </div>

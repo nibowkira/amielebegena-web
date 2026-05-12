@@ -11,6 +11,7 @@
     <!-- Existing language toggle script -->
     <script src="language-toggle.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="scroll-animations.css">
     <style>
         .privacy-page {
             background-color: var(--parchment);
@@ -208,7 +209,7 @@
     <main>
         <!-- Language toggle injected by language-toggle.js – no manual markup needed -->
         <section class="privacy-hero">
-            <h1>
+            <h1 class="animate-bottom">
                 <span class="english-content">Privacy Policy</span>
                 <span class="amharic-content">የግል መረጃ ፖሊሲ</span>
             </h1>
@@ -220,18 +221,18 @@
         <section class="privacy-content">
             <!-- English version – visible by default -->
             <div class="english-content">
-                <h1>Privacy Policy</h1>
-                <h2>1. Introduction</h2>
+                <h1 class="animate-bottom">Privacy Policy</h1>
+                <h2 class="animate-bottom">1. Introduction</h2>
                 <p>Amiele Begena is committed to protecting your privacy. This policy explains what information we collect and how we use it.</p>
                 <p>Location: Mexico Square, Addis Ababa, Ethiopia</p>
                 <p>Contact: <a href="mailto:amielebegena@gmail.com">amielebegena@gmail.com</a></p>
-                <h2>2. Information We Collect</h2>
+                <h2 class="animate-bottom">2. Information We Collect</h2>
                 <ul>
                     <li>Name, phone number, email when you contact us</li>
                     <li>WhatsApp messages when you place an order</li>
                     <li>No payment information is stored on our website</li>
                 </ul>
-                <h2>3. How We Use Your Information</h2>
+                <h2 class="animate-bottom">3. How We Use Your Information</h2>
                 <ul>
                     <li>To process and deliver your order</li>
                     <li>To respond to your questions and inquiries</li>
@@ -240,22 +241,22 @@
                 </ul>
                 <h2>4. Cookies</h2>
                 <p>Our website uses minimal cookies for basic functionality only. We do not use tracking or advertising cookies.</p>
-                <h2>5. Third Party Services</h2>
+                <h2 class="animate-bottom">5. Third Party Services</h2>
                 <ul>
                     <li>We use Vercel for website hosting</li>
                     <li>We use WhatsApp for order communication</li>
                     <li>We use Chapa/Telebirr for payments (coming soon)</li>
                 </ul>
-                <h2>6. Your Rights</h2>
+                <h2 class="animate-bottom">6. Your Rights</h2>
                 <ul>
                     <li>You can request to see your personal data</li>
                     <li>You can request we delete your data</li>
                     <li>Contact us at: <a href="mailto:amielebegena@gmail.com">amielebegena@gmail.com</a></li>
                 </ul>
-                <h2>7. Changes to This Policy</h2>
+                <h2 class="animate-bottom">7. Changes to This Policy</h2>
                 <p>We may update this policy from time to time.</p>
                 <p>Last updated: May 2026</p>
-                <h2>8. Contact Us</h2>
+                <h2 class="animate-bottom">8. Contact Us</h2>
                 <ul>
                     <li>Email: <a href="mailto:amielebegena@gmail.com">amielebegena@gmail.com</a></li>
                     <li>Phone: 0964261817 / 0969189470</li>
@@ -361,6 +362,7 @@
     </footer>
     <!-- Existing scripts – keep order for proper loading -->
     <script src="whatsapp-widget.js"></script>
+    <script src="scroll-animations.js" defer></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="scroll-animations.css">
 </head>
 <body>
     <header class="navbar">
@@ -51,9 +52,9 @@
     <main style="padding-top: 0;">
         <section class="apothecary-section" id="catalog">
             <div class="section-header">
-                <span class="section-subtitle">ALL ITEMS</span>
+                <span class="section-subtitle animate-fade">ALL ITEMS</span>
                 <div class="section-header-row">
-                    <h2>Our Products</h2>
+                    <h2 class="animate-bottom">Our Products</h2>
                     <div class="sort-by">
                         Sort by: <select class="sort-select" id="sortSelect" onchange="handleSort()"><option value="newest">Newest Arrivals</option><option value="alpha">Alphabetical (A-Z)</option></select>
                     </div>
@@ -152,6 +153,7 @@
     </footer>
 
     <script src="whatsapp-widget.js"></script>
+    <script src="scroll-animations.js" defer></script>
     <script src="script.js"></script>
 </body>
 
