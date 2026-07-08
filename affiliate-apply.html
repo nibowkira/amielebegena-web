@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HWVNQZSCYP"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-HWVNQZSCYP');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Affiliate Program - Amiele Begena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="affiliate-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="aff-landing-wrapper">
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="index.html" style="text-decoration:none;"><span class="logo">ዓሚኤል በገና</span></a>
+        </div>
+        <nav class="nav-center" id="main-nav">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="about.html">About Our Products</a>
+            <a href="about-us.html">About Us</a>
+        </nav>
+        <div class="nav-right">
+            <select class="currency-switcher" onchange="changeCurrency(this.value)">
+                <option value="ETB">ETB</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+            </select>
+
+            <button id="cart-button" class="icon-btn">
+                🛒
+                <span class="cart-count">0</span>
+            </button>
+            <a href="account.html" class="icon-btn" style="text-decoration:none;">👤</a>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    <main class="auth-page-wrapper" style="min-height: 80vh; padding-top: 6rem; padding-bottom: 6rem;">
+        <!-- Application status / Form Card -->
+        <div class="auth-card" style="max-width: 650px; width: 100%;">
+            <div id="loading-state" style="text-align: center; padding: 2rem;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--aff-primary);"></i>
+                <p style="margin-top: 1rem; color: var(--aff-text-muted);">Verifying credentials...</p>
+            </div>
+
+            <!-- Form to apply -->
+            <div id="apply-form-section" class="hidden">
+                <h2 style="font-family: 'Benaiah', sans-serif; font-size: 2rem; margin-bottom: 0.5rem; text-align: center; color: var(--aff-primary);">Partnership Application</h2>
+                <p style="text-align: center; color: var(--aff-text-muted); margin-bottom: 2.5rem; font-size: 0.95rem;">Tell us about yourself and how you plan to share the resonance of traditional strings.</p>
+                
+                <form id="affiliate-apply-form" class="aff-form" style="max-width: 100%;">
+                    <div class="form-row">
+                        <div class="aff-form-group">
+                            <label for="app-fullname">Full Name *</label>
+                            <input type="text" id="app-fullname" class="aff-input" required placeholder="Dawit Yohannes">
+                        </div>
+                        <div class="aff-form-group">
+                            <label for="app-phone">Phone Number *</label>
+                            <input type="tel" id="app-phone" class="aff-input" required placeholder="+251911223344">
+                        </div>
+                    </div>
+
+                    <div class="aff-form-group">
+                        <label for="app-country">Country *</label>
+                        <select id="app-country" class="aff-select" required>
+                            <option value="" disabled selected>Select country</option>
+                            <option value="Ethiopia">Ethiopia</option>
+                            <option value="United States">United States</option>
+                            <option value="United Kingdom">United Kingdom</option>
+                            <option value="Germany">Germany</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="aff-form-group">
+                        <label>Social Channels (Optional)</label>
+                        <p style="font-size: 0.75rem; color: var(--aff-text-muted); margin-bottom: 0.5rem;">Provide links to platforms where you plan to promote Amiele.</p>
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                            <div style="display: flex; align-items: center; gap: 0.8rem; background: var(--aff-bg); border-radius: 8px; padding-left: 1rem; border: 1px solid var(--aff-card-border);">
+                                <i class="fab fa-instagram" style="color: #e1306c;"></i>
+                                <input type="url" id="app-insta" class="aff-input" style="background: transparent; border: none; flex: 1; padding: 0.8rem;" placeholder="Instagram Profile Link">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.8rem; background: var(--aff-bg); border-radius: 8px; padding-left: 1rem; border: 1px solid var(--aff-card-border);">
+                                <i class="fab fa-tiktok" style="color: #000;"></i>
+                                <input type="url" id="app-tiktok" class="aff-input" style="background: transparent; border: none; flex: 1; padding: 0.8rem;" placeholder="TikTok Profile Link">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.8rem; background: var(--aff-bg); border-radius: 8px; padding-left: 1rem; border: 1px solid var(--aff-card-border);">
+                                <i class="fab fa-youtube" style="color: #ff0000;"></i>
+                                <input type="url" id="app-youtube" class="aff-input" style="background: transparent; border: none; flex: 1; padding: 0.8rem;" placeholder="YouTube Channel Link">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="aff-form-group">
+                        <label for="app-why">Why do you want to join our affiliate program? *</label>
+                        <textarea id="app-why" class="aff-textarea" rows="4" required placeholder="Describe your audience and how you intend to promote traditional instruments..."></textarea>
+                    </div>
+
+                    <div class="aff-form-group" style="flex-direction: row; align-items: flex-start; gap: 0.8rem; margin-top: 0.5rem;">
+                        <input type="checkbox" id="app-terms" required style="margin-top: 0.2rem; cursor: pointer;">
+                        <label for="app-terms" style="text-transform: none; font-weight: normal; cursor: pointer;">I agree to the <a href="terms-of-archive.html" target="_blank" style="color: var(--aff-primary); font-weight: 600;">Partnership Terms</a> and warrant that I will represent the heritage brand with absolute integrity.</label>
+                    </div>
+
+                    <div id="apply-feedback" class="form-feedback hidden"></div>
+
+                    <button type="submit" class="aff-btn" style="margin-top: 1rem; font-family: 'Benaiah', sans-serif;">Submit Application</button>
+                </form>
+            </div>
+
+            <!-- Application status details (Pending, Approved, Rejected) -->
+            <div id="status-section" class="hidden" style="text-align: center; padding: 1.5rem;">
+                <div id="status-icon-container" style="font-size: 4rem; margin-bottom: 1.5rem;"></div>
+                <h2 id="status-title" style="font-family: 'Benaiah', sans-serif; font-size: 2rem; margin-bottom: 1rem; color: var(--aff-primary);"></h2>
+                <p id="status-desc" style="color: var(--aff-text-muted); line-height: 1.6; margin-bottom: 2.5rem; font-size: 1rem;"></p>
+                
+                <div id="status-actions"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <h3>ዓሚኤል በገና</h3>
+                <p>Preserving the soulful resonance and historical craftsmanship of traditional Ethiopian instruments through a meticulously curated archive.</p>
+            </div>
+            <div class="footer-links">
+                <div class="link-col">
+                    <h4>DISCOVERY</h4>
+                    <a href="sustainability.html">Sustainability</a>
+                    <a href="shipping.html">Shipping</a>
+                    <a href="about-us.html">About Us</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="link-col">
+                    <h4>PARTNERS</h4>
+                    <a href="affiliate.html">Affiliate Program</a>
+                    <a href="success-wall.html">Success Wall</a>
+                </div>
+                <div class="link-col">
+                    <h4>CONTACT</h4>
+                    <a href="tel:0964261817">0964261817</a>
+                    <a href="tel:0969189470">0969189470</a>
+                    <a href="mailto:amielebegena@gmail.com">amielebegena@gmail.com</a>
+                </div>
+            </div>
+            <div class="footer-newsletter">
+                <h4>THE REGISTRY</h4>
+                <p>Subscribe for seasonal archive drops and cultural history studies.</p>
+                <form class="newsletter-form">
+                    <input type="email" id="newsletter-email" placeholder="Your email address">
+                    <button type="button" id="newsletter-btn">Join</button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 amielebegena. ALL RIGHTS RESERVED.</p>
+            <div class="legal-links">
+                <a href="privacy-policy.html">PRIVACY POLICY</a>
+                <a href="terms-of-archive.html">TERMS OF ARCHIVE</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="db.js"></script>
+    <script src="whatsapp-widget.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = AmieleDB.getCurrentUser();
+            const loadingState = document.getElementById('loading-state');
+            const applyFormSection = document.getElementById('apply-form-section');
+            const statusSection = document.getElementById('status-section');
+
+            if (!user) {
+                // Not logged in -> Redirect to login with current page as parameter
+                window.location.href = 'login.html?redirect=affiliate-apply.html';
+                return;
+            }
+
+            // Populate form fields with user name
+            document.getElementById('app-fullname').value = user.name;
+
+            // Check if user is already admin or affiliate
+            if (user.role === 'admin') {
+                loadingState.classList.add('hidden');
+                statusSection.classList.remove('hidden');
+                
+                document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-user-shield" style="color: var(--aff-primary);"></i>';
+                document.getElementById('status-title').textContent = 'Administrator Portal';
+                document.getElementById('status-desc').textContent = 'You are logged in as an Administrator. You have permissions to access the full admin review suite.';
+                document.getElementById('status-actions').innerHTML = '<a href="admin.html" class="aff-btn" style="text-decoration:none; display:inline-block;">Open Admin Panel</a>';
+                return;
+            }
+
+            if (user.role === 'affiliate') {
+                loadingState.classList.add('hidden');
+                statusSection.classList.remove('hidden');
+                
+                document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-check-circle" style="color: var(--status-approved-text);"></i>';
+                document.getElementById('status-title').textContent = 'Affiliate Account Approved';
+                document.getElementById('status-desc').textContent = 'Welcome back! Your affiliate account is active. You can now access your dashboard, referral center, and download marketing materials.';
+                document.getElementById('status-actions').innerHTML = '<a href="affiliate-dashboard.html" class="aff-btn" style="text-decoration:none; display:inline-block;">Open Affiliate Dashboard</a>';
+                return;
+            }
+
+            // Check application status
+            const app = AmieleDB.getUserApplication(user.id);
+
+            loadingState.classList.add('hidden');
+
+            if (!app) {
+                // No application -> Show form
+                applyFormSection.classList.remove('hidden');
+            } else {
+                // Has application -> Show status screen
+                statusSection.classList.remove('hidden');
+
+                if (app.status === 'pending') {
+                    document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-clock" style="color: var(--status-pending-text);"></i>';
+                    document.getElementById('status-title').textContent = 'Application Pending';
+                    document.getElementById('status-desc').textContent = 'Thank you for applying! Your affiliate application is currently undergoing manual review by our curation team. Typically, reviews take 24-48 hours. We appreciate your patience.';
+                    document.getElementById('status-actions').innerHTML = '<a href="account.html" class="aff-btn" style="text-decoration:none; display:inline-block;">Back to Account</a>';
+                } else if (app.status === 'rejected') {
+                    document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-times-circle" style="color: var(--status-rejected-text);"></i>';
+                    document.getElementById('status-title').textContent = 'Application Declined';
+                    document.getElementById('status-desc').textContent = 'We regret to inform you that your application to join the affiliate network has been declined at this time. Our program requires specific alignment with music platforms, cultural networks, or heritage channels.';
+                    
+                    // Allow them to re-apply
+                    const reapplyBtn = document.createElement('button');
+                    reapplyBtn.className = 'aff-btn';
+                    reapplyBtn.textContent = 'Re-Apply / Submit New Info';
+                    reapplyBtn.addEventListener('click', () => {
+                        // Delete old application from database (for demo, we simulate re-applying)
+                        const apps = AmieleDB.getApplications();
+                        const filtered = apps.filter(a => a.userId !== user.id);
+                        AmieleDB.saveApplications(filtered);
+                        
+                        // Reload
+                        window.location.reload();
+                    });
+                    document.getElementById('status-actions').appendChild(reapplyBtn);
+                }
+            }
+
+            // Toast Helper Engine
+            window.showToast = function(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
+                
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                
+                let icon = 'fa-check-circle';
+                if (type === 'error') icon = 'fa-exclamation-circle';
+                if (type === 'info') icon = 'fa-info-circle';
+                if (type === 'warning') icon = 'fa-exclamation-triangle';
+                
+                toast.innerHTML = `
+                    <i class="fas ${icon} toast-icon"></i>
+                    <div class="toast-body">${message}</div>
+                    <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+                `;
+                
+                container.appendChild(toast);
+                
+                setTimeout(() => toast.classList.add('show'), 50);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 400);
+                }, 4000);
+            };
+
+            // Form Submit Logic
+            const form = document.getElementById('affiliate-apply-form');
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                // Button state loading indicator
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Submission...';
+
+                const data = {
+                    name: document.getElementById('app-fullname').value.trim(),
+                    phone: document.getElementById('app-phone').value.trim(),
+                    country: document.getElementById('app-country').value,
+                    socials: {
+                        instagram: document.getElementById('app-insta').value.trim(),
+                        tiktok: document.getElementById('app-tiktok').value.trim(),
+                        youtube: document.getElementById('app-youtube').value.trim()
+                    },
+                    whyApply: document.getElementById('app-why').value.trim()
+                };
+
+                const feedback = document.getElementById('apply-feedback');
+                feedback.classList.add('hidden');
+
+                // Simulate network latency for high UX fidelity
+                setTimeout(() => {
+                    try {
+                        AmieleDB.submitApplication(data);
+                        
+                        // Show success toast
+                        showToast('Partnership application submitted successfully!', 'success');
+                        
+                        applyFormSection.classList.add('hidden');
+                        statusSection.classList.remove('hidden');
+                        
+                        document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-check-circle" style="color: var(--status-approved-text); animation: scaleUp 0.4s ease;"></i>';
+                        document.getElementById('status-title').textContent = 'Application Submitted!';
+                        document.getElementById('status-desc').textContent = 'Your application has been received successfully and sent to our admin panel for review. We will notify you here once it is updated.';
+                        document.getElementById('status-actions').innerHTML = '<a href="account.html" class="aff-btn" style="text-decoration:none; display:inline-block;">Go to User Dashboard</a>';
+                    } catch (err) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                        
+                        feedback.textContent = err.message;
+                        feedback.className = 'form-feedback error';
+                        feedback.classList.remove('hidden');
+                        showToast(err.message, 'error');
+                    }
+                }, 1200);
+            });
+        });
+    </script>
+    <div id="toast-container"></div>
+</body>
+</html>

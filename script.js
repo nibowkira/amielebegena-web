@@ -108,9 +108,9 @@ const products = [
     },
     // ACCESSORIES & CRAFT
     {
-        id: 9, name: "Artisan Tuning Pegs", desc: "Rosewood & Ebony Set",
-        price: 24.00, badge: "ማስተካከያ", category: "accessories",
-        image: "https://images.unsplash.com/photo-1550985543-f47f38aeee65?q=80&w=400&auto=format&fit=crop", aboutId: "tuning-pegs"
+        id: 9, name: "Awtar (አውታር)", desc: "Per Piece",
+        price: 2.08, badge: "አውታር", category: "accessories",
+        image: "image/image copy.png", aboutId: "tuning-pegs"
     },
     {
         id: 10, name: "Sheep-Gut Strings", desc: "Amber Resonance Set",
@@ -126,6 +126,38 @@ const products = [
         id: 12, name: "Padded Registry Case", desc: "Reinforced Heritage Carry",
         price: 85.00, badge: "ኬዝ", category: "accessories",
         image: "https://images.unsplash.com/photo-1544943961-4ca3fbd72cc7?q=80&w=400&auto=format&fit=crop"
+    },
+    // BAGS (ቦርሳዎች)
+    {
+        id: 13, name: "Traditional Leather Bag", desc: "Hand-stitched Ethiopian Leather",
+        price: 55.00, badge: "የቆዳ ቦርሳ", category: "bags",
+        image: "image/kirar-bag-sehera.jpg"
+    },
+    {
+        id: 14, name: "Woven Cotton Tote", desc: "Authentic Tibeb Pattern",
+        price: 30.00, badge: "የጥጥ ቦርሳ", category: "bags",
+        image: "image/kirar-bag-koda.jpg"
+    },
+    {
+        id: 15, name: "Begena Transport Bag", desc: "Padded Canvas & Leather Trim",
+        price: 75.00, badge: "የበገና ቦርሳ", category: "bags",
+        image: "image/bag-begena.jpg"
+    },
+    {
+        id: 16, name: "Kirar Shoulder Bag", desc: "Lightweight Woven Fabric",
+        price: 40.00, badge: "የክራር ቦርሳ", category: "bags",
+        image: "image/bag-begena-kirar.jpg"
+    },
+    // BOOKS (መጽሃፍት)
+    {
+        id: 17, name: "The Begena Lesson Book", desc: "A Comprehensive Guide to the Harp of David",
+        price: 14.17, badge: "መጽሃፍ", category: "books",
+        image: "image/begena_lesson_book.png", aboutId: "begena-book"
+    },
+    {
+        id: 18, name: "Ethiopian Musical Heritage", desc: "The Sacred Sounds of Begena",
+        price: 19.58, badge: "መጽሃፍ", category: "books",
+        image: "image/ethiopian_music_heritage_book.png"
     }
 ];
 
@@ -247,7 +279,10 @@ function renderProducts(category) {
         `;
         productContainer.appendChild(card);
         // Trigger reveal for new items
-        setTimeout(() => card.classList.add('active'), 50);
+        setTimeout(() => {
+            card.classList.add('active', 'show-animation');
+            card.querySelectorAll('.animate-fade, .animate-scale').forEach(el => el.classList.add('show-animation'));
+        }, 50);
     });
     initMagnifier();
 }
@@ -365,11 +400,90 @@ cartOverlay.addEventListener('click', closeCart);
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Detect Referral parameters
+    if (window.AmieleDB) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref');
+        if (refCode) {
+            localStorage.setItem('amiele_ref_code', refCode);
+            try {
+                AmieleDB.trackClick(refCode);
+                console.log(`Referral link tracked: ${refCode}`);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    }
+
     if (productContainer) {
         renderProducts('strings');
     }
     updateStaticWhatsAppButtons();
     updateCartCount(0);
+
+    // Cart Checkout Handling
+    const checkoutBtn = document.querySelector('.cart-drawer .btn-primary');
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', () => {
+            if (cart.length === 0) {
+                alert('Your cart is empty. / ጋሪዎ ባዶ ነው።');
+                return;
+            }
+
+            // Build Receipt Message
+            let total = 0;
+            let orderLines = [];
+            let productNamesList = [];
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                orderLines.push(`• ${item.quantity}x ${item.name} (${formatPrice(item.price)} each) - Subtotal: ${formatPrice(itemTotal)}`);
+                productNamesList.push(`${item.quantity}x ${item.name}`);
+            });
+
+            // Retrieve affiliate code
+            const activeRef = localStorage.getItem('amiele_ref_code') || '';
+            const refText = activeRef ? `\n🔗 Referral Code: ${activeRef}` : '';
+
+            const userText = localStorage.getItem('userName') ? `\n👤 Customer Name: ${localStorage.getItem('userName')}` : '';
+            const currencyText = `Selected Currency: ${currentCurrency}`;
+
+            const orderId = '#HA-' + Math.floor(1000 + Math.random() * 9000);
+
+            const messageText = `🔔 New Order from Amiele Begena Website!\n` +
+                                `----------------------------------------\n` +
+                                `Order Reference: ${orderId}${userText}${refText}\n` +
+                                `💵 ${currencyText}\n` +
+                                `----------------------------------------\n` +
+                                `🛒 Order Items:\n` +
+                                `${orderLines.join('\n')}\n` +
+                                `----------------------------------------\n` +
+                                `💰 Total Amount: ${formatPrice(total)}\n` +
+                                `----------------------------------------\n` +
+                                `Please confirm my order and let me know the payment/delivery details. Thank you! / እናመሰግናለን!`;
+
+            // Log sale in database if referral code exists
+            if (window.AmieleDB && activeRef) {
+                try {
+                    // Total amount converted to ETB for database records (base exchange rate: 120)
+                    const totalETB = total * 120;
+                    AmieleDB.trackSale(activeRef, orderId, totalETB, productNamesList.join(', '));
+                    console.log(`Sale attributed to affiliate: ${activeRef}`);
+                    // Clear ref code after checkout attribute
+                    localStorage.removeItem('amiele_ref_code');
+                } catch (e) {
+                    console.error('Error attributing sale: ', e);
+                }
+            }
+
+            const encodedMessage = encodeURIComponent(messageText);
+            const whatsappUrl = `https://wa.me/251969189470?text=${encodedMessage}`;
+            
+            // Open WhatsApp
+            window.open(whatsappUrl, '_blank');
+        });
+    }
 
     // Auth Submission Handling
     const loginForm = document.getElementById('form-login');

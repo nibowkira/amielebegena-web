@@ -70,6 +70,7 @@
                     <li id="nav-saved" onclick="switchAccountTab('saved')">Saved Items</li>
                     <li id="nav-impact" onclick="switchAccountTab('impact')">Cultural Impact</li>
                     <li id="nav-shipping" onclick="switchAccountTab('shipping')">Shipping Addresses</li>
+                    <li id="nav-affiliate-portal" style="display:none; font-weight:600; color:var(--dark-green);">Affiliate Dashboard</li>
                 </ul>
                 <div class="archivist-level-card">
                     <span class="level-label">ARCHIVIST LEVEL</span>
@@ -98,9 +99,10 @@
                                 <label>BIOGRAPHY / NOTE TO CURATOR</label>
                                 <textarea class="account-textarea">Devoted collector of traditional strings and a student of ancient highland resonance techniques.</textarea>
                             </div>
-                            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                            <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
                                 <button type="button" class="btn-primary">UPDATE ARCHIVE</button>
                                 <button type="button" id="logout-btn" class="btn-primary" style="background-color: transparent; border: 1px solid var(--dark-green); color: var(--dark-green);">LOG OUT</button>
+                                <div id="affiliate-action-container" style="display: inline-block;"></div>
                             </div>
                         </form>
                     </div>
@@ -264,7 +266,73 @@
         </div>
     </footer>
 
+    <script src="db.js"></script>
     <script src="whatsapp-widget.js"></script>
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = AmieleDB.getCurrentUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Sync account info fields
+            const nameFields = document.querySelectorAll('input[value="Elena V. Thorne"]');
+            if (nameFields.length > 0) nameFields[0].value = user.name;
+
+            const emailFields = document.querySelectorAll('input[value="elena.thorne@archives.org"]');
+            if (emailFields.length > 0) emailFields[0].value = user.email;
+
+            if (user.bio) {
+                const bioField = document.querySelector('.account-textarea');
+                if (bioField) bioField.value = user.bio;
+            }
+
+            const actionContainer = document.getElementById('affiliate-action-container');
+            const sidebarPortal = document.getElementById('nav-affiliate-portal');
+
+            if (user.role === 'admin') {
+                if (sidebarPortal) {
+                    sidebarPortal.style.display = 'block';
+                    sidebarPortal.textContent = 'Admin Console';
+                    sidebarPortal.addEventListener('click', () => {
+                        window.location.href = 'admin.html';
+                    });
+                }
+                if (actionContainer) {
+                    actionContainer.innerHTML = '<a href="admin.html" class="btn-primary" style="text-decoration:none; background-color: var(--dark-green); color: white;">ADMIN CONSOLE</a>';
+                }
+            } else if (user.role === 'affiliate') {
+                if (sidebarPortal) {
+                    sidebarPortal.style.display = 'block';
+                    sidebarPortal.textContent = 'Affiliate Dashboard';
+                    sidebarPortal.addEventListener('click', () => {
+                        window.location.href = 'affiliate-dashboard.html';
+                    });
+                }
+                if (actionContainer) {
+                    actionContainer.innerHTML = '<a href="affiliate-dashboard.html" class="btn-primary" style="text-decoration:none; background-color: var(--dark-green); color: white;">AFFILIATE DASHBOARD</a>';
+                }
+            } else {
+                // Regular user -> check application status
+                const app = AmieleDB.getUserApplication(user.id);
+                if (app && app.status === 'pending') {
+                    if (actionContainer) {
+                        actionContainer.innerHTML = '<button type="button" class="btn-primary" disabled style="opacity:0.6; cursor:not-allowed;">APPLICATION PENDING</button>';
+                    }
+                } else {
+                    // Show Become an Affiliate button
+                    if (actionContainer) {
+                        actionContainer.innerHTML = '<a href="affiliate.html" class="btn-primary" style="text-decoration:none; background-color: #ffd700; color: #14231b; font-weight:600;">BECOME AN AFFILIATE</a>';
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
+
+
+
+

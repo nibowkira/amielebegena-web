@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HWVNQZSCYP"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-HWVNQZSCYP');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Dashboard - Amiele Begena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="affiliate-styles.css">
+    <link rel="stylesheet" href="command-palette.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- Skip-to-content for screen readers -->
+    <a href="#main-content" class="skip-link">Skip to content</a>
+
+    <!-- Offline Indicator -->
+    <div class="offline-banner" id="offline-banner" role="alert">
+        <i class="fas fa-wifi-slash" aria-hidden="true"></i>
+        <span>You are currently offline. Displaying cached data. / ኢንተርኔት አልተገናኘም። የተቀመጡ መረጃዎች እያዩ ነው።</span>
+    </div>
+
+    <div class="aff-dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="aff-sidebar" role="navigation" aria-label="Dashboard navigation">
+            <a href="index.html" class="aff-sidebar-brand">
+                <span class="logo" style="color: white; font-size: 1.5rem;">ዓሚኤል በገና</span>
+            </a>
+            
+            <ul class="aff-sidebar-menu">
+                <li><a class="aff-menu-item active" onclick="switchTab('overview')"><i class="fas fa-chart-line"></i> Overview</a></li>
+                <li><a class="aff-menu-item" onclick="switchTab('referral')"><i class="fas fa-link"></i> Referral Center</a></li>
+                <li><a class="aff-menu-item" onclick="switchTab('commissions')"><i class="fas fa-wallet"></i> Commissions</a></li>
+                <li><a class="aff-menu-item" onclick="switchTab('withdrawals')"><i class="fas fa-hand-holding-usd"></i> Payouts</a></li>
+                <li><a class="aff-menu-item" onclick="switchTab('performance')"><i class="fas fa-file-invoice-dollar"></i> Performance Report</a></li>
+                <li><a class="aff-menu-item" onclick="switchTab('marketing')"><i class="fas fa-photo-video"></i> Marketing Center</a></li>
+                <li><a class="aff-menu-item" onclick="switchTab('campaigns')"><i class="fas fa-trophy"></i> Bonus Campaigns</a></li>
+                <li><a class="aff-menu-item" onclick="switchTab('achievements')"><i class="fas fa-award"></i> Achievements</a></li>
+                <li><a class="aff-menu-item" onclick="switchTab('announcements')"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                <li><a class="aff-menu-item" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+
+            <div class="aff-sidebar-user">
+                <div class="aff-user-avatar" id="avatar-letter">D</div>
+                <div class="aff-user-info">
+                    <h4 id="sidebar-user-name">Dawit Yohannes</h4>
+                    <span id="sidebar-user-email">dawit@music.et</span>
+                </div>
+            </div>
+            <a href="account.html" class="aff-menu-item" style="margin-top: -1.5rem; opacity: 0.8; font-size: 0.85rem;"><i class="fas fa-arrow-left"></i> Main Profile</a>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="aff-content" id="main-content" role="main" tabindex="-1">
+            <!-- Unified Topbar -->
+            <div class="aff-topbar" role="banner">
+                <div style="display:flex; align-items:center; gap:1rem;">
+                    <button class="hamburger-btn" id="hamburger-btn" aria-label="Toggle sidebar menu" onclick="document.querySelector('.aff-sidebar').classList.toggle('mobile-open')">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="aff-breadcrumbs">
+                        <span id="breadcrumb-parent">Portal</span> / <span id="breadcrumb-current" style="color: var(--aff-primary); font-weight:600;">Overview</span>
+                    </div>
+                </div>
+                <div class="aff-topbar-actions">
+                    <!-- Ctrl+K Hint -->
+                    <button class="command-palette-hint" onclick="document.getElementById('command-palette-backdrop').classList.add('show'); document.getElementById('command-palette-input').focus();" aria-label="Open command palette">
+                        <i class="fas fa-search" style="font-size:0.8rem;"></i>
+                        <span>Search</span>
+                        <kbd>⌘K</kbd>
+                    </button>
+                    <!-- Dark Mode Toggle -->
+                    <button class="theme-toggle-btn" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
+                        <i class="fas fa-moon" id="theme-toggle-icon"></i>
+                    </button>
+                    <!-- Notification Bell -->
+                    <div class="notif-bell-container" id="notif-bell-btn" onclick="toggleNotifDropdown(event)">
+                        <i class="far fa-bell" style="font-size: 1.25rem; color: var(--aff-primary);"></i>
+                        <span class="notif-badge" id="notif-badge-count" style="display:none;">0</span>
+                    </div>
+                    <!-- Notification Dropdown -->
+                    <div class="notif-dropdown" id="notif-dropdown">
+                        <div class="notif-dropdown-header">
+                            <h3>Notifications</h3>
+                            <button class="notif-mark-read" onclick="markAllNotificationsAsRead(event)">Mark all as read</button>
+                        </div>
+                        <div class="notif-list" id="notif-list-container">
+                            <!-- Items populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OVERVIEW TAB -->
+            <div id="tab-overview" class="aff-tab-pane active">
+                <div class="aff-header-row">
+                    <div>
+                        <span class="level-label" style="text-transform:uppercase; letter-spacing: 0.1em; color: var(--aff-text-muted);">PARTNER PORTAL</span>
+                        <h1>Overview Dashboard</h1>
+                    </div>
+                </div>
+
+                <!-- Stats grid -->
+                <div class="aff-stats-grid">
+                    <div class="aff-stat-card accent-card">
+                        <h3>Available Balance</h3>
+                        <div class="aff-stat-value" id="stat-balance">ETB 0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Total Earnings</h3>
+                        <div class="aff-stat-value" id="stat-earnings">ETB 0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Pending Commissions</h3>
+                        <div class="aff-stat-value" id="stat-pending">ETB 0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Total Paid Out</h3>
+                        <div class="aff-stat-value" id="stat-paid">ETB 0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Total Referrals</h3>
+                        <div class="aff-stat-value" id="stat-clicks">0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Total Sales</h3>
+                        <div class="aff-stat-value" id="stat-sales">0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Conversion Rate</h3>
+                        <div class="aff-stat-value" id="stat-conversion">0%</div>
+                    </div>
+                </div>
+
+                <div class="aff-card">
+                    <div class="aff-card-header">
+                        <h2>Earnings Growth Over Time</h2>
+                    </div>
+                    <div class="aff-chart-wrapper">
+                        <canvas id="earningsChart" width="800" height="280" style="width: 100%; height: 100%;"></canvas>
+                    </div>
+                </div>
+
+                <div class="aff-card">
+                    <div class="aff-card-header">
+                        <h2>Recent Tracked Commissions</h2>
+                    </div>
+                    <div class="aff-table-container">
+                        <table class="aff-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Order Reference</th>
+                                    <th>Product Name</th>
+                                    <th>Order Amount</th>
+                                    <th>Commission Earned</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="commissions-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REFERRAL CENTER TAB -->
+            <div id="tab-referral" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Referral Center</h1>
+                </div>
+
+                <div class="aff-card">
+                    <div class="aff-card-header">
+                        <h2>Your Personal Referral Assets</h2>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        <div class="aff-form-group">
+                            <label>YOUR REFERRAL LINK</label>
+                            <p style="font-size:0.85rem; color:var(--aff-text-muted); margin-bottom: 0.5rem;">Copy and paste this link on your social posts or email newsletter.</p>
+                            <div class="aff-link-copy-box">
+                                <input type="text" id="referral-link" readonly value="">
+                                <button class="aff-btn-copy" onclick="copyReferralLink()">Copy Link</button>
+                            </div>
+                        </div>
+
+                        <div class="aff-form-group">
+                            <label>YOUR REFERRAL COUPON CODE</label>
+                            <p style="font-size:0.85rem; color:var(--aff-text-muted); margin-bottom: 0.5rem;">Customers get 5% discount at checkout; you receive commissions automatically.</p>
+                            <div style="background-color: var(--aff-bg); padding: 1.5rem; border-radius: 12px; font-size: 2rem; font-weight: bold; font-family: 'Outfit'; color: var(--aff-primary); border: 1px dashed var(--aff-card-border); max-width: 250px; text-align: center; letter-spacing: 0.05em;" id="coupon-code-display"></div>
+                        </div>
+
+                        <div style="display: flex; flex-wrap: wrap; gap: 4rem; margin-top: 1rem; border-top: 1px solid var(--aff-card-border); padding-top: 2rem;">
+                            <div class="aff-form-group">
+                                <label>QUICK SHARE</label>
+                                <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                                    <button class="aff-btn" style="background-color:#25d366; color:white; display:flex; align-items:center; gap:0.5rem;" onclick="shareWhatsApp()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                                    <button class="aff-btn" style="background-color:#0088cc; color:white; display:flex; align-items:center; gap:0.5rem;" onclick="shareTelegram()"><i class="fab fa-telegram-plane"></i> Telegram</button>
+                                </div>
+                            </div>
+                            
+                            <div class="aff-form-group" style="align-items: center;">
+                                <label>QR CODE GRAPHIC</label>
+                                <div class="qr-container">
+                                    <canvas id="qrCanvas" width="250" height="250" style="border: 1px solid var(--aff-card-border); border-radius:12px;"></canvas>
+                                    <button class="btn-light-green" style="margin-top: 1rem; width:100%;" onclick="downloadQRCode()"><i class="fas fa-download"></i> Download QR PNG</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMMISSIONS TAB -->
+            <div id="tab-commissions" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Commissions Ledger</h1>
+                </div>
+                <!-- Same table as overview, but full view, no limit -->
+                <div class="aff-card">
+                    <div class="aff-table-container">
+                        <table class="aff-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Order Reference</th>
+                                    <th>Product Name</th>
+                                    <th>Order Amount</th>
+                                    <th>Commission Earned</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="commissions-table-body-full"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WITHDRAWALS (PAYOUTS) TAB -->
+            <div id="tab-withdrawals" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Request Commission Withdrawal</h1>
+                </div>
+
+                <div class="aff-stats-grid" style="grid-template-columns: 1fr; max-width: 600px; margin-bottom: 2rem;">
+                    <div class="aff-stat-card accent-card">
+                        <h3>Your Available Balance</h3>
+                        <div class="aff-stat-value" id="wth-avail-balance">ETB 0</div>
+                    </div>
+                </div>
+
+                <div class="aff-card" style="max-width: 600px;">
+                    <div class="aff-card-header">
+                        <h2>Withdrawal Payout Form</h2>
+                    </div>
+                    <form id="withdrawal-form" class="aff-form">
+                        <div class="aff-form-group">
+                            <label for="wth-amount">Withdrawal Amount (ETB) *</label>
+                            <input type="number" id="wth-amount" class="aff-input" required min="500" placeholder="e.g. 1500">
+                        </div>
+                        
+                        <div class="aff-form-group">
+                            <label for="wth-method">Payment Payout Method *</label>
+                            <select id="wth-method" class="aff-select" required>
+                                <option value="" disabled selected>Select payment bank / wallet</option>
+                                <option value="Telebirr">Telebirr Wallet</option>
+                                <option value="CBE (Commercial Bank of Ethiopia)">Commercial Bank of Ethiopia (CBE)</option>
+                                <option value="Awash Bank">Awash International Bank</option>
+                                <option value="Dashen Bank">Dashen Bank</option>
+                                <option value="PayPal / International Transfer">PayPal (International Diasporas)</option>
+                            </select>
+                        </div>
+
+                        <div class="aff-form-group">
+                            <label for="wth-phone">Payout Target Phone Number *</label>
+                            <input type="tel" id="wth-phone" class="aff-input" required placeholder="e.g. +251911223344">
+                        </div>
+
+                        <div id="wth-feedback" class="form-feedback hidden"></div>
+
+                        <button type="submit" class="aff-btn" style="font-family: 'Benaiah', sans-serif;">Request Withdrawal &rarr;</button>
+                    </form>
+                </div>
+
+                <div class="aff-card">
+                    <div class="aff-card-header">
+                        <h2>Withdrawal History / Status</h2>
+                    </div>
+                    <div class="aff-table-container">
+                        <table class="aff-table">
+                            <thead>
+                                <tr>
+                                    <th>Requested Date</th>
+                                    <th>Reference ID</th>
+                                    <th>Amount</th>
+                                    <th>Payout Method</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="withdrawals-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERFORMANCE REPORT TAB -->
+            <div id="tab-performance" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Monthly Performance Report</h1>
+                    <button class="aff-btn" onclick="downloadPerformancePDF()"><i class="fas fa-file-pdf"></i> Download PDF Report</button>
+                </div>
+
+                <div class="aff-stats-grid">
+                    <div class="aff-stat-card">
+                        <h3>Monthly Link Clicks</h3>
+                        <div class="aff-stat-value" id="perf-clicks">0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Referral Sales</h3>
+                        <div class="aff-stat-value" id="perf-sales">0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Average Conversion</h3>
+                        <div class="aff-stat-value" id="perf-conversions">0%</div>
+                    </div>
+                    <div class="aff-stat-card accent-card">
+                        <h3>Net Commission Revenue</h3>
+                        <div class="aff-stat-value" id="perf-commission">ETB 0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Total Store Revenue Generated</h3>
+                        <div class="aff-stat-value" id="perf-revenue">ETB 0</div>
+                    </div>
+                </div>
+
+                <div class="aff-card" style="text-align: center; padding: 4rem 2rem;">
+                    <i class="fas fa-print" style="font-size: 3.5rem; color: var(--aff-primary); opacity:0.8; margin-bottom:1.5rem;"></i>
+                    <h2>Official Heritage Partner Summary</h2>
+                    <p style="color:var(--aff-text-muted); max-width:600px; margin: 1rem auto 2.5rem; line-height:1.6;">Click the button above to render your monthly statement in PDF format, validated with the official Amiele cultural preservation team stamps.</p>
+                </div>
+            </div>
+
+            <!-- MARKETING CENTER TAB -->
+            <div id="tab-marketing" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Marketing & Creative Resources</h1>
+                </div>
+                
+                <div class="marketing-grid">
+                    <!-- Photos -->
+                    <div class="marketing-card">
+                        <div class="marketing-preview"><i class="fas fa-camera-retro"></i></div>
+                        <div class="marketing-card-info">
+                            <h3>Begena & Krar Studio Photos</h3>
+                            <p>High-resolution, professionally graded catalog images for social media posts or web features.</p>
+                            <a href="image/photo_2025-10-01_07-26-53.jpg" class="marketing-btn-download" download>Download ZIP (15.4 MB)</a>
+                        </div>
+                    </div>
+
+                    <!-- Workshop Videos -->
+                    <div class="marketing-card">
+                        <div class="marketing-preview" style="background-color:#c62828;"><i class="fas fa-video"></i></div>
+                        <div class="marketing-card-info">
+                            <h3>Artisan Workshop Video Clips</h3>
+                            <p>Raw footage showing master artisans carving, applying hides, and testing resonance strings.</p>
+                            <a href="#" class="marketing-btn-download" onclick="alert('Demo assets packing... / የቪዲዮ ፋይሎች በመዘጋጀት ላይ ናቸው።'); return false;">Download Reels (42.1 MB)</a>
+                        </div>
+                    </div>
+
+                    <!-- Logos -->
+                    <div class="marketing-card">
+                        <div class="marketing-preview" style="background-color:#1565c0;"><i class="fas fa-file-signature"></i></div>
+                        <div class="marketing-card-info">
+                            <h3>Amiele Official Branding Logos</h3>
+                            <p>Gold, White, and Dark Green transparent brand marks in high-res PNG and vector files.</p>
+                            <a href="favicon.png" class="marketing-btn-download" download>Download Logos PNG</a>
+                        </div>
+                    </div>
+
+                    <!-- Posters -->
+                    <div class="marketing-card">
+                        <div class="marketing-preview" style="background-color:#ef6c00;"><i class="fas fa-scroll"></i></div>
+                        <div class="marketing-card-info">
+                            <h3>Highland Heritage Posters</h3>
+                            <p>Cultural layouts featuring Begenas and educational text detailing historic musical origins.</p>
+                            <a href="#" class="marketing-btn-download" onclick="alert('Poster pack loading... / ፖስተሮች በመጫን ላይ ናቸው።'); return false;">Download ZIP (8.9 MB)</a>
+                        </div>
+                    </div>
+
+                    <!-- Caption Scripts -->
+                    <div class="marketing-card">
+                        <div class="marketing-preview" style="background-color:#333;"><i class="fas fa-quote-right"></i></div>
+                        <div class="marketing-card-info">
+                            <h3>Bilingual Caption Templates</h3>
+                            <p>Ready-to-use captions in Amharic & English describing the spirituality of the David Harp.</p>
+                            <a href="#" class="marketing-btn-download" onclick="alert('Instagram Caption Templates:\n\n1. Amharic: ከሺህ ዓመታት ጥበብ የተቀዳ የዛሬው ብርሃን - የዳዊት በገና። በዓሚኤል ያግኙት።\n\n2. English: Preserving the spiritual resonance of Ethiopia\'s ancient stringed harps. Order today.'); return false;">View Text Captions</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAMPAIGNS TAB -->
+            <div id="tab-campaigns" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Bonus Challenges & Campaigns</h1>
+                </div>
+                <div id="campaigns-container"></div>
+            </div>
+
+            <!-- ACHIEVEMENTS TAB -->
+            <div id="tab-achievements" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Partner Achievements & Badges</h1>
+                </div>
+                
+                <div class="aff-card" style="background-color:#fdf5e6; border-color: rgba(212, 175, 55, 0.3); margin-bottom:3rem;">
+                    <h2>Milestone Certifications</h2>
+                    <p style="color:var(--aff-text-muted); font-size:0.95rem; margin-top:0.5rem; line-height:1.5;">Achieving sales milestones unlocks professional digital certificates of appreciation signed by our preservation curation committee. Available as direct image downloads below once milestones are met.</p>
+                </div>
+
+                <div class="achievements-grid" id="achievements-container"></div>
+            </div>
+
+            <!-- ANNOUNCEMENTS TAB -->
+            <div id="tab-announcements" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Announcements & Updates</h1>
+                </div>
+                <div class="aff-card">
+                    <div id="announcements-container"></div>
+                </div>
+            </div>
+
+            <!-- SETTINGS & PROFILE TAB -->
+            <div id="tab-settings" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Settings & Partner Profile</h1>
+                </div>
+                
+                <div class="settings-grid">
+                    <!-- Left: Forms -->
+                    <div class="settings-card">
+                        <form id="settings-form" class="aff-form" style="max-width: 100%;">
+                            <h3 style="font-size: 1.1rem; color: var(--aff-primary); margin-bottom: 1.5rem; border-bottom: 1px solid var(--aff-card-border); padding-bottom: 0.5rem;"><i class="fas fa-user-edit"></i> Edit Public Profile</h3>
+                            
+                            <div class="form-row">
+                                <div class="aff-form-group">
+                                    <label for="set-name">Full Name *</label>
+                                    <input type="text" id="set-name" class="aff-input" required>
+                                </div>
+                                <div class="aff-form-group">
+                                    <label for="set-phone">Phone Number *</label>
+                                    <input type="tel" id="set-phone" class="aff-input" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row" style="margin-top: 1rem;">
+                                <div class="aff-form-group">
+                                    <label for="set-email">Email Address *</label>
+                                    <input type="email" id="set-email" class="aff-input" required>
+                                </div>
+                                <div class="aff-form-group">
+                                    <label for="set-country">Country *</label>
+                                    <select id="set-country" class="aff-select" required>
+                                        <option value="Ethiopia">Ethiopia</option>
+                                        <option value="United States">United States</option>
+                                        <option value="United Kingdom">United Kingdom</option>
+                                        <option value="Germany">Germany</option>
+                                        <option value="Canada">Canada</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="aff-form-group" style="margin-top: 1rem;">
+                                <label for="set-avatar-url">Avatar Image URL (Optional)</label>
+                                <input type="url" id="set-avatar-url" class="aff-input" placeholder="https://example.com/avatar.jpg">
+                            </div>
+
+                            <h3 style="font-size: 1.1rem; color: var(--aff-primary); margin-top: 2.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--aff-card-border); padding-bottom: 0.5rem;"><i class="fas fa-lock"></i> Change Account Password</h3>
+                            <div class="form-row">
+                                <div class="aff-form-group">
+                                    <label for="set-password">New Password</label>
+                                    <input type="password" id="set-password" class="aff-input" placeholder="Leave blank to keep current">
+                                </div>
+                                <div class="aff-form-group">
+                                    <label for="set-password-confirm">Confirm Password</label>
+                                    <input type="password" id="set-password-confirm" class="aff-input" placeholder="Confirm new password">
+                                </div>
+                            </div>
+
+                            <h3 style="font-size: 1.1rem; color: var(--aff-primary); margin-top: 2.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--aff-card-border); padding-bottom: 0.5rem;"><i class="fas fa-bell"></i> Notification Preferences</h3>
+                            <div class="aff-form-group" style="flex-direction: row; align-items: center; gap: 0.8rem; cursor: pointer;">
+                                <input type="checkbox" id="set-pref-email" style="cursor: pointer;" checked>
+                                <label for="set-pref-email" style="text-transform: none; font-weight: normal; cursor: pointer; margin: 0;">Receive monthly performance reports via Email</label>
+                            </div>
+                            <div class="aff-form-group" style="flex-direction: row; align-items: center; gap: 0.8rem; cursor: pointer; margin-top: 0.5rem;">
+                                <input type="checkbox" id="set-pref-push" style="cursor: pointer;">
+                                <label for="set-pref-push" style="text-transform: none; font-weight: normal; cursor: pointer; margin: 0;">Simulate push notifications for real-time sale credits</label>
+                            </div>
+
+                            <button type="submit" class="aff-btn" style="margin-top: 2rem; font-family: 'Benaiah', sans-serif;">Save Configurations</button>
+                        </form>
+                    </div>
+
+                    <!-- Right: Profile Card -->
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        <div class="settings-avatar-section">
+                            <div class="profile-avatar-large" id="profile-avatar-img">D</div>
+                            <h2 style="font-family: 'Benaiah', sans-serif; font-size: 1.5rem; margin: 0;" id="profile-card-name">Dawit Yohannes</h2>
+                            <div class="profile-tier-badge gold" id="profile-card-tier">GOLD PARTNER</div>
+                            <div class="profile-id-box" id="profile-card-id">AFF-USR_AFF1</div>
+                            <div style="font-size: 0.8rem; color: rgba(255,255,255,0.6);" id="profile-card-joined">Joined: Jan 10, 2026</div>
+
+                            <div class="profile-metric-row">
+                                <div class="profile-metric-item">
+                                    <div class="profile-metric-val" id="profile-card-earnings">ETB 15,500</div>
+                                    <div class="profile-metric-lbl">Total Earned</div>
+                                </div>
+                                <div class="profile-metric-item">
+                                    <div class="profile-metric-val" id="profile-card-sales">12</div>
+                                    <div class="profile-metric-lbl">Sales</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progress toward next tier -->
+                        <div class="settings-card milestone-tracker-card">
+                            <h3 style="font-size: 1rem; color: var(--aff-primary); margin-bottom: 0.5rem;"><i class="fas fa-level-up-alt"></i> Tier Level Progress</h3>
+                            <p style="font-size: 0.8rem; color: var(--aff-text-muted);" id="tier-progress-explanation">Bronze to Silver (10 sales required)</p>
+                            <div class="milestone-progress-container">
+                                <div class="milestone-progress-bar-wrapper">
+                                    <div class="milestone-progress-bar-fill" id="tier-progress-fill" style="width: 60%;"></div>
+                                </div>
+                                <div class="milestone-labels">
+                                    <span id="tier-progress-start">0 Sales</span>
+                                    <span id="tier-progress-target">10 Sales</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Achievement Badges Summary -->
+                        <div class="settings-card">
+                            <h3 style="font-size: 1rem; color: var(--aff-primary); margin-bottom: 1rem;"><i class="fas fa-award"></i> Badges Unlocked</h3>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="profile-badges-summary">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Custom Modal Confirmation Backdrop -->
+    <div class="custom-modal-backdrop" id="custom-modal-backdrop">
+        <div class="custom-modal">
+            <div class="custom-modal-header" id="modal-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3 id="modal-title">Confirm Action</h3>
+            </div>
+            <div class="custom-modal-body" id="modal-body">
+                Are you sure you want to perform this action?
+            </div>
+            <div class="custom-modal-footer">
+                <button class="custom-modal-btn cancel" id="modal-btn-cancel">Cancel</button>
+                <button class="custom-modal-btn confirm" id="modal-btn-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="shared-ui.js"></script>
+    <script src="command-palette.js"></script>
+    <script src="affiliate.js"></script>
+    <script>
+        // Sync overview commission lists to the separate commissions page as well on startup
+        document.addEventListener('DOMContentLoaded', () => {
+            const tbodyFull = document.getElementById('commissions-table-body-full');
+            const tbodyOverview = document.getElementById('commissions-table-body');
+            const user = AmieleDB.getCurrentUser();
+            if (!user) return;
+            const metadata = AmieleDB.getAffiliateMetadata(user.id);
+            if (metadata) {
+                document.getElementById('wth-avail-balance').textContent = `ETB ${metadata.balance.toLocaleString()}`;
+            }
+            if (tbodyFull && tbodyOverview) {
+                setTimeout(() => {
+                    tbodyFull.innerHTML = tbodyOverview.innerHTML;
+                }, 200);
+            }
+        });
+    </script>
+</body>
+</html>

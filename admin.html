@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HWVNQZSCYP"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-HWVNQZSCYP');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Amiele Begena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="affiliate-styles.css">
+    <link rel="stylesheet" href="command-palette.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="aff-dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="aff-sidebar">
+            <a href="index.html" class="aff-sidebar-brand">
+                <span class="logo" style="color: white; font-size: 1.5rem;">ዓሚኤል በገና</span>
+            </a>
+            <span style="font-size:0.65rem; color:#ffd700; letter-spacing:0.15em; font-weight:bold; margin-top:-2rem; margin-left:1.2rem;">ADMIN CONSOLE</span>
+            
+            <ul class="aff-sidebar-menu">
+                <li><a class="aff-menu-item active" onclick="switchAdminTab('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a class="aff-menu-item" onclick="switchAdminTab('users')"><i class="fas fa-users-cog"></i> User Roles</a></li>
+                <li><a class="aff-menu-item" onclick="switchAdminTab('applications')"><i class="fas fa-clipboard-list"></i> Applications Queue</a></li>
+                <li><a class="aff-menu-item" onclick="switchAdminTab('commissions')"><i class="fas fa-check-double"></i> Confirm Sales</a></li>
+                <li><a class="aff-menu-item" onclick="switchAdminTab('withdrawals')"><i class="fas fa-money-check-alt"></i> Payout Queue</a></li>
+                <li><a class="aff-menu-item" onclick="switchAdminTab('campaigns')"><i class="fas fa-bullseye"></i> Campaigns Creator</a></li>
+                <li><a class="aff-menu-item" onclick="switchAdminTab('announcements')"><i class="fas fa-microphone"></i> Broadcast Update</a></li>
+            </ul>
+
+            <div class="aff-sidebar-user">
+                <div class="aff-user-avatar" style="background-color:#ffd700; color:#14231b;">A</div>
+                <div class="aff-user-info">
+                    <h4>Admin Suite</h4>
+                    <span>admin@amiele.com</span>
+                </div>
+            </div>
+            <a href="account.html" class="aff-menu-item" style="margin-top: -1.5rem; opacity: 0.8; font-size: 0.85rem;"><i class="fas fa-arrow-left"></i> Exit Console</a>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="aff-content">
+            
+            <!-- ADMIN DASHBOARD OVERVIEW -->
+            <div id="tab-dashboard" class="aff-tab-pane active">
+                <div class="aff-header-row">
+                    <div>
+                        <span class="level-label" style="text-transform:uppercase; letter-spacing: 0.1em; color: var(--aff-text-muted);">ANALYTICS ENGINE</span>
+                        <h1>Overview Metrics</h1>
+                    </div>
+                </div>
+
+                <div class="aff-stats-grid">
+                    <div class="aff-stat-card">
+                        <h3>Registered Users</h3>
+                        <div class="aff-stat-value" id="admin-stat-users">0</div>
+                    </div>
+                    <div class="aff-stat-card accent-card">
+                        <h3>Pending Applications</h3>
+                        <div class="aff-stat-value" id="admin-stat-apps">0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Active Partners</h3>
+                        <div class="aff-stat-value" id="admin-stat-affiliates">0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Total Earnings Processed</h3>
+                        <div class="aff-stat-value" id="admin-stat-payouts">ETB 0</div>
+                    </div>
+                </div>
+
+                <div class="aff-card" style="padding: 3rem 2rem; text-align: center;">
+                    <i class="fas fa-chart-pie" style="font-size: 3rem; color: var(--aff-primary); opacity:0.8; margin-bottom:1.5rem;"></i>
+                    <h2>System Curation Dashboard</h2>
+                    <p style="color:var(--aff-text-muted); max-width:650px; margin:0.5rem auto 0; line-height:1.6;">Use the sidebar panels to review pending affiliate submissions, confirm sales and reward commissions, process payment requests, launch challenge targets, or publish updates directly onto affiliate feeds.</p>
+                </div>
+            </div>
+
+            <!-- USER ROLES MANAGEMENT -->
+            <div id="tab-users" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Manage User Roles</h1>
+                </div>
+                <div class="aff-card">
+                    <div class="aff-table-container">
+                        <table class="aff-table">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email Address</th>
+                                    <th>Current Role</th>
+                                    <th>Joined Date</th>
+                                    <th>Update Role</th>
+                                    
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- APPLICATIONS QUEUE -->
+            <div id="tab-applications" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Affiliate Applications Queue</h1>
+                </div>
+                <div class="aff-card">
+                    <div class="aff-table-container">
+                        <table class="aff-table">
+                            <thead>
+                                <tr>
+                                    <th>App ID</th>
+                                    <th>Applicant Name</th>
+                                    <th>Contact Info</th>
+                                    <th>Social Links</th>
+                                    <th>Why Join?</th>
+                                    <th>Submitted Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="apps-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONFIRM SALES / COMMISSIONS -->
+            <div id="tab-commissions" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Confirm Referrals & Sales</h1>
+                </div>
+                <div class="aff-card">
+                    <div class="aff-table-container">
+                        <table class="aff-table">
+                            <thead>
+                                <tr>
+                                    <th>Commission ID</th>
+                                    <th>Affiliate ID</th>
+                                    <th>Order & Product</th>
+                                    <th>Order Cost</th>
+                                    <th>Commission Owed</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="commissions-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAYOUT REQUESTS QUEUE -->
+            <div id="tab-withdrawals" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Payout Requests Queue</h1>
+                </div>
+                <div class="aff-card">
+                    <div class="aff-table-container">
+                        <table class="aff-table">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Affiliate ID</th>
+                                    <th>Amount</th>
+                                    <th>Payout Address Info</th>
+                                    <th>Request Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="withdrawals-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAMPAIGNS CREATOR -->
+            <div id="tab-campaigns" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Manage Challenge Campaigns</h1>
+                </div>
+                
+                <div class="aff-card" style="max-width: 600px; margin-bottom: 3rem;">
+                    <div class="aff-card-header">
+                        <h2>Create New Campaign Challenge</h2>
+                    </div>
+                    <form id="create-campaign-form" class="aff-form">
+                        <div class="aff-form-group">
+                            <label for="cmp-title">Campaign Title *</label>
+                            <input type="text" id="cmp-title" class="aff-input" required placeholder="e.g. Sell 5 Kirars">
+                        </div>
+                        <div class="aff-form-group">
+                            <label for="cmp-desc">Campaign Description *</label>
+                            <textarea id="cmp-desc" class="aff-textarea" rows="3" required placeholder="Explain target details clearly..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="aff-form-group">
+                                <label for="cmp-target">Target Sales *</label>
+                                <input type="number" id="cmp-target" class="aff-input" required min="1" placeholder="5">
+                            </div>
+                            <div class="aff-form-group">
+                                <label for="cmp-reward">Bonus Reward (ETB) *</label>
+                                <input type="number" id="cmp-reward" class="aff-input" required min="1" placeholder="1500">
+                            </div>
+                            <div class="aff-form-group">
+                                <label for="cmp-days">Campaign Days Duration *</label>
+                                <input type="number" id="cmp-days" class="aff-input" required min="1" placeholder="30">
+                            </div>
+                        </div>
+                        <button type="submit" class="aff-btn" style="font-family: 'Benaiah', sans-serif;">Create Campaign Challenge</button>
+                    </form>
+                </div>
+
+                <div class="aff-card">
+                    <div class="aff-card-header">
+                        <h2>Current Live Challenges</h2>
+                    </div>
+                    <div class="aff-table-container">
+                        <table class="aff-table">
+                            <thead>
+                                <tr>
+                                    <th>Campaign ID</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Target</th>
+                                    <th>Reward</th>
+                                    <th>Days Remaining</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="campaigns-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BROADCAST UPDATES (ANNOUNCEMENTS) -->
+            <div id="tab-announcements" class="aff-tab-pane">
+                <div class="aff-header-row">
+                    <h1>Broadcast Updates to Dashboard</h1>
+                </div>
+
+                <div class="aff-card" style="max-width: 600px; margin-bottom: 3rem;">
+                    <div class="aff-card-header">
+                        <h2>Create Announcement Bullet</h2>
+                    </div>
+                    <form id="create-ann-form" class="aff-form">
+                        <div class="aff-form-group">
+                            <label for="ann-title">Announcement Title *</label>
+                            <input type="text" id="ann-title" class="aff-input" required placeholder="e.g. New Product Launch">
+                        </div>
+                        <div class="aff-form-group">
+                            <label for="ann-content">Announcement Content *</label>
+                            <textarea id="ann-content" class="aff-textarea" rows="4" required placeholder="Explain updates details..."></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="aff-form-group">
+                                <label for="ann-type">Broadcast Type *</label>
+                                <select id="ann-type" class="aff-select" required>
+                                    <option value="product">New Product Drops</option>
+                                    <option value="discount">Special Discount Offers</option>
+                                    <option value="campaign">Campaign Challenges</option>
+                                    <option value="update">General Platform Updates</option>
+                                </select>
+                            </div>
+                            <div class="aff-form-group">
+                                <label for="ann-urgency">Urgency Priority *</label>
+                                <select id="ann-urgency" class="aff-select" required>
+                                    <option value="normal">Normal Priority</option>
+                                    <option value="high">High Priority Accent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="aff-btn" style="font-family: 'Benaiah', sans-serif;">Broadcast Announcement</button>
+                    </form>
+                </div>
+
+                <div class="aff-card">
+                    <div class="aff-card-header">
+                        <h2>Broadcast History</h2>
+                    </div>
+                    <div class="aff-table-container">
+                        <table class="aff-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Content</th>
+                                    <th>Type</th>
+                                    <th>Urgency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ann-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Custom Modal Confirmation Backdrop -->
+    <div class="custom-modal-backdrop" id="custom-modal-backdrop">
+        <div class="custom-modal">
+            <div class="custom-modal-header" id="modal-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3 id="modal-title">Confirm Action</h3>
+            </div>
+            <div class="custom-modal-body" id="modal-body">
+                Are you sure you want to perform this action?
+            </div>
+            <div class="custom-modal-footer">
+                <button class="custom-modal-btn cancel" id="modal-btn-cancel">Cancel</button>
+                <button class="custom-modal-btn confirm" id="modal-btn-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="shared-ui.js"></script>
+    <script src="command-palette.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
