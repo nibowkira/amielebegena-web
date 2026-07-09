@@ -273,12 +273,8 @@
          * @returns {Promise<boolean>}
          */
         isAuthenticated: async function () {
-            const client = window.AmieleSupabase.getClient();
-            if (!client) {
-                return localStorage.getItem('isLoggedIn') === 'true';
-            }
-            const { data: { session } } = await client.auth.getSession();
-            return session !== null;
+            const user = await window.AmieleSupabase.auth.getCurrentUser();
+            return user !== null;
         },
 
         /**

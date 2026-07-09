@@ -50,7 +50,8 @@
         if (window.AmieleSupabase.auth && typeof window.AmieleSupabase.auth.isAuthenticated === 'function') {
             return await window.AmieleSupabase.auth.isAuthenticated();
         }
-        return localStorage.getItem('isLoggedIn') === 'true';
+        const user = await window.getCurrentUser();
+        return user !== null;
     };
 
     /**
