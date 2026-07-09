@@ -1,6 +1,6 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // 1. Guard check
-    const user = AmieleDB.getCurrentUser();
+    const user = await window.getCurrentUser();
     if (!user || user.role !== 'admin') {
         window.location.href = 'login.html';
         return;

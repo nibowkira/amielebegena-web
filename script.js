@@ -490,38 +490,149 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerForm = document.getElementById('form-register');
 
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            localStorage.setItem('isLoggedIn', 'true');
-            window.location.href = 'account.html';
+            const emailInput = document.getElementById('login-email');
+            const passInput = document.getElementById('login-pass');
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+
+            if (!emailInput || !passInput || !submitBtn) return;
+
+            const email = emailInput.value.trim();
+            const password = passInput.value;
+
+            // Loading state
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'LOGGING IN...';
+
+            try {
+                const res = await window.AmieleSupabase.auth.signIn(email, password);
+                if (res.success) {
+                    if (typeof showToast === 'function') {
+                        showToast('Login successful! Redirecting...', 'success');
+                    }
+                    setTimeout(() => {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const dest = urlParams.get('redirect') || 'account.html';
+                        window.location.href = decodeURIComponent(dest);
+                    }, 1000);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast(res.error, 'error');
+                    } else {
+                        alert(res.error);
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                }
+            } catch (err) {
+                console.error(err);
+                if (typeof showToast === 'function') {
+                    showToast('An unexpected error occurred during login.', 'error');
+                } else {
+                    alert('An unexpected error occurred.');
+                }
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
         });
     }
 
     if (registerForm) {
-        registerForm.addEventListener('submit', (e) => {
+        registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('reg-name');
-            if(nameInput) localStorage.setItem('userName', nameInput.value);
-            localStorage.setItem('isLoggedIn', 'true');
-            window.location.href = 'account.html';
+            const emailInput = document.getElementById('reg-email');
+            const passInput = document.getElementById('reg-pass');
+            const submitBtn = registerForm.querySelector('button[type="submit"]');
+
+            if (!nameInput || !emailInput || !passInput || !submitBtn) return;
+
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passInput.value;
+
+            if (password.length < 6) {
+                if (typeof showToast === 'function') {
+                    showToast('Password must be at least 6 characters.', 'warning');
+                } else {
+                    alert('Password must be at least 6 characters.');
+                }
+                return;
+            }
+
+            // Loading state
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'SIGNING UP...';
+
+            try {
+                const res = await window.AmieleSupabase.auth.signUp(email, password, name);
+                if (res.success) {
+                    if (res.data && res.data.session) {
+                        if (typeof showToast === 'function') {
+                            showToast('Registration successful! Redirecting...', 'success');
+                        }
+                        setTimeout(() => {
+                            window.location.href = 'account.html';
+                        }, 1000);
+                    } else {
+                        if (typeof showToast === 'function') {
+                            showToast('Signup successful! Please check your email to verify your account.', 'success', 8000);
+                        } else {
+                            alert('Signup successful! Please check your email to verify your account.');
+                        }
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalBtnText;
+                    }
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast(res.error, 'error');
+                    } else {
+                        alert(res.error);
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                }
+            } catch (err) {
+                console.error(err);
+                if (typeof showToast === 'function') {
+                    showToast('An unexpected error occurred during signup.', 'error');
+                } else {
+                    alert('An unexpected error occurred.');
+                }
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
         });
     }
 
     // Logout Handling
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userName');
-            window.location.href = 'login.html';
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await window.AmieleSupabase.auth.signOut();
+                if (typeof showToast === 'function') {
+                    showToast('Logged out successfully.', 'info');
+                }
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 800);
+            } catch (err) {
+                console.error(err);
+                window.location.href = 'login.html';
+            }
         });
     }
 
     // Intercept protected links
     const protectedLinks = document.querySelectorAll('a[href="account.html"]');
     protectedLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        link.addEventListener('click', async (e) => {
+            const isLoggedIn = await window.isAuthenticated();
             if (!isLoggedIn) {
                 e.preventDefault();
                 window.location.href = 'login.html';
@@ -531,17 +642,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Protect account.html directly
     if (window.location.pathname.endsWith('account.html')) {
-        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-        if (!isLoggedIn) {
-            window.location.href = 'login.html';
-        } else {
-            const userName = localStorage.getItem('userName');
-            if (userName) {
-                const nameFields = document.querySelectorAll('input[type="text"]');
-                if (nameFields.length > 0) nameFields[0].value = userName;
+        window.isAuthenticated().then(isLoggedIn => {
+            if (!isLoggedIn) {
+                window.location.href = 'login.html';
+            } else {
+                window.getCurrentUser().then(user => {
+                    if (user && user.name) {
+                        const nameFields = document.querySelectorAll('input[type="text"]');
+                        if (nameFields.length > 0) nameFields[0].value = user.name;
+                    }
+                    if (typeof renderSavedItems === 'function') renderSavedItems();
+                });
             }
-            renderSavedItems();
-        }
+        });
     }
 
     // Scroll Animations Observer

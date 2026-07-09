@@ -3,9 +3,9 @@
  * Premium SaaS UI interactions, canvas charts, QR codes, and PDF generation.
  */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // 1. Route guard check
-    const user = AmieleDB.getCurrentUser();
+    const user = await window.getCurrentUser();
     if (!user || user.role !== 'affiliate') {
         window.location.href = 'login.html';
         return;

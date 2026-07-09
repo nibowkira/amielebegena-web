@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.2",
     "jimp": "^1.6.1"
   }
 }
