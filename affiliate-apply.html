@@ -176,13 +176,6 @@
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="js/supabase/config.js"></script>
-    <script src="js/supabase/helpers.js"></script>
-    <script src="js/supabase/client.js"></script>
-    <script src="js/supabase/auth.js"></script>
-    <script src="js/supabase/auth-guard.js"></script>
-    <script src="js/supabase/database.js"></script>
 
     <script src="shared-ui.js"></script>
     <script src="db.js"></script>
@@ -199,7 +192,7 @@
                 return;
             }
 
-            // Wait for Supabase/DB cache initialization
+            // Wait for DB cache initialization
             if (window.AmieleDB && window.AmieleDB.ready) {
                 await window.AmieleDB.ready;
             }

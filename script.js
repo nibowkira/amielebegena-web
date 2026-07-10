@@ -507,25 +507,15 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.textContent = 'LOGGING IN...';
 
             try {
-                const res = await window.AmieleSupabase.auth.signIn(email, password);
-                if (res.success) {
-                    if (typeof showToast === 'function') {
-                        showToast('Login successful! Redirecting...', 'success');
-                    }
-                    setTimeout(() => {
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const dest = urlParams.get('redirect') || 'account.html';
-                        window.location.href = decodeURIComponent(dest);
-                    }, 1000);
-                } else {
-                    if (typeof showToast === 'function') {
-                        showToast(res.error, 'error');
-                    } else {
-                        alert(res.error);
-                    }
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalBtnText;
+                window.AmieleDB.login(email, password);
+                if (typeof showToast === 'function') {
+                    showToast('Login successful! Redirecting...', 'success');
                 }
+                setTimeout(() => {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const dest = urlParams.get('redirect') || 'account.html';
+                    window.location.href = decodeURIComponent(dest);
+                }, 1000);
             } catch (err) {
                 console.error(err);
                 if (typeof showToast === 'function') {
@@ -568,33 +558,13 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.textContent = 'SIGNING UP...';
 
             try {
-                const res = await window.AmieleSupabase.auth.signUp(email, password, name);
-                if (res.success) {
-                    if (res.data && res.data.session) {
-                        if (typeof showToast === 'function') {
-                            showToast('Registration successful! Redirecting...', 'success');
-                        }
-                        setTimeout(() => {
-                            window.location.href = 'account.html';
-                        }, 1000);
-                    } else {
-                        if (typeof showToast === 'function') {
-                            showToast('Signup successful! Please check your email to verify your account.', 'success', 8000);
-                        } else {
-                            alert('Signup successful! Please check your email to verify your account.');
-                        }
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = originalBtnText;
-                    }
-                } else {
-                    if (typeof showToast === 'function') {
-                        showToast(res.error, 'error');
-                    } else {
-                        alert(res.error);
-                    }
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalBtnText;
+                window.AmieleDB.register(name, email, password);
+                if (typeof showToast === 'function') {
+                    showToast('Registration successful! Redirecting...', 'success');
                 }
+                setTimeout(() => {
+                    window.location.href = 'account.html';
+                }, 1000);
             } catch (err) {
                 console.error(err);
                 if (typeof showToast === 'function') {
@@ -614,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
-                await window.AmieleSupabase.auth.signOut();
+                window.AmieleDB.logout();
                 if (typeof showToast === 'function') {
                     showToast('Logged out successfully.', 'info');
                 }

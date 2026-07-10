@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Wait for Supabase/DB cache initialization
+    // Wait for DB cache initialization
     if (window.AmieleDB && window.AmieleDB.ready) {
         await window.AmieleDB.ready;
     }

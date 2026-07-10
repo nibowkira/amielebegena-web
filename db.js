@@ -1,15 +1,12 @@
 /**
  * Amiele Begena - Database & Data Layer Wrapper
- * Backend-less state management using localStorage.
+ * Frontend-only state management using localStorage.
  */
 
 const DB_PREFIX = 'amiele_';
 
 // Core Schema structure and seed helper
 window.AmieleDB = {
-    useSupabase() {
-        return window.AmieleSupabase && typeof window.AmieleSupabase.isReady === 'function' && window.AmieleSupabase.isReady();
-    },
 
     cache: {
         users: [],
@@ -24,185 +21,8 @@ window.AmieleDB = {
     },
 
     async init() {
-        if (this.useSupabase()) {
-            await this.prefetchSupabaseData();
-            return;
-        }
         if (!localStorage.getItem(DB_PREFIX + 'initialized')) {
             this.seedDemoData();
-        }
-    },
-
-    async prefetchSupabaseData() {
-        const client = window.AmieleSupabase.getClient();
-        if (!client) return;
-        
-        try {
-            const currentUser = await window.getCurrentUser();
-            
-            const [campaignsRes, announcementsRes] = await Promise.all([
-                window.AmieleSupabase.database.getCampaigns(),
-                window.AmieleSupabase.database.getAnnouncements()
-            ]);
-            
-            this.cache.campaigns = campaignsRes || [];
-            this.cache.announcements = announcementsRes || [];
-            
-            if (currentUser) {
-                const userId = currentUser.id;
-                const isAdmin = currentUser.role === 'admin';
-                
-                if (isAdmin) {
-                    const [usersRes, appsRes, affsRes, commsRes, wthsRes, clicksRes, notifsRes] = await Promise.all([
-                        window.AmieleSupabase.database.fetchRows('profiles'),
-                        window.AmieleSupabase.database.fetchRows('applications'),
-                        window.AmieleSupabase.database.fetchRows('affiliates'),
-                        window.AmieleSupabase.database.fetchRows('commissions'),
-                        window.AmieleSupabase.database.fetchRows('withdrawals'),
-                        window.AmieleSupabase.database.fetchRows('clicks'),
-                        window.AmieleSupabase.database.getNotifications(userId)
-                    ]);
-                    
-                    this.cache.users = (usersRes.data || []).map(u => ({
-                        id: u.id,
-                        name: u.name,
-                        email: u.email,
-                        role: u.role,
-                        joinedAt: u.joined_at,
-                        bio: u.bio,
-                        phone: u.phone,
-                        country: u.country
-                    }));
-                    this.cache.applications = (appsRes.data || []).map(a => ({
-                        id: a.id,
-                        userId: a.user_id,
-                        name: a.name,
-                        phone: a.phone,
-                        country: a.country,
-                        socials: a.socials,
-                        whyApply: a.why_apply,
-                        status: a.status,
-                        submittedAt: a.submitted_at,
-                        reviewedAt: a.reviewed_at
-                    }));
-                    this.cache.affiliates = (affsRes.data || []).map(a => ({
-                        userId: a.user_id,
-                        code: a.code,
-                        couponCode: a.coupon_code,
-                        balance: parseFloat(a.balance),
-                        totalEarnings: parseFloat(a.total_earnings),
-                        pendingCommission: parseFloat(a.pending_commission),
-                        totalPaid: parseFloat(a.total_paid),
-                        clicks: a.clicks,
-                        sales: a.sales,
-                        tier: a.tier
-                    }));
-                    this.cache.commissions = (commsRes.data || []).map(c => ({
-                        id: c.id,
-                        affiliateId: c.affiliate_id,
-                        orderId: c.order_id,
-                        productName: c.product_name,
-                        orderAmount: parseFloat(c.order_amount),
-                        commissionAmount: parseFloat(c.commission_amount),
-                        status: c.status,
-                        createdAt: c.created_at,
-                        approvedAt: c.approved_at
-                    }));
-                    this.cache.withdrawals = (wthsRes.data || []).map(w => ({
-                        id: w.id,
-                        affiliateId: w.affiliate_id,
-                        amount: parseFloat(w.amount),
-                        method: w.method,
-                        phone: w.phone,
-                        status: w.status,
-                        createdAt: w.created_at,
-                        processedAt: w.processed_at
-                    }));
-                    this.cache.clicks = (clicksRes.data || []).map(c => ({
-                        affiliateId: c.affiliate_id,
-                        timestamp: c.timestamp,
-                        ip: c.ip
-                    }));
-                    this.cache.notifications = (notifsRes || []).map(n => ({
-                        id: n.id,
-                        title: n.title,
-                        text: n.text,
-                        type: n.type,
-                        unread: n.unread,
-                        time: n.time
-                    }));
-                } else {
-                    const [appRes, affRes, commsRes, wthsRes, clicksRes, notifsRes] = await Promise.all([
-                        window.AmieleSupabase.database.getUserApplication(userId),
-                        window.AmieleSupabase.database.getAffiliateMetadata(userId),
-                        window.AmieleSupabase.database.getAffiliateCommissions(userId),
-                        window.AmieleSupabase.database.getAffiliateWithdrawals(userId),
-                        window.AmieleSupabase.database.getAffiliateClicks(userId),
-                        window.AmieleSupabase.database.getNotifications(userId)
-                    ]);
-                    
-                    this.cache.applications = appRes ? [{
-                        id: appRes.id,
-                        userId: appRes.user_id,
-                        name: appRes.name,
-                        phone: appRes.phone,
-                        country: appRes.country,
-                        socials: appRes.socials,
-                        whyApply: appRes.why_apply,
-                        status: appRes.status,
-                        submittedAt: appRes.submitted_at,
-                        reviewedAt: appRes.reviewed_at
-                    }] : [];
-                    this.cache.affiliates = affRes ? [{
-                        userId: affRes.user_id,
-                        code: affRes.code,
-                        couponCode: affRes.coupon_code,
-                        balance: parseFloat(affRes.balance),
-                        totalEarnings: parseFloat(affRes.total_earnings),
-                        pendingCommission: parseFloat(affRes.pending_commission),
-                        totalPaid: parseFloat(affRes.total_paid),
-                        clicks: affRes.clicks,
-                        sales: affRes.sales,
-                        tier: affRes.tier
-                    }] : [];
-                    this.cache.commissions = (commsRes || []).map(c => ({
-                        id: c.id,
-                        affiliateId: c.affiliate_id,
-                        orderId: c.order_id,
-                        productName: c.product_name,
-                        orderAmount: parseFloat(c.order_amount),
-                        commissionAmount: parseFloat(c.commission_amount),
-                        status: c.status,
-                        createdAt: c.created_at,
-                        approvedAt: c.approved_at
-                    }));
-                    this.cache.withdrawals = (wthsRes || []).map(w => ({
-                        id: w.id,
-                        affiliateId: w.affiliate_id,
-                        amount: parseFloat(w.amount),
-                        method: w.method,
-                        phone: w.phone,
-                        status: w.status,
-                        createdAt: w.created_at,
-                        processedAt: w.processed_at
-                    }));
-                    this.cache.clicks = (clicksRes || []).map(c => ({
-                        affiliateId: c.affiliate_id,
-                        timestamp: c.timestamp,
-                        ip: c.ip
-                    }));
-                    this.cache.notifications = (notifsRes || []).map(n => ({
-                        id: n.id,
-                        title: n.title,
-                        text: n.text,
-                        type: n.type,
-                        unread: n.unread,
-                        time: n.time
-                    }));
-                }
-            }
-        } catch (err) {
-            console.error('[Amiele:DB] Error prefetching database cache:', err);
         }
     },
 
@@ -481,9 +301,6 @@ window.AmieleDB = {
     // USER MODULE
     // ----------------------------------------
     getUsers() {
-        if (this.useSupabase()) {
-            return this.cache.users;
-        }
         return JSON.parse(localStorage.getItem(DB_PREFIX + 'users')) || [];
     },
 
@@ -527,31 +344,25 @@ window.AmieleDB = {
 
     logout() {
         localStorage.removeItem(DB_PREFIX + 'current_session');
-        localStorage.removeItem('isLoggedIn'); // compatibility with existing script.js
-        localStorage.removeItem('userName');   // compatibility
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userName');
     },
 
     setSession(user) {
         localStorage.setItem(DB_PREFIX + 'current_session', JSON.stringify(user));
-        localStorage.setItem('isLoggedIn', 'true'); // compatibility
-        localStorage.setItem('userName', user.name); // compatibility
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userName', user.name);
     },
 
     getCurrentUser() {
-        if (this.useSupabase()) {
-            try {
-                return JSON.parse(localStorage.getItem('amiele_current_session')) || null;
-            } catch (e) {
-                return null;
-            }
+        try {
+            return JSON.parse(localStorage.getItem(DB_PREFIX + 'current_session')) || null;
+        } catch (e) {
+            return null;
         }
-        return JSON.parse(localStorage.getItem(DB_PREFIX + 'current_session'));
     },
 
     updateUserProfile(name, email, bio) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.updateUserProfile(name, email, bio);
-        }
         const currentUser = this.getCurrentUser();
         if (!currentUser) return;
 
@@ -573,9 +384,6 @@ window.AmieleDB = {
     },
 
     updateUserSettings(userId, data) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.updateUserSettings(userId, data);
-        }
         const users = this.getUsers();
         const userIndex = users.findIndex(u => u.id === userId);
         if (userIndex === -1) throw new Error('User not found.');
@@ -629,9 +437,6 @@ window.AmieleDB = {
     // NOTIFICATIONS ENGINE
     // ----------------------------------------
     getNotifications(userId) {
-        if (this.useSupabase()) {
-            return this.cache.notifications;
-        }
         const notifKey = DB_PREFIX + 'notifications_' + userId;
         if (!localStorage.getItem(notifKey)) {
             // Seed default notifications
@@ -668,9 +473,6 @@ window.AmieleDB = {
     },
 
     addNotification(userId, title, text, type) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.addNotification(userId, title, text, type);
-        }
         const notifKey = DB_PREFIX + 'notifications_' + userId;
         const list = JSON.parse(localStorage.getItem(notifKey)) || [];
         list.unshift({
@@ -685,9 +487,6 @@ window.AmieleDB = {
     },
 
     markNotificationsAsRead(userId) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.markNotificationsAsRead(userId);
-        }
         const notifKey = DB_PREFIX + 'notifications_' + userId;
         const list = JSON.parse(localStorage.getItem(notifKey)) || [];
         list.forEach(n => { n.unread = false; });
@@ -698,9 +497,6 @@ window.AmieleDB = {
     // AFFILIATE APPLICATION MODULE
     // ----------------------------------------
     getApplications() {
-        if (this.useSupabase()) {
-            return this.cache.applications;
-        }
         return JSON.parse(localStorage.getItem(DB_PREFIX + 'applications')) || [];
     },
 
@@ -709,9 +505,6 @@ window.AmieleDB = {
     },
 
     submitApplication(data) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.submitApplication(data);
-        }
         const currentUser = this.getCurrentUser();
         if (!currentUser) throw new Error('You must be logged in to apply.');
 
@@ -741,9 +534,6 @@ window.AmieleDB = {
     },
 
     getUserApplication(userId) {
-        if (this.useSupabase()) {
-            return this.cache.applications.find(a => a.userId === userId || a.user_id === userId);
-        }
         const apps = this.getApplications();
         return apps.find(a => a.userId === userId);
     },
@@ -752,9 +542,6 @@ window.AmieleDB = {
     // AFFILIATE METADATA MODULE
     // ----------------------------------------
     getAffiliates() {
-        if (this.useSupabase()) {
-            return this.cache.affiliates;
-        }
         return JSON.parse(localStorage.getItem(DB_PREFIX + 'affiliates')) || [];
     },
 
@@ -763,9 +550,6 @@ window.AmieleDB = {
     },
 
     getAffiliateMetadata(userId) {
-        if (this.useSupabase()) {
-            return this.cache.affiliates.find(a => a.userId === userId || a.user_id === userId);
-        }
         const affiliates = this.getAffiliates();
         return affiliates.find(a => a.userId === userId);
     },
@@ -774,9 +558,6 @@ window.AmieleDB = {
     // TRACKING & ANALYTICS
     // ----------------------------------------
     trackClick(affCode) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.trackClick(affCode);
-        }
         const affiliates = this.getAffiliates();
         const aff = affiliates.find(a => a.code === affCode);
         if (!aff) return;
@@ -796,9 +577,6 @@ window.AmieleDB = {
     },
 
     trackSale(refCode, orderId, orderAmount, productName) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.trackSale(refCode, orderId, orderAmount, productName);
-        }
         const affiliates = this.getAffiliates();
         const aff = affiliates.find(a => a.code === refCode || a.couponCode === refCode);
         if (!aff) return;
@@ -832,25 +610,16 @@ window.AmieleDB = {
     },
 
     getAffiliateClicks(userId) {
-        if (this.useSupabase()) {
-            return this.cache.clicks.filter(c => c.affiliateId === userId || c.affiliate_id === userId);
-        }
         const clicks = JSON.parse(localStorage.getItem(DB_PREFIX + 'clicks')) || [];
         return clicks.filter(c => c.affiliateId === userId);
     },
 
     getAffiliateCommissions(userId) {
-        if (this.useSupabase()) {
-            return this.cache.commissions.filter(c => c.affiliateId === userId || c.affiliate_id === userId);
-        }
         const commissions = JSON.parse(localStorage.getItem(DB_PREFIX + 'commissions')) || [];
         return commissions.filter(c => c.affiliateId === userId);
     },
 
     getAffiliateWithdrawals(userId) {
-        if (this.useSupabase()) {
-            return this.cache.withdrawals.filter(w => w.affiliateId === userId || w.affiliate_id === userId);
-        }
         const withdrawals = JSON.parse(localStorage.getItem(DB_PREFIX + 'withdrawals')) || [];
         return withdrawals.filter(w => w.affiliateId === userId);
     },
@@ -859,9 +628,6 @@ window.AmieleDB = {
     // WITHDRAWALS MODULE
     // ----------------------------------------
     requestWithdrawal(amount, method, phone) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.requestWithdrawal(amount, method, phone);
-        }
         const currentUser = this.getCurrentUser();
         if (!currentUser) throw new Error('Must be logged in.');
 
@@ -898,9 +664,6 @@ window.AmieleDB = {
     // ANNOUNCEMENTS MODULE
     // ----------------------------------------
     getAnnouncements() {
-        if (this.useSupabase()) {
-            return this.cache.announcements;
-        }
         return JSON.parse(localStorage.getItem(DB_PREFIX + 'announcements')) || [];
     },
 
@@ -908,9 +671,6 @@ window.AmieleDB = {
     // CAMPAIGNS MODULE
     // ----------------------------------------
     getCampaigns() {
-        if (this.useSupabase()) {
-            return this.cache.campaigns;
-        }
         return JSON.parse(localStorage.getItem(DB_PREFIX + 'campaigns')) || [];
     },
 
@@ -918,9 +678,6 @@ window.AmieleDB = {
     // ADMIN PANEL MANAGEMENT FUNCTIONS
     // ----------------------------------------
     adminApproveApplication(appId) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.adminApproveApplication(appId);
-        }
         const apps = this.getApplications();
         const app = apps.find(a => a.id === appId);
         if (!app) throw new Error('Application not found');
@@ -961,9 +718,6 @@ window.AmieleDB = {
     },
 
     adminRejectApplication(appId) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.adminRejectApplication(appId);
-        }
         const apps = this.getApplications();
         const app = apps.find(a => a.id === appId);
         if (!app) throw new Error('Application not found');
@@ -974,9 +728,6 @@ window.AmieleDB = {
     },
 
     adminApproveCommission(commId) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.adminApproveCommission(commId);
-        }
         const commissions = JSON.parse(localStorage.getItem(DB_PREFIX + 'commissions')) || [];
         const comm = commissions.find(c => c.id === commId);
         if (!comm) throw new Error('Commission record not found');
@@ -998,9 +749,6 @@ window.AmieleDB = {
     },
 
     adminCancelCommission(commId) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.adminCancelCommission(commId);
-        }
         const commissions = JSON.parse(localStorage.getItem(DB_PREFIX + 'commissions')) || [];
         const comm = commissions.find(c => c.id === commId);
         if (!comm) throw new Error('Commission record not found');
@@ -1019,9 +767,6 @@ window.AmieleDB = {
     },
 
     adminApproveWithdrawal(withdrawalId) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.adminApproveWithdrawal(withdrawalId);
-        }
         const withdrawals = JSON.parse(localStorage.getItem(DB_PREFIX + 'withdrawals')) || [];
         const wth = withdrawals.find(w => w.id === withdrawalId);
         if (!wth) throw new Error('Withdrawal record not found');
@@ -1033,9 +778,6 @@ window.AmieleDB = {
     },
 
     adminRejectWithdrawal(withdrawalId) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.adminRejectWithdrawal(withdrawalId);
-        }
         const withdrawals = JSON.parse(localStorage.getItem(DB_PREFIX + 'withdrawals')) || [];
         const wth = withdrawals.find(w => w.id === withdrawalId);
         if (!wth) throw new Error('Withdrawal record not found');
@@ -1055,9 +797,6 @@ window.AmieleDB = {
     },
 
     adminMarkWithdrawalPaid(withdrawalId) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.adminMarkWithdrawalPaid(withdrawalId);
-        }
         const withdrawals = JSON.parse(localStorage.getItem(DB_PREFIX + 'withdrawals')) || [];
         const wth = withdrawals.find(w => w.id === withdrawalId);
         if (!wth) throw new Error('Withdrawal record not found');
@@ -1076,9 +815,6 @@ window.AmieleDB = {
     },
 
     adminCreateCampaign(title, description, targetSales, reward, daysRemaining) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.adminCreateCampaign(title, description, targetSales, reward, daysRemaining);
-        }
         const campaigns = this.getCampaigns();
         const newCampaign = {
             id: 'cmp_' + Date.now(),
@@ -1097,9 +833,6 @@ window.AmieleDB = {
     },
 
     adminCreateAnnouncement(title, content, type, urgency) {
-        if (this.useSupabase()) {
-            return window.AmieleSupabase.database.adminCreateAnnouncement(title, content, type, urgency);
-        }
         const announcements = this.getAnnouncements();
         const newAnn = {
             id: 'ann_' + Date.now(),
@@ -1117,3 +850,38 @@ window.AmieleDB = {
 
 // Auto initialize database and export the initialization promise
 window.AmieleDB.ready = window.AmieleDB.init();
+
+// ============================================================
+// Global Auth Helpers (replaces js/supabase/auth-guard.js)
+// ============================================================
+
+/**
+ * Get current user from localStorage session.
+ * @returns {Promise<object|null>}
+ */
+window.getCurrentUser = async function () {
+    return window.AmieleDB.getCurrentUser();
+};
+
+/**
+ * Check if user is authenticated.
+ * @returns {Promise<boolean>}
+ */
+window.isAuthenticated = async function () {
+    const user = window.AmieleDB.getCurrentUser();
+    return user !== null;
+};
+
+/**
+ * Guard: No-op in frontend-only mode (pages handle their own redirects).
+ */
+window.requireAuth = async function () {
+    // No-op: authentication guards are disabled in frontend-only mode.
+};
+
+/**
+ * Guard: No-op in frontend-only mode.
+ */
+window.requireGuest = async function () {
+    // No-op: guest guards are disabled in frontend-only mode.
+};
