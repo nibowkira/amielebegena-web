@@ -29,213 +29,23 @@ window.AmieleDB = {
     seedDemoData() {
         console.log('Seeding Amiele Begena demo data...');
         
-        // 1. Users list
-        const users = [
-            {
-                id: 'usr_admin',
-                name: 'Amiele Administrator',
-                email: 'admin@amiele.com',
-                password: 'admin123', // Demo plaintext password
-                role: 'admin',
-                joinedAt: '2025-01-01T12:00:00Z'
-            },
-            {
-                id: 'usr_aff1',
-                name: 'Dawit Yohannes',
-                email: 'dawit@music.et',
-                password: 'password123',
-                role: 'affiliate',
-                joinedAt: '2026-01-10T09:00:00Z'
-            },
-            {
-                id: 'usr_user1',
-                name: 'Eleni Gebre',
-                email: 'eleni@gmail.com',
-                password: 'password123',
-                role: 'user',
-                joinedAt: '2026-03-01T14:30:00Z'
-            }
-        ];
-        localStorage.setItem(DB_PREFIX + 'users', JSON.stringify(users));
+        // 1. Users list - Managed via Supabase Auth/Profiles. Kept empty locally.
+        localStorage.setItem(DB_PREFIX + 'users', JSON.stringify([]));
 
-        // 2. Affiliate Applications
-        const applications = [
-            {
-                id: 'app_1',
-                userId: 'usr_aff1',
-                name: 'Dawit Yohannes',
-                phone: '+251911223344',
-                country: 'Ethiopia',
-                socials: {
-                    instagram: 'https://instagram.com/dawit_krar',
-                    tiktok: 'https://tiktok.com/@dawit_traditional',
-                    youtube: 'https://youtube.com/c/DawitYohannes'
-                },
-                whyApply: 'I am a traditional music teacher in Addis Ababa. I have over 5,000 students and social media followers combined, and I would love to recommend authentic instruments to them.',
-                status: 'approved',
-                submittedAt: '2026-01-05T08:00:00Z',
-                reviewedAt: '2026-01-10T09:00:00Z'
-            },
-            {
-                id: 'app_2',
-                userId: 'usr_user1',
-                name: 'Eleni Gebre',
-                phone: '+251912345678',
-                country: 'Ethiopia',
-                socials: {
-                    instagram: 'https://instagram.com/eleni_music'
-                },
-                whyApply: 'I run a cultural blog and want to showcase handcrafted Begenas to my global audience.',
-                status: 'pending',
-                submittedAt: '2026-07-01T10:15:00Z',
-                reviewedAt: null
-            }
-        ];
-        localStorage.setItem(DB_PREFIX + 'applications', JSON.stringify(applications));
+        // 2. Affiliate Applications - Managed via Supabase affiliate_applications. Kept empty locally.
+        localStorage.setItem(DB_PREFIX + 'applications', JSON.stringify([]));
 
-        // 3. Affiliates Metadata
-        const affiliates = [
-            {
-                userId: 'usr_aff1',
-                code: 'DAWIT10',
-                couponCode: 'DAWIT5',
-                balance: 4500, // Available ETB
-                totalEarnings: 15500,
-                pendingCommission: 1200,
-                totalPaid: 11000,
-                clicks: 1420,
-                sales: 12,
-                tier: 'silver' // standard, silver, gold
-            }
-        ];
-        localStorage.setItem(DB_PREFIX + 'affiliates', JSON.stringify(affiliates));
+        // 3. Affiliates Metadata - Managed via Supabase affiliates. Kept empty locally.
+        localStorage.setItem(DB_PREFIX + 'affiliates', JSON.stringify([]));
 
-        // 4. Click Logs
-        const clicks = [
-            // Sample clicks from past months
-            { affiliateId: 'usr_aff1', timestamp: '2026-05-10T12:00:00Z', ip: '197.156.80.12' },
-            { affiliateId: 'usr_aff1', timestamp: '2026-06-15T09:30:00Z', ip: '197.156.82.44' },
-            { affiliateId: 'usr_aff1', timestamp: '2026-07-02T15:45:00Z', ip: '197.156.84.101' }
-        ];
-        localStorage.setItem(DB_PREFIX + 'clicks', JSON.stringify(clicks));
+        // 4. Click Logs - Managed via Supabase.
+        localStorage.setItem(DB_PREFIX + 'clicks', JSON.stringify([]));
 
-        // 5. Commissions (Earnings)
-        const commissions = [
-            {
-                id: 'comm_1',
-                affiliateId: 'usr_aff1',
-                orderId: '#HA-0829',
-                productName: 'በገና (Begena)',
-                orderAmount: 12000, // ETB
-                commissionAmount: 1200, // 10%
-                status: 'paid', // pending, approved, paid, cancelled
-                createdAt: '2026-02-14T11:00:00Z',
-                approvedAt: '2026-02-15T09:00:00Z'
-            },
-            {
-                id: 'comm_2',
-                affiliateId: 'usr_aff1',
-                orderId: '#HA-7410',
-                productName: 'ክራር (Kirar)',
-                orderAmount: 8500,
-                commissionAmount: 1020, // 12% (tier upgrade)
-                status: 'paid',
-                createdAt: '2026-03-22T14:00:00Z',
-                approvedAt: '2026-03-23T10:00:00Z'
-            },
-            {
-                id: 'comm_3',
-                affiliateId: 'usr_aff1',
-                orderId: '#HA-9104',
-                productName: 'በገና (Begena) + ከበሮ (Kebero)',
-                orderAmount: 25800,
-                commissionAmount: 3096,
-                status: 'paid',
-                createdAt: '2026-05-18T16:30:00Z',
-                approvedAt: '2026-05-19T08:30:00Z'
-            },
-            {
-                id: 'comm_4',
-                affiliateId: 'usr_aff1',
-                orderId: '#HA-1049',
-                productName: 'ማሲንቆ (Masinko)',
-                orderAmount: 7000,
-                commissionAmount: 840,
-                status: 'paid',
-                createdAt: '2026-06-02T10:00:00Z',
-                approvedAt: '2026-06-03T11:00:00Z'
-            },
-            {
-                id: 'comm_5',
-                affiliateId: 'usr_aff1',
-                orderId: '#HA-1152',
-                productName: 'በገና (Begena)',
-                orderAmount: 12000,
-                commissionAmount: 1440,
-                status: 'paid',
-                createdAt: '2026-06-25T13:15:00Z',
-                approvedAt: '2026-06-26T14:00:00Z'
-            },
-            {
-                id: 'comm_6',
-                affiliateId: 'usr_aff1',
-                orderId: '#HA-1234',
-                productName: 'ከበሮ (Kebero)',
-                orderAmount: 13800,
-                commissionAmount: 1656,
-                status: 'paid',
-                createdAt: '2026-06-28T09:45:00Z',
-                approvedAt: '2026-06-29T10:00:00Z'
-            },
-            {
-                id: 'comm_7',
-                affiliateId: 'usr_aff1',
-                orderId: '#HA-2035',
-                productName: 'ክራር (Kirar)',
-                orderAmount: 8500,
-                commissionAmount: 1020,
-                status: 'approved', // Approved but not withdrawn yet (added to available balance)
-                createdAt: '2026-07-04T12:00:00Z',
-                approvedAt: '2026-07-05T09:00:00Z'
-            },
-            {
-                id: 'comm_8',
-                affiliateId: 'usr_aff1',
-                orderId: '#HA-2080',
-                productName: 'በገና (Begena)',
-                orderAmount: 12000,
-                commissionAmount: 1200,
-                status: 'pending', // Not reviewed by admin yet
-                createdAt: '2026-07-08T18:00:00Z',
-                approvedAt: null
-            }
-        ];
-        localStorage.setItem(DB_PREFIX + 'commissions', JSON.stringify(commissions));
+        // 5. Commissions (Earnings) - Managed via Supabase.
+        localStorage.setItem(DB_PREFIX + 'commissions', JSON.stringify([]));
 
-        // 6. Withdrawals
-        const withdrawals = [
-            {
-                id: 'wth_1',
-                affiliateId: 'usr_aff1',
-                amount: 5000,
-                method: 'Telebirr',
-                phone: '+251911223344',
-                status: 'paid', // pending, approved, rejected, paid
-                createdAt: '2026-04-01T10:00:00Z',
-                processedAt: '2026-04-02T12:00:00Z'
-            },
-            {
-                id: 'wth_2',
-                affiliateId: 'usr_aff1',
-                amount: 6000,
-                method: 'CBE (Commercial Bank of Ethiopia)',
-                phone: '+251911223344',
-                status: 'paid',
-                createdAt: '2026-06-10T11:00:00Z',
-                processedAt: '2026-06-11T14:30:00Z'
-            }
-        ];
-        localStorage.setItem(DB_PREFIX + 'withdrawals', JSON.stringify(withdrawals));
+        // 6. Withdrawals - Simulating empty state locally.
+        localStorage.setItem(DB_PREFIX + 'withdrawals', JSON.stringify([]));
 
         // 7. Campaigns (Bonus Challenges)
         const campaigns = [
@@ -856,10 +666,13 @@ window.AmieleDB.ready = window.AmieleDB.init();
 // ============================================================
 
 /**
- * Get current user from localStorage session.
+ * Get current user from AuthService.
  * @returns {Promise<object|null>}
  */
 window.getCurrentUser = async function () {
+    if (window.AuthService) {
+        return await window.AuthService.getCurrentUser();
+    }
     return window.AmieleDB.getCurrentUser();
 };
 
@@ -868,20 +681,27 @@ window.getCurrentUser = async function () {
  * @returns {Promise<boolean>}
  */
 window.isAuthenticated = async function () {
+    if (window.AuthService) {
+        return await window.AuthService.isAuthenticated();
+    }
     const user = window.AmieleDB.getCurrentUser();
     return user !== null;
 };
 
 /**
- * Guard: No-op in frontend-only mode (pages handle their own redirects).
+ * Guard: route to AuthService requireAuth.
  */
 window.requireAuth = async function () {
-    // No-op: authentication guards are disabled in frontend-only mode.
+    if (window.AuthService) {
+        return await window.AuthService.requireAuth();
+    }
 };
 
 /**
- * Guard: No-op in frontend-only mode.
+ * Guard: route to AuthService requireGuest.
  */
 window.requireGuest = async function () {
-    // No-op: guest guards are disabled in frontend-only mode.
+    if (window.AuthService) {
+        return await window.AuthService.requireGuest();
+    }
 };

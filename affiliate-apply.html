@@ -177,6 +177,12 @@
     </footer>
 
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/products-service.js"></script>
+    <script src="js/orders-service.js"></script>
+    <script src="js/affiliate-service.js"></script>
     <script src="shared-ui.js"></script>
     <script src="db.js"></script>
     <script src="whatsapp-widget.js"></script>
@@ -223,8 +229,13 @@
                 return;
             }
 
-            // Check application status
-            const app = AmieleDB.getUserApplication(user.id);
+            // Check application status from Supabase
+            let app = null;
+            if (window.AffiliateService) {
+                app = await window.AffiliateService.getUserApplication(user.id);
+            } else {
+                app = AmieleDB.getUserApplication(user.id);
+            }
 
             loadingState.classList.add('hidden');
 
@@ -245,17 +256,11 @@
                     document.getElementById('status-title').textContent = 'Application Declined';
                     document.getElementById('status-desc').textContent = 'We regret to inform you that your application to join the affiliate network has been declined at this time. Our program requires specific alignment with music platforms, cultural networks, or heritage channels.';
                     
-                    // Allow them to re-apply
+                    // Allow them to re-apply (reload clears state)
                     const reapplyBtn = document.createElement('button');
                     reapplyBtn.className = 'aff-btn';
                     reapplyBtn.textContent = 'Re-Apply / Submit New Info';
                     reapplyBtn.addEventListener('click', () => {
-                        // Delete old application from database (for demo, we simulate re-applying)
-                        const apps = AmieleDB.getApplications();
-                        const filtered = apps.filter(a => a.userId !== user.id);
-                        AmieleDB.saveApplications(filtered);
-                        
-                        // Reload
                         window.location.reload();
                     });
                     document.getElementById('status-actions').appendChild(reapplyBtn);
@@ -292,7 +297,7 @@
 
             // Form Submit Logic
             const form = document.getElementById('affiliate-apply-form');
-            form.addEventListener('submit', (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
                 // Button state loading indicator
@@ -301,46 +306,50 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Submission...';
 
-                const data = {
-                    name: document.getElementById('app-fullname').value.trim(),
-                    phone: document.getElementById('app-phone').value.trim(),
-                    country: document.getElementById('app-country').value,
-                    socials: {
-                        instagram: document.getElementById('app-insta').value.trim(),
-                        tiktok: document.getElementById('app-tiktok').value.trim(),
-                        youtube: document.getElementById('app-youtube').value.trim()
-                    },
-                    whyApply: document.getElementById('app-why').value.trim()
-                };
+                const motivation = document.getElementById('app-why').value.trim();
+                const socialLinks = [
+                    document.getElementById('app-insta').value.trim(),
+                    document.getElementById('app-tiktok').value.trim(),
+                    document.getElementById('app-youtube').value.trim()
+                ].filter(Boolean).join(', ');
 
                 const feedback = document.getElementById('apply-feedback');
                 feedback.classList.add('hidden');
 
-                // Simulate network latency for high UX fidelity
-                setTimeout(() => {
-                    try {
+                try {
+                    if (window.AffiliateService) {
+                        await window.AffiliateService.submitApplication(user.id, motivation, socialLinks || 'N/A');
+                    } else {
+                        const data = {
+                            name: document.getElementById('app-fullname').value.trim(),
+                            phone: document.getElementById('app-phone').value.trim(),
+                            country: document.getElementById('app-country').value,
+                            socials: { instagram: document.getElementById('app-insta').value.trim(), tiktok: document.getElementById('app-tiktok').value.trim(), youtube: document.getElementById('app-youtube').value.trim() },
+                            whyApply: motivation
+                        };
                         AmieleDB.submitApplication(data);
-                        
-                        // Show success toast
-                        showToast('Partnership application submitted successfully!', 'success');
-                        
-                        applyFormSection.classList.add('hidden');
-                        statusSection.classList.remove('hidden');
-                        
-                        document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-check-circle" style="color: var(--status-approved-text); animation: scaleUp 0.4s ease;"></i>';
-                        document.getElementById('status-title').textContent = 'Application Submitted!';
-                        document.getElementById('status-desc').textContent = 'Your application has been received successfully and sent to our admin panel for review. We will notify you here once it is updated.';
-                        document.getElementById('status-actions').innerHTML = '<a href="account.html" class="aff-btn" style="text-decoration:none; display:inline-block;">Go to User Dashboard</a>';
-                    } catch (err) {
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = originalText;
-                        
-                        feedback.textContent = err.message;
-                        feedback.className = 'form-feedback error';
-                        feedback.classList.remove('hidden');
-                        showToast(err.message, 'error');
                     }
-                }, 1200);
+                    
+                    // Show success toast
+                    showToast('Partnership application submitted successfully!', 'success');
+                    
+                    applyFormSection.classList.add('hidden');
+                    statusSection.classList.remove('hidden');
+                    
+                    document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-check-circle" style="color: var(--status-approved-text); animation: scaleUp 0.4s ease;"></i>';
+                    document.getElementById('status-title').textContent = 'Application Submitted!';
+                    document.getElementById('status-desc').textContent = 'Your application has been received successfully and sent to our admin panel for review. We will notify you here once it is updated.';
+                    document.getElementById('status-actions').innerHTML = '<a href="account.html" class="aff-btn" style="text-decoration:none; display:inline-block;">Go to User Dashboard</a>';
+                } catch (err) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    
+                    const errMsg = err.message || 'Submission failed. Please try again.';
+                    feedback.textContent = errMsg;
+                    feedback.className = 'form-feedback error';
+                    feedback.classList.remove('hidden');
+                    showToast(errMsg, 'error');
+                }
             });
         });
     </script>

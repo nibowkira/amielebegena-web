@@ -85,22 +85,32 @@
                     <div class="account-section">
                         <h2>Account Details</h2>
                         <form class="account-form">
+                            <div class="profile-avatar-section" style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
+                                <div id="profile-avatar-display" style="width: 80px; height: 80px; border-radius: 50%; background: var(--dark-green); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 600; text-transform: uppercase; background-size: cover; background-position: center; border: 1px solid rgba(0,0,0,0.1);">
+                                    -
+                                </div>
+                                <div>
+                                    <label for="avatar-file-input" class="btn-primary" style="cursor: pointer; padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-block; background-color: var(--dark-green); color: white; border-radius: 4px;">Upload New Avatar</label>
+                                    <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
+                                    <p style="font-size: 0.8rem; color: rgba(0,0,0,0.5); margin-top: 0.25rem;">PNG, JPG up to 2MB</p>
+                                </div>
+                            </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>FULL NAME</label>
-                                    <input type="text" class="account-input" value="Elena V. Thorne">
+                                    <input type="text" id="profile-name" class="account-input" value="Elena V. Thorne">
                                 </div>
                                 <div class="form-group">
                                     <label>EMAIL REFERENCE</label>
-                                    <input type="email" class="account-input" value="elena.thorne@archives.org">
+                                    <input type="email" id="profile-email" class="account-input" value="elena.thorne@archives.org" readonly style="opacity: 0.7; cursor: not-allowed;">
                                 </div>
                             </div>
                             <div class="form-group full-width">
                                 <label>BIOGRAPHY / NOTE TO CURATOR</label>
-                                <textarea class="account-textarea">Devoted collector of traditional strings and a student of ancient highland resonance techniques.</textarea>
+                                <textarea id="profile-bio" class="account-textarea">Devoted collector of traditional strings and a student of ancient highland resonance techniques.</textarea>
                             </div>
                             <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
-                                <button type="button" class="btn-primary">UPDATE ARCHIVE</button>
+                                <button type="button" id="update-profile-btn" class="btn-primary">UPDATE ARCHIVE</button>
                                 <button type="button" id="logout-btn" class="btn-primary" style="background-color: transparent; border: 1px solid var(--dark-green); color: var(--dark-green);">LOG OUT</button>
                                 <div id="affiliate-action-container" style="display: inline-block;"></div>
                             </div>
@@ -143,27 +153,9 @@
                             <h2>Order History</h2>
                             <a href="#" class="link">View All Archive Shipments</a>
                         </div>
-                        <div class="order-list">
-                            <div class="order-item">
-                                <div class="order-image" style="background-image: url('https://images.unsplash.com/photo-1597481499750-3e6b22637e12?q=80&w=150&auto=format&fit=crop');"></div>
-                                <div class="order-details">
-                                    <span class="order-date">NOV 14, 2023 • #HA-0829</span>
-                                    <h4>Hand-Carved Begena (10-String)</h4>
-                                    <span class="order-status">1 item • Delivered</span>
-                                </div>
-                                <div class="order-price">$450.00</div>
-                                <button class="order-btn btn-light-green">DETAILS</button>
-                            </div>
-                            <div class="order-item">
-                                <div class="order-image" style="background-image: url('https://images.unsplash.com/photo-1600857544200-b2f666a9a2ec?q=80&w=150&auto=format&fit=crop');"></div>
-                                <div class="order-details">
-                                    <span class="order-date">OCT 22, 2023 • #HA-7410</span>
-                                    <h4>Sheep-Gut Strings (Set of 6)</h4>
-                                    <span class="order-status">1 item • Shipped</span>
-                                </div>
-                                <div class="order-price">$42.00</div>
-                                <button class="order-btn btn-light-green">TRACK</button>
-                            </div>
+                        <div class="order-list" id="orders-list-container">
+                            <!-- Injected dynamically by JS -->
+                            <p style="color: rgba(0,0,0,0.5);">Loading order history...</p>
                         </div>
                     </div>
                 </div>
@@ -269,6 +261,12 @@
     <div id="toast-container"></div>
 
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/products-service.js"></script>
+    <script src="js/orders-service.js"></script>
+    <script src="js/affiliate-service.js"></script>
     <script src="shared-ui.js"></script>
     <script src="db.js"></script>
     <script src="whatsapp-widget.js"></script>
@@ -287,15 +285,126 @@
             }
 
             // Sync account info fields
-            const nameFields = document.querySelectorAll('input[value="Elena V. Thorne"]');
-            if (nameFields.length > 0) nameFields[0].value = user.name;
+            const nameField = document.getElementById('profile-name');
+            if (nameField) nameField.value = user.name;
 
-            const emailFields = document.querySelectorAll('input[value="elena.thorne@archives.org"]');
-            if (emailFields.length > 0) emailFields[0].value = user.email;
+            const emailField = document.getElementById('profile-email');
+            if (emailField) emailField.value = user.email;
 
-            if (user.bio) {
-                const bioField = document.querySelector('.account-textarea');
-                if (bioField) bioField.value = user.bio;
+            const bioField = document.getElementById('profile-bio');
+            if (bioField && user.bio) bioField.value = user.bio;
+
+            // Avatar loading & uploading
+            const avatarDisplay = document.getElementById('profile-avatar-display');
+            const fileInput = document.getElementById('avatar-file-input');
+
+            async function loadAvatar() {
+                if (user.photoUrl) {
+                    try {
+                        const client = window.AmieleSupabase.getClient();
+                        let path = user.photoUrl;
+                        if (path.startsWith('http')) {
+                            const parts = path.split('/user-avatars/');
+                            if (parts.length > 1) {
+                                path = parts[1];
+                            }
+                        }
+                        const { data, error } = await client.storage
+                            .from('user-avatars')
+                            .download(path);
+                        if (error) throw error;
+
+                        const objectUrl = URL.createObjectURL(data);
+                        avatarDisplay.style.backgroundImage = `url('${objectUrl}')`;
+                        avatarDisplay.textContent = '';
+                    } catch (err) {
+                        console.error('Failed to load avatar:', err);
+                        avatarDisplay.style.backgroundImage = 'none';
+                        avatarDisplay.textContent = user.name ? user.name.charAt(0) : '-';
+                    }
+                } else {
+                    avatarDisplay.style.backgroundImage = 'none';
+                    avatarDisplay.textContent = user.name ? user.name.charAt(0) : '-';
+                }
+            }
+            loadAvatar();
+
+            if (fileInput) {
+                fileInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    if (file.size > 2 * 1024 * 1024) {
+                        showToast('Avatar file size must be less than 2MB.', 'error');
+                        return;
+                    }
+
+                    avatarDisplay.textContent = '...';
+
+                    try {
+                        const client = window.AmieleSupabase.getClient();
+                        const fileExt = file.name.split('.').pop();
+                        const filePath = `${user.id}/avatar_${Date.now()}.${fileExt}`;
+
+                        const { error: uploadError } = await client.storage
+                            .from('user-avatars')
+                            .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+                        if (uploadError) throw uploadError;
+
+                        // Save file path relative to bucket or full URL
+                        const { error: updateError } = await client
+                            .from('profiles')
+                            .update({ avatar_url: filePath })
+                            .eq('id', user.id);
+
+                        if (updateError) throw updateError;
+
+                        user.photoUrl = filePath;
+                        await loadAvatar();
+                        showToast('Avatar updated successfully!', 'success');
+                    } catch (err) {
+                        console.error(err);
+                        showToast(err.message || 'Avatar upload failed.', 'error');
+                        await loadAvatar();
+                    }
+                });
+            }
+
+            // Profile saving
+            const updateBtn = document.getElementById('update-profile-btn');
+            if (updateBtn) {
+                updateBtn.addEventListener('click', async () => {
+                    const name = nameField.value.trim();
+                    const bio = bioField.value.trim();
+
+                    if (!name) {
+                        showToast('Name cannot be empty.', 'warning');
+                        return;
+                    }
+
+                    updateBtn.disabled = true;
+                    updateBtn.textContent = 'SAVING...';
+
+                    try {
+                        const client = window.AmieleSupabase.getClient();
+                        const { error } = await client
+                            .from('profiles')
+                            .update({ full_name: name, bio: bio })
+                            .eq('id', user.id);
+
+                        if (error) throw error;
+
+                        await window.AuthService.getCurrentUser(true);
+                        showToast('Profile updated successfully!', 'success');
+                    } catch (err) {
+                        console.error(err);
+                        showToast(err.message || 'Failed to update profile.', 'error');
+                    } finally {
+                        updateBtn.disabled = false;
+                        updateBtn.textContent = 'UPDATE ARCHIVE';
+                    }
+                });
             }
 
             const actionContainer = document.getElementById('affiliate-action-container');
@@ -337,6 +446,66 @@
                     }
                 }
             }
+
+            // Render Order History from Supabase
+            async function renderOrderHistory() {
+                const container = document.getElementById('orders-list-container');
+                if (!container) return;
+
+                if (!window.OrdersService) {
+                    container.innerHTML = '<p style="color: rgba(0,0,0,0.5);">Order history service is offline.</p>';
+                    return;
+                }
+
+                try {
+                    const dbOrders = await window.OrdersService.getUserOrders(user.id);
+                    container.innerHTML = '';
+
+                    if (!dbOrders || dbOrders.length === 0) {
+                        container.innerHTML = '<p style="color: rgba(0,0,0,0.5);">You have not placed any orders yet.</p>';
+                        return;
+                    }
+
+                    dbOrders.forEach(order => {
+                        const product = order.product || {};
+                        const images = product.product_images || [];
+                        const coverImage = images.find(img => img.is_cover) || images[0] || {};
+                        
+                        let imgUrl = coverImage.storage_path || 'image/photo_2025-10-01_07-26-53.jpg';
+                        if (imgUrl && !imgUrl.startsWith('http') && !imgUrl.startsWith('image/') && !imgUrl.includes('/')) {
+                            const client = window.AmieleSupabase.getClient();
+                            const { data: { publicUrl } } = client.storage
+                                .from('product-images')
+                                .getPublicUrl(imgUrl);
+                            imgUrl = publicUrl;
+                        }
+
+                        const dateString = new Date(order.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                        });
+
+                        const orderItem = document.createElement('div');
+                        orderItem.className = 'order-item';
+                        orderItem.innerHTML = `
+                            <div class="order-image" style="background-image: url('${imgUrl}');"></div>
+                            <div class="order-details">
+                                <span class="order-date">${dateString.toUpperCase()} • #${order.id.slice(0, 8).toUpperCase()}</span>
+                                <h4>${product.name || 'Instrument'}</h4>
+                                <span class="order-status">${order.quantity} item${order.quantity > 1 ? 's' : ''} • ${order.status.toUpperCase()}</span>
+                            </div>
+                            <div class="order-price">${typeof formatPrice === 'function' ? formatPrice(product.price * order.quantity) : '$' + (product.price * order.quantity).toFixed(2)}</div>
+                            <button class="order-btn btn-light-green" onclick="alert('Order notes: ${order.notes || 'None'}')">DETAILS</button>
+                        `;
+                        container.appendChild(orderItem);
+                    });
+                } catch (err) {
+                    console.error('Failed to load order history:', err);
+                    container.innerHTML = '<p style="color: red;">Failed to load order history.</p>';
+                }
+            }
+            renderOrderHistory();
         });
     </script>
 </body>

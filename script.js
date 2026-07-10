@@ -62,8 +62,9 @@ window.changeCurrency = function(currency) {
     }
 };
 
-// amielebegena Products
-const products = [
+// amielebegena Products — loaded dynamically from Supabase
+// Fallback hardcoded products used if remote fetch fails
+const FALLBACK_PRODUCTS = [
     // STRINGS
     {
         id: 1, name: "በገና (Begena)", desc: "Ten-Stringed Harp of David",
@@ -161,6 +162,26 @@ const products = [
     }
 ];
 
+// Live products array — populated from Supabase, falls back to FALLBACK_PRODUCTS
+let products = [...FALLBACK_PRODUCTS];
+
+/**
+ * Attempt to load products from Supabase via ProductsService.
+ * On success, replaces the products array. On failure, keeps the fallback.
+ */
+async function loadProductsFromSupabase() {
+    if (!window.ProductsService) return;
+    try {
+        const remoteProducts = await window.ProductsService.getProducts();
+        if (remoteProducts && remoteProducts.length > 0) {
+            products = remoteProducts;
+            console.log(`[Amiele] Loaded ${products.length} products from Supabase`);
+        }
+    } catch (err) {
+        console.warn('[Amiele] Failed to load products from Supabase, using fallback:', err.message);
+    }
+}
+
 let cart = [];
 let activeCategory = 'strings';
 
@@ -254,7 +275,7 @@ function renderProducts(category) {
         card.innerHTML = `
             <div class="product-image-wrap artisan-photo-wrap wood-shimmer">
 
-                <button class="save-item-btn animate-scale ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave(${product.id}, this)">
+                <button class="save-item-btn animate-scale ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave('${product.id}', this)">
                     ${isSaved ? '♥' : '♡'}
                 </button>
                 <img src="${product.image}" alt="${product.name}" class="animate-fade">
@@ -270,7 +291,7 @@ function renderProducts(category) {
                 </div>
                 <div class="product-info-row">
 
-                    <button class="add-to-cart-btn animate-scale" onclick="addToCart(${product.id})">ADD TO CART</button>
+                    <button class="add-to-cart-btn animate-scale" onclick="addToCart('${product.id}')">ADD TO CART</button>
                     <a href="${getWhatsAppUrl(product.name, product.price)}" target="_blank" class="whatsapp-btn animate-scale">
                         ${whatsappIcon} Order via WhatsApp
                     </a>
@@ -303,8 +324,8 @@ window.handleSort = function() {
 
 // Cart Logic
 window.addToCart = function(productId) {
-    const product = products.find(p => p.id === productId);
-    const existingItem = cart.find(item => item.id === productId);
+    const product = products.find(p => p.id == productId);
+    const existingItem = cart.find(item => item.id == productId);
 
     if (existingItem) {
         existingItem.quantity += 1;
@@ -317,12 +338,12 @@ window.addToCart = function(productId) {
 };
 
 window.removeFromCart = function(productId) {
-    cart = cart.filter(item => item.id !== productId);
+    cart = cart.filter(item => item.id != productId);
     updateCartUI();
 };
 
 window.changeQuantity = function(productId, delta) {
-    const item = cart.find(i => i.id === productId);
+    const item = cart.find(i => i.id == productId);
     if (!item) return;
 
     item.quantity += delta;
@@ -358,10 +379,10 @@ function updateCartUI() {
                 <div class="cart-item-title">${item.name}</div>
                 <div class="cart-item-price">${formatPrice(item.price)}</div>
                 <div class="cart-item-actions">
-                    <button class="qty-btn" onclick="changeQuantity(${item.id}, -1)">-</button>
+                    <button class="qty-btn" onclick="changeQuantity('${item.id}', -1)">-</button>
                     <span>${item.quantity}</span>
-                    <button class="qty-btn" onclick="changeQuantity(${item.id}, 1)">+</button>
-                    <button class="remove-btn" onclick="removeFromCart(${item.id})">Remove</button>
+                    <button class="qty-btn" onclick="changeQuantity('${item.id}', 1)">+</button>
+                    <button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
                 </div>
             </div>
             <div class="cart-item-line-price">
@@ -416,7 +437,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (productContainer) {
+        // Render fallback immediately, then replace with Supabase data
         renderProducts('strings');
+        loadProductsFromSupabase().then(() => {
+            renderProducts(activeCategory);
+        });
     }
     updateStaticWhatsAppButtons();
     updateCartCount(0);
@@ -463,25 +488,63 @@ document.addEventListener('DOMContentLoaded', () => {
                                 `----------------------------------------\n` +
                                 `Please confirm my order and let me know the payment/delivery details. Thank you! / እናመሰግናለን!`;
 
-            // Log sale in database if referral code exists
+            // Log sale in legacy local DB if it exists (for compatibility)
             if (window.AmieleDB && activeRef) {
                 try {
-                    // Total amount converted to ETB for database records (base exchange rate: 120)
                     const totalETB = total * 120;
-                    AmieleDB.trackSale(activeRef, orderId, totalETB, productNamesList.join(', '));
-                    console.log(`Sale attributed to affiliate: ${activeRef}`);
-                    // Clear ref code after checkout attribute
-                    localStorage.removeItem('amiele_ref_code');
+                    window.AmieleDB.trackSale(activeRef, orderId, totalETB, productNamesList.join(', '));
                 } catch (e) {
                     console.error('Error attributing sale: ', e);
                 }
             }
 
-            const encodedMessage = encodeURIComponent(messageText);
-            const whatsappUrl = `https://wa.me/251969189470?text=${encodedMessage}`;
-            
-            // Open WhatsApp
-            window.open(whatsappUrl, '_blank');
+            // Log orders in Supabase and trigger redirect
+            if (window.OrdersService) {
+                (async () => {
+                    checkoutBtn.disabled = true;
+                    const originalText = checkoutBtn.textContent;
+                    checkoutBtn.textContent = 'LOGGING ORDER...';
+
+                    try {
+                        const currentUser = await window.getCurrentUser();
+                        const customerId = currentUser ? currentUser.id : null;
+                        
+                        await window.OrdersService.createOrdersFromCart(
+                            cart,
+                            customerId,
+                            activeRef,
+                            `Order Ref: ${orderId} (WhatsApp Checkout)`
+                        );
+                        console.log('[Amiele:Orders] Orders logged to Supabase successfully.');
+                    } catch (err) {
+                        console.error('[Amiele:Orders] Failed to log order details to Supabase:', err);
+                    } finally {
+                        localStorage.removeItem('amiele_ref_code');
+                        
+                        const encodedMessage = encodeURIComponent(messageText);
+                        const whatsappUrl = `https://wa.me/251969189470?text=${encodedMessage}`;
+                        
+                        // Open WhatsApp
+                        window.open(whatsappUrl, '_blank');
+                        
+                        // Reset cart UI
+                        cart = [];
+                        updateCartUI();
+                        closeCart();
+                        
+                        checkoutBtn.disabled = false;
+                        checkoutBtn.textContent = originalText;
+                    }
+                })();
+            } else {
+                const encodedMessage = encodeURIComponent(messageText);
+                const whatsappUrl = `https://wa.me/251969189470?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
+                
+                cart = [];
+                updateCartUI();
+                closeCart();
+            }
         });
     }
 
@@ -507,7 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.textContent = 'LOGGING IN...';
 
             try {
-                window.AmieleDB.login(email, password);
+                await window.AuthService.signIn(email, password);
                 if (typeof showToast === 'function') {
                     showToast('Login successful! Redirecting...', 'success');
                 }
@@ -519,9 +582,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error(err);
                 if (typeof showToast === 'function') {
-                    showToast('An unexpected error occurred during login.', 'error');
+                    showToast(err.message || 'An unexpected error occurred during login.', 'error');
                 } else {
-                    alert('An unexpected error occurred.');
+                    alert(err.message || 'An unexpected error occurred.');
                 }
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalBtnText;
@@ -558,7 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.textContent = 'SIGNING UP...';
 
             try {
-                window.AmieleDB.register(name, email, password);
+                await window.AuthService.signUp(name, email, password);
                 if (typeof showToast === 'function') {
                     showToast('Registration successful! Redirecting...', 'success');
                 }
@@ -568,9 +631,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error(err);
                 if (typeof showToast === 'function') {
-                    showToast('An unexpected error occurred during signup.', 'error');
+                    showToast(err.message || 'An unexpected error occurred during signup.', 'error');
                 } else {
-                    alert('An unexpected error occurred.');
+                    alert(err.message || 'An unexpected error occurred.');
                 }
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalBtnText;
@@ -584,7 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
-                window.AmieleDB.logout();
+                await window.AuthService.signOut();
                 if (typeof showToast === 'function') {
                     showToast('Logged out successfully.', 'info');
                 }

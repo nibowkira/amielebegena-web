@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Dynamic loads
         if (tabName === 'dashboard') renderDashboardStats();
+        // Dynamic loads
+        if (tabName === 'dashboard') renderDashboardStats();
         if (tabName === 'users') renderUsersList();
         if (tabName === 'applications') renderApplicationsQueue();
         if (tabName === 'commissions') renderCommissionsQueue();
@@ -36,34 +38,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // 2. Dashboard Analytics Overview
-    function renderDashboardStats() {
-        const users = AmieleDB.getUsers();
-        const apps = AmieleDB.getApplications();
-        const affiliates = AmieleDB.getAffiliates();
-        const commissions = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
-        const withdrawals = JSON.parse(localStorage.getItem('amiele_withdrawals')) || [];
+    async function renderDashboardStats() {
+        let users = [];
+        let apps = [];
+        let referredSales = [];
+
+        if (window.AdminService) {
+            try {
+                users = await window.AdminService.getUsers();
+                apps = await window.AdminService.getApplications();
+                referredSales = await window.AdminService.getReferredSales();
+            } catch (e) {
+                console.error('[Amiele:Admin] Error fetching stats:', e);
+            }
+        }
+
+        const affiliatesCount = users.filter(u => u.role === 'affiliate').length;
+        const pendingAppsCount = apps.filter(a => a.status === 'pending').length;
 
         document.getElementById('admin-stat-users').textContent = users.length;
-        document.getElementById('admin-stat-apps').textContent = apps.filter(a => a.status === 'pending').length;
-        document.getElementById('admin-stat-affiliates').textContent = affiliates.length;
+        document.getElementById('admin-stat-apps').textContent = pendingAppsCount;
+        document.getElementById('admin-stat-affiliates').textContent = affiliatesCount;
         
-        const totalEarnings = commissions.filter(c => c.status === 'approved' || c.status === 'paid').reduce((sum, c) => sum + c.commissionAmount, 0);
+        // Sum confirmed referred sales commission
+        const totalEarnings = referredSales
+            .filter(c => c.status === 'confirmed' || c.status === 'delivered')
+            .reduce((sum, c) => sum + c.commissionAmount, 0);
+
         document.getElementById('admin-stat-payouts').textContent = `ETB ${totalEarnings.toLocaleString()}`;
     }
 
     // 3. User Management
-    function renderUsersList() {
+    async function renderUsersList() {
         const tbody = document.getElementById('users-table-body');
         if (!tbody) return;
 
-        const users = AmieleDB.getUsers();
+        let users = [];
+        if (window.AdminService) {
+            try {
+                users = await window.AdminService.getUsers();
+            } catch (e) {
+                console.error('[Amiele:Admin] Error fetching users:', e);
+            }
+        }
         tbody.innerHTML = '';
 
         users.forEach(u => {
-            const date = new Date(u.joinedAt).toLocaleDateString();
+            const date = new Date(u.created_at || u.joinedAt || Date.now()).toLocaleDateString();
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${u.id}</strong></td>
+                <td><strong>${u.id.slice(0, 8)}</strong></td>
                 <td>${u.name}</td>
                 <td>${u.email}</td>
                 <td><span class="aff-badge ${u.role === 'admin' ? 'paid' : u.role === 'affiliate' ? 'approved' : 'pending'}">${u.role}</span></td>
@@ -87,22 +111,32 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const users = AmieleDB.getUsers();
-        const u = users.find(user => user.id === userId);
-        if (u) {
-            u.role = newRole;
-            AmieleDB.saveUsers(users);
+        try {
+            if (window.AdminService) {
+                await window.AdminService.changeUserRole(userId, newRole);
+            }
             showToast(`User role updated to ${newRole}!`, 'success');
+            renderUsersList();
+            renderDashboardStats();
+        } catch (err) {
+            showToast(err.message, 'error');
             renderUsersList();
         }
     };
 
     // 4. Affiliate Applications Queue
-    function renderApplicationsQueue() {
+    async function renderApplicationsQueue() {
         const tbody = document.getElementById('apps-table-body');
         if (!tbody) return;
 
-        const apps = AmieleDB.getApplications();
+        let apps = [];
+        if (window.AdminService) {
+            try {
+                apps = await window.AdminService.getApplications();
+            } catch (e) {
+                console.error('[Amiele:Admin] Error fetching applications:', e);
+            }
+        }
         tbody.innerHTML = '';
 
         const pendingApps = apps.filter(a => a.status === 'pending');
@@ -127,60 +161,82 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td style="max-width:200px; font-size:0.8rem; color:#555;">${a.whyApply}</td>
                 <td>${date}</td>
                 <td>
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="approveApp('${a.id}')">Approve</button>
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="rejectApp('${a.id}')">Reject</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="approveApp('${a.userId}', '${a.name}')">Approve</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="rejectApp('${a.userId}', '${a.name}')">Reject</button>
                 </td>
             `;
             tbody.appendChild(row);
         });
     }
 
-    window.approveApp = async function(appId) {
-        const apps = AmieleDB.getApplications();
-        const app = apps.find(a => a.id === appId);
-        if (!app) return;
-
-        const confirmed = await showConfirmModal('Approve Affiliate Application', `Are you sure you want to approve the application for <strong>${app.name}</strong>?`);
+    window.approveApp = async function(userId, name) {
+        const confirmed = await showConfirmModal('Approve Affiliate Application', `Are you sure you want to approve the application for <strong>${name}</strong>?`);
         if (confirmed) {
-            AmieleDB.adminApproveApplication(appId);
-            AmieleDB.addNotification(
-                app.userId, 
-                'Partnership Approved! 🎉', 
-                'Congratulations! Your partnership application has been approved. You are now an active Amiele affiliate.', 
-                'announcement'
-            );
-            showToast('Application approved! User role upgraded to Affiliate.', 'success');
-            renderApplicationsQueue();
-            renderDashboardStats();
+            try {
+                if (window.AdminService) {
+                    const currentUser = await window.getCurrentUser();
+                    await window.AdminService.approveApplication(userId, currentUser.id);
+                }
+                
+                // Add notification in local DB for dashboard updates compatibility
+                if (window.AmieleDB) {
+                    window.AmieleDB.addNotification(
+                        userId, 
+                        'Partnership Approved! 🎉', 
+                        'Congratulations! Your partnership application has been approved. You are now an active Amiele affiliate.', 
+                        'announcement'
+                    );
+                }
+
+                showToast('Application approved! User role upgraded to Affiliate.', 'success');
+                renderApplicationsQueue();
+                renderDashboardStats();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
         }
     };
 
-    window.rejectApp = async function(appId) {
-        const apps = AmieleDB.getApplications();
-        const app = apps.find(a => a.id === appId);
-        if (!app) return;
-
-        const confirmed = await showConfirmModal('Reject Affiliate Application', `Are you sure you want to reject the application for <strong>${app.name}</strong>?`, true);
+    window.rejectApp = async function(userId, name) {
+        const confirmed = await showConfirmModal('Reject Affiliate Application', `Are you sure you want to reject the application for <strong>${name}</strong>?`, true);
         if (confirmed) {
-            AmieleDB.adminRejectApplication(appId);
-            AmieleDB.addNotification(
-                app.userId, 
-                'Application Declined', 
-                'Your affiliate application has been declined at this time.', 
-                'announcement'
-            );
-            showToast('Application declined.', 'warning');
-            renderApplicationsQueue();
-            renderDashboardStats();
+            try {
+                if (window.AdminService) {
+                    const currentUser = await window.getCurrentUser();
+                    await window.AdminService.rejectApplication(userId, currentUser.id);
+                }
+                
+                if (window.AmieleDB) {
+                    window.AmieleDB.addNotification(
+                        userId, 
+                        'Application Declined', 
+                        'Your affiliate application has been declined at this time.', 
+                        'announcement'
+                    );
+                }
+
+                showToast('Application declined.', 'warning');
+                renderApplicationsQueue();
+                renderDashboardStats();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
         }
     };
 
     // 5. Commissions Queue
-    function renderCommissionsQueue() {
+    async function renderCommissionsQueue() {
         const tbody = document.getElementById('commissions-table-body');
         if (!tbody) return;
 
-        const commissions = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
+        let commissions = [];
+        if (window.AdminService) {
+            try {
+                commissions = await window.AdminService.getReferredSales();
+            } catch (e) {
+                console.error('[Amiele:Admin] Error fetching commissions:', e);
+            }
+        }
         tbody.innerHTML = '';
 
         if (commissions.length === 0) {
@@ -191,13 +247,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         commissions.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(c => {
             const date = new Date(c.createdAt).toLocaleDateString();
             const actionBtns = c.status === 'pending' ? `
-                <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="approveCommission('${c.id}')">Confirm Sale</button>
-                <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="cancelCommission('${c.id}')">Cancel</button>
+                <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="approveCommission('${c.id}', '${c.orderId}')">Confirm Sale</button>
+                <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="cancelCommission('${c.id}', '${c.orderId}')">Cancel</button>
             ` : '-';
 
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${c.id}</strong></td>
+                <td><strong>${c.id.slice(0, 8)}</strong></td>
                 <td>${c.affiliateId}</td>
                 <td><strong>${c.orderId}</strong><br>${c.productName}</td>
                 <td>ETB ${c.orderAmount.toLocaleString()}</td>
@@ -209,43 +265,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    window.approveCommission = async function(commId) {
-        const commissions = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
-        const c = commissions.find(x => x.id === commId);
-        if (!c) return;
-
-        const confirmed = await showConfirmModal('Confirm Referral Sale', `Confirm commission payout of <strong>ETB ${c.commissionAmount.toLocaleString()}</strong> to partner for order reference <strong>${c.orderId}</strong>?`);
+    window.approveCommission = async function(commId, orderId) {
+        const confirmed = await showConfirmModal('Confirm Referral Sale', `Confirm commission payout for order reference <strong>${orderId}</strong>?`);
         if (confirmed) {
-            AmieleDB.adminApproveCommission(commId);
-            AmieleDB.addNotification(
-                c.affiliateId, 
-                'Commission Credited! 💰', 
-                `Your commission of ETB ${c.commissionAmount.toLocaleString()} for order ${c.orderId} has been confirmed and added to your balance.`, 
-                'commission'
-            );
-            showToast('Commission approved and credited to Affiliate balance!', 'success');
-            renderCommissionsQueue();
-            renderDashboardStats();
+            try {
+                if (window.AdminService) {
+                    await window.AdminService.updateOrderStatus(commId, 'confirmed');
+                }
+                showToast('Commission approved and credited to Affiliate balance!', 'success');
+                renderCommissionsQueue();
+                renderDashboardStats();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
         }
     };
 
-    window.cancelCommission = async function(commId) {
-        const commissions = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
-        const c = commissions.find(x => x.id === commId);
-        if (!c) return;
-
-        const confirmed = await showConfirmModal('Cancel Referral Sale', `Are you sure you want to cancel the commission of <strong>ETB ${c.commissionAmount.toLocaleString()}</strong>?`, true);
+    window.cancelCommission = async function(commId, orderId) {
+        const confirmed = await showConfirmModal('Cancel Referral Sale', `Are you sure you want to cancel the commission for order <strong>${orderId}</strong>?`, true);
         if (confirmed) {
-            AmieleDB.adminCancelCommission(commId);
-            AmieleDB.addNotification(
-                c.affiliateId, 
-                'Commission Declined', 
-                `Your pending commission for order ${c.orderId} was declined/cancelled by administration.`, 
-                'commission'
-            );
-            showToast('Commission cancelled.', 'warning');
-            renderCommissionsQueue();
-            renderDashboardStats();
+            try {
+                if (window.AdminService) {
+                    await window.AdminService.updateOrderStatus(commId, 'cancelled');
+                }
+                showToast('Commission cancelled.', 'warning');
+                renderCommissionsQueue();
+                renderDashboardStats();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
         }
     };
 

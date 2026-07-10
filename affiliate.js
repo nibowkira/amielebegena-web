@@ -24,12 +24,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     syncSidebarInfo();
 
-    // 2. Fetch Affiliate Metadata
-    const metadata = AmieleDB.getAffiliateMetadata(user.id);
+    // 2. Fetch Affiliate Metadata from Supabase (with localStorage fallback)
+    let metadata = null;
+    if (window.AffiliateService) {
+        try {
+            metadata = await window.AffiliateService.getAffiliateMetadata(user.id);
+        } catch (e) {
+            console.warn('[Amiele:Affiliate] Supabase metadata fetch failed, using fallback:', e);
+        }
+    }
+    if (!metadata && window.AmieleDB) {
+        metadata = AmieleDB.getAffiliateMetadata(user.id);
+    }
     if (!metadata) {
-        // Fallback: seed metadata if somehow missing
-        AmieleDB.adminApproveApplication('dummy'); 
-        window.location.reload();
+        console.error('[Amiele:Affiliate] No affiliate metadata found for user.');
+        // Show error state instead of infinite reload loop
+        document.body.innerHTML = '<div style="padding:3rem;text-align:center;font-family:sans-serif"><h2>Affiliate data not found</h2><p>Your affiliate account may not be fully provisioned yet.</p><a href="account.html" style="color:#2e7d32">Back to Account</a></div>';
         return;
     }
 
@@ -439,11 +449,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // 7. Render tables (Commissions and Withdrawals)
-    function renderCommissionsTable() {
+    async function renderCommissionsTable() {
         const tbody = document.getElementById('commissions-table-body');
         if (!tbody) return;
 
-        const commissions = AmieleDB.getAffiliateCommissions(user.id);
+        let commissions = [];
+        if (window.AffiliateService) {
+            try { commissions = await window.AffiliateService.getCommissionsLedger(user.id); } catch(e) { console.warn(e); }
+        }
+        if (commissions.length === 0 && window.AmieleDB) {
+            commissions = AmieleDB.getAffiliateCommissions(user.id);
+        }
         tbody.innerHTML = '';
         
         if (commissions.length === 0) {
@@ -467,11 +483,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    function renderCommissionsTableFull() {
+    async function renderCommissionsTableFull() {
         const tbody = document.getElementById('commissions-table-body-full');
         if (!tbody) return;
 
-        const commissions = AmieleDB.getAffiliateCommissions(user.id);
+        let commissions = [];
+        if (window.AffiliateService) {
+            try { commissions = await window.AffiliateService.getCommissionsLedger(user.id); } catch(e) { console.warn(e); }
+        }
+        if (commissions.length === 0 && window.AmieleDB) {
+            commissions = AmieleDB.getAffiliateCommissions(user.id);
+        }
         tbody.innerHTML = '';
         
         if (commissions.length === 0) {
