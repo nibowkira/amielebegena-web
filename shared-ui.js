@@ -133,6 +133,8 @@ window.renderEmptyState = function (containerId, title, desc) {
     const el = document.getElementById(containerId);
     if (!el) return;
 
+    const esc = window.AmieleSanitize ? window.AmieleSanitize.escapeHtml : function(v) { return v == null ? '' : String(v); };
+
     el.innerHTML = `
         <div class="empty-state-container">
             <svg class="empty-state-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -140,8 +142,8 @@ window.renderEmptyState = function (containerId, title, desc) {
                 <path d="M70 120H130M70 100H130M70 80H100" stroke="currentColor" stroke-width="6" stroke-linecap="round" opacity="0.4"/>
                 <rect x="50" y="50" width="100" height="100" rx="12" stroke="currentColor" stroke-width="8" stroke-linejoin="round" opacity="0.3"/>
             </svg>
-            <h3>${title}</h3>
-            <p>${desc}</p>
+            <h3>${esc(title)}</h3>
+            <p>${esc(desc)}</p>
         </div>
     `;
 };

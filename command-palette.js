@@ -188,10 +188,12 @@
             el.setAttribute('role', 'option');
             el.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
             
+            const esc = window.AmieleSanitize ? window.AmieleSanitize.escapeHtml : function(v) { return v == null ? '' : String(v); };
+            
             el.innerHTML = `
                 <div class="command-palette-item-content">
-                    <i class="fas ${item.icon} command-palette-item-icon"></i>
-                    <span>${item.title}</span>
+                    <i class="fas ${esc(item.icon)} command-palette-item-icon"></i>
+                    <span>${esc(item.title)}</span>
                 </div>
                 <span class="command-palette-item-shortcut">Enter</span>
             `;

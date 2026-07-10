@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    const esc = window.AmieleSanitize ? window.AmieleSanitize.escapeHtml : function(v) { return v == null ? '' : String(v); };
+
     // 1. Guard check
     const user = await window.getCurrentUser();
     if (!user || user.role !== 'admin') {
@@ -87,13 +89,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const date = new Date(u.created_at || u.joinedAt || Date.now()).toLocaleDateString();
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${u.id.slice(0, 8)}</strong></td>
-                <td>${u.name}</td>
-                <td>${u.email}</td>
-                <td><span class="aff-badge ${u.role === 'admin' ? 'paid' : u.role === 'affiliate' ? 'approved' : 'pending'}">${u.role}</span></td>
+                <td><strong>${esc(u.id.slice(0, 8))}</strong></td>
+                <td>${esc(u.name)}</td>
+                <td>${esc(u.email)}</td>
+                <td><span class="aff-badge ${u.role === 'admin' ? 'paid' : u.role === 'affiliate' ? 'approved' : 'pending'}">${esc(u.role)}</span></td>
                 <td>${date}</td>
                 <td>
-                    <select class="aff-select" style="padding:0.4rem; font-size:0.8rem; width:auto;" onchange="changeUserRole('${u.id}', this.value)">
+                    <select class="aff-select" style="padding:0.4rem; font-size:0.8rem; width:auto;" onchange="changeUserRole('${esc(u.id)}', this.value)">
                         <option value="user" ${u.role === 'user' ? 'selected' : ''}>User</option>
                         <option value="affiliate" ${u.role === 'affiliate' ? 'selected' : ''}>Affiliate</option>
                         <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
@@ -150,19 +152,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const date = new Date(a.submittedAt).toLocaleDateString();
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${a.id}</strong></td>
-                <td>${a.name}</td>
-                <td>${a.phone}<br>${a.country}</td>
+                <td><strong>${esc(a.id)}</strong></td>
+                <td>${esc(a.name)}</td>
+                <td>${esc(a.phone)}<br>${esc(a.country)}</td>
                 <td>
-                    ${a.socials.instagram ? `<a href="${a.socials.instagram}" target="_blank">Insta</a><br>` : ''}
-                    ${a.socials.tiktok ? `<a href="${a.socials.tiktok}" target="_blank">TikTok</a><br>` : ''}
-                    ${a.socials.youtube ? `<a href="${a.socials.youtube}" target="_blank">YouTube</a>` : ''}
+                    ${a.socials.instagram ? `<a href="${esc(a.socials.instagram)}" target="_blank">Insta</a><br>` : ''}
+                    ${a.socials.tiktok ? `<a href="${esc(a.socials.tiktok)}" target="_blank">TikTok</a><br>` : ''}
+                    ${a.socials.youtube ? `<a href="${esc(a.socials.youtube)}" target="_blank">YouTube</a>` : ''}
                 </td>
-                <td style="max-width:200px; font-size:0.8rem; color:#555;">${a.whyApply}</td>
+                <td style="max-width:200px; font-size:0.8rem; color:#555;">${esc(a.whyApply)}</td>
                 <td>${date}</td>
                 <td>
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="approveApp('${a.userId}', '${a.name}')">Approve</button>
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="rejectApp('${a.userId}', '${a.name}')">Reject</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="approveApp('${esc(a.userId)}', '${esc(a.name)}')">Approve</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="rejectApp('${esc(a.userId)}', '${esc(a.name)}')">Reject</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -247,18 +249,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         commissions.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(c => {
             const date = new Date(c.createdAt).toLocaleDateString();
             const actionBtns = c.status === 'pending' ? `
-                <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="approveCommission('${c.id}', '${c.orderId}')">Confirm Sale</button>
-                <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="cancelCommission('${c.id}', '${c.orderId}')">Cancel</button>
+                <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="approveCommission('${esc(c.id)}', '${esc(c.orderId)}')">Confirm Sale</button>
+                <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="cancelCommission('${esc(c.id)}', '${esc(c.orderId)}')">Cancel</button>
             ` : '-';
 
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${c.id.slice(0, 8)}</strong></td>
-                <td>${c.affiliateId}</td>
-                <td><strong>${c.orderId}</strong><br>${c.productName}</td>
+                <td><strong>${esc(c.id.slice(0, 8))}</strong></td>
+                <td>${esc(c.affiliateId)}</td>
+                <td><strong>${esc(c.orderId)}</strong><br>${esc(c.productName)}</td>
                 <td>ETB ${c.orderAmount.toLocaleString()}</td>
                 <td style="color:#2e7d32; font-weight:600;">ETB ${c.commissionAmount.toLocaleString()}</td>
-                <td><span class="aff-badge ${c.status}">${c.status}</span></td>
+                <td><span class="aff-badge ${esc(c.status)}">${esc(c.status)}</span></td>
                 <td>${actionBtns}</td>
             `;
             tbody.appendChild(row);
@@ -316,23 +318,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             let actions = '-';
             if (w.status === 'pending') {
                 actions = `
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#1565c0;" onclick="approveWithdrawal('${w.id}')">Approve</button>
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="rejectWithdrawal('${w.id}')">Reject</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#1565c0;" onclick="approveWithdrawal('${esc(w.id)}')">Approve</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="rejectWithdrawal('${esc(w.id)}')">Reject</button>
                 `;
             } else if (w.status === 'approved') {
                 actions = `
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="markWithdrawalPaid('${w.id}')">Mark Paid</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="markWithdrawalPaid('${esc(w.id)}')">Mark Paid</button>
                 `;
             }
 
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${w.id}</strong></td>
-                <td>${w.affiliateId}</td>
+                <td><strong>${esc(w.id)}</strong></td>
+                <td>${esc(w.affiliateId)}</td>
                 <td style="font-weight:600;">ETB ${w.amount.toLocaleString()}</td>
-                <td>${w.method}<br>${w.phone}</td>
+                <td>${esc(w.method)}<br>${esc(w.phone)}</td>
                 <td>${date}</td>
-                <td><span class="aff-badge ${w.status}">${w.status}</span></td>
+                <td><span class="aff-badge ${esc(w.status)}">${esc(w.status)}</span></td>
                 <td>${actions}</td>
             `;
             tbody.appendChild(row);
@@ -410,13 +412,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         campaigns.forEach(c => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${c.id}</strong></td>
-                <td>${c.title}</td>
-                <td>${c.description}</td>
-                <td>${c.targetSales} sales</td>
+                <td><strong>${esc(c.id)}</strong></td>
+                <td>${esc(c.title)}</td>
+                <td>${esc(c.description)}</td>
+                <td>${esc(c.targetSales)} sales</td>
                 <td>ETB ${c.reward.toLocaleString()}</td>
-                <td>${c.daysRemaining} days</td>
-                <td><span class="aff-badge active">${c.status}</span></td>
+                <td>${esc(c.daysRemaining)} days</td>
+                <td><span class="aff-badge active">${esc(c.status)}</span></td>
             `;
             tbody.appendChild(row);
         });
@@ -463,11 +465,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         announcements.forEach(a => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${a.id}</strong></td>
-                <td>${a.title}</td>
-                <td>${a.content}</td>
-                <td><span class="aff-badge approved">${a.type}</span></td>
-                <td><span class="aff-badge ${a.urgency === 'high' ? 'rejected' : 'pending'}">${a.urgency}</span></td>
+                <td><strong>${esc(a.id)}</strong></td>
+                <td>${esc(a.title)}</td>
+                <td>${esc(a.content)}</td>
+                <td><span class="aff-badge approved">${esc(a.type)}</span></td>
+                <td><span class="aff-badge ${a.urgency === 'high' ? 'rejected' : 'pending'}">${esc(a.urgency)}</span></td>
             `;
             tbody.appendChild(row);
         });

@@ -6,6 +6,9 @@ window.exchangeRates = {
     'EUR': { rate: 0.92, symbol: '€' }
 };
 
+// XSS Protection — HTML escape utility alias
+const esc = window.AmieleSanitize ? window.AmieleSanitize.escapeHtml : function(v) { return v == null ? '' : String(v); };
+
 window.formatPrice = function(priceUSD) {
     const currency = exchangeRates[currentCurrency];
     const converted = priceUSD * currency.rate;
@@ -275,23 +278,23 @@ function renderProducts(category) {
         card.innerHTML = `
             <div class="product-image-wrap artisan-photo-wrap wood-shimmer">
 
-                <button class="save-item-btn animate-scale ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave('${product.id}', this)">
+                <button class="save-item-btn animate-scale ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave('${esc(product.id)}', this)">
                     ${isSaved ? '♥' : '♡'}
                 </button>
-                <img src="${product.image}" alt="${product.name}" class="animate-fade">
+                <img src="${esc(product.image)}" alt="${esc(product.name)}" class="animate-fade">
             </div>
             <div class="product-info">
                 <div class="product-info-row">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="product-title">${product.name}</span>
-                        ${product.aboutId ? `<a href="about.html#${product.aboutId}" class="details-link" title="View Details">Details</a>` : ''}
-                        ${product.audio ? `<button class="audio-btn animate-scale" onclick="playAudio('${product.audio}', this)" title="Play Audio Preview">▶</button>` : ''}
+                        <span class="product-title">${esc(product.name)}</span>
+                        ${product.aboutId ? `<a href="about.html#${esc(product.aboutId)}" class="details-link" title="View Details">Details</a>` : ''}
+                        ${product.audio ? `<button class="audio-btn animate-scale" onclick="playAudio('${esc(product.audio)}', this)" title="Play Audio Preview">▶</button>` : ''}
                     </div>
                     <span class="product-price">${formatPrice(product.price)}</span>
                 </div>
                 <div class="product-info-row">
 
-                    <button class="add-to-cart-btn animate-scale" onclick="addToCart('${product.id}')">ADD TO CART</button>
+                    <button class="add-to-cart-btn animate-scale" onclick="addToCart('${esc(product.id)}')">ADD TO CART</button>
                     <a href="${getWhatsAppUrl(product.name, product.price)}" target="_blank" class="whatsapp-btn animate-scale">
                         ${whatsappIcon} Order via WhatsApp
                     </a>
@@ -374,15 +377,15 @@ function updateCartUI() {
         const itemEl = document.createElement('div');
         itemEl.className = 'cart-item';
         itemEl.innerHTML = `
-            <img src="${item.image}" alt="${item.name}">
+            <img src="${esc(item.image)}" alt="${esc(item.name)}">
             <div class="cart-item-info">
-                <div class="cart-item-title">${item.name}</div>
+                <div class="cart-item-title">${esc(item.name)}</div>
                 <div class="cart-item-price">${formatPrice(item.price)}</div>
                 <div class="cart-item-actions">
-                    <button class="qty-btn" onclick="changeQuantity('${item.id}', -1)">-</button>
+                    <button class="qty-btn" onclick="changeQuantity('${esc(item.id)}', -1)">-</button>
                     <span>${item.quantity}</span>
-                    <button class="qty-btn" onclick="changeQuantity('${item.id}', 1)">+</button>
-                    <button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
+                    <button class="qty-btn" onclick="changeQuantity('${esc(item.id)}', 1)">+</button>
+                    <button class="remove-btn" onclick="removeFromCart('${esc(item.id)}')">Remove</button>
                 </div>
             </div>
             <div class="cart-item-line-price">
@@ -836,21 +839,21 @@ function renderSavedItems() {
         card.innerHTML = `
             <div class="product-image-wrap artisan-photo-wrap">
 
-                <button class="save-item-btn saved" onclick="event.stopPropagation(); unsaveFromAccount(${product.id}, this)" title="Remove from saved">♥</button>
-                <img src="${product.image}" alt="${product.name}">
+                <button class="save-item-btn saved" onclick="event.stopPropagation(); unsaveFromAccount(${esc(product.id)}, this)" title="Remove from saved">♥</button>
+                <img src="${esc(product.image)}" alt="${esc(product.name)}">
             </div>
             <div class="product-info">
                 <div class="product-info-row">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="product-title">${product.name}</span>
-                        ${product.aboutId ? `<a href="about.html#${product.aboutId}" class="details-link" title="View Details">Details</a>` : ''}
-                        ${product.audio ? `<button class="audio-btn" onclick="playAudio('${product.audio}', this)" title="Play Audio Preview">▶</button>` : ''}
+                        <span class="product-title">${esc(product.name)}</span>
+                        ${product.aboutId ? `<a href="about.html#${esc(product.aboutId)}" class="details-link" title="View Details">Details</a>` : ''}
+                        ${product.audio ? `<button class="audio-btn" onclick="playAudio('${esc(product.audio)}', this)" title="Play Audio Preview">▶</button>` : ''}
                     </div>
                     <span class="product-price">${formatPrice(product.price)}</span>
                 </div>
                 <div class="product-info-row">
 
-                    <button class="add-to-cart-btn" onclick="addToCart(${product.id})">ADD TO CART</button>
+                    <button class="add-to-cart-btn" onclick="addToCart(${esc(product.id)})">ADD TO CART</button>
                     <a href="${getWhatsAppUrl(product.name, product.price)}" target="_blank" class="whatsapp-btn">
                         ${whatsappIcon} Order via WhatsApp
                     </a>

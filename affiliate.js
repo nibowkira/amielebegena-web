@@ -4,6 +4,8 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const esc = window.AmieleSanitize ? window.AmieleSanitize.escapeHtml : function(v) { return v == null ? '' : String(v); };
+
     // 1. Route guard check
     const user = await window.getCurrentUser();
     if (!user || user.role !== 'affiliate') {
@@ -109,12 +111,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const date = new Date(n.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + ' • ' + new Date(n.time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             
             item.innerHTML = `
-                <div class="notif-icon-circle ${n.type}">
-                    <i class="fas ${icon}"></i>
+                <div class="notif-icon-circle ${esc(n.type)}">
+                    <i class="fas ${esc(icon)}"></i>
                 </div>
                 <div class="notif-item-body">
-                    <div class="notif-item-title">${n.title}</div>
-                    <div class="notif-item-text">${n.text}</div>
+                    <div class="notif-item-title">${esc(n.title)}</div>
+                    <div class="notif-item-text">${esc(n.text)}</div>
                     <div class="notif-item-time">${date}</div>
                 </div>
             `;
@@ -473,11 +475,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${date}</td>
-                <td><strong>${c.orderId}</strong></td>
-                <td>${c.productName}</td>
+                <td><strong>${esc(c.orderId)}</strong></td>
+                <td>${esc(c.productName)}</td>
                 <td>ETB ${c.orderAmount.toLocaleString()}</td>
                 <td style="color:var(--aff-primary); font-weight:600;">ETB ${c.commissionAmount.toLocaleString()}</td>
-                <td><span class="aff-badge ${c.status}">${c.status}</span></td>
+                <td><span class="aff-badge ${esc(c.status)}">${esc(c.status)}</span></td>
             `;
             tbody.appendChild(row);
         });
@@ -507,11 +509,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${date}</td>
-                <td><strong>${c.orderId}</strong></td>
-                <td>${c.productName}</td>
+                <td><strong>${esc(c.orderId)}</strong></td>
+                <td>${esc(c.productName)}</td>
                 <td>ETB ${c.orderAmount.toLocaleString()}</td>
                 <td style="color:var(--aff-primary); font-weight:600;">ETB ${c.commissionAmount.toLocaleString()}</td>
-                <td><span class="aff-badge ${c.status}">${c.status}</span></td>
+                <td><span class="aff-badge ${esc(c.status)}">${esc(c.status)}</span></td>
             `;
             tbody.appendChild(row);
         });
@@ -535,10 +537,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${date}</td>
-                <td><strong>${w.id}</strong></td>
+                <td><strong>${esc(w.id)}</strong></td>
                 <td style="font-weight:600;">ETB ${w.amount.toLocaleString()}</td>
-                <td>${w.method}</td>
-                <td><span class="aff-badge ${w.status}">${w.status}</span></td>
+                <td>${esc(w.method)}</td>
+                <td><span class="aff-badge ${esc(w.status)}">${esc(w.status)}</span></td>
             `;
             tbody.appendChild(row);
         });
@@ -838,16 +840,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             card.className = 'campaign-card';
             card.innerHTML = `
                 <div class="campaign-card-header">
-                    <h3>${c.title}</h3>
+                    <h3>${esc(c.title)}</h3>
                     <span class="campaign-reward">+ETB ${c.reward.toLocaleString()} Reward</span>
                 </div>
-                <p class="campaign-desc">${c.description}</p>
+                <p class="campaign-desc">${esc(c.description)}</p>
                 <div class="campaign-progress-bar">
                     <div class="campaign-progress-fill" style="width: ${pct}%"></div>
                 </div>
                 <div class="campaign-progress-text">
-                    <span>Progress: ${current} / ${c.targetSales} sold (${pct}%)</span>
-                    <span>${c.daysRemaining} days remaining</span>
+                    <span>Progress: ${current} / ${esc(c.targetSales)} sold (${pct}%)</span>
+                    <span>${esc(c.daysRemaining)} days remaining</span>
                 </div>
             `;
             container.appendChild(card);
@@ -873,9 +875,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const item = document.createElement('div');
             item.className = `announcement-item ${a.urgency}`;
             item.innerHTML = `
-                <div class="announcement-meta">${date} • ${a.type.toUpperCase()}</div>
-                <h3>${a.title}</h3>
-                <p>${a.content}</p>
+                <div class="announcement-meta">${date} • ${esc(a.type.toUpperCase())}</div>
+                <h3>${esc(a.title)}</h3>
+                <p>${esc(a.content)}</p>
             `;
             container.appendChild(item);
         });
