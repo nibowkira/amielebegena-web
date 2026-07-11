@@ -1,0 +1,16 @@
+# Amiele Begena — Robots.txt
+# https://amielestore-web.vercel.app
+
+User-agent: *
+Allow: /
+
+# Admin & authenticated-only pages (no SEO value)
+Disallow: /admin
+Disallow: /affiliate-dashboard
+Disallow: /affiliate-apply
+Disallow: /account
+Disallow: /login
+Disallow: /error
+
+# Sitemap
+Sitemap: https://amielestore-web.vercel.app/sitemap.xml
