@@ -19,7 +19,6 @@
 
         try {
             _client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('[Amiele:Supabase] Client initialized successfully.');
         } catch (error) {
             console.error('[Amiele:Supabase] Failed to create client:', error.message);
             _client = null;

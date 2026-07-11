@@ -27,8 +27,6 @@ window.AmieleDB = {
     },
 
     seedDemoData() {
-        console.log('Seeding Amiele Begena demo data...');
-        
         // 1. Users list - Managed via Supabase Auth/Profiles. Kept empty locally.
         localStorage.setItem(DB_PREFIX + 'users', JSON.stringify([]));
 
@@ -104,7 +102,6 @@ window.AmieleDB = {
         localStorage.setItem(DB_PREFIX + 'announcements', JSON.stringify(announcements));
 
         localStorage.setItem(DB_PREFIX + 'initialized', 'true');
-        console.log('Amiele Begena seed completed successfully.');
     },
 
     // ----------------------------------------

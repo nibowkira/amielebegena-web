@@ -87,28 +87,28 @@ const FALLBACK_PRODUCTS = [
     {
         id: 4, name: "Electric Kirar", desc: "Solid Wood Modern Variant",
         price: 83.33, badge: "ኤሌክትሪክ ክራር", category: "strings",
-        image: "image/photo_2025-10-01_07-26-53.jpg", aboutId: "electric-kirar", audio: "audio/kirar_electric.mp3"
+        image: "image/photo_2025-10-01_07-26-53.jpg", aboutId: "electric-kirar", audio: null
     },
     // PERCUSSION & WIND
     {
         id: 5, name: "ከበሮ (Kebero)", desc: "Double-Headed Ceremonial Drum",
         price: 115.00, badge: "ከበሮ", category: "percussion",
-        image: "image/photo_2026-05-07_13-41-48.jpg", aboutId: "kebero", audio: "audio/kebero.mp3"
+        image: "image/photo_2026-05-07_13-41-48.jpg", aboutId: "kebero", audio: null
     },
     {
         id: 6, name: "ዋሽንት (Washint)", desc: "End-Blown Bamboo Flute",
         price: 45.00, badge: "ዋሽንት", category: "wind",
-        image: "washint_flute_v2_1776883145689.png", aboutId: "washint", audio: "audio/washint.mp3"
+        image: "image/photo_2025-10-01_07-26-53.jpg", aboutId: "washint", audio: null
     },
     {
         id: 7, name: "ጸናጽል (Sanasel)", desc: "Liturgical Sistrum",
         price: 75.00, badge: "ጸናጽል", category: "percussion",
-        image: "image/photo_2026-05-08_11-10-17.jpg", aboutId: "sanasel", audio: "audio/sanasel.mp3"
+        image: "image/photo_2026-05-08_11-10-17.jpg", aboutId: "sanasel", audio: null
     },
     {
         id: 8, name: "መለከት (Meleket)", desc: "Ancient Royal Trumpet",
         price: 130.00, badge: "መለከት", category: "wind",
-        image: "meleket_trumpet_v2_1776883415170.png", aboutId: "meleket", audio: "audio/meleket.mp3"
+        image: "image/photo_2025-10-01_07-26-53.jpg", aboutId: "meleket", audio: null
     },
     // ACCESSORIES & CRAFT
     {
@@ -178,7 +178,6 @@ async function loadProductsFromSupabase() {
         const remoteProducts = await window.ProductsService.getProducts();
         if (remoteProducts && remoteProducts.length > 0) {
             products = remoteProducts;
-            console.log(`[Amiele] Loaded ${products.length} products from Supabase`);
         }
     } catch (err) {
         console.warn('[Amiele] Failed to load products from Supabase, using fallback:', err.message);
@@ -432,7 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('amiele_ref_code', refCode);
             try {
                 AmieleDB.trackClick(refCode);
-                console.log(`Referral link tracked: ${refCode}`);
             } catch (e) {
                 console.error(e);
             }
@@ -518,7 +516,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             activeRef,
                             `Order Ref: ${orderId} (WhatsApp Checkout)`
                         );
-                        console.log('[Amiele:Orders] Orders logged to Supabase successfully.');
                     } catch (err) {
                         console.error('[Amiele:Orders] Failed to log order details to Supabase:', err);
                     } finally {
@@ -897,7 +894,13 @@ window.playAudio = function(url, btn) {
 
     // Play new audio
     currentAudio = new Audio(url);
-    currentAudio.play().catch(e => console.log('Audio playback failed (maybe no file yet):', e));
+    currentAudio.play().catch(e => {
+        console.error('Audio playback failed (maybe no file yet):', e);
+        btn.textContent = '▶';
+        btn.classList.remove('playing');
+        currentAudio = null;
+        currentAudioBtn = null;
+    });
     
     btn.textContent = '⏸';
     btn.classList.add('playing');
