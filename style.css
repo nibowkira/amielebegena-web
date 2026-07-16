@@ -21,6 +21,10 @@
     --font-body: 'Benaiah', sans-serif;
 }
 
+.hidden {
+    display: none !important;
+}
+
 
 .section-header {
     text-align: center;
