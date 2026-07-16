@@ -48,10 +48,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (window.AdminService) {
             try {
                 users = await window.AdminService.getUsers();
+            } catch (e) {
+                console.error('[Amiele:Admin] Error fetching users:', e);
+            }
+            try {
                 apps = await window.AdminService.getApplications();
+                console.log('[Amiele:Admin] Applications fetched:', apps.length, apps);
+            } catch (e) {
+                console.error('[Amiele:Admin] Error fetching applications:', e);
+                // Show error visually on dashboard for debugging
+                const appsEl = document.getElementById('admin-stat-apps');
+                if (appsEl) appsEl.textContent = 'ERR';
+            }
+            try {
                 referredSales = await window.AdminService.getReferredSales();
             } catch (e) {
-                console.error('[Amiele:Admin] Error fetching stats:', e);
+                console.error('[Amiele:Admin] Error fetching referred sales:', e);
             }
         }
 
