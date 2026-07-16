@@ -16,11 +16,12 @@
 
             const { data, error } = await client
                 .from('affiliate_applications')
-                .insert({
+                .upsert({
                     user_id: userId,
                     motivation,
                     social_link: socialLink,
-                    status: 'pending'
+                    status: 'pending',
+                    created_at: new Date().toISOString()
                 })
                 .select()
                 .single();

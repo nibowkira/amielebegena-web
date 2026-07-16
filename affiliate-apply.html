@@ -238,6 +238,31 @@
                 app = AmieleDB.getUserApplication(user.id);
             }
 
+            // Helper to hide status screen and reveal pre-filled form
+            function showFormWithExistingData(appData) {
+                statusSection.classList.add('hidden');
+                applyFormSection.classList.remove('hidden');
+                
+                if (appData) {
+                    document.getElementById('app-why').value = appData.motivation || '';
+                    
+                    // Parse social links if present
+                    if (appData.social_link) {
+                        // Clear inputs first
+                        document.getElementById('app-insta').value = '';
+                        document.getElementById('app-tiktok').value = '';
+                        document.getElementById('app-youtube').value = '';
+                        
+                        const links = appData.social_link.split(', ');
+                        links.forEach(link => {
+                            if (link.includes('instagram.com')) document.getElementById('app-insta').value = link;
+                            else if (link.includes('tiktok.com')) document.getElementById('app-tiktok').value = link;
+                            else if (link.includes('youtube.com')) document.getElementById('app-youtube').value = link;
+                        });
+                    }
+                }
+            }
+
             loadingState.classList.add('hidden');
 
             if (!app) {
@@ -251,20 +276,24 @@
                     document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-clock" style="color: var(--status-pending-text);"></i>';
                     document.getElementById('status-title').textContent = 'Application Pending';
                     document.getElementById('status-desc').textContent = 'Thank you for applying! Your affiliate application is currently undergoing manual review by our curation team. Typically, reviews take 24-48 hours. We appreciate your patience.';
-                    document.getElementById('status-actions').innerHTML = '<a href="account.html" class="aff-btn" style="text-decoration:none; display:inline-block;">Back to Account</a>';
+                    
+                    const actionsContainer = document.getElementById('status-actions');
+                    actionsContainer.innerHTML = `
+                        <a href="account.html" class="aff-btn" style="text-decoration:none; display:inline-block; margin-right:1rem;">Back to Account</a>
+                        <button id="edit-app-btn" class="aff-btn" style="background:transparent; border:1px solid var(--aff-primary); color:var(--aff-primary); cursor:pointer;">Edit Application</button>
+                    `;
+                    document.getElementById('edit-app-btn').addEventListener('click', () => showFormWithExistingData(app));
+
                 } else if (app.status === 'rejected') {
                     document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-times-circle" style="color: var(--status-rejected-text);"></i>';
                     document.getElementById('status-title').textContent = 'Application Declined';
                     document.getElementById('status-desc').textContent = 'We regret to inform you that your application to join the affiliate network has been declined at this time. Our program requires specific alignment with music platforms, cultural networks, or heritage channels.';
                     
-                    // Allow them to re-apply (reload clears state)
-                    const reapplyBtn = document.createElement('button');
-                    reapplyBtn.className = 'aff-btn';
-                    reapplyBtn.textContent = 'Re-Apply / Submit New Info';
-                    reapplyBtn.addEventListener('click', () => {
-                        window.location.reload();
-                    });
-                    document.getElementById('status-actions').appendChild(reapplyBtn);
+                    const actionsContainer = document.getElementById('status-actions');
+                    actionsContainer.innerHTML = `
+                        <button id="reapply-btn" class="aff-btn" style="cursor:pointer;">Re-Apply / Submit New Info</button>
+                    `;
+                    document.getElementById('reapply-btn').addEventListener('click', () => showFormWithExistingData(app));
                 }
             }
 
