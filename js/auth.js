@@ -39,7 +39,8 @@
                 options: {
                     data: {
                         full_name: name
-                    }
+                    },
+                    emailRedirectTo: 'https://amielebegena.vercel.app/auth/confirm'
                 }
             });
 

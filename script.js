@@ -623,11 +623,15 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 await window.AuthService.signUp(name, email, password);
                 if (typeof showToast === 'function') {
-                    showToast('Registration successful! Redirecting...', 'success');
+                    showToast('Account created! Check your email to confirm, then log in.', 'success');
                 }
-                setTimeout(() => {
-                    window.location.href = 'account.html';
-                }, 1000);
+                // Switch to login tab so user can log in after confirming
+                registerForm.reset();
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+                if (typeof window.switchAuthTab === 'function') {
+                    window.switchAuthTab('login');
+                }
             } catch (err) {
                 console.error(err);
                 if (typeof showToast === 'function') {

@@ -18,13 +18,22 @@
         }
 
         try {
-            _client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            _client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                auth: {
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true
+                }
+            });
         } catch (error) {
             console.error('[Amiele:Supabase] Failed to create client:', error.message);
             _client = null;
         }
         return _client;
     }
+
+    // Eagerly initialize so hash-fragment tokens are processed on any page
+    initClient();
 
     // Export globally
     window.AmieleSupabase = {

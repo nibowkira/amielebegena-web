@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirming Your Email - Amiele Begena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @font-face {
+            font-family: 'Benaiah';
+            src: url('/Benaiah_536454528f.ttf') format('truetype');
+            font-display: swap;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #0d1a13;
+            color: #f5f4f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Ambient glows */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.06) 0%, transparent 70%);
+            top: -15%;
+            left: -10%;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.04) 0%, transparent 70%);
+            bottom: -15%;
+            right: -10%;
+            pointer-events: none;
+        }
+
+        .confirm-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow:
+                0 30px 70px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border-radius: 28px;
+            padding: 4rem 3rem;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            animation: cardFadeUp 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        @keyframes cardFadeUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .confirm-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            transition: all 0.4s ease;
+        }
+
+        .confirm-icon.verifying {
+            background: rgba(212, 175, 55, 0.07);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            color: #ffd700;
+        }
+
+        .confirm-icon.success {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.25);
+            color: #2ecc71;
+        }
+
+        .confirm-icon.error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.25);
+            color: #e74c3c;
+        }
+
+        .confirm-card h1 {
+            font-family: 'Benaiah', 'Cormorant Garamond', serif;
+            font-size: 2.2rem;
+            margin: 0 0 1rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .confirm-card p {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.7;
+            margin: 0 0 2.5rem;
+        }
+
+        .confirm-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700 0%, #c9a800 100%);
+            color: #14231b;
+            border: none;
+            border-radius: 12px;
+            padding: 0.9rem 2.2rem;
+            font-weight: 700;
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15);
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .confirm-btn:active {
+            transform: translateY(0);
+        }
+
+        .hidden { display: none !important; }
+
+        /* Spinner animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            animation: spin 1.2s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="confirm-card">
+        <div class="confirm-icon verifying" id="confirm-icon">
+            <i class="fas fa-circle-notch spinner" id="confirm-icon-inner"></i>
+        </div>
+        <h1 id="confirm-title">Verifying Your Email</h1>
+        <p id="confirm-description">Please wait while we confirm your email address. This should only take a moment...</p>
+        <a href="login.html" class="confirm-btn hidden" id="confirm-action-btn">Go to Login</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        (function () {
+            'use strict';
+
+            const SUPABASE_URL = 'https://hbjgwpogebzgosqldshy.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhiamd3cG9nZWJ6Z29zcWxkc2h5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1OTI2MTcsImV4cCI6MjA5OTE2ODYxN30.fkY4NLobeMYYloMN3OvAgW-ABzp--NkANXAtBbW5nbA';
+
+            const iconEl = document.getElementById('confirm-icon');
+            const iconInner = document.getElementById('confirm-icon-inner');
+            const titleEl = document.getElementById('confirm-title');
+            const descEl = document.getElementById('confirm-description');
+            const btnEl = document.getElementById('confirm-action-btn');
+
+            function showSuccess() {
+                iconEl.className = 'confirm-icon success';
+                iconInner.className = 'fas fa-check-circle';
+                titleEl.textContent = 'Email Confirmed!';
+                descEl.textContent = 'Your email has been verified successfully. You can now log in to your account.';
+                btnEl.classList.remove('hidden');
+            }
+
+            function showError(message) {
+                iconEl.className = 'confirm-icon error';
+                iconInner.className = 'fas fa-times-circle';
+                titleEl.textContent = 'Verification Failed';
+                descEl.textContent = message || 'We could not verify your email. The link may have expired or already been used. Please try signing up again.';
+                btnEl.textContent = 'Back to Login';
+                btnEl.classList.remove('hidden');
+            }
+
+            async function handleConfirmation() {
+                try {
+                    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+                    // --- Strategy 1: PKCE flow (token_hash + type as query params) ---
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const tokenHash = urlParams.get('token_hash');
+                    const type = urlParams.get('type');
+
+                    if (tokenHash && type) {
+                        console.log('[Amiele:Auth] PKCE flow detected, verifying OTP...');
+                        const { data, error } = await client.auth.verifyOtp({
+                            token_hash: tokenHash,
+                            type: type
+                        });
+
+                        if (error) {
+                            console.error('[Amiele:Auth] OTP verification failed:', error.message);
+                            showError(error.message);
+                            return;
+                        }
+
+                        console.log('[Amiele:Auth] Email confirmed via PKCE flow.');
+                        showSuccess();
+                        return;
+                    }
+
+                    // --- Strategy 2: Implicit flow (tokens in URL hash fragment) ---
+                    const hash = window.location.hash;
+                    if (hash && hash.length > 1) {
+                        console.log('[Amiele:Auth] Hash fragment detected, processing implicit flow...');
+                        // The Supabase client automatically picks up hash tokens.
+                        // We just need to wait a moment for it to process them.
+                        const { data: { session }, error } = await client.auth.getSession();
+
+                        if (error) {
+                            console.error('[Amiele:Auth] Session retrieval failed:', error.message);
+                            showError(error.message);
+                            return;
+                        }
+
+                        if (session) {
+                            console.log('[Amiele:Auth] Session established via implicit flow.');
+                            // Sign out to clear the session so user can login explicitly
+                            await client.auth.signOut();
+                            showSuccess();
+                            return;
+                        }
+                    }
+
+                    // --- Strategy 3: Check if arriving with code param (authorization code flow) ---
+                    const code = urlParams.get('code');
+                    if (code) {
+                        console.log('[Amiele:Auth] Authorization code detected, exchanging...');
+                        const { data, error } = await client.auth.exchangeCodeForSession(code);
+
+                        if (error) {
+                            console.error('[Amiele:Auth] Code exchange failed:', error.message);
+                            showError(error.message);
+                            return;
+                        }
+
+                        console.log('[Amiele:Auth] Session established via code exchange.');
+                        await client.auth.signOut();
+                        showSuccess();
+                        return;
+                    }
+
+                    // No valid tokens found
+                    showError('No verification token found. Please use the link from your confirmation email, or request a new one.');
+
+                } catch (err) {
+                    console.error('[Amiele:Auth] Unexpected error during confirmation:', err);
+                    showError('An unexpected error occurred. Please try again or contact support.');
+                }
+            }
+
+            // Run on page load
+            handleConfirmation();
+        })();
+    </script>
+</body>
+</html>
