@@ -52,7 +52,7 @@
                 .from('affiliate_applications')
                 .select(`
                     *,
-                    profile:profiles(name, email)
+                    profile:profiles(full_name, email)
                 `)
                 .order('created_at', { ascending: false });
 
@@ -60,7 +60,7 @@
             return data.map(app => ({
                 id: 'app_' + app.user_id.slice(0, 8),
                 userId: app.user_id,
-                name: app.profile ? app.profile.name : 'Unknown User',
+                name: app.profile ? app.profile.full_name : 'Unknown User',
                 phone: 'N/A', // phone is in profile metadata or application motivation
                 country: 'ET',
                 socials: {
