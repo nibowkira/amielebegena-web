@@ -92,15 +92,15 @@
                         <div style="display: flex; flex-direction: column; gap: 0.8rem;">
                             <div style="display: flex; align-items: center; gap: 0.8rem; background: var(--aff-bg); border-radius: 8px; padding-left: 1rem; border: 1px solid var(--aff-card-border);">
                                 <i class="fab fa-instagram" style="color: #e1306c;"></i>
-                                <input type="url" id="app-insta" class="aff-input" style="background: transparent; border: none; flex: 1; padding: 0.8rem;" placeholder="Instagram Profile Link">
+                                <input type="text" id="app-insta" class="aff-input" style="background: transparent; border: none; flex: 1; padding: 0.8rem;" placeholder="Instagram Profile Link">
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.8rem; background: var(--aff-bg); border-radius: 8px; padding-left: 1rem; border: 1px solid var(--aff-card-border);">
                                 <i class="fab fa-tiktok" style="color: #000;"></i>
-                                <input type="url" id="app-tiktok" class="aff-input" style="background: transparent; border: none; flex: 1; padding: 0.8rem;" placeholder="TikTok Profile Link">
+                                <input type="text" id="app-tiktok" class="aff-input" style="background: transparent; border: none; flex: 1; padding: 0.8rem;" placeholder="TikTok Profile Link">
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.8rem; background: var(--aff-bg); border-radius: 8px; padding-left: 1rem; border: 1px solid var(--aff-card-border);">
                                 <i class="fab fa-youtube" style="color: #ff0000;"></i>
-                                <input type="url" id="app-youtube" class="aff-input" style="background: transparent; border: none; flex: 1; padding: 0.8rem;" placeholder="YouTube Channel Link">
+                                <input type="text" id="app-youtube" class="aff-input" style="background: transparent; border: none; flex: 1; padding: 0.8rem;" placeholder="YouTube Channel Link">
                             </div>
                         </div>
                     </div>
@@ -329,6 +329,7 @@
             const form = document.getElementById('affiliate-apply-form');
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                console.log('[Amiele:Apply] Form submit triggered!');
 
                 // Button state loading indicator
                 const submitBtn = form.querySelector('button[type="submit"]');
@@ -347,8 +348,10 @@
                 feedback.classList.add('hidden');
 
                 try {
+                    console.log('[Amiele:Apply] Submitting:', { userId: user.id, motivation, socialLinks });
                     if (window.AffiliateService) {
-                        await window.AffiliateService.submitApplication(user.id, motivation, socialLinks || 'N/A');
+                        const result = await window.AffiliateService.submitApplication(user.id, motivation, socialLinks || 'N/A');
+                        console.log('[Amiele:Apply] Submission result:', result);
                     } else {
                         const data = {
                             name: document.getElementById('app-fullname').value.trim(),
