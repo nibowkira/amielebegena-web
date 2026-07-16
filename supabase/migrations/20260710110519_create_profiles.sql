@@ -30,6 +30,9 @@ create table public.profiles (
     -- Allows admins to disable accounts without deleting data.
     is_active   boolean not null default true,
 
+    -- Tracks last authentication event for session management.
+    last_login_at timestamptz,
+
     created_at  timestamptz not null default now(),
     updated_at  timestamptz not null default now()
 );
