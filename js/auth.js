@@ -40,7 +40,7 @@
                     data: {
                         full_name: name
                     },
-                    emailRedirectTo: 'https://amielebegena.vercel.app/auth/confirm'
+                    emailRedirectTo: 'https://amielestore-web.vercel.app/auth/confirm'
                 }
             });
 
