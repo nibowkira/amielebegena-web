@@ -20,7 +20,9 @@ window.formatPrice = function(priceUSD) {
 
 window.getWhatsAppUrl = function(name, priceUSD) {
     const price = formatPrice(priceUSD);
-    const message = `Hi, I want to order: ${name} - ${price}`;
+    const activeRef = localStorage.getItem('amiele_ref_code') || '';
+    const refText = activeRef ? `\n🔗 Referral Code: ${activeRef}` : '';
+    const message = `Hi, I want to order: ${name} - ${price}${refText}`;
     const encodedMessage = encodeURIComponent(message);
     return `https://wa.me/251969189470?text=${encodedMessage}`;
 };
@@ -424,11 +426,11 @@ cartOverlay.addEventListener('click', closeCart);
 // Init
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Detect Referral parameters
-    if (window.AmieleDB) {
-        const urlParams = new URLSearchParams(window.location.search);
-        const refCode = urlParams.get('ref');
-        if (refCode) {
-            localStorage.setItem('amiele_ref_code', refCode);
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+        localStorage.setItem('amiele_ref_code', refCode);
+        if (window.AmieleDB) {
             try {
                 AmieleDB.trackClick(refCode);
             } catch (e) {
