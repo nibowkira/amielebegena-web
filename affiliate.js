@@ -383,7 +383,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 6. Referral center link & QR code drawing
-    const referralLink = `${window.location.origin}/index.html?ref=${metadata.code}`;
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('192.168.');
+    const referralOrigin = isLocalhost ? 'https://amielestore-web.vercel.app' : window.location.origin;
+    const referralLink = `${referralOrigin}/index.html?ref=${metadata.code}`;
     const referralLinkInput = document.getElementById('referral-link');
     if (referralLinkInput) {
         referralLinkInput.value = referralLink;
