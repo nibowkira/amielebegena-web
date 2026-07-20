@@ -8,8 +8,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 1. Route guard check
     const user = await window.getCurrentUser();
-    if (!user || user.role !== 'affiliate') {
-        window.location.href = 'login.html';
+    if (!user) {
+        window.location.href = 'login.html?redirect=affiliate-dashboard.html';
+        return;
+    }
+
+    if (user.role !== 'affiliate' && user.role !== 'admin') {
+        // Check if application is pending
+        let app = null;
+        if (window.AffiliateService) {
+            try {
+                app = await window.AffiliateService.getUserApplication(user.id);
+            } catch (e) {
+                console.error('[Amiele:Auth] Error fetching app review state:', e);
+            }
+        }
+        if (app && app.status === 'pending') {
+            document.body.innerHTML = `
+                <div style="padding:4rem 2rem; text-align:center; font-family:'Outfit',sans-serif; background:#f9f8f4; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                    <div style="font-size:3rem; margin-bottom:1rem; animation: pulse 2s infinite;">🎻</div>
+                    <h2 style="color:#14231b; font-family:Georgia,serif; font-size:1.8rem; margin-bottom:0.5rem;">Your application is under review</h2>
+                    <p style="color:#555; max-width:420px; margin:0.5rem auto 2.5rem; line-height:1.6; font-size:0.95rem;">
+                        Our curation team is currently reviewing your partnership request. We will notify you as soon as your account is approved.
+                    </p>
+                    <a href="account.html" class="aff-btn" style="text-decoration:none; display:inline-block; padding:0.8rem 1.6rem; background:#14231b; color:white; border-radius:8px; font-weight:600; transition: background 0.2s;">Back to Account</a>
+                </div>
+            `;
+            return;
+        }
+        window.location.href = 'login.html?redirect=affiliate-dashboard.html';
         return;
     }
 
@@ -267,7 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 5. Draw Canvas Charts (No external dependencies for performance & lightness)
-    function drawOverviewCharts() {
+    async function drawOverviewCharts() {
         const canvas = document.getElementById('earningsChart');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
@@ -275,11 +302,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Mock data points representing monthly earnings
-        const data = [1200, 3096, 2496, 6800, 4342, metadata.totalEarnings];
-        const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        let data = [0, 0, 0, 0, 0, metadata.totalEarnings];
+        if (window.AffiliateService) {
+            try {
+                data = await window.AffiliateService.getEarningsChartData(user.id, metadata.totalEarnings);
+            } catch (e) {
+                console.error('[Amiele:Chart] Error resolving earnings chart:', e);
+            }
+        }
         
-        const maxVal = Math.max(...data) * 1.2;
+        // Calculate dynamic labels for the past 6 months
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const labels = [];
+        const now = new Date();
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            labels.push(monthNames[d.getMonth()]);
+        }
+        
+        const maxVal = Math.max(...data, 100) * 1.2;
         const width = canvas.width;
         const height = canvas.height;
         const padding = 40;
@@ -372,7 +413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast('Telegram sharing window launched. / የቴሌግራም ማጋሪያ ተከፍቷል።', 'info');
     };
 
-    // Draw custom visual QR code simulation
+    // Draw real scannable QR code using the imported CDN library
     function generateReferralQR() {
         const canvas = document.getElementById('qrCanvas');
         if (!canvas) return;
@@ -380,64 +421,63 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Outer styling container
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Mock a premium QR pattern visually using block drawings for clean presentation
-        ctx.fillStyle = '#14231b';
-        
-        // Top-left finder pattern
-        ctx.fillRect(20, 20, 50, 50);
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(30, 30, 30, 30);
-        ctx.fillStyle = '#14231b';
-        ctx.fillRect(40, 40, 10, 10);
-        
-        // Top-right finder pattern
-        ctx.fillRect(180, 20, 50, 50);
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(190, 30, 30, 30);
-        ctx.fillStyle = '#14231b';
-        ctx.fillRect(200, 40, 10, 10);
-
-        // Bottom-left finder pattern
-        ctx.fillRect(20, 180, 50, 50);
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(30, 190, 30, 30);
-        ctx.fillStyle = '#14231b';
-        ctx.fillRect(40, 200, 10, 10);
-
-        // Code details simulation (random bits)
-        ctx.fillStyle = '#14231b';
-        for(let x=80; x<170; x+=10) {
-            for(let y=20; y<230; y+=10) {
-                if(Math.random() > 0.4) {
-                    ctx.fillRect(x, y, 7, 7);
+        try {
+            if (typeof qrcode === 'undefined') {
+                throw new Error('qrcode CDN library not loaded yet');
+            }
+            const typeNumber = 0; // auto-detect size
+            const errorCorrectionLevel = 'H';
+            const qr = qrcode(typeNumber, errorCorrectionLevel);
+            qr.addData(referralLink);
+            qr.make();
+            
+            const cellCount = qr.getModuleCount();
+            const padding = 20;
+            const size = canvas.width - padding * 2;
+            const cellSize = size / cellCount;
+            
+            // Draw white background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw QR modules
+            ctx.fillStyle = '#14231b';
+            for (let row = 0; row < cellCount; row++) {
+                for (let col = 0; col < cellCount; col++) {
+                    if (qr.isDark(row, col)) {
+                        ctx.fillRect(
+                            padding + col * cellSize,
+                            padding + row * cellSize,
+                            Math.ceil(cellSize),
+                            Math.ceil(cellSize)
+                        );
+                    }
                 }
             }
+            
+            // Draw golden crest frame in center
+            const centerSize = 40;
+            const centerPos = (canvas.width - centerSize) / 2;
+            ctx.fillStyle = '#ffd700';
+            ctx.fillRect(centerPos, centerPos, centerSize, centerSize);
+            
+            // Draw logo letters in center
+            ctx.fillStyle = '#14231b';
+            ctx.font = 'bold 12px Outfit';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('AM', canvas.width / 2, canvas.height / 2);
+            
+        } catch (e) {
+            console.error('[Amiele:QR] Real QR generation failed, drawing fallback simulation:', e);
+            // Draw mock visual QR
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#14231b';
+            ctx.fillRect(20, 20, 50, 50);
+            ctx.fillRect(180, 20, 50, 50);
+            ctx.fillRect(20, 180, 50, 50);
         }
-        for(let x=20; x<80; x+=10) {
-            for(let y=80; y<170; y+=10) {
-                if(Math.random() > 0.4) {
-                    ctx.fillRect(x, y, 7, 7);
-                }
-            }
-        }
-        for(let x=180; x<230; x+=10) {
-            for(let y=80; y<230; y+=10) {
-                if(Math.random() > 0.4) {
-                    ctx.fillRect(x, y, 7, 7);
-                }
-            }
-        }
-
-        // Draw brand initials in center
-        ctx.fillStyle = '#ffd700';
-        ctx.fillRect(105, 105, 40, 40);
-        ctx.fillStyle = '#14231b';
-        ctx.font = 'bold 12px Outfit';
-        ctx.fillText('AM', 115, 130);
     }
 
     window.downloadQRCode = function() {
@@ -519,11 +559,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    function renderWithdrawalHistoryTable() {
+    async function renderWithdrawalHistoryTable() {
         const tbody = document.getElementById('withdrawals-table-body');
         if (!tbody) return;
 
-        const withdrawals = AmieleDB.getAffiliateWithdrawals(user.id);
+        let withdrawals = [];
+        if (window.AffiliateService) {
+            try {
+                withdrawals = await window.AffiliateService.getWithdrawals(user.id);
+            } catch (e) {
+                console.error('[Amiele:Withdrawals] Error loading withdrawals history:', e);
+            }
+        }
         tbody.innerHTML = '';
 
         if (withdrawals.length === 0) {
@@ -579,16 +626,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
+            const submitBtn = withdrawalForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Request...';
+
             try {
-                const request = AmieleDB.requestWithdrawal(amount, method, phone);
+                if (window.AffiliateService) {
+                    await window.AffiliateService.requestWithdrawal(user.id, amount, method, phone);
+                } else {
+                    AmieleDB.requestWithdrawal(amount, method, phone);
+                }
                 
                 // Track internally as read notification
-                AmieleDB.addNotification(
-                    user.id, 
-                    'Withdrawal Requested', 
-                    `Payout of ETB ${amount.toLocaleString()} requested via ${method}. Status: pending.`, 
-                    'payout'
-                );
+                if (window.AmieleDB) {
+                    AmieleDB.addNotification(
+                        user.id, 
+                        'Withdrawal Requested', 
+                        `Payout of ETB ${amount.toLocaleString()} requested via ${method}. Status: pending.`, 
+                        'payout'
+                    );
+                }
                 updateNotificationsBadge();
                 renderNotificationsList();
 
@@ -601,18 +659,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 setTimeout(() => {
                     window.open(whatsappUrl, '_blank');
                     withdrawalForm.reset();
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
                     
                     // Reload data
-                    metadata.balance -= amount; // update locally
-                    renderStatsCards();
-                    renderWithdrawalHistoryTable();
-                    
-                    // Update header balance immediately
-                    const headerBalance = document.getElementById('wth-avail-balance');
-                    if (headerBalance) headerBalance.textContent = `ETB ${metadata.balance.toLocaleString()}`;
+                    setTimeout(async () => {
+                        if (window.AffiliateService) {
+                            metadata = await window.AffiliateService.getAffiliateMetadata(user.id);
+                        }
+                        renderStatsCards();
+                        renderWithdrawalHistoryTable();
+                        
+                        // Update header balance immediately
+                        const headerBalance = document.getElementById('wth-avail-balance');
+                        if (headerBalance) headerBalance.textContent = `ETB ${metadata.balance.toLocaleString()}`;
+                    }, 1000);
                 }, 1000);
 
             } catch (err) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
                 if (feedback) {
                     feedback.textContent = err.message;
                     feedback.className = 'form-feedback error';
@@ -817,8 +883,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // 11. Campaigns progress calculation
-    function renderCampaigns() {
-        const campaigns = AmieleDB.getCampaigns();
+    async function renderCampaigns() {
+        let campaigns = [];
+        if (window.AffiliateService) {
+            try {
+                campaigns = await window.AffiliateService.getCampaigns();
+            } catch (e) {
+                console.error('[Amiele:Campaigns] Error loading active campaigns:', e);
+            }
+        }
+        if (campaigns.length === 0 && window.AmieleDB) {
+            campaigns = AmieleDB.getCampaigns();
+        }
         const container = document.getElementById('campaigns-container');
         if (!container) return;
 
@@ -833,7 +909,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const salesCount = metadata.sales;
 
         campaigns.forEach(c => {
-            const current = Math.min(salesCount, c.targetSales); // map dynamically for demo
+            const current = Math.min(salesCount, c.targetSales);
             const pct = ((current / c.targetSales) * 100).toFixed(0);
             
             const card = document.createElement('div');
@@ -857,11 +933,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 12. Announcements Inside Dashboard
-    function renderAnnouncements() {
+    async function renderAnnouncements() {
         const container = document.getElementById('announcements-container');
         if (!container) return;
 
-        const list = AmieleDB.getAnnouncements();
+        let list = [];
+        if (window.AffiliateService) {
+            try {
+                list = await window.AffiliateService.getAnnouncements();
+            } catch (e) {
+                console.error('[Amiele:Announcements] Error loading bulletins:', e);
+            }
+        }
+        if (list.length === 0 && window.AmieleDB) {
+            list = AmieleDB.getAnnouncements();
+        }
         container.innerHTML = '';
 
         if (list.length === 0) {
@@ -903,7 +989,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncProfileCard();
 
         // Handle settings submit
-        setForm.addEventListener('submit', (e) => {
+        setForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const name = document.getElementById('set-name').value.trim();
@@ -923,24 +1009,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const data = {
+            const submitBtn = setForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            const updateData = {
                 name,
                 email,
                 phone,
                 country,
-                photoUrl,
-                notifPreferences: {
-                    email: document.getElementById('set-pref-email').checked,
-                    push: document.getElementById('set-pref-push').checked
-                }
+                photoUrl
             };
 
             if (password) {
-                data.password = password;
+                updateData.password = password;
             }
 
             try {
-                AmieleDB.updateUserSettings(user.id, data);
+                if (window.AffiliateService) {
+                    await window.AffiliateService.updateProfile(user.id, updateData);
+                } else {
+                    AmieleDB.updateUserSettings(user.id, updateData);
+                }
                 
                 // Sync session object locally
                 user.name = name;
@@ -948,8 +1039,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 user.phone = phone;
                 user.country = country;
                 user.photoUrl = photoUrl;
-                if (password) user.password = password;
-                user.notifPreferences = data.notifPreferences;
                 
                 syncSidebarInfo();
                 syncProfileCard();
@@ -960,7 +1049,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 showToast('Configurations saved successfully! / ቅንጅቶችዎ በተሳካ ሁኔታ ተቀምጠዋል።', 'success');
             } catch (err) {
-                showToast(err.message, 'error');
+                showToast(err.message || 'Error saving settings.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
             }
         });
     }

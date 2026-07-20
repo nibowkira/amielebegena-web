@@ -92,7 +92,8 @@ begin
     if new.status = 'approved' and old.status = 'pending' then
         
         -- 1. Generate clean, alphanumeric base code from applicant name
-        base_code := lower(regexp_replace(new.name, '[^a-zA-Z0-9]', '', 'g'));
+        select full_name into base_code from public.profiles where id = new.user_id;
+        base_code := lower(regexp_replace(base_code, '[^a-zA-Z0-9]', '', 'g'));
         if length(base_code) < 3 then
             base_code := 'aff';
         end if;

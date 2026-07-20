@@ -318,11 +318,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // 6. Withdrawals Queue
-    function renderWithdrawalsQueue() {
+    async function renderWithdrawalsQueue() {
         const tbody = document.getElementById('withdrawals-table-body');
         if (!tbody) return;
 
-        const withdrawals = JSON.parse(localStorage.getItem('amiele_withdrawals')) || [];
+        let withdrawals = [];
+        if (window.AdminService) {
+            try {
+                withdrawals = await window.AdminService.getWithdrawals();
+            } catch (e) {
+                console.error('[Amiele:Admin] Error fetching withdrawals queue:', e);
+            }
+        }
         tbody.innerHTML = '';
 
         if (withdrawals.length === 0) {
@@ -336,12 +343,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             let actions = '-';
             if (w.status === 'pending') {
                 actions = `
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#1565c0;" onclick="approveWithdrawal('${esc(w.id)}')">Approve</button>
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="rejectWithdrawal('${esc(w.id)}')">Reject</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#1565c0;" onclick="approveWithdrawal('${esc(w.rawId)}')">Approve</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="rejectWithdrawal('${esc(w.rawId)}')">Reject</button>
                 `;
             } else if (w.status === 'approved') {
                 actions = `
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="markWithdrawalPaid('${esc(w.id)}')">Mark Paid</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="markWithdrawalPaid('${esc(w.rawId)}')">Mark Paid</button>
                 `;
             }
 
@@ -360,82 +367,87 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.approveWithdrawal = async function(wId) {
-        const withdrawals = JSON.parse(localStorage.getItem('amiele_withdrawals')) || [];
-        const w = withdrawals.find(x => x.id === wId);
-        if (!w) return;
-
-        const confirmed = await showConfirmModal('Approve Withdrawal Request', `Approve payout request for <strong>ETB ${w.amount.toLocaleString()}</strong> to phone number <strong>${w.phone}</strong>?`);
+        const confirmed = await showConfirmModal('Approve Withdrawal Request', `Approve payout request?`);
         if (confirmed) {
-            AmieleDB.adminApproveWithdrawal(wId);
-            AmieleDB.addNotification(
-                w.affiliateId, 
-                'Withdrawal Approved', 
-                `Your withdrawal payout request of ETB ${w.amount.toLocaleString()} has been approved. Processing payment.`, 
-                'payout'
-            );
-            showToast('Withdrawal request approved!', 'success');
-            renderWithdrawalsQueue();
-            renderDashboardStats();
+            try {
+                if (window.AdminService) {
+                    await window.AdminService.updateWithdrawalStatus(wId, 'approved', user.id);
+                }
+                showToast('Withdrawal request approved!', 'success');
+                renderWithdrawalsQueue();
+                renderDashboardStats();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
         }
     };
 
     window.rejectWithdrawal = async function(wId) {
-        const withdrawals = JSON.parse(localStorage.getItem('amiele_withdrawals')) || [];
-        const w = withdrawals.find(x => x.id === wId);
-        if (!w) return;
-
-        const confirmed = await showConfirmModal('Reject Withdrawal Request', `Are you sure you want to decline this request for <strong>ETB ${w.amount.toLocaleString()}</strong>? Funds will return to affiliate balance.`, true);
+        const confirmed = await showConfirmModal('Reject Withdrawal Request', `Are you sure you want to decline this request? Funds will return to affiliate balance.`, true);
         if (confirmed) {
-            AmieleDB.adminRejectWithdrawal(wId);
-            AmieleDB.addNotification(
-                w.affiliateId, 
-                'Withdrawal Request Declined', 
-                `Your withdrawal request of ETB ${w.amount.toLocaleString()} was declined. Balance returned to account.`, 
-                'payout'
-            );
-            showToast('Withdrawal rejected.', 'warning');
-            renderWithdrawalsQueue();
-            renderDashboardStats();
+            try {
+                if (window.AdminService) {
+                    await window.AdminService.updateWithdrawalStatus(wId, 'rejected', user.id);
+                }
+                showToast('Withdrawal rejected.', 'warning');
+                renderWithdrawalsQueue();
+                renderDashboardStats();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
         }
     };
 
     window.markWithdrawalPaid = async function(wId) {
-        const withdrawals = JSON.parse(localStorage.getItem('amiele_withdrawals')) || [];
-        const w = withdrawals.find(x => x.id === wId);
-        if (!w) return;
-
-        const confirmed = await showConfirmModal('Mark Withdrawal as PAID', `Mark request for <strong>ETB ${w.amount.toLocaleString()}</strong> as successfully paid to partner?`);
+        const confirmed = await showConfirmModal('Mark Withdrawal as PAID', `Mark request as successfully paid to partner?`);
         if (confirmed) {
-            AmieleDB.adminMarkWithdrawalPaid(wId);
-            AmieleDB.addNotification(
-                w.affiliateId, 
-                'Payout Transferred! CBE/Telebirr 💸', 
-                `Your payout of ETB ${w.amount.toLocaleString()} has been marked as fully PAID and sent to your address.`, 
-                'payout'
-            );
-            showToast('Withdrawal marked as PAID successfully.', 'success');
-            renderWithdrawalsQueue();
-            renderDashboardStats();
+            try {
+                if (window.AdminService) {
+                    await window.AdminService.updateWithdrawalStatus(wId, 'paid', user.id);
+                }
+                showToast('Withdrawal marked as PAID successfully.', 'success');
+                renderWithdrawalsQueue();
+                renderDashboardStats();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
         }
     };
 
     // 7. Campaigns Challenge Creator
-    function renderCampaignsList() {
+    async function renderCampaignsList() {
         const tbody = document.getElementById('campaigns-table-body');
         if (!tbody) return;
 
-        const campaigns = AmieleDB.getCampaigns();
+        let campaigns = [];
+        const client = window.AmieleSupabase.getClient();
+        if (client) {
+            try {
+                const { data, error } = await client
+                    .from('affiliate_campaigns')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (!error && data) campaigns = data;
+            } catch (e) {
+                console.error('[Amiele:Admin] Error querying campaigns:', e);
+            }
+        }
         tbody.innerHTML = '';
 
         campaigns.forEach(c => {
+            const endsAt = new Date(c.ends_at);
+            const diffTime = Math.max(0, endsAt - new Date());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${esc(c.id)}</strong></td>
+                <td><strong>${esc(c.id.slice(0, 8))}</strong></td>
                 <td>${esc(c.title)}</td>
                 <td>${esc(c.description)}</td>
-                <td>${esc(c.targetSales)} sales</td>
-                <td>ETB ${c.reward.toLocaleString()}</td>
-                <td>${esc(c.daysRemaining)} days</td>
+                <td>${esc(c.target_sales)} sales</td>
+                <td>ETB ${parseFloat(c.reward).toLocaleString()}</td>
+                <td>${diffDays} days</td>
                 <td><span class="aff-badge active">${esc(c.status)}</span></td>
             `;
             tbody.appendChild(row);
@@ -444,50 +456,68 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const campaignForm = document.getElementById('create-campaign-form');
     if (campaignForm) {
-        campaignForm.addEventListener('submit', (e) => {
+        campaignForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const title = document.getElementById('cmp-title').value.trim();
             const desc = document.getElementById('cmp-desc').value.trim();
-            const target = document.getElementById('cmp-target').value;
-            const reward = document.getElementById('cmp-reward').value;
-            const days = document.getElementById('cmp-days').value;
+            const target = parseInt(document.getElementById('cmp-target').value);
+            const reward = parseFloat(document.getElementById('cmp-reward').value);
+            const days = parseInt(document.getElementById('cmp-days').value);
 
-            AmieleDB.adminCreateCampaign(title, desc, target, reward, days);
-            
-            // Broadcast notification to all affiliates
-            const affiliates = AmieleDB.getAffiliates();
-            affiliates.forEach(aff => {
-                AmieleDB.addNotification(
-                    aff.userId,
-                    'New Campaign Challenge! 🏆',
-                    `Earn an extra ETB ${reward} with the new challenge: "${title}"`,
-                    'campaign'
-                );
-            });
+            const endsAt = new Date();
+            endsAt.setDate(endsAt.getDate() + days);
 
-            showToast('Bonus campaign challenge created and broadcasted successfully!', 'success');
-            campaignForm.reset();
-            renderCampaignsList();
+            const submitBtn = campaignForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating...';
+
+            try {
+                if (window.AdminService) {
+                    await window.AdminService.createCampaign(title, desc, target, reward, endsAt.toISOString(), user.id);
+                }
+                showToast('Bonus campaign challenge created successfully!', 'success');
+                campaignForm.reset();
+                renderCampaignsList();
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
         });
     }
 
     // 8. Announcements Creator
-    function renderAnnouncementsList() {
+    async function renderAnnouncementsList() {
         const tbody = document.getElementById('ann-table-body');
         if (!tbody) return;
 
-        const announcements = AmieleDB.getAnnouncements();
+        let announcements = [];
+        const client = window.AmieleSupabase.getClient();
+        if (client) {
+            try {
+                const { data, error } = await client
+                    .from('affiliate_announcements')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (!error && data) announcements = data;
+            } catch (e) {
+                console.error('[Amiele:Admin] Error querying announcements:', e);
+            }
+        }
         tbody.innerHTML = '';
 
         announcements.forEach(a => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${esc(a.id)}</strong></td>
+                <td><strong>${esc(a.id.slice(0, 8))}</strong></td>
                 <td>${esc(a.title)}</td>
                 <td>${esc(a.content)}</td>
                 <td><span class="aff-badge approved">${esc(a.type)}</span></td>
-                <td><span class="aff-badge ${a.urgency === 'high' ? 'rejected' : 'pending'}">${esc(a.urgency)}</span></td>
+                <td><span class="aff-badge ${a.urgency === 'high' || a.urgency === 'critical' ? 'rejected' : 'pending'}">${esc(a.urgency)}</span></td>
             `;
             tbody.appendChild(row);
         });
@@ -495,7 +525,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const annForm = document.getElementById('create-ann-form');
     if (annForm) {
-        annForm.addEventListener('submit', (e) => {
+        annForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const title = document.getElementById('ann-title').value.trim();
@@ -503,22 +533,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             const type = document.getElementById('ann-type').value;
             const urgency = document.getElementById('ann-urgency').value;
 
-            AmieleDB.adminCreateAnnouncement(title, content, type, urgency);
-            
-            // Send dynamic notification to all active partners
-            const affiliates = AmieleDB.getAffiliates();
-            affiliates.forEach(aff => {
-                AmieleDB.addNotification(
-                    aff.userId,
-                    `New Update: ${title}`,
-                    content.substring(0, 80) + '...',
-                    'announcement'
-                );
-            });
+            const submitBtn = annForm.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Publishing...';
 
-            showToast('Announcement broadcasted and notified successfully!', 'success');
-            annForm.reset();
-            renderAnnouncementsList();
+            try {
+                if (window.AdminService) {
+                    await window.AdminService.createAnnouncement(title, content, type, urgency, user.id);
+                }
+                showToast('Announcement broadcasted successfully!', 'success');
+                annForm.reset();
+                renderAnnouncementsList();
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
         });
     }
 

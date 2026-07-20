@@ -401,6 +401,118 @@
 
             if (error) throw error;
             return data;
+        },
+
+        /**
+         * Fetch all affiliate withdrawals for admin queue review.
+         */
+        async getWithdrawals() {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) return [];
+
+            const { data: withdrawals, error } = await client
+                .from('affiliate_withdrawals')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('[Amiele:Admin] Error fetching withdrawals:', error);
+                return [];
+            }
+
+            // Fetch profiles to map names
+            const userIds = withdrawals.map(w => w.affiliate_id);
+            const { data: profiles, error: profileError } = await client
+                .from('profiles')
+                .select('id, full_name')
+                .in('id', userIds);
+
+            const profileMap = {};
+            if (!profileError && profiles) {
+                profiles.forEach(p => { profileMap[p.id] = p.full_name; });
+            }
+
+            return withdrawals.map(w => ({
+                id: 'wth_' + w.id.slice(0, 8),
+                rawId: w.id,
+                affiliateId: profileMap[w.affiliate_id] || w.affiliate_id,
+                affiliateUuid: w.affiliate_id,
+                amount: parseFloat(w.amount),
+                method: w.method,
+                phone: w.phone,
+                status: w.status,
+                createdAt: w.created_at
+            }));
+        },
+
+        /**
+         * Approve, reject, or mark paid a withdrawal request in Supabase.
+         */
+        async updateWithdrawalStatus(rawId, status, adminId) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error('Supabase client not initialized');
+
+            const { data, error } = await client
+                .from('affiliate_withdrawals')
+                .update({
+                    status: status,
+                    processed_by: adminId,
+                    processed_at: new Date().toISOString()
+                })
+                .eq('id', rawId)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+
+        /**
+         * Create a new affiliate campaign challenge.
+         */
+        async createCampaign(title, description, targetSales, reward, endsAt, adminId) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error('Supabase client not initialized');
+
+            const { data, error } = await client
+                .from('affiliate_campaigns')
+                .insert({
+                    title,
+                    description,
+                    target_sales: targetSales,
+                    reward,
+                    ends_at: endsAt,
+                    status: 'active',
+                    created_by: adminId
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+
+        /**
+         * Broadcast a new announcement.
+         */
+        async createAnnouncement(title, content, type, urgency, adminId) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error('Supabase client not initialized');
+
+            const { data, error } = await client
+                .from('affiliate_announcements')
+                .insert({
+                    title,
+                    content,
+                    type,
+                    urgency,
+                    created_by: adminId
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
         }
     };
 

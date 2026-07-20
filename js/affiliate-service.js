@@ -132,12 +132,22 @@
                 totalEarnings += commission;
             });
 
-            // Fetch successful withdrawals to determine total paid and remaining balance
-            // Payout tracking is simulated or pulled from localStorage for UI ledger preservation.
-            const localPayouts = JSON.parse(localStorage.getItem('amiele_withdrawals_' + userId)) || [];
-            const totalPaid = localPayouts
-                .filter(w => w.status === 'approved')
-                .reduce((sum, w) => sum + parseFloat(w.amount), 0);
+            // 3. Fetch withdrawals from Supabase
+            let totalPaid = 0;
+            try {
+                const { data: withdrawals, error: wthError } = await client
+                    .from('affiliate_withdrawals')
+                    .select('amount, status')
+                    .eq('affiliate_id', userId);
+
+                if (!wthError && withdrawals) {
+                    totalPaid = withdrawals
+                        .filter(w => w.status === 'approved' || w.status === 'paid')
+                        .reduce((sum, w) => sum + parseFloat(w.amount), 0);
+                }
+            } catch (wthErr) {
+                console.error('[Amiele:Affiliate] Error fetching withdrawals stats:', wthErr);
+            }
 
             const balance = Math.max(0, totalEarnings - totalPaid);
 
@@ -205,6 +215,209 @@
                     createdAt: o.created_at
                 };
             });
+        },
+
+        /**
+         * Fetch withdrawals from Supabase.
+         */
+        async getWithdrawals(userId) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) return [];
+
+            const { data, error } = await client
+                .from('affiliate_withdrawals')
+                .select('*')
+                .eq('affiliate_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('[Amiele:Affiliate] Error fetching withdrawals:', error);
+                return [];
+            }
+
+            return data.map(w => ({
+                id: 'wth_' + w.id.slice(0, 8),
+                amount: parseFloat(w.amount),
+                method: w.method,
+                phone: w.phone,
+                status: w.status,
+                createdAt: w.created_at
+            }));
+        },
+
+        /**
+         * Submit a withdrawal payout request.
+         */
+        async requestWithdrawal(userId, amount, method, phone) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error('Supabase client not initialized');
+
+            // Validate balance
+            const meta = await this.getAffiliateMetadata(userId);
+            if (!meta || amount > meta.balance) {
+                throw new Error('Insufficient balance to perform withdrawal. / በቂ ሂሳብ የሎትም።');
+            }
+
+            const { data, error } = await client
+                .from('affiliate_withdrawals')
+                .insert({
+                    affiliate_id: userId,
+                    amount: amount,
+                    method: method,
+                    phone: phone,
+                    status: 'pending'
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            return {
+                id: 'wth_' + data.id.slice(0, 8),
+                amount: parseFloat(data.amount),
+                method: data.method,
+                phone: data.phone,
+                status: data.status,
+                createdAt: data.created_at
+            };
+        },
+
+        /**
+         * Fetch active campaigns.
+         */
+        async getCampaigns() {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) return [];
+
+            const { data, error } = await client
+                .from('affiliate_campaigns')
+                .select('*')
+                .eq('status', 'active')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('[Amiele:Affiliate] Error fetching campaigns:', error);
+                return [];
+            }
+
+            return data.map(c => {
+                const endsAt = new Date(c.ends_at);
+                const diffTime = Math.max(0, endsAt - new Date());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                return {
+                    id: c.id,
+                    title: c.title,
+                    description: c.description,
+                    targetSales: c.target_sales,
+                    reward: parseFloat(c.reward),
+                    daysRemaining: diffDays,
+                    status: c.status
+                };
+            });
+        },
+
+        /**
+         * Fetch announcements bulletin.
+         */
+        async getAnnouncements() {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) return [];
+
+            const { data, error } = await client
+                .from('affiliate_announcements')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('[Amiele:Affiliate] Error fetching announcements:', error);
+                return [];
+            }
+
+            return data.map(a => ({
+                id: a.id,
+                title: a.title,
+                content: a.content,
+                type: a.type,
+                urgency: a.urgency,
+                createdAt: a.created_at
+            }));
+        },
+
+        /**
+         * Fetch monthly aggregated earnings chart data.
+         */
+        async getEarningsChartData(userId, currentTotalEarnings) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) return [0, 0, 0, 0, 0, currentTotalEarnings];
+
+            const { data: orders, error } = await client
+                .from('orders')
+                .select(`
+                    quantity,
+                    status,
+                    created_at,
+                    product:products(price)
+                `)
+                .eq('affiliate_id', userId)
+                .neq('status', 'cancelled');
+
+            if (error || !orders) {
+                return [0, 0, 0, 0, 0, currentTotalEarnings];
+            }
+
+            const monthBuckets = Array(6).fill(0);
+            const now = new Date();
+            const exchangeRate = 120;
+            
+            const salesCount = orders.length;
+            let commRate = 0.10;
+            if (salesCount >= 30) commRate = 0.15;
+            else if (salesCount >= 10) commRate = 0.12;
+
+            orders.forEach(o => {
+                const orderDate = new Date(o.created_at);
+                const monthDiff = (now.getFullYear() - orderDate.getFullYear()) * 12 + (now.getMonth() - orderDate.getMonth());
+                
+                if (monthDiff >= 0 && monthDiff < 6) {
+                    const priceUSD = o.product ? parseFloat(o.product.price) : 0;
+                    const orderAmountETB = priceUSD * o.quantity * exchangeRate;
+                    const commission = orderAmountETB * commRate;
+                    
+                    const bucketIndex = 5 - monthDiff;
+                    monthBuckets[bucketIndex] += commission;
+                }
+            });
+
+            return monthBuckets;
+        },
+
+        /**
+         * Update user profiles and credentials in Supabase.
+         */
+        async updateProfile(userId, profileData) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error('Supabase client not initialized');
+
+            const { error: profileError } = await client
+                .from('profiles')
+                .update({
+                    full_name: profileData.name,
+                    phone: profileData.phone,
+                    avatar_url: profileData.photoUrl
+                })
+                .eq('id', userId);
+
+            if (profileError) throw profileError;
+
+            if (profileData.password) {
+                const { error: passwordError } = await client.auth.updateUser({
+                    password: profileData.password
+                });
+                if (passwordError) throw passwordError;
+            }
+
+            return true;
         }
     };
 
