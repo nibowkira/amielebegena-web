@@ -413,7 +413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast('Telegram sharing window launched. / የቴሌግራም ማጋሪያ ተከፍቷል።', 'info');
     };
 
-    // Draw real scannable QR code using the imported CDN library
+    // Draw real scannable QR code using the public QR API and canvas overlay
     function generateReferralQR() {
         const canvas = document.getElementById('qrCanvas');
         if (!canvas) return;
@@ -421,39 +421,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        try {
-            if (typeof qrcode === 'undefined') {
-                throw new Error('qrcode CDN library not loaded yet');
-            }
-            const typeNumber = 0; // auto-detect size
-            const errorCorrectionLevel = 'H';
-            const qr = qrcode(typeNumber, errorCorrectionLevel);
-            qr.addData(referralLink);
-            qr.make();
-            
-            const cellCount = qr.getModuleCount();
-            const padding = 20;
-            const size = canvas.width - padding * 2;
-            const cellSize = size / cellCount;
-            
-            // Draw white background
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw QR modules
-            ctx.fillStyle = '#14231b';
-            for (let row = 0; row < cellCount; row++) {
-                for (let col = 0; col < cellCount; col++) {
-                    if (qr.isDark(row, col)) {
-                        ctx.fillRect(
-                            padding + col * cellSize,
-                            padding + row * cellSize,
-                            Math.ceil(cellSize),
-                            Math.ceil(cellSize)
-                        );
-                    }
-                }
-            }
+        const img = new Image();
+        img.crossOrigin = 'anonymous'; // Ensure canvas is not tainted for downloads
+        
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             
             // Draw golden crest frame in center
             const centerSize = 40;
@@ -467,8 +439,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('AM', canvas.width / 2, canvas.height / 2);
-            
-        } catch (e) {
+        };
+        
+        img.onerror = function(e) {
             console.error('[Amiele:QR] Real QR generation failed, drawing fallback simulation:', e);
             // Draw mock visual QR
             ctx.fillStyle = '#fff';
@@ -477,7 +450,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             ctx.fillRect(20, 20, 50, 50);
             ctx.fillRect(180, 20, 50, 50);
             ctx.fillRect(20, 180, 50, 50);
-        }
+        };
+        
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${canvas.width}x${canvas.height}&data=${encodeURIComponent(referralLink)}&color=14231b`;
     }
 
     window.downloadQRCode = function() {
