@@ -10,7 +10,7 @@
         /**
          * Submit cart checkout details to Supabase.
          */
-        async createOrdersFromCart(cartItems, customerId = null, referralCode = null, notes = null) {
+        async createOrdersFromCart(cartItems, customerId = null, referralCode = null, customerName = null, customerEmail = null, country = null, notes = null) {
             const client = window.AmieleSupabase.getClient();
             if (!client) throw new Error('Supabase client not initialized');
 
@@ -39,13 +39,68 @@
                 customer_id: customerId || null,
                 affiliate_id: affiliateId,
                 status: 'pending',
-                notes: notes || 'Web Checkout'
+                notes: notes || 'Web Checkout',
+                customer_name: customerName,
+                customer_email: customerEmail,
+                country: country,
+                referral_code: referralCode,
+                payment_status: 'pending_payment'
             }));
 
             // 3. Batch insert rows
             const { data, error } = await client
                 .from('orders')
                 .insert(orderRows)
+                .select();
+
+            if (error) throw error;
+            return data;
+        },
+
+        /**
+         * Create order record for direct catalog checkout.
+         */
+        async createSingleProductOrder(productId, quantity, customerId = null, referralCode = null, customerName = null, customerEmail = null, country = null, notes = null) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error('Supabase client not initialized');
+
+            // 1. Resolve affiliate identifier from referral code if provided
+            let affiliateId = null;
+            if (referralCode) {
+                try {
+                    const { data: aff, error: affErr } = await client
+                        .from('affiliates')
+                        .select('user_id')
+                        .eq('referral_code', referralCode.trim())
+                        .maybeSingle();
+
+                    if (!affErr && aff) {
+                        affiliateId = aff.user_id;
+                    }
+                } catch (e) {
+                    console.warn('[Amiele:Orders] Error resolving affiliate code:', e);
+                }
+            }
+
+            // 2. Prepare order row
+            const orderRow = {
+                product_id: productId,
+                quantity: quantity,
+                customer_id: customerId || null,
+                affiliate_id: affiliateId,
+                status: 'pending',
+                notes: notes || 'Direct Checkout',
+                customer_name: customerName,
+                customer_email: customerEmail,
+                country: country,
+                referral_code: referralCode,
+                payment_status: 'pending_payment'
+            };
+
+            // 3. Insert row
+            const { data, error } = await client
+                .from('orders')
+                .insert(orderRow)
                 .select();
 
             if (error) throw error;

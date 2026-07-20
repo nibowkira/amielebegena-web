@@ -94,6 +94,7 @@
                     id,
                     quantity,
                     status,
+                    payment_status,
                     product:products(price)
                 `)
                 .eq('affiliate_id', userId);
@@ -103,7 +104,7 @@
             }
 
             const activeOrders = orders ? orders.filter(o => o.status !== 'cancelled') : [];
-            const salesCount = activeOrders.length;
+            const salesCount = activeOrders.filter(o => o.payment_status === 'paid').length;
 
             // Calculate tier dynamically
             let tier = 'bronze';
@@ -116,23 +117,32 @@
                 commRate = 0.12; // 12%
             }
 
-            // Calculate commissions in ETB (1 USD = 120 ETB conversion matching script.js)
+            // Calculate pending commissions on the fly (orders that are pending payment)
             const exchangeRate = 120;
-            let totalEarnings = 0;
             let pendingCommission = 0;
-
-            activeOrders.forEach(o => {
+            activeOrders.filter(o => o.payment_status === 'pending_payment').forEach(o => {
                 const itemPriceUSD = o.product ? parseFloat(o.product.price) : 0;
                 const orderAmountETB = itemPriceUSD * o.quantity * exchangeRate;
-                const commission = orderAmountETB * commRate;
-
-                if (o.status === 'pending') {
-                    pendingCommission += commission;
-                }
-                totalEarnings += commission;
+                pendingCommission += orderAmountETB * commRate;
             });
 
-            // 3. Fetch withdrawals from Supabase
+            // 3. Fetch approved commissions from commissions table
+            let totalEarnings = 0;
+            try {
+                const { data: comms, error: commsErr } = await client
+                    .from('commissions')
+                    .select('amount')
+                    .eq('affiliate_id', userId)
+                    .eq('status', 'approved');
+
+                if (!commsErr && comms) {
+                    totalEarnings = comms.reduce((sum, c) => sum + parseFloat(c.amount), 0);
+                }
+            } catch (err) {
+                console.error('[Amiele:Affiliate] Error fetching commissions:', err);
+            }
+
+            // 4. Fetch withdrawals from Supabase
             let totalPaid = 0;
             try {
                 const { data: withdrawals, error: wthError } = await client
@@ -176,25 +186,41 @@
             const client = window.AmieleSupabase.getClient();
             if (!client) return [];
 
-            const { data: orders, error } = await client
+            // Fetch orders
+            const { data: orders, error: ordersErr } = await client
                 .from('orders')
                 .select(`
                     id,
+                    order_number,
                     quantity,
                     status,
+                    payment_status,
                     created_at,
                     product:products(name, price)
                 `)
                 .eq('affiliate_id', userId)
                 .order('created_at', { ascending: false });
 
-            if (error) {
-                console.error('[Amiele:Affiliate] Error fetching ledger:', error);
+            if (ordersErr) {
+                console.error('[Amiele:Affiliate] Error fetching orders for ledger:', ordersErr);
                 return [];
             }
 
+            // Fetch approved commissions
+            const { data: comms, error: commsErr } = await client
+                .from('commissions')
+                .select('*')
+                .eq('affiliate_id', userId);
+
+            const commMap = {};
+            if (!commsErr && comms) {
+                comms.forEach(c => {
+                    commMap[c.order_id] = c;
+                });
+            }
+
             // Resolve affiliate tier for commission rate calculation
-            const salesCount = orders ? orders.filter(o => o.status !== 'cancelled').length : 0;
+            const salesCount = orders ? orders.filter(o => o.status !== 'cancelled' && o.payment_status === 'paid').length : 0;
             let commRate = 0.10;
             if (salesCount >= 30) commRate = 0.15;
             else if (salesCount >= 10) commRate = 0.12;
@@ -203,15 +229,26 @@
             return orders.map(o => {
                 const itemPriceUSD = o.product ? parseFloat(o.product.price) : 0;
                 const orderAmountETB = itemPriceUSD * o.quantity * exchangeRate;
-                const commission = orderAmountETB * commRate;
+                
+                let commissionAmount = orderAmountETB * commRate;
+                let commStatus = 'pending';
+
+                if (commMap[o.id]) {
+                    commissionAmount = parseFloat(commMap[o.id].amount);
+                    commStatus = commMap[o.id].status;
+                } else if (o.payment_status === 'paid') {
+                    commStatus = 'approved';
+                } else if (o.status === 'cancelled') {
+                    commStatus = 'cancelled';
+                }
 
                 return {
                     id: 'comm_' + o.id.slice(0, 8),
-                    orderId: '#HA-' + o.id.slice(0, 4).toUpperCase(),
+                    orderId: o.order_number || ('#HA-' + o.id.slice(0, 4).toUpperCase()),
                     productName: o.product ? `${o.quantity}x ${o.product.name}` : 'Instrument',
                     orderAmount: orderAmountETB,
-                    commissionAmount: commission,
-                    status: o.status === 'pending' ? 'pending' : 'approved',
+                    commissionAmount: commissionAmount,
+                    status: commStatus,
                     createdAt: o.created_at
                 };
             });

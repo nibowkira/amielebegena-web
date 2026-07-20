@@ -2781,3 +2781,119 @@ img {
     }
 }
 
+/* WhatsApp Order Info Modal Styles */
+.wa-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(20, 35, 27, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.wa-modal-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+.wa-modal {
+    background: #14231b;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 480px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    box-sizing: border-box;
+}
+.wa-modal-backdrop.active .wa-modal {
+    transform: translateY(0);
+}
+.wa-modal-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+.wa-modal-header i {
+    font-size: 2.2rem;
+    color: #ffd700;
+    margin-bottom: 0.5rem;
+}
+.wa-modal-header h3 {
+    font-size: 1.4rem;
+    color: #fff;
+    margin: 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+}
+.wa-modal-body .form-group {
+    margin-bottom: 1.2rem;
+    text-align: left;
+}
+.wa-modal-body label {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #ccc;
+    margin-bottom: 0.4rem;
+}
+.wa-modal-body input, .wa-modal-body select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    transition: border-color 0.3s, background 0.3s;
+}
+.wa-modal-body input:focus, .wa-modal-body select:focus {
+    outline: none;
+    border-color: #ffd700;
+    background: rgba(255, 255, 255, 0.08);
+}
+.wa-modal-footer {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+.wa-modal-btn {
+    flex: 1;
+    padding: 0.85rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    font-family: 'Outfit', sans-serif;
+    text-align: center;
+}
+.wa-modal-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+.wa-modal-btn.cancel:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+.wa-modal-btn.confirm {
+    background: #ffd700;
+    color: #14231b;
+}
+.wa-modal-btn.confirm:hover {
+    background: #ffe240;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+}
+

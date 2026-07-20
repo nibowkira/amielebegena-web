@@ -244,55 +244,85 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // 5. Commissions Queue
+    // 5. Order Management Queue
     async function renderCommissionsQueue() {
         const tbody = document.getElementById('commissions-table-body');
         if (!tbody) return;
 
-        let commissions = [];
+        let orders = [];
         if (window.AdminService) {
             try {
-                commissions = await window.AdminService.getReferredSales();
+                orders = await window.AdminService.getOrders();
             } catch (e) {
-                console.error('[Amiele:Admin] Error fetching commissions:', e);
+                console.error('[Amiele:Admin] Error fetching orders:', e);
             }
         }
         tbody.innerHTML = '';
 
-        if (commissions.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 3rem 0; color: var(--aff-text-muted);">No commissions logged.</td></tr>';
+        if (orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 3rem 0; color: var(--aff-text-muted);">No orders logged yet.</td></tr>';
             return;
         }
 
-        commissions.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(c => {
-            const date = new Date(c.createdAt).toLocaleDateString();
-            const actionBtns = c.status === 'pending' ? `
-                <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="approveCommission('${esc(c.id)}', '${esc(c.orderId)}')">Confirm Sale</button>
-                <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="cancelCommission('${esc(c.id)}', '${esc(c.orderId)}')">Cancel</button>
-            ` : '-';
+        orders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(o => {
+            const date = new Date(o.createdAt).toLocaleDateString();
+
+            // Build action buttons based on payment and order status
+            let actions = '';
+            if (o.paymentStatus === 'pending_payment') {
+                actions = `
+                    <button class="aff-btn" style="padding:0.35rem 0.7rem; font-size:0.72rem; background-color:#2e7d32; margin:2px 0;" onclick="approveOrderPayment('${esc(o.id)}', '${esc(o.orderNumber)}')">✓ Approve Payment</button>
+                    <button class="aff-btn" style="padding:0.35rem 0.7rem; font-size:0.72rem; background-color:#c62828; margin:2px 0;" onclick="rejectOrderPayment('${esc(o.id)}', '${esc(o.orderNumber)}')">✗ Reject</button>
+                `;
+            } else if (o.paymentStatus === 'paid') {
+                if (o.orderStatus === 'confirmed') {
+                    actions = `
+                        <button class="aff-btn" style="padding:0.35rem 0.7rem; font-size:0.72rem; background-color:#1565c0; margin:2px 0;" onclick="markOrderShipped('${esc(o.id)}')">📦 Ship</button>
+                        <button class="aff-btn" style="padding:0.35rem 0.7rem; font-size:0.72rem; background-color:#c62828; margin:2px 0;" onclick="cancelOrder('${esc(o.id)}')">Cancel</button>
+                    `;
+                } else if (o.orderStatus === 'shipped') {
+                    actions = `
+                        <button class="aff-btn" style="padding:0.35rem 0.7rem; font-size:0.72rem; background-color:#2e7d32; margin:2px 0;" onclick="markOrderDelivered('${esc(o.id)}')">✓ Delivered</button>
+                    `;
+                } else {
+                    actions = '<span style="color:var(--aff-text-muted); font-size:0.75rem;">Complete</span>';
+                }
+            } else {
+                actions = '<span style="color:var(--aff-text-muted); font-size:0.75rem;">—</span>';
+            }
+
+            // Payment badge color
+            let payBadgeClass = o.paymentStatus === 'paid' ? 'confirmed' : (o.paymentStatus === 'failed' ? 'cancelled' : 'pending');
 
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${esc(c.id.slice(0, 8))}</strong></td>
-                <td>${esc(c.affiliateId)}</td>
-                <td><strong>${esc(c.orderId)}</strong><br>${esc(c.productName)}</td>
-                <td>ETB ${c.orderAmount.toLocaleString()}</td>
-                <td style="color:#2e7d32; font-weight:600;">ETB ${c.commissionAmount.toLocaleString()}</td>
-                <td><span class="aff-badge ${esc(c.status)}">${esc(c.status)}</span></td>
-                <td>${actionBtns}</td>
+                <td><strong>${esc(o.orderNumber)}</strong></td>
+                <td>${esc(o.customerName)}<br><small style="color:var(--aff-text-muted);">${esc(o.customerEmail)}</small></td>
+                <td>${esc(o.productName)}</td>
+                <td>${esc(o.country)}</td>
+                <td>${esc(o.referralCode)}<br><small style="color:var(--aff-text-muted);">${esc(o.affiliateCode)}</small></td>
+                <td><span class="aff-badge ${payBadgeClass}">${esc(o.paymentStatus)}</span></td>
+                <td><span class="aff-badge ${esc(o.orderStatus)}">${esc(o.orderStatus)}</span></td>
+                <td style="font-weight:600;">ETB ${o.orderAmount.toLocaleString()}</td>
+                <td>${date}</td>
+                <td style="white-space:nowrap;">${actions}</td>
             `;
             tbody.appendChild(row);
         });
     }
 
-    window.approveCommission = async function(commId, orderId) {
-        const confirmed = await showConfirmModal('Confirm Referral Sale', `Confirm commission payout for order reference <strong>${orderId}</strong>?`);
+    window.approveOrderPayment = async function(orderId, orderNumber) {
+        const confirmed = await showConfirmModal('Approve Payment', `Approve payment for order <strong>${orderNumber}</strong>? This will calculate and credit the affiliate commission automatically.`);
         if (confirmed) {
             try {
                 if (window.AdminService) {
-                    await window.AdminService.updateOrderStatus(commId, 'confirmed');
+                    const result = await window.AdminService.approvePayment(orderId);
+                    if (result && result.commission_attributed) {
+                        showToast(`Payment approved! Commission of ETB ${Math.round(result.commission_amount).toLocaleString()} credited to affiliate.`, 'success');
+                    } else {
+                        showToast('Payment approved! (No affiliate referral on this order)', 'success');
+                    }
                 }
-                showToast('Commission approved and credited to Affiliate balance!', 'success');
                 renderCommissionsQueue();
                 renderDashboardStats();
             } catch (err) {
@@ -301,19 +331,58 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    window.cancelCommission = async function(commId, orderId) {
-        const confirmed = await showConfirmModal('Cancel Referral Sale', `Are you sure you want to cancel the commission for order <strong>${orderId}</strong>?`, true);
+    window.rejectOrderPayment = async function(orderId, orderNumber) {
+        const confirmed = await showConfirmModal('Reject Payment', `Reject payment for order <strong>${orderNumber}</strong>? The order will be cancelled.`, true);
         if (confirmed) {
             try {
                 if (window.AdminService) {
-                    await window.AdminService.updateOrderStatus(commId, 'cancelled');
+                    await window.AdminService.rejectPayment(orderId);
                 }
-                showToast('Commission cancelled.', 'warning');
+                showToast('Payment rejected. Order cancelled.', 'warning');
                 renderCommissionsQueue();
                 renderDashboardStats();
             } catch (err) {
                 showToast(err.message, 'error');
             }
+        }
+    };
+
+    window.cancelOrder = async function(orderId) {
+        const confirmed = await showConfirmModal('Cancel Order', 'Are you sure you want to cancel this order?', true);
+        if (confirmed) {
+            try {
+                if (window.AdminService) {
+                    await window.AdminService.updateOrderStatus(orderId, 'cancelled');
+                }
+                showToast('Order cancelled.', 'warning');
+                renderCommissionsQueue();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+    };
+
+    window.markOrderShipped = async function(orderId) {
+        try {
+            if (window.AdminService) {
+                await window.AdminService.updateOrderStatus(orderId, 'shipped');
+            }
+            showToast('Order marked as shipped!', 'success');
+            renderCommissionsQueue();
+        } catch (err) {
+            showToast(err.message, 'error');
+        }
+    };
+
+    window.markOrderDelivered = async function(orderId) {
+        try {
+            if (window.AdminService) {
+                await window.AdminService.updateOrderStatus(orderId, 'delivered');
+            }
+            showToast('Order marked as delivered!', 'success');
+            renderCommissionsQueue();
+        } catch (err) {
+            showToast(err.message, 'error');
         }
     };
 

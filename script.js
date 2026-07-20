@@ -296,7 +296,7 @@ function renderProducts(category) {
                 <div class="product-info-row">
 
                     <button class="add-to-cart-btn animate-scale" onclick="addToCart('${esc(product.id)}')">ADD TO CART</button>
-                    <a href="${getWhatsAppUrl(product.name, product.price)}" target="_blank" class="whatsapp-btn animate-scale">
+                    <a href="#" data-product-id="${esc(product.id)}" data-product-name="${esc(product.name)}" data-product-price="${product.price}" class="whatsapp-btn animate-scale">
                         ${whatsappIcon} Order via WhatsApp
                     </a>
                 </div>
@@ -457,96 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Your cart is empty. / ጋሪዎ ባዶ ነው።');
                 return;
             }
-
-            // Build Receipt Message
-            let total = 0;
-            let orderLines = [];
-            let productNamesList = [];
-            
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                orderLines.push(`• ${item.quantity}x ${item.name} (${formatPrice(item.price)} each) - Subtotal: ${formatPrice(itemTotal)}`);
-                productNamesList.push(`${item.quantity}x ${item.name}`);
-            });
-
-            // Retrieve affiliate code
-            const activeRef = localStorage.getItem('amiele_ref_code') || '';
-            const refText = activeRef ? `\n🔗 Referral Code: ${activeRef}` : '';
-
-            const userText = localStorage.getItem('userName') ? `\n👤 Customer Name: ${localStorage.getItem('userName')}` : '';
-            const currencyText = `Selected Currency: ${currentCurrency}`;
-
-            const orderId = '#HA-' + Math.floor(1000 + Math.random() * 9000);
-
-            const messageText = `🔔 New Order from Amiele Begena Website!\n` +
-                                `----------------------------------------\n` +
-                                `Order Reference: ${orderId}${userText}${refText}\n` +
-                                `💵 ${currencyText}\n` +
-                                `----------------------------------------\n` +
-                                `🛒 Order Items:\n` +
-                                `${orderLines.join('\n')}\n` +
-                                `----------------------------------------\n` +
-                                `💰 Total Amount: ${formatPrice(total)}\n` +
-                                `----------------------------------------\n` +
-                                `Please confirm my order and let me know the payment/delivery details. Thank you! / እናመሰግናለን!`;
-
-            // Log sale in legacy local DB if it exists (for compatibility)
-            if (window.AmieleDB && activeRef) {
-                try {
-                    const totalETB = total * 120;
-                    window.AmieleDB.trackSale(activeRef, orderId, totalETB, productNamesList.join(', '));
-                } catch (e) {
-                    console.error('Error attributing sale: ', e);
-                }
-            }
-
-            // Log orders in Supabase and trigger redirect
-            if (window.OrdersService) {
-                (async () => {
-                    checkoutBtn.disabled = true;
-                    const originalText = checkoutBtn.textContent;
-                    checkoutBtn.textContent = 'LOGGING ORDER...';
-
-                    try {
-                        const currentUser = await window.getCurrentUser();
-                        const customerId = currentUser ? currentUser.id : null;
-                        
-                        await window.OrdersService.createOrdersFromCart(
-                            cart,
-                            customerId,
-                            activeRef,
-                            `Order Ref: ${orderId} (WhatsApp Checkout)`
-                        );
-                    } catch (err) {
-                        console.error('[Amiele:Orders] Failed to log order details to Supabase:', err);
-                    } finally {
-                        localStorage.removeItem('amiele_ref_code');
-                        
-                        const encodedMessage = encodeURIComponent(messageText);
-                        const whatsappUrl = `https://wa.me/251969189470?text=${encodedMessage}`;
-                        
-                        // Open WhatsApp
-                        window.open(whatsappUrl, '_blank');
-                        
-                        // Reset cart UI
-                        cart = [];
-                        updateCartUI();
-                        closeCart();
-                        
-                        checkoutBtn.disabled = false;
-                        checkoutBtn.textContent = originalText;
-                    }
-                })();
-            } else {
-                const encodedMessage = encodeURIComponent(messageText);
-                const whatsappUrl = `https://wa.me/251969189470?text=${encodedMessage}`;
-                window.open(whatsappUrl, '_blank');
-                
-                cart = [];
-                updateCartUI();
-                closeCart();
-            }
+            window.openWhatsAppOrderModal(true);
         });
     }
 
@@ -856,8 +767,8 @@ function renderSavedItems() {
                 </div>
                 <div class="product-info-row">
 
-                    <button class="add-to-cart-btn" onclick="addToCart(${esc(product.id)})">ADD TO CART</button>
-                    <a href="${getWhatsAppUrl(product.name, product.price)}" target="_blank" class="whatsapp-btn">
+                    <button class="add-to-cart-btn" onclick="addToCart('${esc(product.id)}')">ADD TO CART</button>
+                    <a href="#" data-product-id="${esc(product.id)}" data-product-name="${esc(product.name)}" data-product-price="${product.price}" class="whatsapp-btn">
                         ${whatsappIcon} Order via WhatsApp
                     </a>
                 </div>
@@ -1213,5 +1124,241 @@ document.addEventListener('DOMContentLoaded', () => {
             newsletterEmail.value = '';
             alert('Thank you for subscribing! / አመሰግናለሁ!');
         });
+    }
+
+    // Intercept clicks on green WhatsApp Order buttons to open custom modal
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.whatsapp-btn');
+        if (btn) {
+            // Check if it's the modal submit/cancel button, don't intercept
+            if (btn.classList.contains('wa-modal-btn')) return;
+
+            e.preventDefault();
+
+            const productId = btn.getAttribute('data-product-id');
+            const productName = btn.getAttribute('data-product-name');
+            const productPrice = parseFloat(btn.getAttribute('data-product-price'));
+
+            if (productId) {
+                window.openWhatsAppOrderModal(false, {
+                    id: productId,
+                    name: productName,
+                    price: productPrice
+                });
+            }
+        }
+    });
+
+    // 13. Dynamic popups for custom order metadata input
+    window.openWhatsAppOrderModal = function(isCartCheckout, productData = null) {
+        let existing = document.getElementById('whatsapp-order-modal');
+        if (existing) existing.remove();
+
+        const backdrop = document.createElement('div');
+        backdrop.id = 'whatsapp-order-modal';
+        backdrop.className = 'wa-modal-backdrop';
+
+        // Auto-resolve Name and Email if logged in or stored in localStorage
+        const defaultName = localStorage.getItem('userName') || '';
+        const defaultEmail = localStorage.getItem('userEmail') || '';
+
+        backdrop.innerHTML = `
+            <div class="wa-modal">
+                <div class="wa-modal-header">
+                    <i class="fab fa-whatsapp"></i>
+                    <h3>WhatsApp Order Details / የትዕዛዝ መረጃ</h3>
+                </div>
+                <form id="wa-order-form" class="wa-modal-body">
+                    <div class="form-group">
+                        <label for="wa-cust-name">Full Name / ሙሉ ስም *</label>
+                        <input type="text" id="wa-cust-name" required placeholder="Enter your full name" value="${esc(defaultName)}">
+                    </div>
+                    <div class="form-group">
+                        <label for="wa-cust-email">Email Address / ኢሜይል *</label>
+                        <input type="email" id="wa-cust-email" required placeholder="Enter your email" value="${esc(defaultEmail)}">
+                    </div>
+                    <div class="form-group">
+                        <label for="wa-cust-country">Delivery Country / ሀገር *</label>
+                        <input type="text" id="wa-cust-country" required placeholder="e.g. Ethiopia, USA, Germany">
+                    </div>
+                    <div class="wa-modal-footer">
+                        <button type="button" class="wa-modal-btn cancel" id="wa-btn-cancel">Cancel / ሰርዝ</button>
+                        <button type="submit" class="wa-modal-btn confirm">Confirm Order / አረጋግጥ</button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        document.body.appendChild(backdrop);
+        
+        // Animate in
+        setTimeout(() => backdrop.classList.add('active'), 10);
+
+        const closeBtn = backdrop.querySelector('#wa-btn-cancel');
+        const form = backdrop.querySelector('#wa-order-form');
+
+        const closeModal = () => {
+            backdrop.classList.remove('active');
+            setTimeout(() => backdrop.remove(), 300);
+        };
+
+        closeBtn.addEventListener('click', closeModal);
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const customerName = document.getElementById('wa-cust-name').value.trim();
+            const customerEmail = document.getElementById('wa-cust-email').value.trim();
+            const country = document.getElementById('wa-cust-country').value.trim();
+
+            if (!customerName || !customerEmail || !country) {
+                alert('Please fill out all fields. / እባክዎ ሁሉንም መረጃዎች ይሙሉ።');
+                return;
+            }
+
+            // Save to localStorage for future use
+            localStorage.setItem('userName', customerName);
+            localStorage.setItem('userEmail', customerEmail);
+
+            closeModal();
+
+            if (isCartCheckout) {
+                await executeCartCheckout(customerName, customerEmail, country);
+            } else {
+                await executeSingleProductCheckout(productData.id, productData.name, productData.price, customerName, customerEmail, country);
+            }
+        });
+    };
+
+    async function executeCartCheckout(customerName, customerEmail, country) {
+        const checkoutBtn = document.querySelector('.cart-drawer .btn-primary');
+        if (checkoutBtn) {
+            checkoutBtn.disabled = true;
+            checkoutBtn.textContent = 'LOGGING ORDER...';
+        }
+
+        try {
+            let total = 0;
+            let orderLines = [];
+            let productNamesList = [];
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                orderLines.push(`• ${item.quantity}x ${item.name} (${formatPrice(item.price)} each)`);
+                productNamesList.push(`${item.quantity}x ${item.name}`);
+            });
+
+            // Retrieve affiliate code
+            const activeRef = localStorage.getItem('amiele_ref_code') || '';
+
+            const currentUser = await window.getCurrentUser();
+            const customerId = currentUser ? currentUser.id : null;
+
+            let orderNumber = 'AM-PENDING';
+            if (window.OrdersService) {
+                try {
+                    const insertedOrders = await window.OrdersService.createOrdersFromCart(
+                        cart,
+                        customerId,
+                        activeRef,
+                        customerName,
+                        customerEmail,
+                        country,
+                        'WhatsApp checkout'
+                    );
+                    if (insertedOrders && insertedOrders.length > 0) {
+                        orderNumber = insertedOrders[0].order_number || orderNumber;
+                    }
+                } catch (err) {
+                    console.error('[Amiele:Orders] Failed to log order details to Supabase:', err);
+                }
+            }
+
+            // Clean up referral code after successful checkout attribution
+            localStorage.removeItem('amiele_ref_code');
+
+            // Build Receipt Message
+            const refText = activeRef ? `\nReferral Code:\n${activeRef}\n` : '';
+            const messageText = `Hello Amiele,\n\n` +
+                                `I would like to order:\n\n` +
+                                `Product:\n${productNamesList.join('\n')}\n\n` +
+                                `Order Number:\n${orderNumber}\n\n` +
+                                `Customer Name:\n${customerName}\n\n` +
+                                `Country:\n${country}\n` +
+                                refText +
+                                `\nThank you.`;
+
+            const encodedMessage = encodeURIComponent(messageText);
+            const whatsappUrl = `https://wa.me/251969189470?text=${encodedMessage}`;
+            
+            // Open WhatsApp
+            window.open(whatsappUrl, '_blank');
+            
+            // Reset cart UI
+            cart = [];
+            updateCartUI();
+            closeCart();
+        } catch (err) {
+            console.error(err);
+        } finally {
+            if (checkoutBtn) {
+                checkoutBtn.disabled = false;
+                checkoutBtn.textContent = 'Checkout';
+            }
+        }
+    }
+
+    async function executeSingleProductCheckout(productId, name, price, customerName, customerEmail, country) {
+        try {
+            // Retrieve affiliate code
+            const activeRef = localStorage.getItem('amiele_ref_code') || '';
+
+            const currentUser = await window.getCurrentUser();
+            const customerId = currentUser ? currentUser.id : null;
+
+            let orderNumber = 'AM-PENDING';
+            if (window.OrdersService) {
+                try {
+                    const insertedOrders = await window.OrdersService.createSingleProductOrder(
+                        productId,
+                        1, // Quantity = 1 for direct click
+                        customerId,
+                        activeRef,
+                        customerName,
+                        customerEmail,
+                        country,
+                        'Direct product WhatsApp click'
+                    );
+                    if (insertedOrders && insertedOrders.length > 0) {
+                        orderNumber = insertedOrders[0].order_number || orderNumber;
+                    }
+                } catch (err) {
+                    console.error('[Amiele:Orders] Failed to log order details to Supabase:', err);
+                }
+            }
+
+            // Clean up referral code after successful checkout attribution
+            localStorage.removeItem('amiele_ref_code');
+
+            // Build Receipt Message
+            const refText = activeRef ? `\nReferral Code:\n${activeRef}\n` : '';
+            const messageText = `Hello Amiele,\n\n` +
+                                `I would like to order:\n\n` +
+                                `Product:\n${name}\n\n` +
+                                `Quantity:\n1\n\n` +
+                                `Order Number:\n${orderNumber}\n\n` +
+                                `Country:\n${country}\n` +
+                                refText +
+                                `\nThank you.`;
+
+            const encodedMessage = encodeURIComponent(messageText);
+            const whatsappUrl = `https://wa.me/251969189470?text=${encodedMessage}`;
+            
+            // Open WhatsApp
+            window.open(whatsappUrl, '_blank');
+        } catch (err) {
+            console.error(err);
+        }
     }
 });

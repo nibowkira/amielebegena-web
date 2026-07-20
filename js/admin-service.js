@@ -386,6 +386,102 @@
         },
 
         /**
+         * Fetch all orders (referred or organic) for Order Management tab.
+         */
+        async getOrders() {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) return [];
+
+            const { data: orders, error } = await client
+                .from('orders')
+                .select(`
+                    id,
+                    order_number,
+                    customer_name,
+                    customer_email,
+                    country,
+                    referral_code,
+                    quantity,
+                    status,
+                    payment_status,
+                    created_at,
+                    affiliate_id,
+                    product:products(name, price)
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            // Fetch affiliate codes and names to display
+            const { data: affiliates, error: affErr } = await client
+                .from('affiliates')
+                .select('user_id, referral_code');
+
+            const codeMap = {};
+            if (!affErr && affiliates) {
+                affiliates.forEach(a => { codeMap[a.user_id] = a.referral_code; });
+            }
+
+            const exchangeRate = 120;
+            return orders.map(o => {
+                const itemPriceUSD = o.product ? parseFloat(o.product.price) : 0;
+                const orderAmountETB = itemPriceUSD * o.quantity * exchangeRate;
+                
+                return {
+                    id: o.id,
+                    orderNumber: o.order_number || ('AM-XXXX-' + o.id.slice(0, 4).toUpperCase()),
+                    customerName: o.customer_name || 'Guest Customer',
+                    customerEmail: o.customer_email || 'N/A',
+                    country: o.country || 'N/A',
+                    referralCode: o.referral_code || 'Direct / None',
+                    affiliateId: o.affiliate_id,
+                    affiliateCode: codeMap[o.affiliate_id] || 'None',
+                    productName: o.product ? `${o.quantity}x ${o.product.name}` : 'Instrument',
+                    orderAmount: orderAmountETB,
+                    paymentStatus: o.payment_status,
+                    orderStatus: o.status,
+                    createdAt: o.created_at
+                };
+            });
+        },
+
+        /**
+         * Call secure PostgreSQL RPC to approve order payment.
+         */
+        async approvePayment(orderId) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error('Supabase client not initialized');
+
+            const { data, error } = await client
+                .rpc('approve_order_payment', { target_order_id: orderId });
+
+            if (error) throw error;
+            return data;
+        },
+
+        /**
+         * Mark order payment as rejected / failed.
+         */
+        async rejectPayment(orderId) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error('Supabase client not initialized');
+
+            const { data, error } = await client
+                .from('orders')
+                .update({ 
+                    payment_status: 'failed',
+                    status: 'cancelled',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', orderId)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+
+        /**
          * Update referred order status.
          */
         async updateOrderStatus(orderId, newStatus) {
