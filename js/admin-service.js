@@ -8,93 +8,285 @@
 
     const AdminService = {
         /**
-         * Fetch all user profiles from Supabase.
+         * Fetch all user profiles, merging Supabase and LocalStorage.
          */
         async getUsers() {
+            let supabaseUsers = [];
             const client = window.AmieleSupabase.getClient();
-            if (!client) return [];
+            if (client) {
+                try {
+                    const { data, error } = await client
+                        .from('profiles')
+                        .select('*')
+                        .order('created_at', { ascending: false });
 
-            const { data, error } = await client
-                .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: false });
+                    if (!error && data) {
+                        supabaseUsers = data;
+                    }
+                } catch (e) {
+                    console.error('[Amiele:Admin] Supabase fetch users error:', e);
+                }
+            }
 
-            if (error) throw error;
-            return data;
-        },
+            let localUsers = [];
+            if (window.AmieleDB) {
+                try {
+                    localUsers = window.AmieleDB.getUsers();
+                } catch (e) {
+                    console.error('[Amiele:Admin] Local users fetch error:', e);
+                }
+            }
 
-        /**
-         * Update the role of a user profile in Supabase.
-         */
-        async changeUserRole(userId, newRole) {
-            const client = window.AmieleSupabase.getClient();
-            if (!client) throw new Error('Supabase client not initialized');
+            const normalizedLocal = localUsers.map(u => ({
+                id: u.id,
+                full_name: u.name,
+                email: u.email,
+                role: u.role,
+                created_at: u.joinedAt || new Date().toISOString()
+            }));
 
-            const { data, error } = await client
-                .from('profiles')
-                .update({ role: newRole })
-                .eq('id', userId)
-                .select()
-                .single();
+            const mergedMap = new Map();
+            normalizedLocal.forEach(u => {
+                mergedMap.set(u.id, u);
+            });
+            supabaseUsers.forEach(u => {
+                mergedMap.set(u.id, u);
+            });
 
-            if (error) throw error;
-            return data;
-        },
-
-        /**
-         * Fetch all affiliate applications from Supabase, joining applicant profiles.
-         */
-        async getApplications() {
-            const client = window.AmieleSupabase.getClient();
-            if (!client) return [];
-
-            const { data, error } = await client
-                .from('affiliate_applications')
-                .select(`
-                    *,
-                    profile:profiles(full_name, email)
-                `)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            return data.map(app => ({
-                id: 'app_' + app.user_id.slice(0, 8),
-                userId: app.user_id,
-                name: app.profile ? app.profile.full_name : 'Unknown User',
-                phone: 'N/A', // phone is in profile metadata or application motivation
-                country: 'ET',
-                socials: {
-                    instagram: app.social_link && app.social_link.includes('instagram') ? app.social_link : '',
-                    tiktok: app.social_link && app.social_link.includes('tiktok') ? app.social_link : '',
-                    youtube: app.social_link && app.social_link.includes('youtube') ? app.social_link : ''
-                },
-                whyApply: app.motivation,
-                status: app.status,
-                submittedAt: app.created_at
+            return Array.from(mergedMap.values()).map(u => ({
+                id: u.id,
+                name: u.full_name || u.name || 'User',
+                email: u.email,
+                role: u.role,
+                created_at: u.created_at
             }));
         },
 
         /**
+         * Update the role of a user profile in Supabase and/or LocalStorage.
+         */
+        async changeUserRole(userId, newRole) {
+            const client = window.AmieleSupabase.getClient();
+            let supabaseSuccess = false;
+            if (client) {
+                try {
+                    const { data, error } = await client
+                        .from('profiles')
+                        .update({ role: newRole })
+                        .eq('id', userId)
+                        .select()
+                        .single();
+
+                    if (!error) supabaseSuccess = true;
+                } catch (e) {
+                    console.warn('[Amiele:Admin] Supabase role update failed:', e);
+                }
+            }
+
+            if (window.AmieleDB) {
+                try {
+                    const users = window.AmieleDB.getUsers();
+                    const uIndex = users.findIndex(u => u.id === userId);
+                    if (uIndex !== -1) {
+                        users[uIndex].role = newRole;
+                        window.AmieleDB.saveUsers(users);
+                    }
+                } catch (e) {
+                    console.error('[Amiele:Admin] Local role update failed:', e);
+                }
+            }
+
+            if (client && !supabaseSuccess && !window.AmieleDB) {
+                throw new Error('Could not update user role.');
+            }
+        },
+
+        /**
+         * Fetch all affiliate applications from Supabase (two-step query to avoid join issues).
+         */
+        async getApplications() {
+            let supabaseApps = [];
+            const client = window.AmieleSupabase.getClient();
+            if (client) {
+                // Verify admin auth session is attached
+                try {
+                    const { data: { user } } = await client.auth.getUser();
+                    if (!user) {
+                        console.warn('[Amiele:Admin] No active auth session. RLS will block application reads!');
+                    } else {
+                        console.log('[Amiele:Admin] Querying applications as user:', user.email, user.id);
+                    }
+                } catch (e) {
+                    console.warn('[Amiele:Admin] Could not verify auth session status:', e);
+                }
+
+                // Step 1: Fetch applications (no join — avoids PostgREST relationship resolution failures)
+                let rawApps = [];
+                try {
+                    const { data, error } = await client
+                        .from('affiliate_applications')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) {
+                        console.error('[Amiele:Admin] Supabase applications query error:', error.message, error);
+                    } else if (data) {
+                        rawApps = data;
+                        console.log('[Amiele:Admin] Raw applications from Supabase:', rawApps.length);
+                    }
+                } catch (e) {
+                    console.error('[Amiele:Admin] Supabase applications fetch exception:', e);
+                }
+
+                // Step 2: Fetch profile names for the applicants
+                let profileMap = {};
+                if (rawApps.length > 0) {
+                    try {
+                        const userIds = rawApps.map(a => a.user_id);
+                        const { data: profiles, error: profileError } = await client
+                            .from('profiles')
+                            .select('id, full_name, email')
+                            .in('id', userIds);
+
+                        if (!profileError && profiles) {
+                            profiles.forEach(p => {
+                                profileMap[p.id] = p;
+                            });
+                        } else if (profileError) {
+                            console.error('[Amiele:Admin] Supabase profiles lookup error:', profileError.message);
+                        }
+                    } catch (e) {
+                        console.error('[Amiele:Admin] Supabase profiles fetch exception:', e);
+                    }
+                }
+
+                // Step 3: Map raw applications to admin-friendly format
+                supabaseApps = rawApps.map(app => {
+                    const profile = profileMap[app.user_id];
+                    return {
+                        id: 'app_' + app.user_id.slice(0, 8),
+                        userId: app.user_id,
+                        name: profile ? profile.full_name : 'Unknown User',
+                        phone: 'N/A',
+                        country: 'ET',
+                        socials: {
+                            instagram: app.social_link && app.social_link.includes('instagram') ? app.social_link : '',
+                            tiktok: app.social_link && app.social_link.includes('tiktok') ? app.social_link : '',
+                            youtube: app.social_link && app.social_link.includes('youtube') ? app.social_link : ''
+                        },
+                        whyApply: app.motivation,
+                        status: app.status,
+                        submittedAt: app.created_at
+                    };
+                });
+            }
+
+            // Also check local storage for any locally-submitted applications
+            let localApps = [];
+            if (window.AmieleDB) {
+                try {
+                    localApps = window.AmieleDB.getApplications().map(app => ({
+                        id: app.id,
+                        userId: app.userId,
+                        name: app.name || 'Unknown User',
+                        phone: app.phone || 'N/A',
+                        country: app.country || 'ET',
+                        socials: {
+                            instagram: app.socials && app.socials.instagram ? app.socials.instagram : '',
+                            tiktok: app.socials && app.socials.tiktok ? app.socials.tiktok : '',
+                            youtube: app.socials && app.socials.youtube ? app.socials.youtube : ''
+                        },
+                        whyApply: app.whyApply || '',
+                        status: app.status || 'pending',
+                        submittedAt: app.submittedAt || new Date().toISOString()
+                    }));
+                } catch (e) {
+                    console.error('[Amiele:Admin] Local applications fetch error:', e);
+                }
+            }
+
+            // Merge: Supabase data takes priority over local duplicates
+            const mergedMap = new Map();
+            localApps.forEach(app => {
+                mergedMap.set(app.userId, app);
+            });
+            supabaseApps.forEach(app => {
+                mergedMap.set(app.userId, app);
+            });
+
+            const result = Array.from(mergedMap.values());
+            console.log('[Amiele:Admin] Total merged applications:', result.length, 'pending:', result.filter(a => a.status === 'pending').length);
+            return result;
+        },
+
+        /**
          * Approve an affiliate application.
-         * The database trigger automatically creates an affiliate record and upgrades their role.
          */
         async approveApplication(userId, reviewerId) {
             const client = window.AmieleSupabase.getClient();
-            if (!client) throw new Error('Supabase client not initialized');
+            let supabaseSuccess = false;
+            if (client) {
+                try {
+                    const { data, error } = await client
+                        .from('affiliate_applications')
+                        .update({
+                            status: 'approved',
+                            reviewed_by: reviewerId,
+                            reviewed_at: new Date().toISOString()
+                        })
+                        .eq('user_id', userId)
+                        .select()
+                        .single();
 
-            const { data, error } = await client
-                .from('affiliate_applications')
-                .update({
-                    status: 'approved',
-                    reviewed_by: reviewerId,
-                    reviewed_at: new Date().toISOString()
-                })
-                .eq('user_id', userId)
-                .select()
-                .single();
+                    if (!error) supabaseSuccess = true;
+                } catch (e) {
+                    console.error('[Amiele:Admin] Supabase approve application failed:', e);
+                }
+            }
 
-            if (error) throw error;
-            return data;
+            if (window.AmieleDB) {
+                try {
+                    const apps = window.AmieleDB.getApplications();
+                    const app = apps.find(a => a.userId === userId || a.id === userId);
+                    if (app) {
+                        app.status = 'approved';
+                        app.reviewedAt = new Date().toISOString();
+                        window.AmieleDB.saveApplications(apps);
+
+                        const users = window.AmieleDB.getUsers();
+                        const user = users.find(u => u.id === app.userId);
+                        if (user) {
+                            user.role = 'affiliate';
+                            window.AmieleDB.saveUsers(users);
+                        }
+
+                        const affiliates = window.AmieleDB.getAffiliates();
+                        if (!affiliates.find(a => a.userId === app.userId)) {
+                            const baseCode = app.name ? app.name.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 6) : 'AFF';
+                            const randomSuffix = Math.floor(10 + Math.random() * 90);
+                            affiliates.push({
+                                userId: app.userId,
+                                code: baseCode + randomSuffix,
+                                couponCode: baseCode + '5',
+                                balance: 0,
+                                totalEarnings: 0,
+                                pendingCommission: 0,
+                                totalPaid: 0,
+                                clicks: 0,
+                                sales: 0,
+                                tier: 'standard'
+                            });
+                            window.AmieleDB.saveAffiliates(affiliates);
+                        }
+                    }
+                } catch (e) {
+                    console.error('[Amiele:Admin] Local approve application failed:', e);
+                }
+            }
+
+            if (client && !supabaseSuccess && !window.AmieleDB) {
+                throw new Error('Could not approve application.');
+            }
         },
 
         /**
@@ -102,21 +294,43 @@
          */
         async rejectApplication(userId, reviewerId) {
             const client = window.AmieleSupabase.getClient();
-            if (!client) throw new Error('Supabase client not initialized');
+            let supabaseSuccess = false;
+            if (client) {
+                try {
+                    const { data, error } = await client
+                        .from('affiliate_applications')
+                        .update({
+                            status: 'rejected',
+                            reviewed_by: reviewerId,
+                            reviewed_at: new Date().toISOString()
+                        })
+                        .eq('user_id', userId)
+                        .select()
+                        .single();
 
-            const { data, error } = await client
-                .from('affiliate_applications')
-                .update({
-                    status: 'rejected',
-                    reviewed_by: reviewerId,
-                    reviewed_at: new Date().toISOString()
-                })
-                .eq('user_id', userId)
-                .select()
-                .single();
+                    if (!error) supabaseSuccess = true;
+                } catch (e) {
+                    console.error('[Amiele:Admin] Supabase reject application failed:', e);
+                }
+            }
 
-            if (error) throw error;
-            return data;
+            if (window.AmieleDB) {
+                try {
+                    const apps = window.AmieleDB.getApplications();
+                    const app = apps.find(a => a.userId === userId || a.id === userId);
+                    if (app) {
+                        app.status = 'rejected';
+                        app.reviewedAt = new Date().toISOString();
+                        window.AmieleDB.saveApplications(apps);
+                    }
+                } catch (e) {
+                    console.error('[Amiele:Admin] Local reject application failed:', e);
+                }
+            }
+
+            if (client && !supabaseSuccess && !window.AmieleDB) {
+                throw new Error('Could not reject application.');
+            }
         },
 
         /**

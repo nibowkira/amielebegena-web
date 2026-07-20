@@ -349,10 +349,19 @@
 
                 try {
                     console.log('[Amiele:Apply] Submitting:', { userId: user.id, motivation, socialLinks });
+                    let submittedToSupabase = false;
                     if (window.AffiliateService) {
-                        const result = await window.AffiliateService.submitApplication(user.id, motivation, socialLinks || 'N/A');
-                        console.log('[Amiele:Apply] Submission result:', result);
-                    } else {
+                        try {
+                            const result = await window.AffiliateService.submitApplication(user.id, motivation, socialLinks || 'N/A');
+                            console.log('[Amiele:Apply] Submission result:', result);
+                            submittedToSupabase = true;
+                        } catch (supabaseErr) {
+                            console.error('[Amiele:Apply] Supabase submission failed:', supabaseErr.message, supabaseErr);
+                            showToast('Supabase submit failed. Saving to local database instead.', 'warning');
+                        }
+                    }
+                    
+                    if (!submittedToSupabase) {
                         const data = {
                             name: document.getElementById('app-fullname').value.trim(),
                             phone: document.getElementById('app-phone').value.trim(),

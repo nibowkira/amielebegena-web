@@ -434,8 +434,18 @@
                     actionContainer.innerHTML = '<a href="affiliate-dashboard.html" class="btn-primary" style="text-decoration:none; background-color: var(--dark-green); color: white;">AFFILIATE DASHBOARD</a>';
                 }
             } else {
-                // Regular user -> check application status
-                const app = AmieleDB.getUserApplication(user.id);
+                // Regular user -> check application status (Supabase query first, fallback to LocalStorage)
+                let app = null;
+                if (window.AffiliateService) {
+                    try {
+                        app = await window.AffiliateService.getUserApplication(user.id);
+                    } catch (e) {
+                        console.warn('[Amiele:Account] Supabase app check failed, falling back to local DB:', e);
+                    }
+                }
+                if (!app && window.AmieleDB) {
+                    app = window.AmieleDB.getUserApplication(user.id);
+                }
                 if (app && app.status === 'pending') {
                     if (actionContainer) {
                         actionContainer.innerHTML = '<button type="button" class="btn-primary" disabled style="opacity:0.6; cursor:not-allowed;">APPLICATION PENDING</button>';

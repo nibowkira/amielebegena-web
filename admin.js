@@ -29,8 +29,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Dynamic loads
         if (tabName === 'dashboard') renderDashboardStats();
-        // Dynamic loads
-        if (tabName === 'dashboard') renderDashboardStats();
         if (tabName === 'users') renderUsersList();
         if (tabName === 'applications') renderApplicationsQueue();
         if (tabName === 'commissions') renderCommissionsQueue();
@@ -69,6 +67,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const affiliatesCount = users.filter(u => u.role === 'affiliate').length;
         const pendingAppsCount = apps.filter(a => a.status === 'pending').length;
+
+        console.log('[Amiele:Admin] Dashboard stats loaded:', {
+            totalUsers: users.length,
+            totalAffiliates: affiliatesCount,
+            totalApplications: apps.length,
+            pendingApplications: pendingAppsCount,
+            applicationStatuses: apps.map(a => a.status)
+        });
 
         document.getElementById('admin-stat-users').textContent = users.length;
         document.getElementById('admin-stat-apps').textContent = pendingAppsCount;

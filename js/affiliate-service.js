@@ -14,17 +14,36 @@
             const client = window.AmieleSupabase.getClient();
             if (!client) throw new Error('Supabase client not initialized');
 
+            // 1. Try INSERT first for new applications
             const { data, error } = await client
                 .from('affiliate_applications')
-                .upsert({
+                .insert({
                     user_id: userId,
                     motivation,
                     social_link: socialLink,
-                    status: 'pending',
-                    created_at: new Date().toISOString()
+                    status: 'pending'
                 })
                 .select()
                 .single();
+
+            // 2. If duplicate key (error code 23505), update the existing record
+            if (error && error.code === '23505') {
+                const { data: updatedData, error: updateError } = await client
+                    .from('affiliate_applications')
+                    .update({
+                        motivation,
+                        social_link: socialLink,
+                        status: 'pending',
+                        reviewed_by: null,
+                        reviewed_at: null
+                    })
+                    .eq('user_id', userId)
+                    .select()
+                    .single();
+
+                if (updateError) throw updateError;
+                return updatedData;
+            }
 
             if (error) throw error;
             return data;
