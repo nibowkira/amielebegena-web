@@ -1135,16 +1135,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
             e.preventDefault();
 
-            const productId = btn.getAttribute('data-product-id');
+            let productId = btn.getAttribute('data-product-id');
             const productName = btn.getAttribute('data-product-name');
             const productPrice = parseFloat(btn.getAttribute('data-product-price'));
+
+            if (!productId && productName) {
+                // Find matching product in products array
+                const prod = products.find(p => p.name && p.name.toLowerCase() === productName.toLowerCase());
+                if (prod) {
+                    productId = prod.id;
+                }
+            }
 
             if (productId) {
                 window.openWhatsAppOrderModal(false, {
                     id: productId,
-                    name: productName,
-                    price: productPrice
+                    name: productName || 'Instrument',
+                    price: productPrice || 0
                 });
+            } else {
+                console.warn('[Amiele:Checkout] Could not resolve product ID for:', productName);
+                if (products && products.length > 0) {
+                    const firstProd = products.find(p => p.name && p.name.toLowerCase().includes('begena')) || products[0];
+                    window.openWhatsAppOrderModal(false, {
+                        id: firstProd.id,
+                        name: productName || firstProd.name,
+                        price: productPrice || firstProd.price
+                    });
+                } else {
+                    alert('Catalog is loading, please try again in a moment. / ምርቶች በመጫን ላይ ናቸው፣ እባክዎ ትንሽ ቆይተው ይሞክሩ።');
+                }
             }
         }
     });
