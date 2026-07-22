@@ -652,6 +652,36 @@ window.AmieleDB = {
         announcements.unshift(newAnn);
         localStorage.setItem(DB_PREFIX + 'announcements', JSON.stringify(announcements));
         return newAnn;
+    },
+
+    getOrders() {
+        try {
+            return JSON.parse(localStorage.getItem(DB_PREFIX + 'local_orders') || '[]');
+        } catch (e) {
+            return [];
+        }
+    },
+
+    addOrder(orderData) {
+        const orders = this.getOrders();
+        const newOrder = {
+            id: orderData.id || ('loc_ord_' + Math.random().toString(36).substring(2)),
+            order_number: orderData.order_number || ('AM-LOC-' + Math.floor(1000 + Math.random() * 9000)),
+            customer_name: orderData.customer_name || 'Guest Customer',
+            customer_email: orderData.customer_email || 'N/A',
+            country: orderData.country || 'Ethiopia',
+            referral_code: orderData.referral_code || 'Direct / None',
+            affiliate_id: orderData.affiliate_id || null,
+            product_name: orderData.product_name || 'Instrument',
+            quantity: orderData.quantity || 1,
+            amount: orderData.amount || 15000,
+            payment_status: orderData.payment_status || 'pending_payment',
+            status: orderData.status || 'pending',
+            created_at: orderData.created_at || new Date().toISOString()
+        };
+        orders.unshift(newOrder);
+        localStorage.setItem(DB_PREFIX + 'local_orders', JSON.stringify(orders));
+        return newOrder;
     }
 };
 

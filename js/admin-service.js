@@ -401,60 +401,94 @@
          * Fetch all orders (referred or organic) for Order Management tab.
          */
         async getOrders() {
-            const client = window.AmieleSupabase.getClient();
-            if (!client) return [];
+            let supabaseOrders = [];
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
 
-            const { data: orders, error } = await client
-                .from('orders')
-                .select(`
-                    id,
-                    order_number,
-                    customer_name,
-                    customer_email,
-                    country,
-                    referral_code,
-                    quantity,
-                    status,
-                    payment_status,
-                    created_at,
-                    affiliate_id,
-                    product:products(name, price)
-                `)
-                .order('created_at', { ascending: false });
+            if (client) {
+                try {
+                    const { data: orders, error } = await client
+                        .from('orders')
+                        .select(`
+                            id,
+                            order_number,
+                            customer_name,
+                            customer_email,
+                            country,
+                            referral_code,
+                            quantity,
+                            status,
+                            payment_status,
+                            created_at,
+                            affiliate_id,
+                            product:products(name, price)
+                        `)
+                        .order('created_at', { ascending: false });
 
-            if (error) throw error;
+                    if (!error && orders) {
+                        const { data: affiliates } = await client
+                            .from('affiliates')
+                            .select('user_id, referral_code');
 
-            // Fetch affiliate codes and names to display
-            const { data: affiliates, error: affErr } = await client
-                .from('affiliates')
-                .select('user_id, referral_code');
+                        const codeMap = {};
+                        if (affiliates) {
+                            affiliates.forEach(a => { codeMap[a.user_id] = a.referral_code; });
+                        }
 
-            const codeMap = {};
-            if (!affErr && affiliates) {
-                affiliates.forEach(a => { codeMap[a.user_id] = a.referral_code; });
+                        const exchangeRate = 120;
+                        supabaseOrders = orders.map(o => {
+                            const itemPriceUSD = o.product ? parseFloat(o.product.price) : 0;
+                            const calcAmount = itemPriceUSD * o.quantity * exchangeRate;
+                            
+                            return {
+                                id: o.id,
+                                orderNumber: o.order_number || ('AM-ORD-' + o.id.slice(0, 4).toUpperCase()),
+                                customerName: o.customer_name || 'Guest Customer',
+                                customerEmail: o.customer_email || 'N/A',
+                                country: o.country || 'N/A',
+                                referralCode: o.referral_code || (o.affiliate_id ? codeMap[o.affiliate_id] : 'Direct / None'),
+                                affiliateId: o.affiliate_id,
+                                affiliateCode: codeMap[o.affiliate_id] || o.referral_code || 'None',
+                                productName: o.product ? `${o.quantity}x ${o.product.name}` : `${o.quantity || 1}x Instrument`,
+                                orderAmount: calcAmount > 0 ? calcAmount : 15000,
+                                paymentStatus: o.payment_status || 'pending_payment',
+                                orderStatus: o.status || 'pending',
+                                createdAt: o.created_at
+                            };
+                        });
+                    }
+                } catch (e) {
+                    console.warn('[Amiele:Admin] Error fetching Supabase orders:', e);
+                }
             }
 
-            const exchangeRate = 120;
-            return orders.map(o => {
-                const itemPriceUSD = o.product ? parseFloat(o.product.price) : 0;
-                const orderAmountETB = itemPriceUSD * o.quantity * exchangeRate;
-                
-                return {
-                    id: o.id,
-                    orderNumber: o.order_number || ('AM-XXXX-' + o.id.slice(0, 4).toUpperCase()),
-                    customerName: o.customer_name || 'Guest Customer',
-                    customerEmail: o.customer_email || 'N/A',
-                    country: o.country || 'N/A',
-                    referralCode: o.referral_code || 'Direct / None',
-                    affiliateId: o.affiliate_id,
-                    affiliateCode: codeMap[o.affiliate_id] || 'None',
-                    productName: o.product ? `${o.quantity}x ${o.product.name}` : 'Instrument',
-                    orderAmount: orderAmountETB,
-                    paymentStatus: o.payment_status,
-                    orderStatus: o.status,
-                    createdAt: o.created_at
-                };
-            });
+            let localOrders = [];
+            if (window.AmieleDB) {
+                try {
+                    localOrders = window.AmieleDB.getOrders().map(o => ({
+                        id: o.id,
+                        orderNumber: o.order_number,
+                        customerName: o.customer_name,
+                        customerEmail: o.customer_email,
+                        country: o.country,
+                        referralCode: o.referral_code || 'Direct / None',
+                        affiliateId: o.affiliate_id,
+                        affiliateCode: o.referral_code || 'None',
+                        productName: o.product_name,
+                        orderAmount: o.amount,
+                        paymentStatus: o.payment_status,
+                        orderStatus: o.status,
+                        createdAt: o.created_at
+                    }));
+                } catch (e) {
+                    console.warn('[Amiele:Admin] Error fetching local orders:', e);
+                }
+            }
+
+            const orderMap = new Map();
+            localOrders.forEach(o => orderMap.set(o.id, o));
+            supabaseOrders.forEach(o => orderMap.set(o.id, o));
+
+            return Array.from(orderMap.values());
         },
 
         /**
