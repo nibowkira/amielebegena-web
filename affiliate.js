@@ -443,42 +443,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     function generateReferralQR() {
         const canvas = document.getElementById('qrCanvas');
         if (!canvas) return;
-        const ctx = canvas.getContext('2d');
         
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        const img = new Image();
-        img.crossOrigin = 'anonymous'; // Ensure canvas is not tainted for downloads
-        
-        img.onload = function() {
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        if (typeof QRious !== 'undefined') {
+            new QRious({
+                element: canvas,
+                value: referralLink,
+                size: canvas.width,
+                background: '#ffffff',
+                foreground: '#14231b',
+                level: 'H'
+            });
             
-            // Draw golden crest frame in center
+            const ctx = canvas.getContext('2d');
             const centerSize = 40;
             const centerPos = (canvas.width - centerSize) / 2;
             ctx.fillStyle = '#ffd700';
             ctx.fillRect(centerPos, centerPos, centerSize, centerSize);
             
-            // Draw logo letters in center
             ctx.fillStyle = '#14231b';
             ctx.font = 'bold 12px Outfit';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('AM', canvas.width / 2, canvas.height / 2);
-        };
-        
-        img.onerror = function(e) {
-            console.error('[Amiele:QR] Real QR generation failed, drawing fallback simulation:', e);
-            // Draw mock visual QR
+        } else {
+            console.error('[Amiele:QR] QRious library not loaded.');
+            const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#fff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#14231b';
             ctx.fillRect(20, 20, 50, 50);
             ctx.fillRect(180, 20, 50, 50);
             ctx.fillRect(20, 180, 50, 50);
-        };
-        
-        img.src = `https://quickchart.io/qr?text=${encodeURIComponent(referralLink)}&size=${canvas.width}&dark=14231b&margin=2`;
+        }
     }
 
     window.downloadQRCode = function() {
