@@ -213,19 +213,16 @@
                     const type = urlParams.get('type');
 
                     if (tokenHash && type) {
-                        console.log('[Amiele:Auth] PKCE flow detected, verifying OTP...');
                         const { data, error } = await client.auth.verifyOtp({
                             token_hash: tokenHash,
                             type: type
                         });
 
                         if (error) {
-                            console.error('[Amiele:Auth] OTP verification failed:', error.message);
                             showError(error.message);
                             return;
                         }
 
-                        console.log('[Amiele:Auth] Email confirmed via PKCE flow.');
                         showSuccess();
                         return;
                     }
@@ -233,20 +230,14 @@
                     // --- Strategy 2: Implicit flow (tokens in URL hash fragment) ---
                     const hash = window.location.hash;
                     if (hash && hash.length > 1) {
-                        console.log('[Amiele:Auth] Hash fragment detected, processing implicit flow...');
-                        // The Supabase client automatically picks up hash tokens.
-                        // We just need to wait a moment for it to process them.
                         const { data: { session }, error } = await client.auth.getSession();
 
                         if (error) {
-                            console.error('[Amiele:Auth] Session retrieval failed:', error.message);
                             showError(error.message);
                             return;
                         }
 
                         if (session) {
-                            console.log('[Amiele:Auth] Session established via implicit flow.');
-                            // Sign out to clear the session so user can login explicitly
                             await client.auth.signOut();
                             showSuccess();
                             return;
@@ -256,16 +247,13 @@
                     // --- Strategy 3: Check if arriving with code param (authorization code flow) ---
                     const code = urlParams.get('code');
                     if (code) {
-                        console.log('[Amiele:Auth] Authorization code detected, exchanging...');
                         const { data, error } = await client.auth.exchangeCodeForSession(code);
 
                         if (error) {
-                            console.error('[Amiele:Auth] Code exchange failed:', error.message);
                             showError(error.message);
                             return;
                         }
 
-                        console.log('[Amiele:Auth] Session established via code exchange.');
                         await client.auth.signOut();
                         showSuccess();
                         return;

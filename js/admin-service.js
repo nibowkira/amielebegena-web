@@ -8,6 +8,22 @@
 
     const AdminService = {
         /**
+         * Fetch advanced admin analytics securely from Supabase RPC.
+         */
+        async getAdminAnalytics() {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) return null;
+            try {
+                const { data, error } = await client.rpc('get_admin_analytics');
+                if (error) throw error;
+                return data;
+            } catch (e) {
+                console.error('[Amiele:Admin] Error fetching admin analytics:', e);
+                return null;
+            }
+        },
+
+        /**
          * Fetch all user profiles, merging Supabase and LocalStorage.
          */
         async getUsers() {
@@ -113,8 +129,6 @@
                     const { data: { user } } = await client.auth.getUser();
                     if (!user) {
                         console.warn('[Amiele:Admin] No active auth session. RLS will block application reads!');
-                    } else {
-                        console.log('[Amiele:Admin] Querying applications as user:', user.email, user.id);
                     }
                 } catch (e) {
                     console.warn('[Amiele:Admin] Could not verify auth session status:', e);
@@ -132,7 +146,6 @@
                         console.error('[Amiele:Admin] Supabase applications query error:', error.message, error);
                     } else if (data) {
                         rawApps = data;
-                        console.log('[Amiele:Admin] Raw applications from Supabase:', rawApps.length);
                     }
                 } catch (e) {
                     console.error('[Amiele:Admin] Supabase applications fetch exception:', e);
@@ -215,7 +228,6 @@
             });
 
             const result = Array.from(mergedMap.values());
-            console.log('[Amiele:Admin] Total merged applications:', result.length, 'pending:', result.filter(a => a.status === 'pending').length);
             return result;
         },
 

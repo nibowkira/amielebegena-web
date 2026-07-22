@@ -163,7 +163,7 @@
         <div class="wa-popup" id="waPopup">
             <div class="wa-popup-header">
                 <div class="wa-avatar">
-                    <img src="image/photo_2025-10-01_07-26-53.jpg" alt="Amiele Begena" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    <img loading="lazy" src="image/photo_2025-10-01_07-26-53.jpg" alt="Amiele Begena" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                 </div>
                 <div>
                     <h4>Amiele Begena</h4>

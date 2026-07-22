@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function renderDashboardStats() {
         let users = [];
         let apps = [];
-        let referredSales = [];
+        let analytics = null;
 
         if (window.AdminService) {
             try {
@@ -51,41 +51,68 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             try {
                 apps = await window.AdminService.getApplications();
-                console.log('[Amiele:Admin] Applications fetched:', apps.length, apps);
             } catch (e) {
                 console.error('[Amiele:Admin] Error fetching applications:', e);
-                // Show error visually on dashboard for debugging
                 const appsEl = document.getElementById('admin-stat-apps');
                 if (appsEl) appsEl.textContent = 'ERR';
             }
             try {
-                referredSales = await window.AdminService.getReferredSales();
+                analytics = await window.AdminService.getAdminAnalytics();
             } catch (e) {
-                console.error('[Amiele:Admin] Error fetching referred sales:', e);
+                console.error('[Amiele:Admin] Error fetching analytics:', e);
             }
         }
 
         const affiliatesCount = users.filter(u => u.role === 'affiliate').length;
         const pendingAppsCount = apps.filter(a => a.status === 'pending').length;
 
-        console.log('[Amiele:Admin] Dashboard stats loaded:', {
-            totalUsers: users.length,
-            totalAffiliates: affiliatesCount,
-            totalApplications: apps.length,
-            pendingApplications: pendingAppsCount,
-            applicationStatuses: apps.map(a => a.status)
-        });
-
-        document.getElementById('admin-stat-users').textContent = users.length;
-        document.getElementById('admin-stat-apps').textContent = pendingAppsCount;
-        document.getElementById('admin-stat-affiliates').textContent = affiliatesCount;
+        const elUsers = document.getElementById('admin-stat-users');
+        if (elUsers) elUsers.textContent = users.length;
         
-        // Sum confirmed referred sales commission
-        const totalEarnings = referredSales
-            .filter(c => c.status === 'confirmed' || c.status === 'delivered')
-            .reduce((sum, c) => sum + c.commissionAmount, 0);
+        const elApps = document.getElementById('admin-stat-apps');
+        if (elApps) elApps.textContent = pendingAppsCount;
+        
+        const elAff = document.getElementById('admin-stat-affiliates');
+        if (elAff) elAff.textContent = affiliatesCount;
 
-        document.getElementById('admin-stat-payouts').textContent = `ETB ${totalEarnings.toLocaleString()}`;
+        if (analytics) {
+            // Populate Advanced Analytics
+            const elRev = document.getElementById('admin-stat-monthly-rev');
+            if (elRev) elRev.textContent = `ETB ${parseFloat(analytics.monthly_revenue).toLocaleString()}`;
+            
+            const elAov = document.getElementById('admin-stat-aov');
+            if (elAov) elAov.textContent = `ETB ${parseFloat(analytics.average_order_value).toLocaleString()}`;
+            
+            const elOrders = document.getElementById('admin-stat-monthly-orders');
+            if (elOrders) elOrders.textContent = analytics.monthly_orders;
+            
+            const elConv = document.getElementById('admin-stat-conv');
+            if (elConv) elConv.textContent = `${parseFloat(analytics.conversion_rate).toFixed(1)}%`;
+            
+            const elTopAff = document.getElementById('admin-top-affiliates');
+            if (elTopAff && analytics.top_affiliates && analytics.top_affiliates.length > 0) {
+                elTopAff.innerHTML = analytics.top_affiliates.map(a => `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <span>${esc(a.full_name)} (${esc(a.referral_code)})</span>
+                        <strong style="color:var(--aff-primary);">${a.sales_count} Sales</strong>
+                    </div>
+                `).join('');
+            } else if (elTopAff) {
+                elTopAff.innerHTML = '<span style="color:#666">No data available</span>';
+            }
+            
+            const elTopProd = document.getElementById('admin-top-products');
+            if (elTopProd && analytics.top_products && analytics.top_products.length > 0) {
+                elTopProd.innerHTML = analytics.top_products.map(p => `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <span>${esc(p.name)}</span>
+                        <strong style="color:var(--aff-primary);">${p.qty_sold} Sold</strong>
+                    </div>
+                `).join('');
+            } else if (elTopProd) {
+                elTopProd.innerHTML = '<span style="color:#666">No data available</span>';
+            }
+        }
     }
 
     // 3. User Management

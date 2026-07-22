@@ -10,25 +10,24 @@
         /**
          * Submit cart checkout details to Supabase.
          */
-        async createOrdersFromCart(cartItems, customerId = null, referralCode = null, customerName = null, customerEmail = null, country = null, notes = null) {
+        async createOrdersFromCart(cartItems, customerId = null, referralCode = null, customerName = null, customerEmail = null, country = null, notes = null, sessionId = null) {
             const client = window.AmieleSupabase.getClient();
             if (!client) throw new Error('Supabase client not initialized');
 
-            // 1. Resolve affiliate identifier from referral code if provided
+            // 1. Resolve secure affiliate identifier validating expiration and session
             let affiliateId = null;
-            if (referralCode) {
+            if (referralCode && sessionId) {
                 try {
-                    const { data: aff, error: affErr } = await client
-                        .from('affiliates')
-                        .select('user_id')
-                        .eq('referral_code', referralCode.trim())
-                        .maybeSingle();
-
-                    if (!affErr && aff) {
-                        affiliateId = aff.user_id;
+                    const { data, error } = await client.rpc('resolve_valid_affiliate', { 
+                        code_val: referralCode.trim(), 
+                        session_val: sessionId 
+                    });
+                    
+                    if (!error && data) {
+                        affiliateId = data;
                     }
                 } catch (e) {
-                    console.warn('[Amiele:Orders] Error resolving affiliate code:', e);
+                    console.warn('[Amiele:Orders] Error securely resolving affiliate code:', e);
                 }
             }
 
@@ -60,25 +59,24 @@
         /**
          * Create order record for direct catalog checkout.
          */
-        async createSingleProductOrder(productId, quantity, customerId = null, referralCode = null, customerName = null, customerEmail = null, country = null, notes = null) {
+        async createSingleProductOrder(productId, quantity, customerId = null, referralCode = null, customerName = null, customerEmail = null, country = null, notes = null, sessionId = null) {
             const client = window.AmieleSupabase.getClient();
             if (!client) throw new Error('Supabase client not initialized');
 
-            // 1. Resolve affiliate identifier from referral code if provided
+            // 1. Resolve secure affiliate identifier validating expiration and session
             let affiliateId = null;
-            if (referralCode) {
+            if (referralCode && sessionId) {
                 try {
-                    const { data: aff, error: affErr } = await client
-                        .from('affiliates')
-                        .select('user_id')
-                        .eq('referral_code', referralCode.trim())
-                        .maybeSingle();
-
-                    if (!affErr && aff) {
-                        affiliateId = aff.user_id;
+                    const { data, error } = await client.rpc('resolve_valid_affiliate', { 
+                        code_val: referralCode.trim(), 
+                        session_val: sessionId 
+                    });
+                    
+                    if (!error && data) {
+                        affiliateId = data;
                     }
                 } catch (e) {
-                    console.warn('[Amiele:Orders] Error resolving affiliate code:', e);
+                    console.warn('[Amiele:Orders] Error securely resolving affiliate code:', e);
                 }
             }
 

@@ -87,43 +87,36 @@
                 return null;
             }
 
-            // 2. Fetch all orders referred by this affiliate
-            const { data: orders, error: ordersError } = await client
+            // 2. Fetch stats via RPC
+            let stats = { sales: 0, total_orders: 0, tier: 'bronze', commission_rate: 0.10, clicks: 0, unique_clicks: 0, clicks_today: 0, clicks_week: 0, clicks_month: 0, clicks_year: 0 };
+            try {
+                const { data, error } = await client.rpc('get_affiliate_dashboard_stats', { user_id_val: userId });
+                if (!error && data) stats = data;
+            } catch (err) {
+                console.error('[Amiele:Affiliate] Error fetching stats via RPC:', err);
+            }
+
+            // 3. Fetch exchange rate
+            let exchangeRate = 120;
+            try {
+                const { data, error } = await client.rpc('get_exchange_rate');
+                if (!error && data) exchangeRate = parseFloat(data);
+            } catch (err) {
+                console.error('[Amiele:Affiliate] Error fetching exchange rate:', err);
+            }
+
+            // 4. Calculate pending commissions on the fly (orders that are pending payment)
+            const { data: orders } = await client
                 .from('orders')
-                .select(`
-                    id,
-                    quantity,
-                    status,
-                    payment_status,
-                    product:products(price)
-                `)
+                .select('quantity, payment_status, product:products(price)')
                 .eq('affiliate_id', userId);
 
-            if (ordersError) {
-                console.error('[Amiele:Affiliate] Error fetching referred orders:', ordersError);
-            }
-
-            const activeOrders = orders ? orders.filter(o => o.status !== 'cancelled') : [];
-            const salesCount = activeOrders.filter(o => o.payment_status === 'paid').length;
-
-            // Calculate tier dynamically
-            let tier = 'bronze';
-            let commRate = 0.10; // 10%
-            if (salesCount >= 30) {
-                tier = 'gold';
-                commRate = 0.15; // 15%
-            } else if (salesCount >= 10) {
-                tier = 'silver';
-                commRate = 0.12; // 12%
-            }
-
-            // Calculate pending commissions on the fly (orders that are pending payment)
-            const exchangeRate = 120;
+            const activeOrders = orders || [];
             let pendingCommission = 0;
             activeOrders.filter(o => o.payment_status === 'pending_payment').forEach(o => {
                 const itemPriceUSD = o.product ? parseFloat(o.product.price) : 0;
                 const orderAmountETB = itemPriceUSD * o.quantity * exchangeRate;
-                pendingCommission += orderAmountETB * commRate;
+                pendingCommission += orderAmountETB * stats.commission_rate;
             });
 
             // 3. Fetch approved commissions from commissions table
@@ -161,21 +154,23 @@
 
             const balance = Math.max(0, totalEarnings - totalPaid);
 
-            // Click tracking fallback using localStorage clicks logs
-            const localClicks = JSON.parse(localStorage.getItem('amiele_clicks')) || [];
-            const clickCount = localClicks.filter(c => c.affiliateId === userId).length;
-
             return {
                 userId,
                 code: aff.referral_code,
                 couponCode: aff.referral_code.toUpperCase() + '5',
-                tier,
+                tier: stats.tier,
                 balance,
                 totalEarnings,
                 pendingCommission,
                 totalPaid,
-                sales: salesCount,
-                clicks: clickCount || salesCount * 3 + 2 // dynamic simulated ratio if 0 clicks logged
+                sales: stats.sales,
+                totalOrders: stats.total_orders,
+                clicks: stats.clicks,
+                uniqueClicks: stats.unique_clicks,
+                clicksToday: stats.clicks_today,
+                clicksWeek: stats.clicks_week,
+                clicksMonth: stats.clicks_month,
+                clicksYear: stats.clicks_year
             };
         },
 
@@ -219,13 +214,18 @@
                 });
             }
 
-            // Resolve affiliate tier for commission rate calculation
-            const salesCount = orders ? orders.filter(o => o.status !== 'cancelled' && o.payment_status === 'paid').length : 0;
+            // Fetch stats and exchange rate via RPC
             let commRate = 0.10;
-            if (salesCount >= 30) commRate = 0.15;
-            else if (salesCount >= 10) commRate = 0.12;
-
-            const exchangeRate = 120;
+            let exchangeRate = 120;
+            try {
+                const { data: stats } = await client.rpc('get_affiliate_stats', { user_id_val: userId });
+                if (stats) commRate = stats.commission_rate;
+                
+                const { data: exRate } = await client.rpc('get_exchange_rate');
+                if (exRate) exchangeRate = parseFloat(exRate);
+            } catch (err) {
+                console.error('[Amiele:Affiliate] Error fetching stats/exchange rate for ledger:', err);
+            }
             return orders.map(o => {
                 const itemPriceUSD = o.product ? parseFloat(o.product.price) : 0;
                 const orderAmountETB = itemPriceUSD * o.quantity * exchangeRate;

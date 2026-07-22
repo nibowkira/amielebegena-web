@@ -37,17 +37,17 @@
                 <span class="logo" style="color: white; font-size: 1.5rem;">ዓሚኤል በገና</span>
             </a>
             
-            <ul class="aff-sidebar-menu">
-                <li><a class="aff-menu-item active" onclick="switchTab('overview')"><i class="fas fa-chart-line"></i> Overview</a></li>
-                <li><a class="aff-menu-item" onclick="switchTab('referral')"><i class="fas fa-link"></i> Referral Center</a></li>
-                <li><a class="aff-menu-item" onclick="switchTab('commissions')"><i class="fas fa-wallet"></i> Commissions</a></li>
-                <li><a class="aff-menu-item" onclick="switchTab('withdrawals')"><i class="fas fa-hand-holding-usd"></i> Payouts</a></li>
-                <li><a class="aff-menu-item" onclick="switchTab('performance')"><i class="fas fa-file-invoice-dollar"></i> Performance Report</a></li>
-                <li><a class="aff-menu-item" onclick="switchTab('marketing')"><i class="fas fa-photo-video"></i> Marketing Center</a></li>
-                <li><a class="aff-menu-item" onclick="switchTab('campaigns')"><i class="fas fa-trophy"></i> Bonus Campaigns</a></li>
-                <li><a class="aff-menu-item" onclick="switchTab('achievements')"><i class="fas fa-award"></i> Achievements</a></li>
-                <li><a class="aff-menu-item" onclick="switchTab('announcements')"><i class="fas fa-bullhorn"></i> Announcements</a></li>
-                <li><a class="aff-menu-item" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Settings</a></li>
+            <ul class="aff-sidebar-menu" role="tablist">
+                <li><a class="aff-menu-item active" role="tab" aria-selected="true" onclick="switchTab('overview')"><i class="fas fa-chart-line"></i> Overview</a></li>
+                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('referral')"><i class="fas fa-link"></i> Referral Center</a></li>
+                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('commissions')"><i class="fas fa-wallet"></i> Commissions</a></li>
+                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('withdrawals')"><i class="fas fa-hand-holding-usd"></i> Payouts</a></li>
+                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('performance')"><i class="fas fa-file-invoice-dollar"></i> Performance Report</a></li>
+                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('marketing')"><i class="fas fa-photo-video"></i> Marketing Center</a></li>
+                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('campaigns')"><i class="fas fa-trophy"></i> Bonus Campaigns</a></li>
+                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('achievements')"><i class="fas fa-award"></i> Achievements</a></li>
+                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('announcements')"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
 
             <div class="aff-sidebar-user">
@@ -139,6 +139,59 @@
                     <div class="aff-stat-card">
                         <h3>Conversion Rate</h3>
                         <div class="aff-stat-value" id="stat-conversion">0%</div>
+                    </div>
+                </div>
+
+                <div class="aff-card">
+                    <div class="aff-card-header">
+                        <h2>Advanced Analytics & Sales Funnel</h2>
+                    </div>
+                    <div style="display:flex; justify-content: space-around; padding: 2rem 0; flex-wrap:wrap; gap:1rem;">
+                        <div style="text-align:center; padding:1rem; border:1px solid rgba(255,255,255,0.1); border-radius:8px; flex:1; min-width:150px;">
+                            <div style="color:var(--aff-text-muted); font-size:0.9rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Total Clicks</div>
+                            <div id="funnel-clicks" style="font-size:2rem; font-weight:bold; color:var(--aff-primary);">0</div>
+                            <div style="font-size:0.8rem; color:#888; margin-top:5px;">Unique: <span id="funnel-unique">0</span></div>
+                        </div>
+                        <div style="align-self:center; color:rgba(255,255,255,0.2);"><i class="fas fa-chevron-right fa-2x"></i></div>
+                        
+                        <div style="text-align:center; padding:1rem; border:1px solid rgba(255,255,255,0.1); border-radius:8px; flex:1; min-width:150px;">
+                            <div style="color:var(--aff-text-muted); font-size:0.9rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">All Orders</div>
+                            <div id="funnel-orders" style="font-size:2rem; font-weight:bold; color:var(--aff-primary);">0</div>
+                            <div style="font-size:0.8rem; color:#888; margin-top:5px;">Gross Volume</div>
+                        </div>
+                        <div style="align-self:center; color:rgba(255,255,255,0.2);"><i class="fas fa-chevron-right fa-2x"></i></div>
+
+                        <div style="text-align:center; padding:1rem; border:1px solid rgba(255,255,255,0.1); border-radius:8px; flex:1; min-width:150px;">
+                            <div style="color:var(--aff-text-muted); font-size:0.9rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Paid Orders</div>
+                            <div id="funnel-paid-orders" style="font-size:2rem; font-weight:bold; color:var(--aff-primary);">0</div>
+                            <div style="font-size:0.8rem; color:#888; margin-top:5px;">Conversion: <span id="funnel-conv">0%</span></div>
+                        </div>
+                        <div style="align-self:center; color:rgba(255,255,255,0.2);"><i class="fas fa-chevron-right fa-2x"></i></div>
+                        
+                        <div style="text-align:center; padding:1rem; border:1px solid rgba(255,255,255,0.1); border-radius:8px; flex:1; min-width:150px; background:rgba(255,215,0,0.05);">
+                            <div style="color:var(--aff-text-muted); font-size:0.9rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem;">Commissions</div>
+                            <div id="funnel-comm" style="font-size:2rem; font-weight:bold; color:#ffd700;">ETB 0</div>
+                            <div style="font-size:0.8rem; color:#888; margin-top:5px;">Earned from Sales</div>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top:1px solid rgba(255,255,255,0.05); padding-top:1.5rem; display:flex; justify-content:space-between; flex-wrap:wrap; text-align:center;">
+                        <div style="flex:1;">
+                            <span style="color:var(--aff-text-muted); font-size:0.8rem; text-transform:uppercase;">Clicks Today</span>
+                            <div id="stat-clicks-today" style="font-size:1.2rem; font-weight:bold;">0</div>
+                        </div>
+                        <div style="flex:1;">
+                            <span style="color:var(--aff-text-muted); font-size:0.8rem; text-transform:uppercase;">Clicks This Week</span>
+                            <div id="stat-clicks-week" style="font-size:1.2rem; font-weight:bold;">0</div>
+                        </div>
+                        <div style="flex:1;">
+                            <span style="color:var(--aff-text-muted); font-size:0.8rem; text-transform:uppercase;">Clicks This Month</span>
+                            <div id="stat-clicks-month" style="font-size:1.2rem; font-weight:bold;">0</div>
+                        </div>
+                        <div style="flex:1;">
+                            <span style="color:var(--aff-text-muted); font-size:0.8rem; text-transform:uppercase;">Clicks This Year</span>
+                            <div id="stat-clicks-year" style="font-size:1.2rem; font-weight:bold;">0</div>
+                        </div>
                     </div>
                 </div>
 

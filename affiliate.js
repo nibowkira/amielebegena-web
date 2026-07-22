@@ -171,9 +171,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update menu active class
         document.querySelectorAll('.aff-menu-item').forEach(item => {
             item.classList.remove('active');
+            item.setAttribute('aria-selected', 'false');
         });
         const activeMenuItem = document.querySelector(`.aff-menu-item[onclick*="${tabName}"]`);
-        if (activeMenuItem) activeMenuItem.classList.add('active');
+        if (activeMenuItem) {
+            activeMenuItem.classList.add('active');
+            activeMenuItem.setAttribute('aria-selected', 'true');
+        }
 
         // Update Breadcrumbs
         const breadcrumb = document.getElementById('breadcrumb-current');
@@ -185,9 +189,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Toggle visibility of panels
         document.querySelectorAll('.aff-tab-pane').forEach(pane => {
             pane.classList.remove('active');
+            pane.setAttribute('aria-hidden', 'true');
         });
         const activePane = document.getElementById(`tab-${tabName}`);
-        if (activePane) activePane.classList.add('active');
+        if (activePane) {
+            activePane.classList.add('active');
+            activePane.setAttribute('aria-hidden', 'false');
+        }
 
         // SKELETON PLACEHOLDER LOADING SIMULATION
         // Trigger skeletons on tabs with grids/charts/tables
@@ -291,6 +299,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const rate = metadata.clicks > 0 ? ((metadata.sales / metadata.clicks) * 100).toFixed(1) : '0.0';
         document.getElementById('stat-conversion').textContent = `${rate}%`;
+
+        // Advanced Analytics Funnel & Stats
+        const funnelClicks = document.getElementById('funnel-clicks');
+        if (funnelClicks) {
+            funnelClicks.textContent = metadata.clicks;
+            document.getElementById('funnel-unique').textContent = metadata.uniqueClicks || 0;
+            document.getElementById('funnel-orders').textContent = metadata.totalOrders || 0;
+            document.getElementById('funnel-paid-orders').textContent = metadata.sales;
+            document.getElementById('funnel-conv').textContent = `${rate}%`;
+            document.getElementById('funnel-comm').textContent = `ETB ${metadata.totalEarnings.toLocaleString()}`;
+
+            document.getElementById('stat-clicks-today').textContent = metadata.clicksToday || 0;
+            document.getElementById('stat-clicks-week').textContent = metadata.clicksWeek || 0;
+            document.getElementById('stat-clicks-month').textContent = metadata.clicksMonth || 0;
+            document.getElementById('stat-clicks-year').textContent = metadata.clicksYear || 0;
+        }
     }
 
     // 5. Draw Canvas Charts (No external dependencies for performance & lightness)

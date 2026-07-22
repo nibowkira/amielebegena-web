@@ -80,10 +80,39 @@
                     </div>
                 </div>
 
-                <div class="aff-card" style="padding: 3rem 2rem; text-align: center;">
-                    <i class="fas fa-chart-pie" style="font-size: 3rem; color: var(--aff-primary); opacity:0.8; margin-bottom:1.5rem;"></i>
-                    <h2>System Curation Dashboard</h2>
-                    <p style="color:var(--aff-text-muted); max-width:650px; margin:0.5rem auto 0; line-height:1.6;">Use the sidebar panels to review pending affiliate submissions, confirm sales and reward commissions, process payment requests, launch challenge targets, or publish updates directly onto affiliate feeds.</p>
+                <div class="aff-card" style="padding: 2rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:1rem;">
+                        <h2>Advanced Analytics</h2>
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div>
+                            <span style="color:var(--aff-text-muted); font-size:0.85rem; text-transform:uppercase;">Monthly Revenue</span>
+                            <div id="admin-stat-monthly-rev" style="font-size:1.8rem; font-weight:bold; color:var(--aff-primary);">ETB 0</div>
+                        </div>
+                        <div>
+                            <span style="color:var(--aff-text-muted); font-size:0.85rem; text-transform:uppercase;">Average Order Value</span>
+                            <div id="admin-stat-aov" style="font-size:1.8rem; font-weight:bold;">ETB 0</div>
+                        </div>
+                        <div>
+                            <span style="color:var(--aff-text-muted); font-size:0.85rem; text-transform:uppercase;">Monthly Orders</span>
+                            <div id="admin-stat-monthly-orders" style="font-size:1.8rem; font-weight:bold;">0</div>
+                        </div>
+                        <div>
+                            <span style="color:var(--aff-text-muted); font-size:0.85rem; text-transform:uppercase;">Overall Conversion</span>
+                            <div id="admin-stat-conv" style="font-size:1.8rem; font-weight:bold;">0%</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top:2rem;">
+                        <div>
+                            <h3 style="margin-bottom:1rem; font-size:1rem; color:var(--aff-text-muted);">Top Affiliates</h3>
+                            <div id="admin-top-affiliates" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px;">Loading...</div>
+                        </div>
+                        <div>
+                            <h3 style="margin-bottom:1rem; font-size:1rem; color:var(--aff-text-muted);">Top Products</h3>
+                            <div id="admin-top-products" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px;">Loading...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

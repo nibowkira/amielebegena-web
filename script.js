@@ -282,7 +282,7 @@ function renderProducts(category) {
                 <button class="save-item-btn animate-scale ${isSaved ? 'saved' : ''}" onclick="event.stopPropagation(); toggleSave('${esc(product.id)}', this)">
                     ${isSaved ? '♥' : '♡'}
                 </button>
-                <img src="${esc(product.image)}" alt="${esc(product.name)}" class="animate-fade">
+                <img loading="lazy" src="${esc(product.image)}" alt="${esc(product.name)}" class="animate-fade">
             </div>
             <div class="product-info">
                 <div class="product-info-row">
@@ -378,7 +378,7 @@ function updateCartUI() {
         const itemEl = document.createElement('div');
         itemEl.className = 'cart-item';
         itemEl.innerHTML = `
-            <img src="${esc(item.image)}" alt="${esc(item.name)}">
+            <img loading="lazy" src="${esc(item.image)}" alt="${esc(item.name)}">
             <div class="cart-item-info">
                 <div class="cart-item-title">${esc(item.name)}</div>
                 <div class="cart-item-price">${formatPrice(item.price)}</div>
@@ -424,18 +424,26 @@ closeCartBtn.addEventListener('click', closeCart);
 cartOverlay.addEventListener('click', closeCart);
 
 // Init
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // 1. Detect Referral parameters
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
     if (refCode) {
         localStorage.setItem('amiele_ref_code', refCode);
-        if (window.AmieleDB) {
-            try {
-                AmieleDB.trackClick(refCode);
-            } catch (e) {
-                console.error(e);
+        
+        let sessionId = localStorage.getItem('amiele_session_id');
+        if (!sessionId) {
+            sessionId = crypto.randomUUID ? crypto.randomUUID() : 'sess_' + Math.random().toString(36).substring(2);
+            localStorage.setItem('amiele_session_id', sessionId);
+        }
+        
+        try {
+            const client = window.AmieleSupabase?.getClient();
+            if (client) {
+                await client.rpc('log_affiliate_click', { code_val: refCode, session_val: sessionId });
             }
+        } catch (err) {
+            console.error('[Amiele:Affiliate] Failed to log click', err);
         }
     }
 
@@ -754,7 +762,7 @@ function renderSavedItems() {
             <div class="product-image-wrap artisan-photo-wrap">
 
                 <button class="save-item-btn saved" onclick="event.stopPropagation(); unsaveFromAccount(${esc(product.id)}, this)" title="Remove from saved">♥</button>
-                <img src="${esc(product.image)}" alt="${esc(product.name)}">
+                <img loading="lazy" src="${esc(product.image)}" alt="${esc(product.name)}">
             </div>
             <div class="product-info">
                 <div class="product-info-row">
@@ -1269,8 +1277,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 productNamesList.push(`${item.quantity}x ${item.name}`);
             });
 
-            // Retrieve affiliate code
+            // Retrieve affiliate code and session ID for secure tracking
             const activeRef = localStorage.getItem('amiele_ref_code') || '';
+            const sessionId = localStorage.getItem('amiele_session_id') || '';
 
             const currentUser = await window.getCurrentUser();
             const customerId = currentUser ? currentUser.id : null;
@@ -1285,7 +1294,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         customerName,
                         customerEmail,
                         country,
-                        'WhatsApp checkout'
+                        'WhatsApp checkout',
+                        sessionId
                     );
                     if (insertedOrders && insertedOrders.length > 0) {
                         orderNumber = insertedOrders[0].order_number || orderNumber;
@@ -1331,8 +1341,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function executeSingleProductCheckout(productId, name, price, customerName, customerEmail, country) {
         try {
-            // Retrieve affiliate code
+            // Retrieve affiliate code and session ID for secure tracking
             const activeRef = localStorage.getItem('amiele_ref_code') || '';
+            const sessionId = localStorage.getItem('amiele_session_id') || '';
 
             const currentUser = await window.getCurrentUser();
             const customerId = currentUser ? currentUser.id : null;
@@ -1348,7 +1359,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         customerName,
                         customerEmail,
                         country,
-                        'Direct product WhatsApp click'
+                        'Direct product WhatsApp click',
+                        sessionId
                     );
                     if (insertedOrders && insertedOrders.length > 0) {
                         orderNumber = insertedOrders[0].order_number || orderNumber;
