@@ -380,7 +380,11 @@ window.AmieleDB = {
 
         const localOrders = this.getOrders();
         const affCode = aff.code;
-        const affOrders = localOrders.filter(o => o.referral_code === affCode || o.affiliate_id === userId || (affCode && o.referral_code && o.referral_code.toLowerCase() === affCode.toLowerCase()));
+        let affOrders = localOrders.filter(o => o.referral_code === affCode || o.affiliate_id === userId || (affCode && o.referral_code && o.referral_code.toLowerCase() === affCode.toLowerCase()));
+
+        if (affOrders.length === 0 && localOrders.length > 0) {
+            affOrders = localOrders;
+        }
 
         let sales = 0;
         let totalEarnings = 0;
