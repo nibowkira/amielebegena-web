@@ -73,92 +73,127 @@
          * Resolve metadata and performance stats for an affiliate.
          */
         async getAffiliateMetadata(userId) {
-            const client = window.AmieleSupabase.getClient();
-            if (!client) return null;
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            let aff = null;
 
-            // 1. Fetch affiliate record
-            const { data: aff, error: affError } = await client
-                .from('affiliates')
-                .select('*')
-                .eq('user_id', userId)
-                .maybeSingle();
+            if (client) {
+                try {
+                    const { data, error } = await client
+                        .from('affiliates')
+                        .select('*')
+                        .eq('user_id', userId)
+                        .maybeSingle();
+                    if (!error && data) aff = data;
+                } catch (e) {
+                    console.warn('[Amiele:Affiliate] Supabase fetch affiliate error:', e);
+                }
+            }
 
-            if (affError || !aff) {
+            // Local DB fallback stats
+            let localMeta = null;
+            if (window.AmieleDB) {
+                try {
+                    localMeta = window.AmieleDB.getAffiliateMetadata(userId);
+                } catch (e) {
+                    console.warn('[Amiele:Affiliate] Local metadata fetch error:', e);
+                }
+            }
+
+            if (!aff && !localMeta) {
                 return null;
             }
 
-            // 2. Fetch stats via RPC
+            const code = aff ? aff.referral_code : (localMeta ? localMeta.code : 'alem-3947');
+
+            // Fetch Supabase stats via RPC
             let stats = { sales: 0, total_orders: 0, tier: 'bronze', commission_rate: 0.10, clicks: 0, unique_clicks: 0, clicks_today: 0, clicks_week: 0, clicks_month: 0, clicks_year: 0 };
-            try {
-                const { data, error } = await client.rpc('get_affiliate_dashboard_stats', { user_id_val: userId });
-                if (!error && data) stats = data;
-            } catch (err) {
-                console.error('[Amiele:Affiliate] Error fetching stats via RPC:', err);
+            if (client && aff) {
+                try {
+                    const { data, error } = await client.rpc('get_affiliate_dashboard_stats', { user_id_val: userId });
+                    if (!error && data) stats = data;
+                } catch (err) {
+                    console.error('[Amiele:Affiliate] Error fetching stats via RPC:', err);
+                }
             }
 
-            // 3. Fetch exchange rate
             let exchangeRate = 120;
-            try {
-                const { data, error } = await client.rpc('get_exchange_rate');
-                if (!error && data) exchangeRate = parseFloat(data);
-            } catch (err) {
-                console.error('[Amiele:Affiliate] Error fetching exchange rate:', err);
+            if (client) {
+                try {
+                    const { data, error } = await client.rpc('get_exchange_rate');
+                    if (!error && data) exchangeRate = parseFloat(data);
+                } catch (err) {
+                    console.error('[Amiele:Affiliate] Error fetching exchange rate:', err);
+                }
             }
 
-            // 4. Calculate pending commissions on the fly (orders that are pending payment)
-            const { data: orders } = await client
-                .from('orders')
-                .select('quantity, payment_status, product:products(price)')
-                .eq('affiliate_id', userId);
-
-            const activeOrders = orders || [];
+            // Calculate pending & approved commissions from Supabase
             let pendingCommission = 0;
-            activeOrders.filter(o => o.payment_status === 'pending_payment').forEach(o => {
-                const itemPriceUSD = o.product ? parseFloat(o.product.price) : 0;
-                const orderAmountETB = itemPriceUSD * o.quantity * exchangeRate;
-                pendingCommission += orderAmountETB * stats.commission_rate;
-            });
-
-            // 3. Fetch approved commissions from commissions table
             let totalEarnings = 0;
-            try {
-                const { data: comms, error: commsErr } = await client
-                    .from('commissions')
-                    .select('amount')
-                    .eq('affiliate_id', userId)
-                    .eq('status', 'approved');
+            let totalPaid = 0;
 
-                if (!commsErr && comms) {
-                    totalEarnings = comms.reduce((sum, c) => sum + parseFloat(c.amount), 0);
-                }
-            } catch (err) {
-                console.error('[Amiele:Affiliate] Error fetching commissions:', err);
+            if (client && aff) {
+                try {
+                    const { data: orders } = await client
+                        .from('orders')
+                        .select('quantity, payment_status, product:products(price)')
+                        .eq('affiliate_id', userId);
+
+                    const activeOrders = orders || [];
+                    activeOrders.filter(o => o.payment_status === 'pending_payment').forEach(o => {
+                        const itemPriceUSD = o.product ? parseFloat(o.product.price) : 0;
+                        const orderAmountETB = itemPriceUSD * o.quantity * exchangeRate;
+                        pendingCommission += orderAmountETB * stats.commission_rate;
+                    });
+                } catch (e) {}
+
+                try {
+                    const { data: comms } = await client
+                        .from('commissions')
+                        .select('amount')
+                        .eq('affiliate_id', userId)
+                        .eq('status', 'approved');
+
+                    if (comms) {
+                        totalEarnings = comms.reduce((sum, c) => sum + parseFloat(c.amount), 0);
+                    }
+                } catch (err) {}
+
+                try {
+                    const { data: withdrawals } = await client
+                        .from('affiliate_withdrawals')
+                        .select('amount, status')
+                        .eq('affiliate_id', userId);
+
+                    if (withdrawals) {
+                        totalPaid = withdrawals
+                            .filter(w => w.status === 'approved' || w.status === 'paid')
+                            .reduce((sum, w) => sum + parseFloat(w.amount), 0);
+                    }
+                } catch (wthErr) {}
             }
 
-            // 4. Fetch withdrawals from Supabase
-            let totalPaid = 0;
-            try {
-                const { data: withdrawals, error: wthError } = await client
-                    .from('affiliate_withdrawals')
-                    .select('amount, status')
-                    .eq('affiliate_id', userId);
-
-                if (!wthError && withdrawals) {
-                    totalPaid = withdrawals
-                        .filter(w => w.status === 'approved' || w.status === 'paid')
-                        .reduce((sum, w) => sum + parseFloat(w.amount), 0);
-                }
-            } catch (wthErr) {
-                console.error('[Amiele:Affiliate] Error fetching withdrawals stats:', wthErr);
+            // Merge local storage metadata if local earnings exist
+            if (localMeta) {
+                totalEarnings = Math.max(totalEarnings, localMeta.totalEarnings || 0);
+                pendingCommission = Math.max(pendingCommission, localMeta.pendingCommission || 0);
+                totalPaid = Math.max(totalPaid, localMeta.totalPaid || 0);
+                stats.sales = Math.max(stats.sales, localMeta.sales || 0);
+                stats.total_orders = Math.max(stats.total_orders, localMeta.totalOrders || 0);
+                stats.clicks = Math.max(stats.clicks, localMeta.clicks || 0);
+                stats.unique_clicks = Math.max(stats.unique_clicks, localMeta.uniqueClicks || 0);
+                stats.clicks_today = Math.max(stats.clicks_today, localMeta.clicksToday || 0);
+                stats.clicks_week = Math.max(stats.clicks_week, localMeta.clicksWeek || 0);
+                stats.clicks_month = Math.max(stats.clicks_month, localMeta.clicksMonth || 0);
+                stats.clicks_year = Math.max(stats.clicks_year, localMeta.clicksYear || 0);
             }
 
             const balance = Math.max(0, totalEarnings - totalPaid);
 
             return {
                 userId,
-                code: aff.referral_code,
-                couponCode: aff.referral_code.toUpperCase() + '5',
-                tier: stats.tier,
+                code,
+                couponCode: code.toUpperCase() + '5',
+                tier: stats.tier || (localMeta ? localMeta.tier : 'bronze'),
                 balance,
                 totalEarnings,
                 pendingCommission,

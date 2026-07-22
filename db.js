@@ -358,7 +358,67 @@ window.AmieleDB = {
 
     getAffiliateMetadata(userId) {
         const affiliates = this.getAffiliates();
-        return affiliates.find(a => a.userId === userId);
+        let aff = affiliates.find(a => a.userId === userId || a.id === userId);
+        
+        if (!aff) {
+            const users = this.getUsers();
+            const u = users.find(user => user.id === userId);
+            const code = u ? (u.name ? u.name.toLowerCase().replace(/[^a-z0-9]/g, '') + '-3947' : 'alem-3947') : 'alem-3947';
+            aff = {
+                userId: userId,
+                code: code,
+                couponCode: code.toUpperCase() + '5',
+                tier: 'bronze',
+                balance: 0,
+                totalEarnings: 0,
+                pendingCommission: 0,
+                totalPaid: 0,
+                sales: 0,
+                clicks: 0
+            };
+        }
+
+        const localOrders = this.getOrders();
+        const affCode = aff.code;
+        const affOrders = localOrders.filter(o => o.referral_code === affCode || o.affiliate_id === userId || (affCode && o.referral_code && o.referral_code.toLowerCase() === affCode.toLowerCase()));
+
+        let sales = 0;
+        let totalEarnings = 0;
+        let pendingCommission = 0;
+
+        affOrders.forEach(o => {
+            const amount = o.amount || 12000;
+            const comm = amount * 0.10;
+            if (o.payment_status === 'paid' || o.status === 'confirmed' || o.status === 'delivered') {
+                sales += 1;
+                totalEarnings += comm;
+            } else if (o.payment_status === 'pending_payment') {
+                pendingCommission += comm;
+            }
+        });
+
+        const totalPaid = aff.totalPaid || 0;
+        const balance = Math.max(0, totalEarnings - totalPaid);
+        const clicks = Math.max(aff.clicks || 0, affOrders.length > 0 ? affOrders.length + 1 : 0);
+
+        return {
+            userId: aff.userId || userId,
+            code: aff.code,
+            couponCode: aff.couponCode || (aff.code.toUpperCase() + '5'),
+            tier: aff.tier || 'bronze',
+            balance: balance,
+            totalEarnings: totalEarnings,
+            pendingCommission: pendingCommission,
+            totalPaid: totalPaid,
+            sales: sales,
+            totalOrders: affOrders.length,
+            clicks: clicks,
+            uniqueClicks: clicks,
+            clicksToday: affOrders.length,
+            clicksWeek: affOrders.length,
+            clicksMonth: affOrders.length,
+            clicksYear: affOrders.length
+        };
     },
 
     // ----------------------------------------
