@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ctx.fillRect(20, 180, 50, 50);
         };
         
-        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${canvas.width}x${canvas.height}&data=${encodeURIComponent(referralLink)}&color=14231b`;
+        img.src = `https://quickchart.io/qr?text=${encodeURIComponent(referralLink)}&size=${canvas.width}&dark=14231b&margin=2`;
     }
 
     window.downloadQRCode = function() {
