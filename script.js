@@ -1285,6 +1285,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const customerId = currentUser ? currentUser.id : null;
 
             let orderNumber = 'AM-PENDING';
+
+            // Always log order details to local database first
+            if (window.AmieleDB && typeof window.AmieleDB.addOrder === 'function') {
+                cart.forEach(item => {
+                    const logged = window.AmieleDB.addOrder({
+                        customer_name: customerName,
+                        customer_email: customerEmail,
+                        country: country,
+                        product_name: item.name,
+                        amount: (item.price || 100) * 120 * item.quantity,
+                        quantity: item.quantity,
+                        referral_code: activeRef,
+                        payment_status: 'pending_payment',
+                        status: 'pending'
+                    });
+                    if (logged && logged.order_number) {
+                        orderNumber = logged.order_number;
+                    }
+                });
+            }
+
             if (window.OrdersService) {
                 try {
                     const insertedOrders = await window.OrdersService.createOrdersFromCart(
@@ -1349,6 +1370,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const customerId = currentUser ? currentUser.id : null;
 
             let orderNumber = 'AM-PENDING';
+
+            // Always log order details to local database first
+            if (window.AmieleDB && typeof window.AmieleDB.addOrder === 'function') {
+                const logged = window.AmieleDB.addOrder({
+                    customer_name: customerName,
+                    customer_email: customerEmail,
+                    country: country,
+                    product_name: name,
+                    amount: (price || 100) * 120,
+                    quantity: 1,
+                    referral_code: activeRef,
+                    payment_status: 'pending_payment',
+                    status: 'pending'
+                });
+                if (logged && logged.order_number) {
+                    orderNumber = logged.order_number;
+                }
+            }
+
             if (window.OrdersService) {
                 try {
                     const insertedOrders = await window.OrdersService.createSingleProductOrder(
@@ -1380,6 +1420,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 `Product:\n${name}\n\n` +
                                 `Quantity:\n1\n\n` +
                                 `Order Number:\n${orderNumber}\n\n` +
+                                `Customer Name:\n${customerName}\n\n` +
                                 `Country:\n${country}\n` +
                                 refText +
                                 `\nThank you.`;
@@ -1393,46 +1434,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(err);
         }
     }
-
-    // Global listener for direct WhatsApp order button clicks
-    document.addEventListener('click', async function(e) {
-        const btn = e.target.closest('.whatsapp-btn');
-        if (!btn) return;
-
-        const name = btn.getAttribute('data-product-name') || 'Ethiopian Instrument';
-        const priceUSD = parseFloat(btn.getAttribute('data-product-price')) || 100;
-        const productId = btn.getAttribute('data-product-id') || ('prod_' + Date.now());
-        const activeRef = localStorage.getItem('amiele_ref_code') || null;
-
-        // Log order to local database instantly
-        if (window.AmieleDB && typeof window.AmieleDB.addOrder === 'function') {
-            window.AmieleDB.addOrder({
-                product_name: name,
-                amount: priceUSD * 120,
-                quantity: 1,
-                referral_code: activeRef,
-                payment_status: 'pending_payment',
-                status: 'pending'
-            });
-        }
-
-        // Log order to Supabase backend asynchronously
-        if (window.OrdersService && typeof window.OrdersService.createSingleProductOrder === 'function') {
-            try {
-                const currentUser = window.getCurrentUser ? await window.getCurrentUser() : null;
-                await window.OrdersService.createSingleProductOrder(
-                    productId,
-                    1,
-                    currentUser ? currentUser.id : null,
-                    activeRef,
-                    currentUser ? currentUser.name : 'Guest Customer',
-                    currentUser ? currentUser.email : 'N/A',
-                    'Ethiopia',
-                    'WhatsApp Direct Click'
-                );
-            } catch (err) {
-                console.warn('[Amiele:Orders] Could not log WhatsApp order click:', err);
-            }
-        }
-    });
 });
