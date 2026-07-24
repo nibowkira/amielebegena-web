@@ -379,16 +379,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 4. Render Stats Cards
     function renderStatsCards() {
         if (!metadata) return;
+
+        console.log("=== AFFILIATE DASHBOARD METRICS AUDIT ===");
+        console.log("1. Total Clicks:", metadata.clicks);
+        console.log("2. Total Referrals:", metadata.clicks);
+        console.log("3. All Orders:", metadata.totalOrders);
+        console.log("4. Gross Volume:", metadata.grossVolume || 0);
+        console.log("5. Paid Orders:", metadata.sales);
+        console.log("6. Clicks Today:", metadata.clicksToday || 0);
+        console.log("7. Clicks This Week:", metadata.clicksWeek || 0);
+        console.log("8. Clicks This Month:", metadata.clicksMonth || 0);
+        console.log("9. Clicks This Year:", metadata.clicksYear || 0);
+        console.log("10. Total Earnings:", metadata.totalEarnings);
+        console.log("11. Available Balance:", metadata.balance);
+        console.log("=========================================");
+
         const balEl = document.getElementById('stat-balance');
         if (balEl) balEl.textContent = `ETB ${metadata.balance.toLocaleString()}`;
+
         const earnEl = document.getElementById('stat-earnings');
         if (earnEl) earnEl.textContent = `ETB ${metadata.totalEarnings.toLocaleString()}`;
+
         const pendEl = document.getElementById('stat-pending');
         if (pendEl) pendEl.textContent = `ETB ${metadata.pendingCommission.toLocaleString()}`;
+
         const paidEl = document.getElementById('stat-paid');
         if (paidEl) paidEl.textContent = `ETB ${metadata.totalPaid.toLocaleString()}`;
+
         const salesEl = document.getElementById('stat-sales');
         if (salesEl) salesEl.textContent = metadata.sales;
+
         const clicksEl = document.getElementById('stat-clicks');
         if (clicksEl) clicksEl.textContent = metadata.clicks;
         

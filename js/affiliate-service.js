@@ -214,25 +214,37 @@
             let pendingCommission = 0;
             let totalEarnings = 0;
             let totalPaid = 0;
+            let totalOrders = 0;
+            let paidOrders = 0;
+            let grossVolume = 0;
 
             try {
-                // Query orders referred by affiliate_id or referral_code
-                const { data: orders } = await client
+                // Query ALL orders referred by affiliate_id or referral_code
+                const { data: allReferredOrders } = await client
                     .from('orders')
-                    .select('quantity, payment_status, product:products(price)')
-                    .or(`affiliate_id.eq.${userId},referral_code.eq.${code}`)
-                    .eq('payment_status', 'pending_payment');
+                    .select('quantity, payment_status, status, product:products(price)')
+                    .or(`affiliate_id.eq.${userId},referral_code.eq.${code}`);
 
-                if (orders) {
-                    orders.forEach(o => {
+                if (allReferredOrders && allReferredOrders.length > 0) {
+                    totalOrders = allReferredOrders.length;
+
+                    allReferredOrders.forEach(o => {
                         const itemPriceUSD = o.product ? parseFloat(o.product.price) : 100;
                         const orderAmountETB = itemPriceUSD * (o.quantity || 1) * exchangeRate;
-                        pendingCommission += Math.round(orderAmountETB * 0.10);
+                        grossVolume += orderAmountETB;
+
+                        if (o.payment_status === 'pending_payment') {
+                            pendingCommission += Math.round(orderAmountETB * 0.10);
+                        } else if (o.payment_status === 'paid' || o.status === 'confirmed') {
+                            paidOrders++;
+                        }
                     });
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn('[Amiele:Affiliate] Error fetching orders:', e);
+            }
 
-            let totalSalesCount = aff.sales_count || 0;
+            let totalSalesCount = Math.max(aff.sales_count || 0, paidOrders);
 
             try {
                 // Approved Commissions from commissions table
@@ -274,7 +286,8 @@
                 pendingCommission,
                 totalPaid,
                 sales: totalSalesCount,
-                totalOrders: totalSalesCount,
+                totalOrders: Math.max(totalOrders, totalSalesCount),
+                grossVolume,
                 clicks: totalClicks,
                 uniqueClicks: uniqueClicks,
                 clicksToday: clicksToday,
