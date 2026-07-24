@@ -428,8 +428,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Detect Referral parameters
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
-    if (refCode && window.AffiliateService) {
-        window.AffiliateService.trackAffiliateClick(refCode);
+    if (refCode) {
+        console.log("Referral code detected:", refCode);
+        if (window.AffiliateService && typeof window.AffiliateService.trackAffiliateClick === 'function') {
+            console.log("Calling trackAffiliateClick...");
+            window.AffiliateService.trackAffiliateClick(refCode);
+        } else {
+            console.warn("AffiliateService not available yet, retrying on window load...");
+            window.addEventListener('load', () => {
+                if (window.AffiliateService && typeof window.AffiliateService.trackAffiliateClick === 'function') {
+                    console.log("Calling trackAffiliateClick on window load...");
+                    window.AffiliateService.trackAffiliateClick(refCode);
+                }
+            });
+        }
     }
 
     if (productContainer) {

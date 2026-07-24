@@ -93,7 +93,10 @@
             }
 
             const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
-            if (!client) return;
+            if (!client) {
+                console.error("Supabase client unavailable for click tracking");
+                return;
+            }
 
             try {
                 // Query affiliates table using referral_code to obtain affiliate_id
@@ -113,6 +116,9 @@
                     return;
                 }
 
+                console.log("Affiliate found:", affData);
+                console.log("Inserting affiliate_click...");
+
                 // Insert row into public.affiliate_clicks
                 const { data: clickRecord, error: insertErr } = await client
                     .from('affiliate_clicks')
@@ -127,10 +133,10 @@
                     .single();
 
                 if (insertErr) {
-                    console.error("Supabase Affiliate Click Insert Error:", insertErr);
+                    console.error("Affiliate click insert failed", insertErr);
                 } else {
                     localStorage.setItem(lastClickTimeKey, String(now));
-                    console.log("Affiliate click recorded", clickRecord);
+                    console.log("Affiliate click inserted successfully", clickRecord);
                 }
             } catch (err) {
                 console.error("Exception in trackAffiliateClick:", err);
