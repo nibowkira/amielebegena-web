@@ -469,42 +469,64 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast('Telegram sharing window launched. / የቴሌግራም ማጋሪያ ተከፍቷል።', 'info');
     };
 
-    // Draw real scannable QR code using the public QR API and canvas overlay
+    // Draw real scannable QR code using QRious or API fallback
     function generateReferralQR() {
         const canvas = document.getElementById('qrCanvas');
         if (!canvas) return;
         
-        if (typeof QRious !== 'undefined') {
-            new QRious({
-                element: canvas,
-                value: referralLink,
-                size: canvas.width,
-                background: '#ffffff',
-                foreground: '#14231b',
-                level: 'H'
-            });
-            
-            const ctx = canvas.getContext('2d');
+        function drawCenterLogo(ctx) {
             const centerSize = 40;
             const centerPos = (canvas.width - centerSize) / 2;
             ctx.fillStyle = '#ffd700';
             ctx.fillRect(centerPos, centerPos, centerSize, centerSize);
             
             ctx.fillStyle = '#14231b';
-            ctx.font = 'bold 12px Outfit';
+            ctx.font = 'bold 12px Outfit, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('AM', canvas.width / 2, canvas.height / 2);
-        } else {
-            console.error('[Amiele:QR] QRious library not loaded.');
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#14231b';
-            ctx.fillRect(20, 20, 50, 50);
-            ctx.fillRect(180, 20, 50, 50);
-            ctx.fillRect(20, 180, 50, 50);
         }
+
+        if (typeof QRious !== 'undefined') {
+            try {
+                new QRious({
+                    element: canvas,
+                    value: referralLink,
+                    size: canvas.width || 240,
+                    background: '#ffffff',
+                    foreground: '#14231b',
+                    level: 'H'
+                });
+                const ctx = canvas.getContext('2d');
+                drawCenterLogo(ctx);
+                return;
+            } catch (e) {
+                console.warn('[Amiele:QR] QRious generation failed, falling back to API:', e);
+            }
+        }
+
+        // High-reliability API fallback to ensure QR code renders on all environments
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = function() {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            drawCenterLogo(ctx);
+        };
+        img.onerror = function() {
+            // Secondary fallback API
+            const fallbackImg = new Image();
+            fallbackImg.crossOrigin = 'Anonymous';
+            fallbackImg.onload = function() {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(fallbackImg, 0, 0, canvas.width, canvas.height);
+                drawCenterLogo(ctx);
+            };
+            fallbackImg.src = `https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=${encodeURIComponent(referralLink)}`;
+        };
+        img.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(referralLink)}`;
     }
 
     window.downloadQRCode = function() {
