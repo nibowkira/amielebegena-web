@@ -271,6 +271,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    window.clearAllOrders = async function() {
+        const confirmed = await showConfirmModal('Clear All Orders', 'Are you sure you want to clear all order records from Order Management?');
+        if (confirmed) {
+            if (window.AdminService && typeof window.AdminService.clearAllOrders === 'function') {
+                await window.AdminService.clearAllOrders();
+            } else if (window.AmieleDB && typeof window.AmieleDB.resetOrdersData === 'function') {
+                window.AmieleDB.resetOrdersData();
+            }
+            showToast('All order records cleared.', 'success');
+            renderCommissionsQueue();
+        }
+    };
+
+    window.createTestOrder = function() {
+        if (window.AmieleDB && typeof window.AmieleDB.addOrder === 'function') {
+            const activeRef = localStorage.getItem('amiele_ref_code') || 'alem-3947';
+            window.AmieleDB.addOrder({
+                customer_name: 'Dawit Haile',
+                customer_email: 'dawit@example.com',
+                country: 'Ethiopia',
+                product_name: 'በገና (Begena)',
+                quantity: 1,
+                amount: 12000,
+                referral_code: activeRef,
+                payment_status: 'pending_payment',
+                status: 'pending'
+            });
+            showToast('New test order created!', 'success');
+            renderCommissionsQueue();
+        }
+    };
+
     // 5. Order Management Queue
     async function renderCommissionsQueue() {
         const tbody = document.getElementById('commissions-table-body');

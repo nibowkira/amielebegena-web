@@ -491,6 +491,23 @@
             return Array.from(orderMap.values());
         },
 
+        async clearAllOrders() {
+            localStorage.setItem('amiele_orders_cleared', 'true');
+            if (window.AmieleDB && typeof window.AmieleDB.resetOrdersData === 'function') {
+                window.AmieleDB.resetOrdersData();
+            }
+
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (client) {
+                try {
+                    await client.from('orders').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+                } catch (e) {
+                    console.warn('[Amiele:Admin] Remote orders delete warning:', e);
+                }
+            }
+            return true;
+        },
+
         /**
          * Call secure PostgreSQL RPC to approve order payment.
          */

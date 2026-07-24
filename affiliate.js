@@ -45,6 +45,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         await window.AmieleDB.ready;
     }
 
+    // Auto-clear legacy local storage test records to ensure a fresh zero state
+    if (window.AmieleDB && typeof window.AmieleDB.resetAffiliateData === 'function') {
+        window.AmieleDB.resetAffiliateData();
+    }
+
     // Initialize sidebar user details
     function syncSidebarInfo() {
         document.getElementById('sidebar-user-name').textContent = user.name;
@@ -86,19 +91,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             metadata = AmieleDB.getAffiliateMetadata(user.id);
         }
 
-        // Force sync with amiele_commissions storage count & sum
-        try {
-            const savedComms = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
-            const approved = savedComms.filter(c => c.status === 'approved' || c.status === 'paid');
-            if (approved.length > 0) {
-                const sum = approved.reduce((acc, c) => acc + (c.commissionAmount || c.amount || 0), 0);
-                if (!metadata) metadata = {};
-                metadata.totalEarnings = Math.max(metadata.totalEarnings || 0, sum);
-                metadata.sales = Math.max(metadata.sales || 0, approved.length);
-                metadata.totalOrders = Math.max(metadata.totalOrders || 0, approved.length);
-                metadata.balance = Math.max(0, metadata.totalEarnings - (metadata.totalPaid || 0));
-            }
-        } catch (e) {}
+        if (metadata) {
+            // Ensure zero default state when no real records exist
+            metadata.balance = metadata.balance || 0;
+            metadata.totalEarnings = metadata.totalEarnings || 0;
+            metadata.pendingCommission = metadata.pendingCommission || 0;
+            metadata.totalPaid = metadata.totalPaid || 0;
+            metadata.sales = metadata.sales || 0;
+            metadata.clicks = metadata.clicks || 0;
+            metadata.totalOrders = metadata.totalOrders || 0;
+        }
 
         if (metadata) {
             renderStatsCards();
@@ -452,24 +454,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         } catch (e) {}
-
-        // Fallback for overview display if earnings exist but granular rows are not logged
-        if (comms.length === 0 && metadata && (metadata.totalEarnings > 0 || metadata.sales > 0)) {
-            const count = Math.max(1, metadata.sales || 1);
-            const eachAmt = metadata.totalEarnings > 0 ? (metadata.totalEarnings / count) : 1200;
-            for (let i = 0; i < count; i++) {
-                comms.push({
-                    id: 'comm_auto_' + i,
-                    order_id: 'ord_auto_' + i,
-                    order_number: '#HA-892' + (i + 1),
-                    product_name: 'Ethiopian Begena Instrument',
-                    amount: eachAmt,
-                    order_amount: 12000,
-                    status: 'approved',
-                    created_at: new Date().toISOString()
-                });
-            }
-        }
 
         return comms;
     }

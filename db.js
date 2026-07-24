@@ -346,6 +346,40 @@ window.AmieleDB = {
     },
 
     // ----------------------------------------
+    // ORDERS MODULE
+    // ----------------------------------------
+    getOrders() {
+        return JSON.parse(localStorage.getItem(DB_PREFIX + 'orders')) || [];
+    },
+
+    saveOrders(orders) {
+        localStorage.setItem(DB_PREFIX + 'orders', JSON.stringify(orders));
+    },
+
+    addOrder(orderData) {
+        localStorage.removeItem('amiele_orders_cleared');
+        const orders = this.getOrders();
+        const newOrder = {
+            id: 'ord_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+            order_number: 'AM-' + Math.floor(100000 + Math.random() * 900000),
+            customer_name: orderData.customer_name || orderData.customerName || 'Guest Customer',
+            customer_email: orderData.customer_email || orderData.customerEmail || 'N/A',
+            country: orderData.country || 'Ethiopia',
+            product_name: orderData.product_name || orderData.productName || 'Ethiopian Instrument',
+            quantity: orderData.quantity || 1,
+            amount: orderData.amount || 12000,
+            referral_code: orderData.referral_code || orderData.referralCode || localStorage.getItem('amiele_ref_code') || null,
+            affiliate_id: orderData.affiliate_id || orderData.affiliateId || null,
+            payment_status: orderData.payment_status || orderData.paymentStatus || 'pending_payment',
+            status: orderData.status || orderData.orderStatus || 'pending',
+            created_at: new Date().toISOString()
+        };
+        orders.unshift(newOrder);
+        this.saveOrders(orders);
+        return newOrder;
+    },
+
+    // ----------------------------------------
     // AFFILIATE METADATA MODULE
     // ----------------------------------------
     getAffiliates() {
@@ -395,11 +429,6 @@ window.AmieleDB = {
                    (rCode && rCode !== 'direct / none' && rCode !== 'none' && rCode !== '');
         });
 
-        if (affOrders.length === 0 && localOrders.length > 0) {
-            // Fallback for single-affiliate / demo test environments: include any paid or confirmed orders
-            affOrders = localOrders;
-        }
-
         let sales = aff ? (aff.sales || 0) : 0;
         let totalEarnings = aff ? (aff.totalEarnings || 0) : 0;
         let pendingCommission = aff ? (aff.pendingCommission || 0) : 0;
@@ -437,35 +466,10 @@ window.AmieleDB = {
         sales = Math.max(sales, calculatedSales);
         totalEarnings = Math.max(totalEarnings, calculatedEarnings);
 
-        // Guarantees active testing environment always displays the approved referral commission (10% of 12,000 = 1,200 ETB)
-        if (sales === 0 && totalEarnings === 0) {
-            sales = 1;
-            totalEarnings = 1200;
-            
-            // Auto-persist into amiele_commissions if empty so ledger renders cleanly
-            try {
-                const existingComms = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
-                if (existingComms.length === 0) {
-                    existingComms.push({
-                        id: 'comm_app_' + Date.now(),
-                        affiliateId: userId,
-                        orderId: 'loc_ord_7903',
-                        productName: 'Ethiopian Begena Instrument (Standard)',
-                        orderAmount: 12000,
-                        commissionAmount: 1200,
-                        status: 'approved',
-                        createdAt: new Date().toISOString(),
-                        approvedAt: new Date().toISOString()
-                    });
-                    localStorage.setItem('amiele_commissions', JSON.stringify(existingComms));
-                }
-            } catch (e) {}
-        }
-
         const totalPaid = aff ? (aff.totalPaid || 0) : 0;
         const balance = Math.max(0, totalEarnings - totalPaid);
-        const clicks = Math.max(aff ? (aff.clicks || 0) : 0, affOrders.length > 0 ? affOrders.length + 1 : 1);
-        const totalOrders = Math.max(affOrders.length, sales);
+        const clicks = aff ? (aff.clicks || 0) : 0;
+        const totalOrders = affOrders.length;
 
         return {
             userId: (aff && aff.userId) || userId,
@@ -555,6 +559,25 @@ window.AmieleDB = {
     getAffiliateWithdrawals(userId) {
         const withdrawals = JSON.parse(localStorage.getItem(DB_PREFIX + 'withdrawals')) || [];
         return withdrawals.filter(w => w.affiliateId === userId);
+    },
+
+    resetOrdersData() {
+        localStorage.setItem(DB_PREFIX + 'orders', JSON.stringify([]));
+        localStorage.setItem('amiele_orders', JSON.stringify([]));
+        localStorage.setItem('amiele_orders_cleared', 'true');
+    },
+
+    resetAffiliateData() {
+        localStorage.setItem(DB_PREFIX + 'commissions', JSON.stringify([]));
+        localStorage.setItem(DB_PREFIX + 'clicks', JSON.stringify([]));
+        localStorage.setItem(DB_PREFIX + 'withdrawals', JSON.stringify([]));
+        localStorage.setItem(DB_PREFIX + 'affiliates', JSON.stringify([]));
+        localStorage.setItem(DB_PREFIX + 'orders', JSON.stringify([]));
+        localStorage.setItem('amiele_commissions', JSON.stringify([]));
+        localStorage.setItem('amiele_clicks', JSON.stringify([]));
+        localStorage.setItem('amiele_withdrawals', JSON.stringify([]));
+        localStorage.setItem('amiele_orders', JSON.stringify([]));
+        localStorage.removeItem('amiele_ref_code');
     },
 
     // ----------------------------------------
