@@ -61,24 +61,43 @@ BEGIN
 
     v_clean_email := CASE WHEN p_customer_email IS NOT NULL THEN trim(p_customer_email) ELSE 'N/A' END;
     v_clean_ref := CASE WHEN p_referral_code IS NOT NULL THEN trim(p_referral_code) ELSE NULL END;
-    v_resolved_product_name := COALESCE(p_product_name, 'Ethiopian Instrument');
+    v_resolved_product_name := COALESCE(p_product_name, 'Ethiopian Begena Instrument');
 
-    -- 2. Resolve Product UUID
+    -- 2. Robust Fail-Proof Product UUID Resolution
+    -- A. Check if provided product_id is a valid UUID in products table
     IF p_product_id IS NOT NULL AND p_product_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN
         SELECT id, name INTO v_resolved_product_id, v_resolved_product_name
         FROM public.products
         WHERE id = p_product_id::uuid;
     END IF;
 
-    IF v_resolved_product_id IS NULL AND v_resolved_product_name IS NOT NULL THEN
+    -- B. Match product by English / Amharic keyword (Begena / Kirar)
+    IF v_resolved_product_id IS NULL THEN
+        IF v_resolved_product_name ILIKE '%kirar%' OR v_resolved_product_name ILIKE '%ክራር%' THEN
+            SELECT id, name INTO v_resolved_product_id, v_resolved_product_name
+            FROM public.products
+            WHERE category = 'kirar' OR name ILIKE '%kirar%'
+            LIMIT 1;
+        ELSE
+            SELECT id, name INTO v_resolved_product_id, v_resolved_product_name
+            FROM public.products
+            WHERE category = 'begenna' OR name ILIKE '%begena%'
+            LIMIT 1;
+        END IF;
+    END IF;
+
+    -- C. Fallback to any product in products table
+    IF v_resolved_product_id IS NULL THEN
         SELECT id, name INTO v_resolved_product_id, v_resolved_product_name
         FROM public.products
-        WHERE name ILIKE '%' || split_part(v_resolved_product_name, ' ', 1) || '%'
         LIMIT 1;
     END IF;
 
+    -- D. Auto-seed fallback product if products table is completely empty
     IF v_resolved_product_id IS NULL THEN
-        SELECT id INTO v_resolved_product_id FROM public.products LIMIT 1;
+        INSERT INTO public.products (name, slug, category, price, description)
+        VALUES ('Amiele Traditional Begena', 'amiele-begena-default', 'begenna', 100.00, 'Traditional Ethiopian Instrument')
+        RETURNING id, name INTO v_resolved_product_id, v_resolved_product_name;
     END IF;
 
     -- 3. Resolve Affiliate Attribution

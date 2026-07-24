@@ -13,37 +13,46 @@
         async createGuestOrder(orderPayload) {
             const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             if (!client) {
+                console.error('[Amiele:Orders] Supabase client is not initialized!');
                 return {
                     success: false,
                     error: 'Database connection unavailable. Please refresh and try again.'
                 };
             }
 
+            const payload = {
+                p_customer_name: orderPayload.customer_name,
+                p_phone: orderPayload.phone,
+                p_customer_email: orderPayload.customer_email || 'N/A',
+                p_country: orderPayload.country,
+                p_product_id: orderPayload.product_id || null,
+                p_product_name: orderPayload.product_name || null,
+                p_quantity: parseInt(orderPayload.quantity, 10) || 1,
+                p_referral_code: orderPayload.referral_code || null,
+                p_session_id: orderPayload.session_id || null,
+                p_notes: orderPayload.notes || 'Guest WhatsApp Checkout'
+            };
+
+            console.log('[Amiele:RPC] Outgoing RPC Payload:', payload);
+
             try {
-                const { data, error } = await client.rpc('create_guest_order', {
-                    p_customer_name: orderPayload.customer_name,
-                    p_phone: orderPayload.phone,
-                    p_customer_email: orderPayload.customer_email || null,
-                    p_country: orderPayload.country,
-                    p_product_id: orderPayload.product_id || null,
-                    p_product_name: orderPayload.product_name || null,
-                    p_quantity: orderPayload.quantity || 1,
-                    p_referral_code: orderPayload.referral_code || null,
-                    p_session_id: orderPayload.session_id || null,
-                    p_notes: orderPayload.notes || 'Guest WhatsApp Checkout'
-                });
+                const { data, error } = await client.rpc('create_guest_order', payload);
+
+                console.log('[Amiele:RPC] Response Data:', data);
+                if (error) {
+                    console.error('[Amiele:RPC] Response Error:', error);
+                }
 
                 if (!error && data) {
                     return data;
                 } else if (error) {
-                    console.error('[Amiele:Orders] RPC create_guest_order error:', error);
                     return {
                         success: false,
                         error: error.message || 'Failed to record order in database.'
                     };
                 }
             } catch (err) {
-                console.error('[Amiele:Orders] RPC call exception:', err);
+                console.error('[Amiele:RPC] RPC call exception:', err);
                 return {
                     success: false,
                     error: 'Server error processing order. Please check your internet connection.'
@@ -60,6 +69,7 @@
          * Submit single product order.
          */
         async createSingleProductOrder(productId, quantity, customerId, referralCode, customerName, customerEmail, country, phone, notes, sessionId, productName) {
+            console.log('[Amiele:Orders] createSingleProductOrder called for:', productName || productId);
             return await this.createGuestOrder({
                 customer_name: customerName,
                 phone: phone,
@@ -78,6 +88,7 @@
          * Submit cart checkout order.
          */
         async createOrdersFromCart(cartItems, customerId, referralCode, customerName, customerEmail, country, phone, notes, sessionId) {
+            console.log('[Amiele:Orders] createOrdersFromCart called with items count:', cartItems.length);
             const productNames = cartItems.map(item => `${item.quantity}x ${item.name}`).join(', ');
             const firstItem = cartItems[0] || {};
 

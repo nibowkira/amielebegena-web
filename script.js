@@ -1261,6 +1261,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const customerEmail = document.getElementById('wa-cust-email').value.trim();
             const country = document.getElementById('wa-cust-country').value.trim();
 
+            console.log('[Amiele:UI] Confirm Order clicked', { customerName, phone, customerEmail, country });
+
             if (!customerName || !phone || !country) {
                 alert('Please fill out Name, Phone Number, and Country. / እባክዎ ስም፣ ስልክ ቁጥር እና ሀገር ይሙሉ።');
                 return;
@@ -1280,7 +1282,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isCartCheckout) {
                 result = await executeCartCheckout(customerName, phone, customerEmail, country);
             } else {
-                result = await executeSingleProductCheckout(productData.id, productData.name, productData.price, customerName, phone, customerEmail, country);
+                result = await executeSingleProductCheckout(productData ? productData.id : null, productData ? productData.name : null, productData ? productData.price : null, customerName, phone, customerEmail, country);
             }
 
             if (result && result.success) {
