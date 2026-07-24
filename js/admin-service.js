@@ -494,12 +494,17 @@
          * 5. Increment affiliates.sales_count by +1
          */
         async approvePayment(orderId) {
+            console.log("START approvePayment for order:", orderId);
+
             const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             if (!client) {
-                throw new Error('Supabase database client is unavailable.');
+                const err = new Error("Supabase database client is unavailable.");
+                console.error("Client Error:", err);
+                throw err;
             }
 
             // 1. Read Order Before Update
+            console.log("Before reading order");
             const { data: order, error: fetchErr } = await client
                 .from('orders')
                 .select('id, order_number, customer_name, referral_code, affiliate_id, quantity, product_id, payment_status, status, product:products(price)')
@@ -508,28 +513,33 @@
 
             if (fetchErr) {
                 console.error("Supabase Order Fetch Error:", fetchErr);
-                throw fetchErr;
+                throw new Error("Failed to read order from Supabase: " + fetchErr.message);
             }
 
-            console.log("Order Before:", order);
+            console.log("Order loaded:", order);
 
             // 2. Resolve Affiliate Record if affiliate_id is NULL
+            console.log("Before affiliate lookup");
             let affiliateId = order.affiliate_id;
             let affiliateRec = null;
 
             if (!affiliateId && order.referral_code) {
+                const cleanCode = String(order.referral_code).trim();
                 const { data: affData, error: affErr } = await client
                     .from('affiliates')
                     .select('user_id, referral_code, sales_count')
-                    .ilike('referral_code', order.referral_code.trim())
+                    .ilike('referral_code', cleanCode)
                     .maybeSingle();
 
                 if (affErr) {
                     console.error("Supabase Affiliate Lookup Error:", affErr);
+                    throw new Error("Failed to query affiliate by referral_code: " + affErr.message);
                 } else if (affData) {
                     affiliateRec = affData;
                     affiliateId = affData.user_id;
-                    console.log("Affiliate Found:", affiliateRec);
+                    console.log("Affiliate found:", affiliateRec);
+                } else {
+                    console.warn("No matching affiliate found in DB for referral code:", cleanCode);
                 }
             } else if (affiliateId) {
                 const { data: affData, error: affErr } = await client
@@ -540,13 +550,17 @@
 
                 if (affErr) {
                     console.error("Supabase Affiliate Fetch Error:", affErr);
+                    throw new Error("Failed to fetch affiliate record: " + affErr.message);
                 } else if (affData) {
                     affiliateRec = affData;
-                    console.log("Affiliate Found:", affiliateRec);
+                    console.log("Affiliate found:", affiliateRec);
                 }
+            } else {
+                console.log("No referral code or affiliate_id associated with order.");
             }
 
             // 3. Update Order in Supabase
+            console.log("Before updating order");
             const updatePayload = {
                 payment_status: 'paid',
                 status: 'confirmed',
@@ -565,10 +579,10 @@
 
             if (updateErr) {
                 console.error("Supabase Order Update Error:", updateErr);
-                throw updateErr;
+                throw new Error("Failed to update order in Supabase: " + updateErr.message);
             }
 
-            console.log("Order Updated:", updatedOrder);
+            console.log("Order updated:", updatedOrder);
 
             // 4. Create Commission & Increment Affiliate Sales Count
             let commission = null;
@@ -579,6 +593,8 @@
                 const orderAmountETB = itemPriceUSD * (order.quantity || 1) * 120;
                 commAmount = Math.max(1200, Math.round(orderAmountETB * 0.10));
 
+                console.log("Before inserting commission");
+
                 // Check for existing commission to prevent duplicates
                 const { data: existingComm, error: existingCommErr } = await client
                     .from('commissions')
@@ -588,11 +604,12 @@
 
                 if (existingCommErr) {
                     console.error("Supabase Commission Lookup Error:", existingCommErr);
+                    throw new Error("Failed to check existing commissions: " + existingCommErr.message);
                 }
 
                 if (existingComm) {
                     commission = existingComm;
-                    console.log("Existing Commission Found:", commission);
+                    console.log("Commission inserted:", commission);
                 } else {
                     const { data: newComm, error: insertCommErr } = await client
                         .from('commissions')
@@ -608,15 +625,17 @@
 
                     if (insertCommErr) {
                         console.error("Supabase Commission Insert Error:", insertCommErr);
+                        throw new Error("Failed to insert commission into Supabase: " + insertCommErr.message);
                     } else {
                         commission = newComm;
-                        console.log("Commission Created:", commission);
+                        console.log("Commission inserted:", commission);
                     }
                 }
 
-                // Increment sales_count on affiliates table
+                // 5. Increment sales_count on affiliates table
+                console.log("Before updating affiliate");
                 if (affiliateRec) {
-                    const currentSales = affiliateRec.sales_count || 0;
+                    const currentSales = (affiliateRec.sales_count && !isNaN(affiliateRec.sales_count)) ? parseInt(affiliateRec.sales_count, 10) : 0;
                     const { data: affiliateUpdate, error: affUpdateErr } = await client
                         .from('affiliates')
                         .update({
@@ -629,11 +648,14 @@
 
                     if (affUpdateErr) {
                         console.error("Supabase Affiliate Update Error:", affUpdateErr);
+                        throw new Error("Failed to update affiliate sales_count in Supabase: " + affUpdateErr.message);
                     } else {
-                        console.log("Affiliate Updated:", affiliateUpdate);
+                        console.log("Affiliate updated:", affiliateUpdate);
                     }
                 }
             }
+
+            console.log("END approvePayment");
 
             return {
                 success: true,
