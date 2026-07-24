@@ -276,29 +276,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (confirmed) {
             if (window.AdminService && typeof window.AdminService.clearAllOrders === 'function') {
                 await window.AdminService.clearAllOrders();
-            } else if (window.AmieleDB && typeof window.AmieleDB.resetOrdersData === 'function') {
-                window.AmieleDB.resetOrdersData();
             }
             showToast('All order records cleared.', 'success');
-            renderCommissionsQueue();
-        }
-    };
-
-    window.createTestOrder = function() {
-        if (window.AmieleDB && typeof window.AmieleDB.addOrder === 'function') {
-            const activeRef = localStorage.getItem('amiele_ref_code') || 'alem-3947';
-            window.AmieleDB.addOrder({
-                customer_name: 'Dawit Haile',
-                customer_email: 'dawit@example.com',
-                country: 'Ethiopia',
-                product_name: 'በገና (Begena)',
-                quantity: 1,
-                amount: 12000,
-                referral_code: activeRef,
-                payment_status: 'pending_payment',
-                status: 'pending'
-            });
-            showToast('New test order created!', 'success');
             renderCommissionsQueue();
         }
     };
@@ -318,7 +297,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         tbody.innerHTML = '';
 
-        if (orders.length === 0) {
+        if (!orders || orders.length === 0) {
             tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 3rem 0; color: var(--aff-text-muted);">No orders logged yet.</td></tr>';
             return;
         }
@@ -356,7 +335,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td><strong>${esc(o.orderNumber)}</strong></td>
-                <td>${esc(o.customerName)}<br><small style="color:var(--aff-text-muted);">${esc(o.customerEmail)}</small></td>
+                <td>${esc(o.customerName)}<br><small style="color:var(--aff-text-muted);">${esc(o.customerEmail)} | 📞 ${esc(o.phone)}</small></td>
                 <td>${esc(o.productName)}</td>
                 <td>${esc(o.country)}</td>
                 <td>${esc(o.referralCode)}<br><small style="color:var(--aff-text-muted);">${esc(o.affiliateCode)}</small></td>

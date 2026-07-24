@@ -349,34 +349,16 @@ window.AmieleDB = {
     // ORDERS MODULE
     // ----------------------------------------
     getOrders() {
-        return JSON.parse(localStorage.getItem(DB_PREFIX + 'orders')) || [];
+        return [];
     },
 
-    saveOrders(orders) {
-        localStorage.setItem(DB_PREFIX + 'orders', JSON.stringify(orders));
+    saveOrders() {
+        // Supabase PostgreSQL is the sole source of truth for orders
     },
 
-    addOrder(orderData) {
-        localStorage.removeItem('amiele_orders_cleared');
-        const orders = this.getOrders();
-        const newOrder = {
-            id: 'ord_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
-            order_number: 'AM-' + Math.floor(100000 + Math.random() * 900000),
-            customer_name: orderData.customer_name || orderData.customerName || 'Guest Customer',
-            customer_email: orderData.customer_email || orderData.customerEmail || 'N/A',
-            country: orderData.country || 'Ethiopia',
-            product_name: orderData.product_name || orderData.productName || 'Ethiopian Instrument',
-            quantity: orderData.quantity || 1,
-            amount: orderData.amount || 12000,
-            referral_code: orderData.referral_code || orderData.referralCode || localStorage.getItem('amiele_ref_code') || null,
-            affiliate_id: orderData.affiliate_id || orderData.affiliateId || null,
-            payment_status: orderData.payment_status || orderData.paymentStatus || 'pending_payment',
-            status: orderData.status || orderData.orderStatus || 'pending',
-            created_at: new Date().toISOString()
-        };
-        orders.unshift(newOrder);
-        this.saveOrders(orders);
-        return newOrder;
+    addOrder() {
+        // Orders are created exclusively via Supabase Edge Function / API
+        return null;
     },
 
     // ----------------------------------------

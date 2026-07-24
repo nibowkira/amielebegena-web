@@ -1218,8 +1218,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="text" id="wa-cust-name" required placeholder="Enter your full name" value="${esc(defaultName)}">
                     </div>
                     <div class="form-group">
-                        <label for="wa-cust-email">Email Address / ኢሜይል *</label>
-                        <input type="email" id="wa-cust-email" required placeholder="Enter your email" value="${esc(defaultEmail)}">
+                        <label for="wa-cust-phone">Phone Number / ስልክ ቁጥር *</label>
+                        <input type="tel" id="wa-cust-phone" required placeholder="e.g. +251 911 234 567" value="${esc(localStorage.getItem('userPhone') || '')}">
+                    </div>
+                    <div class="form-group">
+                        <label for="wa-cust-email">Email Address / ኢሜይል</label>
+                        <input type="email" id="wa-cust-email" placeholder="Enter your email (optional)" value="${esc(defaultEmail)}">
                     </div>
                     <div class="form-group">
                         <label for="wa-cust-country">Delivery Country / ሀገር *</label>
@@ -1227,7 +1231,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="wa-modal-footer">
                         <button type="button" class="wa-modal-btn cancel" id="wa-btn-cancel">Cancel / ሰርዝ</button>
-                        <button type="submit" class="wa-modal-btn confirm">Confirm Order / አረጋግጥ</button>
+                        <button type="submit" class="wa-modal-btn confirm" id="wa-btn-submit">Confirm Order / አረጋግጥ</button>
                     </div>
                 </form>
             </div>
@@ -1240,6 +1244,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const closeBtn = backdrop.querySelector('#wa-btn-cancel');
         const form = backdrop.querySelector('#wa-order-form');
+        const submitBtn = backdrop.querySelector('#wa-btn-submit');
 
         const closeModal = () => {
             backdrop.classList.remove('active');
@@ -1252,202 +1257,133 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             const customerName = document.getElementById('wa-cust-name').value.trim();
+            const phone = document.getElementById('wa-cust-phone').value.trim();
             const customerEmail = document.getElementById('wa-cust-email').value.trim();
             const country = document.getElementById('wa-cust-country').value.trim();
 
-            if (!customerName || !customerEmail || !country) {
-                alert('Please fill out all fields. / እባክዎ ሁሉንም መረጃዎች ይሙሉ።');
+            if (!customerName || !phone || !country) {
+                alert('Please fill out Name, Phone Number, and Country. / እባክዎ ስም፣ ስልክ ቁጥር እና ሀገር ይሙሉ።');
                 return;
             }
 
-            // Save to localStorage for future use
+            // Save for future convenience
             localStorage.setItem('userName', customerName);
-            localStorage.setItem('userEmail', customerEmail);
+            localStorage.setItem('userPhone', phone);
+            if (customerEmail) localStorage.setItem('userEmail', customerEmail);
 
-            closeModal();
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Processing Order... / በማቀናበር ላይ...';
+            }
 
+            let result = null;
             if (isCartCheckout) {
-                await executeCartCheckout(customerName, customerEmail, country);
+                result = await executeCartCheckout(customerName, phone, customerEmail, country);
             } else {
-                await executeSingleProductCheckout(productData.id, productData.name, productData.price, customerName, customerEmail, country);
+                result = await executeSingleProductCheckout(productData.id, productData.name, productData.price, customerName, phone, customerEmail, country);
+            }
+
+            if (result && result.success) {
+                closeModal();
+            } else {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Confirm Order / አረጋግጥ';
+                }
             }
         });
     };
 
-    async function executeCartCheckout(customerName, customerEmail, country) {
-        const checkoutBtn = document.querySelector('.cart-drawer .btn-primary');
-        if (checkoutBtn) {
-            checkoutBtn.disabled = true;
-            checkoutBtn.textContent = 'LOGGING ORDER...';
-        }
-
+    async function executeCartCheckout(customerName, phone, customerEmail, country) {
         try {
-            let total = 0;
-            let orderLines = [];
-            let productNamesList = [];
-            
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                orderLines.push(`• ${item.quantity}x ${item.name} (${formatPrice(item.price)} each)`);
-                productNamesList.push(`${item.quantity}x ${item.name}`);
-            });
-
-            // Retrieve affiliate code and session ID for secure tracking
             const activeRef = localStorage.getItem('amiele_ref_code') || '';
             const sessionId = localStorage.getItem('amiele_session_id') || '';
 
             const currentUser = await window.getCurrentUser();
             const customerId = currentUser ? currentUser.id : null;
 
-            let orderNumber = 'AM-PENDING';
-
-            // Always log order details to local database first
-            if (window.AmieleDB && typeof window.AmieleDB.addOrder === 'function') {
-                cart.forEach(item => {
-                    const logged = window.AmieleDB.addOrder({
-                        customer_name: customerName,
-                        customer_email: customerEmail,
-                        country: country,
-                        product_name: item.name,
-                        amount: (item.price || 100) * 120 * item.quantity,
-                        quantity: item.quantity,
-                        referral_code: activeRef,
-                        payment_status: 'pending_payment',
-                        status: 'pending'
-                    });
-                    if (logged && logged.order_number) {
-                        orderNumber = logged.order_number;
-                    }
-                });
-            }
-
+            let result = null;
             if (window.OrdersService) {
-                try {
-                    const insertedOrders = await window.OrdersService.createOrdersFromCart(
-                        cart,
-                        customerId,
-                        activeRef,
-                        customerName,
-                        customerEmail,
-                        country,
-                        'WhatsApp checkout',
-                        sessionId
-                    );
-                    if (insertedOrders && insertedOrders.length > 0) {
-                        orderNumber = insertedOrders[0].order_number || orderNumber;
-                    }
-                } catch (err) {
-                    console.error('[Amiele:Orders] Failed to log order details to Supabase:', err);
-                }
+                result = await window.OrdersService.createOrdersFromCart(
+                    cart,
+                    customerId,
+                    activeRef,
+                    customerName,
+                    customerEmail,
+                    country,
+                    phone,
+                    'Cart WhatsApp checkout',
+                    sessionId
+                );
             }
 
-            // Clean up referral code after successful checkout attribution
-            localStorage.removeItem('amiele_ref_code');
+            if (result && result.success) {
+                // Clean up referral code after successful backend attribution
+                localStorage.removeItem('amiele_ref_code');
 
-            // Build Receipt Message
-            const refText = activeRef ? `\nReferral Code:\n${activeRef}\n` : '';
-            const messageText = `Hello Amiele,\n\n` +
-                                `I would like to order:\n\n` +
-                                `Product:\n${productNamesList.join('\n')}\n\n` +
-                                `Order Number:\n${orderNumber}\n\n` +
-                                `Customer Name:\n${customerName}\n\n` +
-                                `Country:\n${country}\n` +
-                                refText +
-                                `\nThank you.`;
-
-            const encodedMessage = encodeURIComponent(messageText);
-            const whatsappUrl = `https://wa.me/251969189470?text=${encodedMessage}`;
-            
-            // Open WhatsApp
-            window.open(whatsappUrl, '_blank');
-            
-            // Reset cart UI
-            cart = [];
-            updateCartUI();
-            closeCart();
+                // Open WhatsApp only on backend success
+                const whatsappUrl = `https://wa.me/251969189470?text=${encodeURIComponent(result.whatsapp_message)}`;
+                window.open(whatsappUrl, '_blank');
+                
+                // Reset cart UI
+                cart = [];
+                updateCartUI();
+                closeCart();
+                return result;
+            } else {
+                const errMsg = (result && result.error) ? result.error : 'Order processing failed. Please try again.';
+                alert(`Order Error: ${errMsg}`);
+                return { success: false };
+            }
         } catch (err) {
-            console.error(err);
-        } finally {
-            if (checkoutBtn) {
-                checkoutBtn.disabled = false;
-                checkoutBtn.textContent = 'Checkout';
-            }
+            console.error('[Amiele:CartCheckout] Exception:', err);
+            alert('Failed to process order. Please check your internet connection.');
+            return { success: false };
         }
     }
 
-    async function executeSingleProductCheckout(productId, name, price, customerName, customerEmail, country) {
+    async function executeSingleProductCheckout(productId, name, price, customerName, phone, customerEmail, country) {
         try {
-            // Retrieve affiliate code and session ID for secure tracking
             const activeRef = localStorage.getItem('amiele_ref_code') || '';
             const sessionId = localStorage.getItem('amiele_session_id') || '';
 
             const currentUser = await window.getCurrentUser();
             const customerId = currentUser ? currentUser.id : null;
 
-            let orderNumber = 'AM-PENDING';
-
-            // Always log order details to local database first
-            if (window.AmieleDB && typeof window.AmieleDB.addOrder === 'function') {
-                const logged = window.AmieleDB.addOrder({
-                    customer_name: customerName,
-                    customer_email: customerEmail,
-                    country: country,
-                    product_name: name,
-                    amount: (price || 100) * 120,
-                    quantity: 1,
-                    referral_code: activeRef,
-                    payment_status: 'pending_payment',
-                    status: 'pending'
-                });
-                if (logged && logged.order_number) {
-                    orderNumber = logged.order_number;
-                }
-            }
-
+            let result = null;
             if (window.OrdersService) {
-                try {
-                    const insertedOrders = await window.OrdersService.createSingleProductOrder(
-                        productId,
-                        1, // Quantity = 1 for direct click
-                        customerId,
-                        activeRef,
-                        customerName,
-                        customerEmail,
-                        country,
-                        'Direct product WhatsApp click',
-                        sessionId
-                    );
-                    if (insertedOrders && insertedOrders.length > 0) {
-                        orderNumber = insertedOrders[0].order_number || orderNumber;
-                    }
-                } catch (err) {
-                    console.error('[Amiele:Orders] Failed to log order details to Supabase:', err);
-                }
+                result = await window.OrdersService.createSingleProductOrder(
+                    productId,
+                    1,
+                    customerId,
+                    activeRef,
+                    customerName,
+                    customerEmail,
+                    country,
+                    phone,
+                    'Direct product WhatsApp click',
+                    sessionId,
+                    name
+                );
             }
 
-            // Clean up referral code after successful checkout attribution
-            localStorage.removeItem('amiele_ref_code');
+            if (result && result.success) {
+                // Clean up referral code after successful backend attribution
+                localStorage.removeItem('amiele_ref_code');
 
-            // Build Receipt Message
-            const refText = activeRef ? `\nReferral Code:\n${activeRef}\n` : '';
-            const messageText = `Hello Amiele,\n\n` +
-                                `I would like to order:\n\n` +
-                                `Product:\n${name}\n\n` +
-                                `Quantity:\n1\n\n` +
-                                `Order Number:\n${orderNumber}\n\n` +
-                                `Customer Name:\n${customerName}\n\n` +
-                                `Country:\n${country}\n` +
-                                refText +
-                                `\nThank you.`;
-
-            const encodedMessage = encodeURIComponent(messageText);
-            const whatsappUrl = `https://wa.me/251969189470?text=${encodedMessage}`;
-            
-            // Open WhatsApp
-            window.open(whatsappUrl, '_blank');
+                // Open WhatsApp only on backend success
+                const whatsappUrl = `https://wa.me/251969189470?text=${encodeURIComponent(result.whatsapp_message)}`;
+                window.open(whatsappUrl, '_blank');
+                return result;
+            } else {
+                const errMsg = (result && result.error) ? result.error : 'Order processing failed. Please try again.';
+                alert(`Order Error: ${errMsg}`);
+                return { success: false };
+            }
         } catch (err) {
-            console.error(err);
+            console.error('[Amiele:SingleCheckout] Exception:', err);
+            alert('Failed to process order. Please check your internet connection.');
+            return { success: false };
         }
     }
 });
