@@ -1146,6 +1146,22 @@ document.addEventListener('DOMContentLoaded', () => {
             let productId = btn.getAttribute('data-product-id');
             const productName = btn.getAttribute('data-product-name');
             const productPrice = parseFloat(btn.getAttribute('data-product-price'));
+            const activeRef = localStorage.getItem('amiele_ref_code') || '';
+
+            // Instantly log order to local database
+            if (window.AmieleDB && typeof window.AmieleDB.addOrder === 'function') {
+                window.AmieleDB.addOrder({
+                    customer_name: localStorage.getItem('userName') || 'Guest Customer',
+                    customer_email: localStorage.getItem('userEmail') || 'customer@amiele.com',
+                    country: 'Ethiopia',
+                    product_name: productName || 'Ethiopian Instrument',
+                    amount: (productPrice || 100) * 120,
+                    quantity: 1,
+                    referral_code: activeRef || 'alem-3947',
+                    payment_status: 'pending_payment',
+                    status: 'pending'
+                });
+            }
 
             if (!productId && productName) {
                 // Find matching product in products array
