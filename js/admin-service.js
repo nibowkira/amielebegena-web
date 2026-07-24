@@ -617,8 +617,10 @@
                             affiliate_id: affiliateId,
                             order_id: orderId,
                             amount: commAmount,
+                            rate: 10,
                             status: 'approved',
-                            created_at: new Date().toISOString()
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
                         })
                         .select('*')
                         .single();
