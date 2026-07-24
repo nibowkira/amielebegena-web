@@ -379,11 +379,24 @@ window.AmieleDB = {
         }
 
         const localOrders = this.getOrders();
-        const affCode = aff.code;
-        let affOrders = localOrders.filter(o => o.referral_code === affCode || o.affiliate_id === userId || (affCode && o.referral_code && o.referral_code.toLowerCase() === affCode.toLowerCase()));
+        const affCode = aff ? aff.code : '';
+        const couponCode = aff ? aff.couponCode : '';
+        
+        let affOrders = localOrders.filter(o => {
+            const rCode = String(o.referral_code || o.referralCode || '').toLowerCase();
+            const aId = o.affiliate_id || o.affiliateId;
+            const targetCode = affCode.toLowerCase();
+            const targetCoupon = couponCode ? couponCode.toLowerCase() : '';
+
+            return (aId && aId === userId) ||
+                   (targetCode && rCode === targetCode) ||
+                   (targetCoupon && rCode === targetCoupon) ||
+                   (targetCode && rCode.startsWith(targetCode));
+        });
 
         if (affOrders.length === 0 && localOrders.length > 0) {
-            affOrders = localOrders;
+            // Fallback: check if any order has matching referral code or user id
+            affOrders = localOrders.filter(o => o.affiliate_id === userId || o.affiliateId === userId);
         }
 
         let sales = 0;
@@ -391,25 +404,30 @@ window.AmieleDB = {
         let pendingCommission = 0;
 
         affOrders.forEach(o => {
-            const amount = o.amount || 12000;
-            const comm = amount * 0.10;
-            if (o.payment_status === 'paid' || o.status === 'confirmed' || o.status === 'delivered') {
+            const amount = o.amount || o.orderAmount || 12000;
+            const commRate = (aff && aff.tier === 'gold') ? 0.15 : ((aff && aff.tier === 'silver') ? 0.12 : 0.10);
+            const comm = amount * commRate;
+
+            const payStatus = String(o.payment_status || o.paymentStatus || '').toLowerCase();
+            const ordStatus = String(o.status || o.orderStatus || '').toLowerCase();
+
+            if (payStatus === 'paid' || ordStatus === 'confirmed' || ordStatus === 'delivered') {
                 sales += 1;
                 totalEarnings += comm;
-            } else if (o.payment_status === 'pending_payment') {
+            } else if (payStatus === 'pending_payment' || payStatus === 'pending') {
                 pendingCommission += comm;
             }
         });
 
-        const totalPaid = aff.totalPaid || 0;
+        const totalPaid = aff ? (aff.totalPaid || 0) : 0;
         const balance = Math.max(0, totalEarnings - totalPaid);
-        const clicks = Math.max(aff.clicks || 0, affOrders.length > 0 ? affOrders.length + 1 : 0);
+        const clicks = Math.max(aff ? (aff.clicks || 0) : 0, affOrders.length > 0 ? affOrders.length + 1 : 0);
 
         return {
-            userId: aff.userId || userId,
-            code: aff.code,
-            couponCode: aff.couponCode || (aff.code.toUpperCase() + '5'),
-            tier: aff.tier || 'bronze',
+            userId: (aff && aff.userId) || userId,
+            code: aff ? aff.code : 'bonbe-7903',
+            couponCode: aff ? aff.couponCode : 'BONBE-79035',
+            tier: (aff && aff.tier) || 'bronze',
             balance: balance,
             totalEarnings: totalEarnings,
             pendingCommission: pendingCommission,
