@@ -1,6 +1,6 @@
 /**
  * Amiele Begena — Orders Service Layer
- * Secure guest checkout API coordinator interfacing with Supabase Edge Function & RPC.
+ * Secure guest checkout API coordinator calling PostgreSQL RPC function create_guest_order.
  */
 
 (function () {
@@ -8,34 +8,17 @@
 
     const OrdersService = {
         /**
-         * Create guest order via Supabase Edge Function API / RPC.
+         * Create guest order via PostgreSQL SECURITY DEFINER RPC API function.
          */
         async createGuestOrder(orderPayload) {
             const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             if (!client) {
                 return {
                     success: false,
-                    error: 'Database service is currently unavailable. Please refresh and try again.'
+                    error: 'Database connection unavailable. Please refresh and try again.'
                 };
             }
 
-            // 1. Try Supabase Edge Function invoke
-            try {
-                const { data, error } = await client.functions.invoke('create-guest-order', {
-                    body: orderPayload
-                });
-
-                if (!error && data && data.success) {
-                    return data;
-                }
-                if (data && data.error) {
-                    console.warn('[Amiele:Orders] Edge Function validation error:', data.error);
-                }
-            } catch (efError) {
-                console.warn('[Amiele:Orders] Edge Function invoke failed, trying RPC fallback:', efError);
-            }
-
-            // 2. RPC fallback to PostgreSQL security definer function create_guest_order
             try {
                 const { data, error } = await client.rpc('create_guest_order', {
                     p_customer_name: orderPayload.customer_name,
@@ -56,14 +39,14 @@
                     console.error('[Amiele:Orders] RPC create_guest_order error:', error);
                     return {
                         success: false,
-                        error: error.message || 'Failed to record order.'
+                        error: error.message || 'Failed to record order in database.'
                     };
                 }
-            } catch (rpcError) {
-                console.error('[Amiele:Orders] RPC call failed:', rpcError);
+            } catch (err) {
+                console.error('[Amiele:Orders] RPC call exception:', err);
                 return {
                     success: false,
-                    error: 'Server error creating order. Please check your connection and try again.'
+                    error: 'Server error processing order. Please check your internet connection.'
                 };
             }
 

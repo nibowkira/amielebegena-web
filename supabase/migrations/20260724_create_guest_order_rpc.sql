@@ -1,6 +1,8 @@
 -- Migration: Create SECURITY DEFINER RPC function for guest orders
 -- Purpose: Execute secure server-side validation, affiliate attribution, and insertion bypassing client RLS.
 
+CREATE SEQUENCE IF NOT EXISTS public.order_number_seq START 1001;
+
 CREATE OR REPLACE FUNCTION public.create_guest_order(
     p_customer_name text,
     p_phone text,
@@ -86,7 +88,11 @@ BEGIN
 
     -- 4. Generate Official Order Number (AM-YYYY-XXXXXX)
     v_year := to_char(now(), 'YYYY');
-    SELECT COALESCE(nextval('public.order_number_seq'), floor(random() * 899999 + 100000)::bigint) INTO v_seq_val;
+    BEGIN
+        v_seq_val := nextval('public.order_number_seq');
+    EXCEPTION WHEN OTHERS THEN
+        v_seq_val := floor(random() * 899999 + 100000)::bigint;
+    END;
     v_order_number := 'AM-' || v_year || '-' || lpad(v_seq_val::text, 6, '0');
 
     -- 5. Insert Record into orders table
