@@ -172,7 +172,18 @@
                 } catch (wthErr) {}
             }
 
-            // Merge local storage metadata if local earnings exist
+            // Merge local storage metadata and local commissions if available
+            try {
+                const localComms = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
+                const approvedLocal = localComms.filter(c => c.status === 'approved' || c.status === 'paid');
+                if (approvedLocal.length > 0) {
+                    const localSum = approvedLocal.reduce((sum, c) => sum + (c.commissionAmount || c.amount || 0), 0);
+                    totalEarnings = Math.max(totalEarnings, localSum);
+                    stats.sales = Math.max(stats.sales, approvedLocal.length);
+                    stats.total_orders = Math.max(stats.total_orders, approvedLocal.length);
+                }
+            } catch (e) {}
+
             if (localMeta) {
                 totalEarnings = Math.max(totalEarnings, localMeta.totalEarnings || 0);
                 pendingCommission = Math.max(pendingCommission, localMeta.pendingCommission || 0);

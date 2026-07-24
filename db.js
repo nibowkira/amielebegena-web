@@ -400,9 +400,23 @@ window.AmieleDB = {
             affOrders = localOrders;
         }
 
-        let sales = 0;
-        let totalEarnings = 0;
-        let pendingCommission = 0;
+        let sales = aff ? (aff.sales || 0) : 0;
+        let totalEarnings = aff ? (aff.totalEarnings || 0) : 0;
+        let pendingCommission = aff ? (aff.pendingCommission || 0) : 0;
+
+        // Sum approved commissions from amiele_commissions storage
+        try {
+            const savedComms = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
+            const approvedComms = savedComms.filter(c => c.status === 'approved' || c.status === 'paid');
+            if (approvedComms.length > 0) {
+                const commSum = approvedComms.reduce((sum, c) => sum + (c.commissionAmount || c.amount || 0), 0);
+                totalEarnings = Math.max(totalEarnings, commSum);
+                sales = Math.max(sales, approvedComms.length);
+            }
+        } catch (e) {}
+
+        let calculatedSales = 0;
+        let calculatedEarnings = 0;
 
         affOrders.forEach(o => {
             const amount = o.amount || o.orderAmount || 12000;
@@ -413,16 +427,20 @@ window.AmieleDB = {
             const ordStatus = String(o.status || o.orderStatus || '').toLowerCase();
 
             if (payStatus === 'paid' || ordStatus === 'confirmed' || ordStatus === 'delivered') {
-                sales += 1;
-                totalEarnings += comm;
+                calculatedSales += 1;
+                calculatedEarnings += comm;
             } else if (payStatus === 'pending_payment' || payStatus === 'pending') {
                 pendingCommission += comm;
             }
         });
 
+        sales = Math.max(sales, calculatedSales);
+        totalEarnings = Math.max(totalEarnings, calculatedEarnings);
+
         const totalPaid = aff ? (aff.totalPaid || 0) : 0;
         const balance = Math.max(0, totalEarnings - totalPaid);
         const clicks = Math.max(aff ? (aff.clicks || 0) : 0, affOrders.length > 0 ? affOrders.length + 1 : 1);
+        const totalOrders = Math.max(affOrders.length, sales);
 
         return {
             userId: (aff && aff.userId) || userId,
@@ -434,13 +452,13 @@ window.AmieleDB = {
             pendingCommission: pendingCommission,
             totalPaid: totalPaid,
             sales: sales,
-            totalOrders: affOrders.length,
+            totalOrders: totalOrders,
             clicks: clicks,
             uniqueClicks: clicks,
-            clicksToday: affOrders.length,
-            clicksWeek: affOrders.length,
-            clicksMonth: affOrders.length,
-            clicksYear: affOrders.length
+            clicksToday: totalOrders,
+            clicksWeek: totalOrders,
+            clicksMonth: totalOrders,
+            clicksYear: totalOrders
         };
     },
 
