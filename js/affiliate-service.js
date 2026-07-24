@@ -70,7 +70,75 @@
         },
 
         /**
-         * Resolve metadata and performance stats for an affiliate.
+         * Track affiliate click when visitor lands with ?ref=<code_val>
+         */
+        async trackAffiliateClick(refCode) {
+            if (!refCode || typeof refCode !== 'string') return;
+            const cleanCode = refCode.trim();
+            if (!cleanCode) return;
+
+            // Save referral code in localStorage
+            localStorage.setItem('amiele_referral_code', cleanCode);
+            localStorage.setItem('amiele_ref_code', cleanCode);
+
+            // Prevent duplicate clicks within 24 hours
+            const lastClickTimeKey = 'amiele_click_time_' + cleanCode.toLowerCase();
+            const lastClickTime = localStorage.getItem(lastClickTimeKey);
+            const now = Date.now();
+            const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+            if (lastClickTime && (now - parseInt(lastClickTime, 10)) < TWENTY_FOUR_HOURS) {
+                console.log("Duplicate click skipped");
+                return;
+            }
+
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) return;
+
+            try {
+                // Query affiliates table using referral_code to obtain affiliate_id
+                const { data: affData, error: affErr } = await client
+                    .from('affiliates')
+                    .select('user_id, referral_code')
+                    .ilike('referral_code', cleanCode)
+                    .maybeSingle();
+
+                if (affErr) {
+                    console.error("Supabase Affiliate Query Error:", affErr);
+                    return;
+                }
+
+                if (!affData) {
+                    console.log("Affiliate not found");
+                    return;
+                }
+
+                // Insert row into public.affiliate_clicks
+                const { data: clickRecord, error: insertErr } = await client
+                    .from('affiliate_clicks')
+                    .insert({
+                        affiliate_id: affData.user_id,
+                        referral_code: affData.referral_code,
+                        page_url: window.location.href,
+                        user_agent: navigator.userAgent,
+                        ip_address: null
+                    })
+                    .select()
+                    .single();
+
+                if (insertErr) {
+                    console.error("Supabase Affiliate Click Insert Error:", insertErr);
+                } else {
+                    localStorage.setItem(lastClickTimeKey, String(now));
+                    console.log("Affiliate click recorded", clickRecord);
+                }
+            } catch (err) {
+                console.error("Exception in trackAffiliateClick:", err);
+            }
+        },
+
+        /**
+         * Resolve metadata and performance stats for an affiliate strictly from Supabase.
          */
         async getAffiliateMetadata(userId) {
             const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
@@ -94,13 +162,46 @@
 
             const code = aff.referral_code || '';
 
-            // Fetch Supabase stats via RPC
-            let stats = { sales: aff.sales_count || 0, total_orders: aff.sales_count || 0, tier: 'bronze', commission_rate: 0.10, clicks: 0, unique_clicks: 0, clicks_today: 0, clicks_week: 0, clicks_month: 0, clicks_year: 0 };
+            // Calculate click stats directly from public.affiliate_clicks table in Supabase
+            let totalClicks = 0;
+            let clicksToday = 0;
+            let clicksWeek = 0;
+            let clicksMonth = 0;
+            let clicksYear = 0;
+            let uniqueClicks = 0;
+
             try {
-                const { data, error } = await client.rpc('get_affiliate_dashboard_stats', { user_id_val: userId });
-                if (!error && data) stats = data;
-            } catch (err) {
-                console.warn('[Amiele:Affiliate] Error fetching stats via RPC:', err);
+                const { data: clickRows, error: clickFetchErr } = await client
+                    .from('affiliate_clicks')
+                    .select('created_at, user_agent')
+                    .or(`affiliate_id.eq.${userId},referral_code.eq.${code}`);
+
+                if (!clickFetchErr && clickRows) {
+                    totalClicks = clickRows.length;
+                    const now = new Date();
+
+                    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                    const dayOfWeek = now.getDay();
+                    const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).getTime();
+                    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                    const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+
+                    const userAgents = new Set();
+
+                    clickRows.forEach(c => {
+                        const clickTime = new Date(c.created_at).getTime();
+                        if (c.user_agent) userAgents.add(c.user_agent);
+
+                        if (clickTime >= startOfDay) clicksToday++;
+                        if (clickTime >= startOfWeek) clicksWeek++;
+                        if (clickTime >= startOfMonth) clicksMonth++;
+                        if (clickTime >= startOfYear) clicksYear++;
+                    });
+
+                    uniqueClicks = userAgents.size > 0 ? userAgents.size : totalClicks;
+                }
+            } catch (e) {
+                console.warn('[Amiele:Affiliate] Error querying affiliate_clicks:', e);
             }
 
             let exchangeRate = 120;
@@ -126,10 +227,12 @@
                     orders.forEach(o => {
                         const itemPriceUSD = o.product ? parseFloat(o.product.price) : 100;
                         const orderAmountETB = itemPriceUSD * (o.quantity || 1) * exchangeRate;
-                        pendingCommission += Math.round(orderAmountETB * (stats.commission_rate || 0.10));
+                        pendingCommission += Math.round(orderAmountETB * 0.10);
                     });
                 }
             } catch (e) {}
+
+            let totalSalesCount = aff.sales_count || 0;
 
             try {
                 // Approved Commissions from commissions table
@@ -141,8 +244,7 @@
 
                 if (comms && comms.length > 0) {
                     totalEarnings = comms.reduce((sum, c) => sum + parseFloat(c.amount || 0), 0);
-                    stats.sales = Math.max(stats.sales || 0, comms.length);
-                    stats.total_orders = Math.max(stats.total_orders || 0, comms.length);
+                    totalSalesCount = Math.max(totalSalesCount, comms.length);
                 }
             } catch (err) {}
 
@@ -166,19 +268,19 @@
                 userId,
                 code,
                 couponCode: code.toUpperCase() + '5',
-                tier: stats.tier || 'bronze',
+                tier: totalSalesCount >= 30 ? 'gold' : (totalSalesCount >= 10 ? 'silver' : 'bronze'),
                 balance,
                 totalEarnings,
                 pendingCommission,
                 totalPaid,
-                sales: stats.sales || (aff.sales_count || 0),
-                totalOrders: stats.total_orders || (aff.sales_count || 0),
-                clicks: stats.clicks || 0,
-                uniqueClicks: stats.unique_clicks || 0,
-                clicksToday: stats.clicks_today || 0,
-                clicksWeek: stats.clicks_week || 0,
-                clicksMonth: stats.clicks_month || 0,
-                clicksYear: stats.clicks_year || 0
+                sales: totalSalesCount,
+                totalOrders: totalSalesCount,
+                clicks: totalClicks,
+                uniqueClicks: uniqueClicks,
+                clicksToday: clicksToday,
+                clicksWeek: clicksWeek,
+                clicksMonth: clicksMonth,
+                clicksYear: clicksYear
             };
 
             console.log("Dashboard Stats:", dashboardStats);

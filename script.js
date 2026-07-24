@@ -428,23 +428,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Detect Referral parameters
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
-    if (refCode) {
-        localStorage.setItem('amiele_ref_code', refCode);
-        
-        let sessionId = localStorage.getItem('amiele_session_id');
-        if (!sessionId) {
-            sessionId = crypto.randomUUID ? crypto.randomUUID() : 'sess_' + Math.random().toString(36).substring(2);
-            localStorage.setItem('amiele_session_id', sessionId);
-        }
-        
-        try {
-            const client = window.AmieleSupabase?.getClient();
-            if (client) {
-                await client.rpc('log_affiliate_click', { code_val: refCode, session_val: sessionId });
-            }
-        } catch (err) {
-            console.error('[Amiele:Affiliate] Failed to log click', err);
-        }
+    if (refCode && window.AffiliateService) {
+        window.AffiliateService.trackAffiliateClick(refCode);
     }
 
     if (productContainer) {
