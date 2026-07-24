@@ -72,6 +72,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Helper to refresh metadata and update UI stats
+    async function refreshDashboardData() {
+        if (window.AffiliateService) {
+            try {
+                const refreshed = await window.AffiliateService.getAffiliateMetadata(user.id);
+                if (refreshed) metadata = refreshed;
+            } catch (e) {
+                console.warn('[Amiele:Affiliate] Metadata refresh failed:', e);
+            }
+        }
+        if (!metadata && window.AmieleDB) {
+            metadata = AmieleDB.getAffiliateMetadata(user.id);
+        }
+        if (metadata) {
+            renderStatsCards();
+            renderCommissionsTable();
+            drawOverviewCharts();
+        }
+    }
+
+    // Perform initial render of overview tab content immediately on startup
+    renderStatsCards();
+    renderCommissionsTable();
+    drawOverviewCharts();
+
+    // Auto-refresh metrics when tab receives focus or local storage updates from admin panel
+    window.addEventListener('focus', () => { refreshDashboardData(); });
+    window.addEventListener('storage', () => { refreshDashboardData(); });
+
+
     // 3. Notification Hub Operations
     window.toggleNotifDropdown = function(e) {
         if (e) e.stopPropagation();

@@ -518,11 +518,49 @@
                         target.payment_status = 'paid';
                         target.status = 'confirmed';
                         localStorage.setItem('amiele_local_orders', JSON.stringify(localOrders));
+
+                        // Record commission & credit affiliate in local DB if affiliate/referral_code is present
+                        const refCode = target.referral_code || target.referralCode;
+                        const affId = target.affiliate_id || target.affiliateId;
+                        const affiliates = window.AmieleDB.getAffiliates();
+                        const aff = affiliates.find(a => 
+                            (affId && a.userId === affId) || 
+                            (refCode && (a.code === refCode || a.couponCode === refCode || (a.code && a.code.toLowerCase() === refCode.toLowerCase())))
+                        );
+
+                        let commAmount = (target.amount || 15000) * 0.10;
+                        if (aff) {
+                            const commRate = aff.tier === 'gold' ? 0.15 : (aff.tier === 'silver' ? 0.12 : 0.10);
+                            commAmount = (target.amount || 15000) * commRate;
+
+                            const commissions = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
+                            const existingComm = commissions.find(c => c.orderId === orderId);
+                            if (!existingComm) {
+                                commissions.push({
+                                    id: 'comm_' + Date.now(),
+                                    affiliateId: aff.userId,
+                                    orderId: orderId,
+                                    productName: target.product_name || target.productName || 'Begena Instrument',
+                                    orderAmount: target.amount || 15000,
+                                    commissionAmount: commAmount,
+                                    status: 'approved',
+                                    createdAt: new Date().toISOString(),
+                                    approvedAt: new Date().toISOString()
+                                });
+                                localStorage.setItem('amiele_commissions', JSON.stringify(commissions));
+                            }
+
+                            aff.sales = (aff.sales || 0) + 1;
+                            aff.totalEarnings = (aff.totalEarnings || 0) + commAmount;
+                            aff.balance = (aff.balance || 0) + commAmount;
+                            window.AmieleDB.saveAffiliates(affiliates);
+                        }
+
                         if (!result) {
                             result = {
                                 success: true,
-                                commission_attributed: !!target.referral_code && target.referral_code !== 'Direct / None',
-                                commission_amount: (target.amount || 15000) * 0.10
+                                commission_attributed: !!(aff || refCode),
+                                commission_amount: commAmount
                             };
                         }
                     }
