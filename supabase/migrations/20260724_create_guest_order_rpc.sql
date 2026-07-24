@@ -1,8 +1,11 @@
--- Migration: Create SECURITY DEFINER RPC function for guest orders
--- Purpose: Execute secure server-side validation, affiliate attribution, and insertion bypassing client RLS.
+-- Migration: Complete self-contained setup for guest order processing
+-- 1. Ensure phone column exists on orders table
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS phone text;
 
+-- 2. Ensure order_number_seq sequence exists
 CREATE SEQUENCE IF NOT EXISTS public.order_number_seq START 1001;
 
+-- 3. Create SECURITY DEFINER RPC function for guest orders
 CREATE OR REPLACE FUNCTION public.create_guest_order(
     p_customer_name text,
     p_phone text,
@@ -156,5 +159,5 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 
--- Grant EXECUTE permission to anon and authenticated roles
+-- 4. Grant EXECUTE permission to anon and authenticated roles
 GRANT EXECUTE ON FUNCTION public.create_guest_order TO anon, authenticated;
