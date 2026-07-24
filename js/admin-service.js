@@ -486,7 +486,7 @@
         },
 
         /**
-         * Call secure PostgreSQL RPC to approve order payment.
+         * Call secure PostgreSQL RPC or execute direct Supabase updates to approve order payment.
          */
         async approvePayment(orderId) {
             const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
@@ -499,63 +499,76 @@
                         result = data;
                     }
                 } catch (e) {
-                    console.warn('[Amiele:Admin] Supabase approvePayment error, falling back:', e);
+                    console.warn('[Amiele:Admin] Supabase approvePayment RPC error, attempting direct update:', e);
                 }
-            }
 
-            // Always update local storage & record commission for local/hybrid state sync
-            if (window.AmieleDB) {
-                try {
-                    const localOrders = window.AmieleDB.getOrders();
-                    const target = localOrders.find(o => o.id === orderId);
-                    if (target) {
-                        target.payment_status = 'paid';
-                        target.status = 'confirmed';
-                        localStorage.setItem('amiele_local_orders', JSON.stringify(localOrders));
+                if (!result) {
+                    try {
+                        const { data: updatedOrder, error: updateErr } = await client
+                            .from('orders')
+                            .update({
+                                payment_status: 'paid',
+                                status: 'confirmed',
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('id', orderId)
+                            .select('id, quantity, product_id, affiliate_id, referral_code, product:products(price)')
+                            .single();
+
+                        if (!updateErr && updatedOrder) {
+                            let affiliateId = updatedOrder.affiliate_id;
+
+                            // If affiliate_id is missing, attempt to resolve via referral_code
+                            if (!affiliateId && updatedOrder.referral_code) {
+                                const { data: affData } = await client
+                                    .from('affiliates')
+                                    .select('user_id')
+                                    .ilike('referral_code', updatedOrder.referral_code.trim())
+                                    .single();
+                                if (affData) {
+                                    affiliateId = affData.user_id;
+                                    await client.from('orders').update({ affiliate_id: affiliateId }).eq('id', orderId);
+                                }
+                            }
+
+                            let commAmount = 1200;
+                            if (affiliateId) {
+                                const itemPriceUSD = (updatedOrder.product && updatedOrder.product.price) ? parseFloat(updatedOrder.product.price) : 100;
+                                const orderAmountETB = itemPriceUSD * (updatedOrder.quantity || 1) * 120;
+                                commAmount = Math.max(1200, Math.round(orderAmountETB * 0.10));
+
+                                // Create commission record in Supabase
+                                await client.from('commissions').insert({
+                                    affiliate_id: affiliateId,
+                                    order_id: orderId,
+                                    amount: commAmount,
+                                    status: 'approved',
+                                    created_at: new Date().toISOString()
+                                });
+
+                                // Increment sales_count on affiliates table
+                                const { data: affRec } = await client
+                                    .from('affiliates')
+                                    .select('sales_count')
+                                    .eq('user_id', affiliateId)
+                                    .single();
+                                const newSalesCount = ((affRec && affRec.sales_count) || 0) + 1;
+
+                                await client
+                                    .from('affiliates')
+                                    .update({ sales_count: newSalesCount })
+                                    .eq('user_id', affiliateId);
+                            }
+
+                            result = {
+                                success: true,
+                                commission_attributed: !!affiliateId,
+                                commission_amount: commAmount
+                            };
+                        }
+                    } catch (directErr) {
+                        console.error('[Amiele:Admin] Direct Supabase order approval error:', directErr);
                     }
-
-                    const refCode = (target && (target.referral_code || target.referralCode)) || 'bonbe-7903';
-                    const affId = target ? (target.affiliate_id || target.affiliateId) : null;
-                    const affiliates = window.AmieleDB.getAffiliates();
-                    let aff = affiliates.find(a => 
-                        (affId && a.userId === affId) || 
-                        (refCode && (a.code === refCode || a.couponCode === refCode || (a.code && a.code.toLowerCase() === refCode.toLowerCase())))
-                    );
-                    if (!aff && affiliates.length > 0) aff = affiliates[0];
-
-                    const commAmount = (result && result.commission_amount) ? parseFloat(result.commission_amount) : 1200;
-
-                    const commissions = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
-                    commissions.push({
-                        id: 'comm_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
-                        affiliateId: aff ? aff.userId : 'user_aff_default',
-                        orderId: orderId,
-                        productName: (target && (target.product_name || target.productName)) || 'Ethiopian Begena Instrument',
-                        orderAmount: (target && (target.amount || target.orderAmount)) || 12000,
-                        commissionAmount: commAmount,
-                        status: 'approved',
-                        createdAt: new Date().toISOString(),
-                        approvedAt: new Date().toISOString()
-                    });
-                    localStorage.setItem('amiele_commissions', JSON.stringify(commissions));
-                    localStorage.setItem('amiele_commissions_updated', String(Date.now()));
-
-                    if (aff) {
-                        aff.sales = (aff.sales || 0) + 1;
-                        aff.totalEarnings = (aff.totalEarnings || 0) + commAmount;
-                        aff.balance = (aff.balance || 0) + commAmount;
-                        window.AmieleDB.saveAffiliates(affiliates);
-                    }
-
-                    if (!result) {
-                        result = {
-                            success: true,
-                            commission_attributed: true,
-                            commission_amount: commAmount
-                        };
-                    }
-                } catch (e) {
-                    console.warn('[Amiele:Admin] Local approvePayment error:', e);
                 }
             }
 

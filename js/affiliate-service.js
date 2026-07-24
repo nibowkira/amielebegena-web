@@ -153,8 +153,10 @@
                         .eq('affiliate_id', userId)
                         .eq('status', 'approved');
 
-                    if (comms) {
+                    if (comms && comms.length > 0) {
                         totalEarnings = comms.reduce((sum, c) => sum + parseFloat(c.amount), 0);
+                        stats.sales = Math.max(stats.sales || 0, comms.length);
+                        stats.total_orders = Math.max(stats.total_orders || 0, comms.length);
                     }
                 } catch (err) {}
 
