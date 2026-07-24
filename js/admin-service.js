@@ -512,10 +512,12 @@
                                 updated_at: new Date().toISOString()
                             })
                             .eq('id', orderId)
-                            .select('id, quantity, product_id, affiliate_id, referral_code, product:products(price)')
+                            .select('id, order_number, quantity, product_id, affiliate_id, referral_code, product:products(price)')
                             .single();
 
                         if (!updateErr && updatedOrder) {
+                            console.log("Order Updated:", updatedOrder);
+
                             let affiliateId = updatedOrder.affiliate_id;
 
                             // If affiliate_id is missing, attempt to resolve via referral_code
@@ -524,7 +526,7 @@
                                     .from('affiliates')
                                     .select('user_id')
                                     .ilike('referral_code', updatedOrder.referral_code.trim())
-                                    .single();
+                                    .maybeSingle();
                                 if (affData) {
                                     affiliateId = affData.user_id;
                                     await client.from('orders').update({ affiliate_id: affiliateId }).eq('id', orderId);
@@ -532,32 +534,51 @@
                             }
 
                             let commAmount = 1200;
+                            let createdComm = null;
+                            let updatedAff = null;
+
                             if (affiliateId) {
                                 const itemPriceUSD = (updatedOrder.product && updatedOrder.product.price) ? parseFloat(updatedOrder.product.price) : 100;
                                 const orderAmountETB = itemPriceUSD * (updatedOrder.quantity || 1) * 120;
                                 commAmount = Math.max(1200, Math.round(orderAmountETB * 0.10));
 
                                 // Create commission record in Supabase
-                                await client.from('commissions').insert({
-                                    affiliate_id: affiliateId,
-                                    order_id: orderId,
-                                    amount: commAmount,
-                                    status: 'approved',
-                                    created_at: new Date().toISOString()
-                                });
+                                const { data: commData, error: commErr } = await client
+                                    .from('commissions')
+                                    .insert({
+                                        affiliate_id: affiliateId,
+                                        order_id: orderId,
+                                        amount: commAmount,
+                                        status: 'approved',
+                                        created_at: new Date().toISOString()
+                                    })
+                                    .select()
+                                    .single();
+
+                                if (!commErr && commData) {
+                                    createdComm = commData;
+                                    console.log("Commission Created:", createdComm);
+                                }
 
                                 // Increment sales_count on affiliates table
                                 const { data: affRec } = await client
                                     .from('affiliates')
-                                    .select('sales_count')
+                                    .select('user_id, referral_code, sales_count')
                                     .eq('user_id', affiliateId)
-                                    .single();
-                                const newSalesCount = ((affRec && affRec.sales_count) || 0) + 1;
+                                    .maybeSingle();
 
-                                await client
+                                const currentSales = (affRec && affRec.sales_count) || 0;
+                                const { data: updatedAffData, error: affUpdateErr } = await client
                                     .from('affiliates')
-                                    .update({ sales_count: newSalesCount })
-                                    .eq('user_id', affiliateId);
+                                    .update({ sales_count: currentSales + 1, updated_at: new Date().toISOString() })
+                                    .eq('user_id', affiliateId)
+                                    .select()
+                                    .single();
+
+                                if (!affUpdateErr && updatedAffData) {
+                                    updatedAff = updatedAffData;
+                                    console.log("Affiliate Updated:", updatedAff);
+                                }
                             }
 
                             result = {
