@@ -85,12 +85,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!metadata && window.AmieleDB) {
             metadata = AmieleDB.getAffiliateMetadata(user.id);
         }
+
+        // Force sync with amiele_commissions storage count & sum
+        try {
+            const savedComms = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
+            const approved = savedComms.filter(c => c.status === 'approved' || c.status === 'paid');
+            if (approved.length > 0) {
+                const sum = approved.reduce((acc, c) => acc + (c.commissionAmount || c.amount || 0), 0);
+                if (!metadata) metadata = {};
+                metadata.totalEarnings = Math.max(metadata.totalEarnings || 0, sum);
+                metadata.sales = Math.max(metadata.sales || 0, approved.length);
+                metadata.totalOrders = Math.max(metadata.totalOrders || 0, approved.length);
+                metadata.balance = Math.max(0, metadata.totalEarnings - (metadata.totalPaid || 0));
+            }
+        } catch (e) {}
+
         if (metadata) {
             renderStatsCards();
             renderCommissionsTable();
+            renderCommissionsTableFull();
             drawOverviewCharts();
         }
     }
+
+    // Interactive button handler to instantly add an approved referral sale and update stats
+    window.addSimulatedCommission = async function() {
+        try {
+            const commissions = JSON.parse(localStorage.getItem('amiele_commissions')) || [];
+            const nextOrderNum = '#HA-' + Math.floor(1000 + Math.random() * 9000);
+            const newComm = {
+                id: 'comm_sim_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                affiliateId: user.id,
+                orderId: nextOrderNum,
+                productName: 'Ethiopian Begena Instrument (Handcrafted)',
+                orderAmount: 12000,
+                commissionAmount: 1200,
+                status: 'approved',
+                createdAt: new Date().toISOString(),
+                approvedAt: new Date().toISOString()
+            };
+            commissions.push(newComm);
+            localStorage.setItem('amiele_commissions', JSON.stringify(commissions));
+
+            if (window.AmieleDB) {
+                const affiliates = window.AmieleDB.getAffiliates();
+                const aff = affiliates.find(a => a.userId === user.id);
+                if (aff) {
+                    aff.sales = (aff.sales || 0) + 1;
+                    aff.totalEarnings = (aff.totalEarnings || 0) + 1200;
+                    aff.balance = (aff.balance || 0) + 1200;
+                    window.AmieleDB.saveAffiliates(affiliates);
+                }
+            }
+
+            if (window.showToast) {
+                showToast(`New Approved Order (${nextOrderNum}) Credited! +ETB 1,200`, 'success');
+            }
+            await refreshDashboardData();
+        } catch (e) {
+            console.error('[Amiele:Affiliate] Error adding test commission:', e);
+        }
+    };
 
     // Perform initial render of overview tab content immediately on startup
     renderStatsCards();
@@ -100,6 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Auto-refresh metrics when tab receives focus or local storage updates from admin panel
     window.addEventListener('focus', () => { refreshDashboardData(); });
     window.addEventListener('storage', () => { refreshDashboardData(); });
+    window.addEventListener('amiele-commission-updated', () => { refreshDashboardData(); });
 
 
     // 3. Notification Hub Operations
