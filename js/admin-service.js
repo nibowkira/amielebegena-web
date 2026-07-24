@@ -544,6 +544,7 @@
                         approvedAt: new Date().toISOString()
                     });
                     localStorage.setItem('amiele_commissions', JSON.stringify(commissions));
+                    localStorage.setItem('amiele_commissions_updated', String(Date.now()));
 
                     if (aff) {
                         aff.sales = (aff.sales || 0) + 1;
