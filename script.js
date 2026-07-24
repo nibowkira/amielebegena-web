@@ -1323,8 +1323,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Clean up referral code after successful backend attribution
                 localStorage.removeItem('amiele_ref_code');
 
-                // Open WhatsApp only on backend success
-                const whatsappUrl = `https://wa.me/251969189470?text=${encodeURIComponent(result.whatsapp_message)}`;
+                // Build WhatsApp message text (using backend message or frontend fallback)
+                const msgText = result.whatsapp_message || `Hello Amiele Begena,\n\nI would like to confirm my order:\n\n📦 Product:\n${cartItems.map(i => `${i.quantity}x ${i.name}`).join(', ')}\n\n👤 Customer Name:\n${customerName}\n\n📞 Phone Number:\n${phone}\n\n🌍 Delivery Country:\n${country}\n\nThank you!`;
+
+                const whatsappUrl = `https://wa.me/251969189470?text=${encodeURIComponent(msgText)}`;
                 window.open(whatsappUrl, '_blank');
                 
                 // Reset cart UI
@@ -1373,8 +1375,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Clean up referral code after successful backend attribution
                 localStorage.removeItem('amiele_ref_code');
 
-                // Open WhatsApp only on backend success
-                const whatsappUrl = `https://wa.me/251969189470?text=${encodeURIComponent(result.whatsapp_message)}`;
+                // Build WhatsApp message text (using backend message or frontend fallback)
+                const msgText = result.whatsapp_message || `Hello Amiele Begena,\n\nI would like to confirm my order:\n\n📦 Product:\n1x ${name || 'Ethiopian Instrument'}\n\n👤 Customer Name:\n${customerName}\n\n📞 Phone Number:\n${phone}\n\n🌍 Delivery Country:\n${country}\n\nThank you!`;
+
+                const whatsappUrl = `https://wa.me/251969189470?text=${encodeURIComponent(msgText)}`;
                 window.open(whatsappUrl, '_blank');
                 return result;
             } else {
