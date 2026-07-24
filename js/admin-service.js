@@ -667,6 +667,85 @@
         },
 
         /**
+         * One-Time Repair System for Missing Commissions
+         * Finds every paid order with an affiliate_id that lacks a commission record,
+         * calculates 10% (min 1,200 ETB), and inserts the missing commission idempotently.
+         */
+        async repairMissingCommissions() {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) throw new Error("Supabase database client is unavailable.");
+
+            console.log("START repairMissingCommissions");
+
+            // 1. Query paid orders with affiliate_id
+            const { data: paidOrders, error: orderErr } = await client
+                .from('orders')
+                .select('id, affiliate_id, quantity, product_id, created_at, product:products(price)')
+                .eq('payment_status', 'paid')
+                .not('affiliate_id', 'is', null);
+
+            if (orderErr) {
+                console.error("Error fetching paid orders for repair:", orderErr);
+                throw new Error("Failed to query paid orders: " + orderErr.message);
+            }
+
+            let missingFound = 0;
+            let createdCount = 0;
+
+            if (paidOrders && paidOrders.length > 0) {
+                for (const order of paidOrders) {
+                    // Check if commission already exists
+                    const { data: existingComm, error: commCheckErr } = await client
+                        .from('commissions')
+                        .select('id')
+                        .eq('order_id', order.id)
+                        .maybeSingle();
+
+                    if (commCheckErr) {
+                        console.error("Error checking commission for order:", order.id, commCheckErr);
+                        continue;
+                    }
+
+                    if (!existingComm) {
+                        missingFound++;
+                        const itemPriceUSD = (order.product && order.product.price) ? parseFloat(order.product.price) : 100;
+                        const orderAmountETB = itemPriceUSD * (order.quantity || 1) * 120;
+                        const commAmount = Math.max(1200, Math.round(orderAmountETB * 0.10));
+
+                        const { data: newComm, error: insertErr } = await client
+                            .from('commissions')
+                            .insert({
+                                affiliate_id: order.affiliate_id,
+                                order_id: order.id,
+                                amount: commAmount,
+                                rate: 10,
+                                status: 'approved',
+                                created_at: order.created_at || new Date().toISOString(),
+                                updated_at: new Date().toISOString()
+                            })
+                            .select()
+                            .single();
+
+                        if (insertErr) {
+                            console.error("Failed to repair commission for order:", order.id, insertErr);
+                        } else {
+                            createdCount++;
+                            console.log(`Repaired commission for order ${order.id}: ETB ${commAmount}`, newComm);
+                        }
+                    }
+                }
+            }
+
+            console.log(`END repairMissingCommissions. Missing: ${missingFound}, Created: ${createdCount}`);
+
+            return {
+                paid_orders_checked: paidOrders ? paidOrders.length : 0,
+                missing_found: missingFound,
+                created_count: createdCount
+            };
+        },
+
+        /**
          * Mark order payment as rejected / failed.
          */
         async rejectPayment(orderId) {
