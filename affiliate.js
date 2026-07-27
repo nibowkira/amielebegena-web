@@ -382,8 +382,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         console.log("=== AFFILIATE DASHBOARD METRICS AUDIT ===");
         console.log("1. Total Clicks:", metadata.clicks);
-        console.log("2. Total Referrals:", metadata.clicks);
-        console.log("3. All Orders:", metadata.totalOrders);
+        console.log("2. Total Referrals:", metadata.totalOrders || 0);
+        console.log("3. All Orders:", metadata.totalOrders || 0);
         console.log("4. Gross Volume:", metadata.grossVolume || 0);
         console.log("5. Paid Orders:", metadata.sales);
         console.log("6. Clicks Today:", metadata.clicksToday || 0);
@@ -406,11 +406,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const paidEl = document.getElementById('stat-paid');
         if (paidEl) paidEl.textContent = `ETB ${metadata.totalPaid.toLocaleString()}`;
 
-        const salesEl = document.getElementById('stat-sales');
-        if (salesEl) salesEl.textContent = metadata.sales;
-
         const clicksEl = document.getElementById('stat-clicks');
         if (clicksEl) clicksEl.textContent = metadata.clicks;
+
+        const ordersEl = document.getElementById('stat-orders');
+        if (ordersEl) ordersEl.textContent = metadata.totalOrders || metadata.sales || 0;
+
+        const salesEl = document.getElementById('stat-sales');
+        if (salesEl) salesEl.textContent = metadata.sales;
         
         const rate = metadata.clicks > 0 ? ((metadata.sales / metadata.clicks) * 100).toFixed(1) : '0.0';
         const convEl = document.getElementById('stat-conversion');

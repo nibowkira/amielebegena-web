@@ -130,11 +130,15 @@
                         <div class="aff-stat-value" id="stat-paid">ETB 0</div>
                     </div>
                     <div class="aff-stat-card">
-                        <h3>Total Referrals</h3>
+                        <h3>Total Clicks</h3>
                         <div class="aff-stat-value" id="stat-clicks">0</div>
                     </div>
                     <div class="aff-stat-card">
-                        <h3>Total Sales</h3>
+                        <h3>Total Referrals</h3>
+                        <div class="aff-stat-value" id="stat-orders">0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Paid Orders</h3>
                         <div class="aff-stat-value" id="stat-sales">0</div>
                     </div>
                     <div class="aff-stat-card">
@@ -658,9 +662,10 @@
             const tbodyOverview = document.getElementById('commissions-table-body');
             const user = await window.getCurrentUser();
             if (!user) return;
-            const metadata = AmieleDB.getAffiliateMetadata(user.id);
+            const metadata = window.AffiliateService ? await window.AffiliateService.getAffiliateMetadata(user.id) : null;
             if (metadata) {
-                document.getElementById('wth-avail-balance').textContent = `ETB ${metadata.balance.toLocaleString()}`;
+                const availBal = document.getElementById('wth-avail-balance');
+                if (availBal) availBal.textContent = `ETB ${metadata.balance.toLocaleString()}`;
             }
             if (tbodyFull && tbodyOverview) {
                 setTimeout(() => {

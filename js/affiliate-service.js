@@ -73,6 +73,7 @@
          * Track affiliate click when visitor lands with ?ref=<code_val>
          */
         async trackAffiliateClick(refCode) {
+            console.log("trackAffiliateClick() called");
             if (!refCode || typeof refCode !== 'string') return;
             const cleanCode = refCode.trim();
             if (!cleanCode) return;
@@ -99,6 +100,7 @@
             }
 
             try {
+                console.log("Affiliate lookup started");
                 // Query affiliates table using referral_code to obtain affiliate_id
                 const { data: affData, error: affErr } = await client
                     .from('affiliates')
@@ -117,27 +119,43 @@
                 }
 
                 console.log("Affiliate found:", affData);
-                console.log("Inserting affiliate_click...");
+                console.log("Inserting affiliate_clicks row");
 
-                // Insert row into public.affiliate_clicks
-                const { data: clickRecord, error: insertErr } = await client
+                let clickPayload = {
+                    affiliate_id: affData.user_id,
+                    referral_code: affData.referral_code,
+                    user_agent: navigator.userAgent,
+                    ip_address: null
+                };
+
+                let { data: clickRecord, error: insertErr } = await client
                     .from('affiliate_clicks')
-                    .insert({
-                        affiliate_id: affData.user_id,
-                        referral_code: affData.referral_code,
-                        page_url: window.location.href,
-                        user_agent: navigator.userAgent,
-                        ip_address: null
-                    })
+                    .insert(clickPayload)
                     .select()
                     .single();
 
                 if (insertErr) {
-                    console.error("Affiliate click insert failed", insertErr);
-                } else {
-                    localStorage.setItem(lastClickTimeKey, String(now));
-                    console.log("Affiliate click inserted successfully", clickRecord);
+                    console.warn("Full payload insert warning, retrying minimal payload:", insertErr);
+                    const { data: minRecord, error: minErr } = await client
+                        .from('affiliate_clicks')
+                        .insert({
+                            affiliate_id: affData.user_id,
+                            referral_code: affData.referral_code
+                        })
+                        .select()
+                        .single();
+
+                    if (minErr) {
+                        console.error("Insert failed:", minErr);
+                        return;
+                    } else {
+                        clickRecord = minRecord;
+                        insertErr = null;
+                    }
                 }
+
+                localStorage.setItem(lastClickTimeKey, String(now));
+                console.log("Insert successful", clickRecord);
             } catch (err) {
                 console.error("Exception in trackAffiliateClick:", err);
             }
