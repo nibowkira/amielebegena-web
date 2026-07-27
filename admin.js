@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (tabName === 'announcements') renderAnnouncementsList();
     };
 
+    // Expose globally for HTML button handlers
+    window.renderDashboardStats = renderDashboardStats;
+
     // 2. Dashboard Analytics Overview (100% Live Supabase)
     async function renderDashboardStats() {
         console.log('[Amiele:Admin] Rendering Comprehensive Analytics Dashboard...');
@@ -797,8 +800,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Initial load
+    // Initial load with retry
     renderDashboardStats();
+    setTimeout(() => {
+        renderDashboardStats();
+    }, 600);
 
     // Global Admin Keyboard shortcuts listener
     document.addEventListener('keydown', (e) => {
