@@ -20,6 +20,11 @@
                 };
             }
 
+            // Always dynamically fetch referral code from localStorage immediately before constructing payload
+            const dynamicRef = (typeof localStorage !== 'undefined')
+                ? (localStorage.getItem("amiele_referral_code") || localStorage.getItem("amiele_ref_code") || orderPayload.referral_code || null)
+                : (orderPayload.referral_code || null);
+
             const payload = {
                 p_customer_name: orderPayload.customer_name,
                 p_phone: orderPayload.phone,
@@ -28,12 +33,14 @@
                 p_product_id: orderPayload.product_id || null,
                 p_product_name: orderPayload.product_name || null,
                 p_quantity: parseInt(orderPayload.quantity, 10) || 1,
-                p_referral_code: orderPayload.referral_code || null,
+                p_referral_code: dynamicRef,
                 p_session_id: orderPayload.session_id || null,
                 p_notes: orderPayload.notes || 'Guest WhatsApp Checkout'
             };
 
-            console.log('[Amiele:RPC] Outgoing RPC Payload:', payload);
+            console.log("Referral in localStorage:", (typeof localStorage !== 'undefined') ? localStorage.getItem("amiele_referral_code") : null);
+            console.log("Outgoing referral_code:", payload.p_referral_code);
+            console.log("Complete order payload:", payload);
 
             try {
                 const { data, error } = await client.rpc('create_guest_order', payload);

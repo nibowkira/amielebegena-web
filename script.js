@@ -1295,7 +1295,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function executeCartCheckout(customerName, phone, customerEmail, country) {
         try {
-            const activeRef = localStorage.getItem('amiele_ref_code') || '';
+            const activeRef = localStorage.getItem('amiele_referral_code') || localStorage.getItem('amiele_ref_code') || '';
             const sessionId = localStorage.getItem('amiele_session_id') || '';
 
             const currentUser = await window.getCurrentUser();
@@ -1317,8 +1317,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (result && result.success) {
-                // Clean up referral code after successful backend attribution
-                localStorage.removeItem('amiele_ref_code');
+                // Referral code persists across orders in localStorage
 
                 // Build WhatsApp message text (using backend message or frontend fallback)
                 const msgText = result.whatsapp_message || `Hello Amiele Begena,\n\nI would like to confirm my order:\n\n📦 Product:\n${cartItems.map(i => `${i.quantity}x ${i.name}`).join(', ')}\n\n👤 Customer Name:\n${customerName}\n\n📞 Phone Number:\n${phone}\n\n🌍 Delivery Country:\n${country}\n\nThank you!`;
@@ -1345,7 +1344,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function executeSingleProductCheckout(productId, name, price, customerName, phone, customerEmail, country) {
         try {
-            const activeRef = localStorage.getItem('amiele_ref_code') || '';
+            const activeRef = localStorage.getItem('amiele_referral_code') || localStorage.getItem('amiele_ref_code') || '';
             const sessionId = localStorage.getItem('amiele_session_id') || '';
 
             const currentUser = await window.getCurrentUser();
@@ -1369,8 +1368,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (result && result.success) {
-                // Clean up referral code after successful backend attribution
-                localStorage.removeItem('amiele_ref_code');
+                // Referral code persists across orders in localStorage
 
                 // Build WhatsApp message text (using backend message or frontend fallback)
                 const msgText = result.whatsapp_message || `Hello Amiele Begena,\n\nI would like to confirm my order:\n\n📦 Product:\n1x ${name || 'Ethiopian Instrument'}\n\n👤 Customer Name:\n${customerName}\n\n📞 Phone Number:\n${phone}\n\n🌍 Delivery Country:\n${country}\n\nThank you!`;
