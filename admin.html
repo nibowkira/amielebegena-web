@@ -52,256 +52,261 @@
         <!-- Main Workspace -->
         <main class="aff-content">
             
-            <!-- ADMIN DASHBOARD OVERVIEW (ENTERPRISE REDESIGN) -->
-            <div id="tab-dashboard" class="aff-tab-pane active enterprise-dashboard">
+            <!-- ADMIN DASHBOARD OVERVIEW (LUXURY BRAND REDESIGN) -->
+            <div id="tab-dashboard" class="aff-tab-pane active luxury-dashboard">
                 
-                <!-- Executive Header & Quick Actions -->
-                <div class="enterprise-banner">
-                    <div class="enterprise-banner-header">
+                <!-- Executive Header & Quick Action Directory -->
+                <div class="luxury-banner">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                         <div>
                             <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#059669; background:rgba(5,150,105,0.1); padding:3px 10px; border-radius:12px;">
-                                    <i class="fas fa-satellite-dish"></i> Live Supabase Engine
+                                <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#ffd700; background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.3); padding:4px 12px; border-radius:20px;">
+                                    <i class="fas fa-crown"></i> AMIELE BEGENA ANALYTICS SUITE
+                                </span>
+                                <span style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:#81c784; background:rgba(46,125,50,0.15); padding:4px 10px; border-radius:20px;">
+                                    <i class="fas fa-satellite-dish"></i> LIVE SUPABASE
                                 </span>
                             </div>
-                            <h1>Welcome back, Admin 👋</h1>
-                            <p style="color:#6b7280; font-size:0.92rem; margin-top:4px;">Here is your real-time performance summary and analytics overview for Amiele Begena.</p>
+                            <h1 class="luxury-banner-title">Executive Analytics Console</h1>
+                            <p style="color:#aebdb4; font-size:0.95rem; margin-top:4px;">Real-time business intelligence and performance metrics for Amiele Begena.</p>
                         </div>
                         <div style="display:flex; align-items:center; gap:12px;">
-                            <span id="admin-last-updated" style="font-size:0.8rem; color:#6b7280; font-weight:500;">Updated: Just now</span>
-                            <button class="enterprise-quick-btn" onclick="renderDashboardStats()" style="background:#1f2937; color:#ffffff; border-color:#1f2937;">
-                                <i class="fas fa-sync-alt"></i> Refresh Data
+                            <span id="admin-last-updated" style="font-size:0.82rem; color:#aebdb4; font-weight:500;">Updated: Just now</span>
+                            <button class="luxury-quick-btn" onclick="renderDashboardStats()" style="background:rgba(255,215,0,0.15); border-color:#ffd700; color:#ffd700;">
+                                <i class="fas fa-sync-alt"></i> Refresh Console
                             </button>
                         </div>
                     </div>
 
-                    <!-- Quick Action Bar -->
-                    <div class="enterprise-quick-actions">
-                        <span style="font-size:0.78rem; font-weight:700; text-transform:uppercase; color:#9ca3af; letter-spacing:0.06em; margin-right:6px;">Quick Actions:</span>
-                        <button class="enterprise-quick-btn" onclick="switchAdminTab('commissions')">
-                            <i class="fas fa-check-circle" style="color:#2563eb;"></i> Approve Orders
+                    <!-- Quick Action Navigation Bar -->
+                    <div class="luxury-quick-actions">
+                        <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#ffd700; letter-spacing:0.1em; margin-right:4px;">Quick Actions:</span>
+                        <button class="luxury-quick-btn" onclick="switchAdminTab('commissions')">
+                            <i class="fas fa-check-circle"></i> Approve Orders
                         </button>
-                        <button class="enterprise-quick-btn" onclick="switchAdminTab('campaigns')">
-                            <i class="fas fa-plus-circle" style="color:#059669;"></i> New Campaign / Product
+                        <button class="luxury-quick-btn" onclick="switchAdminTab('campaigns')">
+                            <i class="fas fa-plus-circle"></i> New Campaign / Product
                         </button>
-                        <button class="enterprise-quick-btn" onclick="switchAdminTab('withdrawals')">
-                            <i class="fas fa-hand-holding-usd" style="color:#ea580c;"></i> Pending Payments
+                        <button class="luxury-quick-btn" onclick="switchAdminTab('withdrawals')">
+                            <i class="fas fa-hand-holding-usd"></i> Pending Payments
                         </button>
-                        <button class="enterprise-quick-btn" onclick="switchAdminTab('applications')">
-                            <i class="fas fa-user-plus" style="color:#9333ea;"></i> Affiliate Requests
+                        <button class="luxury-quick-btn" onclick="switchAdminTab('applications')">
+                            <i class="fas fa-user-plus"></i> Affiliate Requests
                         </button>
                     </div>
                 </div>
 
-                <!-- 12 KPI Summary Cards Grid -->
-                <div class="enterprise-kpi-grid">
-                    <!-- Revenue Cards (Gold) -->
-                    <div class="enterprise-kpi-card card-theme-revenue">
+                <!-- 12 Luxury Glassmorphism Summary Cards Grid -->
+                <div class="luxury-kpi-grid">
+                    <!-- Revenue Card 1 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Total Revenue</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-wallet"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Total Revenue</span>
+                                <div class="luxury-kpi-badge"><i class="fas fa-wallet"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-total-revenue">ETB 0</div>
+                            <div class="luxury-kpi-val" id="card-total-revenue">ETB 0</div>
                         </div>
-                        <div class="kpi-subtitle">Confirmed & Paid Sales</div>
+                        <div class="luxury-kpi-sub">Confirmed & Paid Sales</div>
                     </div>
 
-                    <div class="enterprise-kpi-card card-theme-revenue">
+                    <!-- Revenue Card 2 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Revenue This Month</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-chart-line"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Revenue This Month</span>
+                                <div class="luxury-kpi-badge"><i class="fas fa-chart-line"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-revenue-month">ETB 0</div>
+                            <div class="luxury-kpi-val" id="card-revenue-month">ETB 0</div>
                         </div>
-                        <div class="kpi-subtitle">Current Calendar Month</div>
+                        <div class="luxury-kpi-sub">Current Calendar Month</div>
                     </div>
 
-                    <!-- Orders Cards (Blue) -->
-                    <div class="enterprise-kpi-card card-theme-orders">
+                    <!-- Orders Card 3 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Total Orders</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-shopping-bag"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Total Orders</span>
+                                <div class="luxury-kpi-badge"><i class="fas fa-shopping-bag"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-total-orders">0</div>
+                            <div class="luxury-kpi-val" id="card-total-orders">0</div>
                         </div>
-                        <div class="kpi-subtitle">All Orders Recorded</div>
+                        <div class="luxury-kpi-sub">All Orders Recorded</div>
                     </div>
 
-                    <!-- Pending Cards (Orange) -->
-                    <div class="enterprise-kpi-card card-theme-pending">
+                    <!-- Pending Card 4 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Pending Orders</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-clock"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Pending Orders</span>
+                                <div class="luxury-kpi-badge" style="background:rgba(255,215,0,0.15); color:#ffd700;"><i class="fas fa-clock"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-pending-orders" style="color:#ea580c;">0</div>
+                            <div class="luxury-kpi-val" id="card-pending-orders" style="color:#ffd700;">0</div>
                         </div>
-                        <div class="kpi-subtitle">Awaiting Admin Approval</div>
+                        <div class="luxury-kpi-sub">Awaiting Admin Approval</div>
                     </div>
 
-                    <!-- Confirmed / Shipped Cards -->
-                    <div class="enterprise-kpi-card card-theme-orders">
+                    <!-- Confirmed Card 5 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Confirmed Orders</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-check-double"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Confirmed Orders</span>
+                                <div class="luxury-kpi-badge" style="background:rgba(129,199,132,0.15); color:#81c784;"><i class="fas fa-check-double"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-confirmed-orders" style="color:#2563eb;">0</div>
+                            <div class="luxury-kpi-val" id="card-confirmed-orders" style="color:#81c784;">0</div>
                         </div>
-                        <div class="kpi-subtitle">Payment Verified</div>
+                        <div class="luxury-kpi-sub">Payment Verified</div>
                     </div>
 
-                    <div class="enterprise-kpi-card card-theme-orders">
+                    <!-- Shipped Card 6 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Shipped Orders</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-shipping-fast"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Shipped Orders</span>
+                                <div class="luxury-kpi-badge" style="background:rgba(100,181,246,0.15); color:#64b5f6;"><i class="fas fa-shipping-fast"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-shipped-orders" style="color:#0288d1;">0</div>
+                            <div class="luxury-kpi-val" id="card-shipped-orders" style="color:#64b5f6;">0</div>
                         </div>
-                        <div class="kpi-subtitle">In Dispatch / Logistics</div>
+                        <div class="luxury-kpi-sub">In Dispatch / Logistics</div>
                     </div>
 
-                    <!-- Delivered Cards (Green) -->
-                    <div class="enterprise-kpi-card card-theme-delivered">
+                    <!-- Delivered Card 7 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Delivered Orders</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-box-check"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Delivered Orders</span>
+                                <div class="luxury-kpi-badge" style="background:rgba(129,199,132,0.15); color:#81c784;"><i class="fas fa-box-check"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-delivered-orders" style="color:#16a34a;">0</div>
+                            <div class="luxury-kpi-val" id="card-delivered-orders" style="color:#81c784;">0</div>
                         </div>
-                        <div class="kpi-subtitle">Completed Deliveries</div>
+                        <div class="luxury-kpi-sub">Completed Deliveries</div>
                     </div>
 
-                    <!-- Customer Cards (Purple) -->
-                    <div class="enterprise-kpi-card card-theme-customers">
+                    <!-- Customer Card 8 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Total Customers</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-users"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Total Customers</span>
+                                <div class="luxury-kpi-badge"><i class="fas fa-users"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-total-customers" style="color:#9333ea;">0</div>
+                            <div class="luxury-kpi-val" id="card-total-customers">0</div>
                         </div>
-                        <div class="kpi-subtitle">Unique Buyer Identities</div>
+                        <div class="luxury-kpi-sub">Unique Buyer Identities</div>
                     </div>
 
-                    <!-- Affiliate Cards (Emerald) -->
-                    <div class="enterprise-kpi-card card-theme-affiliates">
+                    <!-- Affiliate Card 9 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Total Affiliates</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-user-tie"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Total Affiliates</span>
+                                <div class="luxury-kpi-badge"><i class="fas fa-user-tie"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-total-affiliates" style="color:#059669;">0</div>
+                            <div class="luxury-kpi-val" id="card-total-affiliates">0</div>
                         </div>
-                        <div class="kpi-subtitle">Active Partners</div>
+                        <div class="luxury-kpi-sub">Active Partners</div>
                     </div>
 
-                    <!-- Top Affiliate -->
-                    <div class="enterprise-kpi-card card-theme-affiliates">
+                    <!-- Top Affiliate Card 10 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Top Affiliate</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-crown"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Top Affiliate</span>
+                                <div class="luxury-kpi-badge"><i class="fas fa-crown"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-top-affiliate" style="font-size:1.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">N/A</div>
+                            <div class="luxury-kpi-val" id="card-top-affiliate" style="font-size:1.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">N/A</div>
                         </div>
-                        <div class="kpi-subtitle" id="card-top-affiliate-sub">0 Sales</div>
+                        <div class="luxury-kpi-sub" id="card-top-affiliate-sub">0 Sales</div>
                     </div>
 
-                    <!-- Best Selling Product -->
-                    <div class="enterprise-kpi-card card-theme-delivered">
+                    <!-- Best Product Card 11 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Best Selling Product</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-fire"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Best Selling Product</span>
+                                <div class="luxury-kpi-badge"><i class="fas fa-fire"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-top-product" style="font-size:1.7rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">N/A</div>
+                            <div class="luxury-kpi-val" id="card-top-product" style="font-size:1.7rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">N/A</div>
                         </div>
-                        <div class="kpi-subtitle" id="card-top-product-sub">0 Units Sold</div>
+                        <div class="luxury-kpi-sub" id="card-top-product-sub">0 Units Sold</div>
                     </div>
 
-                    <!-- Average Order Value (AOV) -->
-                    <div class="enterprise-kpi-card card-theme-revenue">
+                    <!-- AOV Card 12 -->
+                    <div class="luxury-kpi-card">
                         <div>
-                            <div class="kpi-top-row">
-                                <span class="kpi-title">Average Order Value</span>
-                                <div class="kpi-icon-badge"><i class="fas fa-calculator"></i></div>
+                            <div class="luxury-kpi-top">
+                                <span class="luxury-kpi-title">Average Order Value</span>
+                                <div class="luxury-kpi-badge"><i class="fas fa-calculator"></i></div>
                             </div>
-                            <div class="kpi-number-val" id="card-aov" style="font-size:2.3rem;">ETB 0</div>
+                            <div class="luxury-kpi-val" id="card-aov" style="font-size:2.3rem;">ETB 0</div>
                         </div>
-                        <div class="kpi-subtitle">Revenue Per Order</div>
+                        <div class="luxury-kpi-sub">Revenue Per Order</div>
                     </div>
                 </div>
 
                 <!-- Section 1 & 2: Monthly Revenue Chart & Orders By Country -->
                 <div class="admin-analytics-grid-2col">
-                    <div class="enterprise-section-card">
-                        <div class="enterprise-section-header">
-                            <h3><i class="fas fa-chart-bar" style="color:#d97706;"></i> Monthly Revenue Progression</h3>
-                            <span style="font-size:0.78rem; font-weight:600; color:#6b7280; background:#f1f5f9; padding:3px 10px; border-radius:10px;">Last 6 Months</span>
+                    <div class="luxury-section-card">
+                        <div class="luxury-section-header">
+                            <h3><i class="fas fa-chart-bar" style="color:#ffd700;"></i> Monthly Revenue Progression</h3>
+                            <span style="font-size:0.75rem; font-weight:600; color:#ffd700; background:rgba(255,215,0,0.12); padding:4px 12px; border-radius:12px; border:1px solid rgba(255,215,0,0.25);">Last 6 Months</span>
                         </div>
                         <div class="admin-revenue-chart" id="chart-monthly-revenue" style="height:220px;">
-                            <div style="color:#6b7280; font-size:0.88rem; margin:auto;">Loading chart data...</div>
+                            <div style="color:#aebdb4; font-size:0.88rem; margin:auto;">Loading chart data...</div>
                         </div>
                     </div>
 
-                    <div class="enterprise-section-card">
-                        <div class="enterprise-section-header">
-                            <h3><i class="fas fa-globe-africa" style="color:#2563eb;"></i> Orders by Country</h3>
-                            <span style="font-size:0.78rem; font-weight:600; color:#6b7280; background:#f1f5f9; padding:3px 10px; border-radius:10px;">Geographic Breakdown</span>
+                    <div class="luxury-section-card">
+                        <div class="luxury-section-header">
+                            <h3><i class="fas fa-globe-africa" style="color:#ffd700;"></i> Orders by Country</h3>
+                            <span style="font-size:0.75rem; font-weight:600; color:#ffd700; background:rgba(255,215,0,0.12); padding:4px 12px; border-radius:12px; border:1px solid rgba(255,215,0,0.25);">Geographic Breakdown</span>
                         </div>
                         <div id="container-country-orders">
-                            <div style="color:#6b7280; font-size:0.88rem;">Loading geographic data...</div>
+                            <div style="color:#aebdb4; font-size:0.88rem;">Loading geographic data...</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Section 3 & 4: Affiliate Leaderboard & Best Selling Products -->
                 <div class="admin-analytics-grid-2col">
-                    <div class="enterprise-section-card">
-                        <div class="enterprise-section-header">
-                            <h3><i class="fas fa-trophy" style="color:#d97706;"></i> Affiliate Leaderboard</h3>
-                            <span style="font-size:0.78rem; font-weight:600; color:#6b7280; background:#f1f5f9; padding:3px 10px; border-radius:10px;">Ranked by Sales & Earnings</span>
+                    <div class="luxury-section-card">
+                        <div class="luxury-section-header">
+                            <h3><i class="fas fa-trophy" style="color:#ffd700;"></i> Affiliate Leaderboard</h3>
+                            <span style="font-size:0.75rem; font-weight:600; color:#ffd700; background:rgba(255,215,0,0.12); padding:4px 12px; border-radius:12px; border:1px solid rgba(255,215,0,0.25);">Ranked by Sales & Earnings</span>
                         </div>
                         <div id="container-affiliate-leaderboard">
-                            <div style="color:#6b7280; font-size:0.88rem;">Loading leaderboard...</div>
+                            <div style="color:#aebdb4; font-size:0.88rem;">Loading leaderboard...</div>
                         </div>
                     </div>
 
-                    <div class="enterprise-section-card">
-                        <div class="enterprise-section-header">
-                            <h3><i class="fas fa-box-open" style="color:#16a34a;"></i> Best Selling Products</h3>
-                            <span style="font-size:0.78rem; font-weight:600; color:#6b7280; background:#f1f5f9; padding:3px 10px; border-radius:10px;">Units Sold & Revenue</span>
+                    <div class="luxury-section-card">
+                        <div class="luxury-section-header">
+                            <h3><i class="fas fa-box-open" style="color:#ffd700;"></i> Best Selling Products</h3>
+                            <span style="font-size:0.75rem; font-weight:600; color:#ffd700; background:rgba(255,215,0,0.12); padding:4px 12px; border-radius:12px; border:1px solid rgba(255,215,0,0.25);">Units Sold & Revenue</span>
                         </div>
                         <div id="container-top-products">
-                            <div style="color:#6b7280; font-size:0.88rem;">Loading product performance...</div>
+                            <div style="color:#aebdb4; font-size:0.88rem;">Loading product performance...</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Section 5, 6, 7: Status Breakdown, Customer Analytics, Recent Activity Feed -->
                 <div class="admin-analytics-grid-2col">
-                    <div class="enterprise-section-card">
-                        <div class="enterprise-section-header">
-                            <h3><i class="fas fa-tasks" style="color:#ea580c;"></i> Order Status & Customer Funnel</h3>
+                    <div class="luxury-section-card">
+                        <div class="luxury-section-header">
+                            <h3><i class="fas fa-tasks" style="color:#ffd700;"></i> Order Status & Customer Funnel</h3>
                         </div>
                         <div id="container-status-customer-analytics">
-                            <div style="color:#6b7280; font-size:0.88rem;">Loading status & customer data...</div>
+                            <div style="color:#aebdb4; font-size:0.88rem;">Loading status & customer data...</div>
                         </div>
                     </div>
 
-                    <div class="enterprise-section-card">
-                        <div class="enterprise-section-header">
-                            <h3><i class="fas fa-stream" style="color:#9333ea;"></i> Real-Time Activity Feed</h3>
-                            <span style="font-size:0.78rem; font-weight:600; color:#6b7280; background:#f1f5f9; padding:3px 10px; border-radius:10px;">Live Stream</span>
+                    <div class="luxury-section-card">
+                        <div class="luxury-section-header">
+                            <h3><i class="fas fa-stream" style="color:#ffd700;"></i> Real-Time Activity Feed</h3>
+                            <span style="font-size:0.75rem; font-weight:600; color:#ffd700; background:rgba(255,215,0,0.12); padding:4px 12px; border-radius:12px; border:1px solid rgba(255,215,0,0.25);">Live Stream</span>
                         </div>
                         <div id="container-recent-activity" style="max-height:380px; overflow-y:auto;">
-                            <div style="color:#6b7280; font-size:0.88rem;">Loading live activity stream...</div>
+                            <div style="color:#aebdb4; font-size:0.88rem;">Loading live activity stream...</div>
                         </div>
                     </div>
                 </div>
