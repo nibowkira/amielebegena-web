@@ -120,8 +120,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const heightPct = Math.max(10, Math.round((d.revenue / maxRev) * 100));
                 return `
                     <div class="admin-chart-bar-wrap">
-                        <div class="admin-chart-bar" style="height:${heightPct}%;" data-tooltip="ETB ${d.revenue.toLocaleString()} (${d.ordersCount} Orders)"></div>
-                        <span class="admin-chart-label">${esc(d.month)}</span>
+                        <div class="admin-chart-bar" style="height:${heightPct}%; background:linear-gradient(180deg, #f59e0b, #d97706); border-radius:6px 6px 0 0;" data-tooltip="ETB ${d.revenue.toLocaleString()} (${d.ordersCount} Orders)"></div>
+                        <span class="admin-chart-label" style="color:#6b7280; font-weight:600; font-size:0.78rem;">${esc(d.month)}</span>
                     </div>
                 `;
             }).join('');
@@ -132,16 +132,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (countryContainer && analytics.countryList) {
             const list = analytics.countryList;
             if (list.length === 0) {
-                countryContainer.innerHTML = '<div style="color:var(--aff-text-muted); font-size:0.85rem;">No orders recorded yet.</div>';
+                countryContainer.innerHTML = '<div style="color:#6b7280; font-size:0.88rem; padding:1.5rem 0; text-align:center;"><i class="fas fa-inbox" style="font-size:1.5rem; margin-bottom:6px; color:#9ca3af; display:block;"></i>No order geographic data available yet.</div>';
             } else {
                 countryContainer.innerHTML = list.slice(0, 5).map(c => `
-                    <div class="admin-progress-row">
-                        <div class="admin-progress-header">
-                            <span><i class="fas fa-map-marker-alt" style="color:#0288d1; margin-right:4px;"></i> ${esc(c.country)}</span>
-                            <strong>${c.count} Orders (${c.percentage}%)</strong>
+                    <div class="admin-progress-row" style="margin-bottom:1.15rem;">
+                        <div class="admin-progress-header" style="display:flex; justify-content:space-between; font-size:0.88rem; font-weight:600; margin-bottom:0.4rem; color:#1f2937;">
+                            <span><i class="fas fa-map-marker-alt" style="color:#2563eb; margin-right:6px;"></i> ${esc(c.country)}</span>
+                            <span style="color:#4b5563;">${c.count} Orders (${c.percentage}%)</span>
                         </div>
-                        <div class="admin-progress-bg">
-                            <div class="admin-progress-fill" style="width:${Math.max(5, c.percentage)}%; background:#0288d1;"></div>
+                        <div class="admin-progress-bg" style="background:#f1f5f9; height:10px; border-radius:6px; overflow:hidden;">
+                            <div class="admin-progress-fill" style="width:${Math.max(5, c.percentage)}%; background:#2563eb; height:100%; border-radius:6px;"></div>
                         </div>
                     </div>
                 `).join('');
@@ -153,20 +153,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (affLeaderboardContainer && analytics.affiliateLeaderboard) {
             const list = analytics.affiliateLeaderboard;
             if (list.length === 0) {
-                affLeaderboardContainer.innerHTML = '<div style="color:var(--aff-text-muted); font-size:0.85rem;">No affiliate sales recorded yet.</div>';
+                affLeaderboardContainer.innerHTML = '<div style="color:#6b7280; font-size:0.88rem; padding:1.5rem 0; text-align:center;"><i class="fas fa-user-slash" style="font-size:1.5rem; margin-bottom:6px; color:#9ca3af; display:block;"></i>No affiliate performance data recorded yet.</div>';
             } else {
                 affLeaderboardContainer.innerHTML = list.slice(0, 5).map((a, idx) => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid rgba(255,255,255,0.04);">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-weight:bold; color:${idx === 0 ? '#ffd700' : '#888'}; font-size:0.85rem;">#${idx + 1}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; border-bottom:1px solid #f1f5f9;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-weight:800; color:${idx === 0 ? '#d97706' : '#6b7280'}; font-size:0.9rem; background:${idx === 0 ? 'rgba(217,119,6,0.12)' : '#f1f5f9'}; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;">${idx + 1}</span>
                             <div>
-                                <div style="font-weight:600; font-size:0.9rem;">${esc(a.name)}</div>
-                                <span style="font-size:0.75rem; color:var(--aff-text-muted);">Ref: ${esc(a.code || 'N/A')}</span>
+                                <div style="font-weight:700; font-size:0.92rem; color:#1f2937;">${esc(a.name)}</div>
+                                <span style="font-size:0.78rem; color:#6b7280;">Ref: ${esc(a.code || 'N/A')}</span>
                             </div>
                         </div>
                         <div style="text-align:right;">
-                            <div style="font-weight:bold; color:var(--aff-primary); font-size:0.9rem;">${a.salesCount} Sales</div>
-                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.6);">ETB ${a.totalEarnings.toLocaleString()}</span>
+                            <div style="font-weight:700; color:#059669; font-size:0.92rem;">${a.salesCount} Sales</div>
+                            <span style="font-size:0.78rem; color:#4b5563; font-weight:500;">ETB ${a.totalEarnings.toLocaleString()}</span>
                         </div>
                     </div>
                 `).join('');
@@ -178,15 +178,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (prodContainer && analytics.topProductsList) {
             const list = analytics.topProductsList;
             if (list.length === 0) {
-                prodContainer.innerHTML = '<div style="color:var(--aff-text-muted); font-size:0.85rem;">No product sales recorded yet.</div>';
+                prodContainer.innerHTML = '<div style="color:#6b7280; font-size:0.88rem; padding:1.5rem 0; text-align:center;"><i class="fas fa-box-open" style="font-size:1.5rem; margin-bottom:6px; color:#9ca3af; display:block;"></i>No product sales recorded yet.</div>';
             } else {
                 prodContainer.innerHTML = list.slice(0, 5).map(p => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; border-bottom:1px solid #f1f5f9;">
                         <div>
-                            <div style="font-weight:600; font-size:0.9rem;">${esc(p.name)}</div>
-                            <span style="font-size:0.75rem; color:var(--aff-text-muted);">${p.unitsSold} Units Sold</span>
+                            <div style="font-weight:700; font-size:0.92rem; color:#1f2937;">${esc(p.name)}</div>
+                            <span style="font-size:0.78rem; color:#6b7280;">${p.unitsSold} Units Sold</span>
                         </div>
-                        <strong style="color:#ffd700; font-size:0.9rem;">ETB ${p.revenueETB.toLocaleString()}</strong>
+                        <strong style="color:#d97706; font-size:0.95rem; font-weight:700;">ETB ${p.revenueETB.toLocaleString()}</strong>
                     </div>
                 `).join('');
             }
@@ -197,35 +197,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (funnelContainer) {
             const st = analytics.orderStatusBreakdown || {};
             const cust = analytics.customerAnalytics || {};
-            const tot = cards.totalOrders || 1;
 
             funnelContainer.innerHTML = `
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
-                    <div style="background:rgba(237,108,2,0.1); border:1px solid rgba(237,108,2,0.25); padding:0.85rem; border-radius:10px; text-align:center;">
-                        <span style="font-size:0.75rem; color:#ed6c02; text-transform:uppercase;">Pending</span>
-                        <div style="font-size:1.4rem; font-weight:bold; color:#fff;">${st.pending || 0}</div>
+                    <div style="background:rgba(234,88,12,0.08); border:1px solid rgba(234,88,12,0.2); padding:1rem; border-radius:14px; text-align:center;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#ea580c; text-transform:uppercase; letter-spacing:0.06em;">Pending</span>
+                        <div style="font-size:1.75rem; font-weight:800; color:#1f2937; margin-top:2px;">${st.pending || 0}</div>
                     </div>
-                    <div style="background:rgba(46,125,50,0.1); border:1px solid rgba(46,125,50,0.25); padding:0.85rem; border-radius:10px; text-align:center;">
-                        <span style="font-size:0.75rem; color:#2e7d32; text-transform:uppercase;">Confirmed</span>
-                        <div style="font-size:1.4rem; font-weight:bold; color:#fff;">${st.confirmed || 0}</div>
+                    <div style="background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.2); padding:1rem; border-radius:14px; text-align:center;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#2563eb; text-transform:uppercase; letter-spacing:0.06em;">Confirmed</span>
+                        <div style="font-size:1.75rem; font-weight:800; color:#1f2937; margin-top:2px;">${st.confirmed || 0}</div>
                     </div>
-                    <div style="background:rgba(2,136,209,0.1); border:1px solid rgba(2,136,209,0.25); padding:0.85rem; border-radius:10px; text-align:center;">
-                        <span style="font-size:0.75rem; color:#0288d1; text-transform:uppercase;">Shipped</span>
-                        <div style="font-size:1.4rem; font-weight:bold; color:#fff;">${st.shipped || 0}</div>
+                    <div style="background:rgba(2,136,209,0.08); border:1px solid rgba(2,136,209,0.2); padding:1rem; border-radius:14px; text-align:center;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#0288d1; text-transform:uppercase; letter-spacing:0.06em;">Shipped</span>
+                        <div style="font-size:1.75rem; font-weight:800; color:#1f2937; margin-top:2px;">${st.shipped || 0}</div>
                     </div>
-                    <div style="background:rgba(156,39,176,0.1); border:1px solid rgba(156,39,176,0.25); padding:0.85rem; border-radius:10px; text-align:center;">
-                        <span style="font-size:0.75rem; color:#9c27b0; text-transform:uppercase;">Delivered</span>
-                        <div style="font-size:1.4rem; font-weight:bold; color:#fff;">${st.delivered || 0}</div>
+                    <div style="background:rgba(22,163,74,0.08); border:1px solid rgba(22,163,74,0.2); padding:1rem; border-radius:14px; text-align:center;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#16a34a; text-transform:uppercase; letter-spacing:0.06em;">Delivered</span>
+                        <div style="font-size:1.75rem; font-weight:800; color:#1f2937; margin-top:2px;">${st.delivered || 0}</div>
                     </div>
                 </div>
-                <div style="padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; font-size:0.85rem;">
+                <div style="padding-top:1rem; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; font-size:0.88rem;">
                     <div>
-                        <span style="color:var(--aff-text-muted);">Repeat Customer Rate:</span>
-                        <strong style="color:#ffd700; margin-left:4px;">${cust.repeatRate || 0}%</strong>
+                        <span style="color:#6b7280; font-weight:500;">Repeat Customer Rate:</span>
+                        <strong style="color:#9333ea; margin-left:6px; font-weight:700;">${cust.repeatRate || 0}%</strong>
                     </div>
                     <div>
-                        <span style="color:var(--aff-text-muted);">Avg Spend / Customer:</span>
-                        <strong style="color:#fff; margin-left:4px;">ETB ${(cust.avgCustomerSpend || 0).toLocaleString()}</strong>
+                        <span style="color:#6b7280; font-weight:500;">Avg Spend / Customer:</span>
+                        <strong style="color:#1f2937; margin-left:6px; font-weight:700;">ETB ${(cust.avgCustomerSpend || 0).toLocaleString()}</strong>
                     </div>
                 </div>
             `;
@@ -236,17 +235,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (activityContainer && analytics.activityFeed) {
             const feed = analytics.activityFeed;
             if (feed.length === 0) {
-                activityContainer.innerHTML = '<div style="color:var(--aff-text-muted); font-size:0.85rem;">No recent system activity.</div>';
+                activityContainer.innerHTML = '<div style="color:#6b7280; font-size:0.88rem; padding:1.5rem 0; text-align:center;"><i class="fas fa-stream" style="font-size:1.5rem; margin-bottom:6px; color:#9ca3af; display:block;"></i>No recent system activity recorded.</div>';
             } else {
                 activityContainer.innerHTML = feed.map(item => `
-                    <div class="admin-activity-item">
-                        <div class="admin-activity-icon" style="background:${item.color}22; color:${item.color};">
+                    <div class="admin-activity-item" style="display:flex; align-items:flex-start; gap:12px; padding:0.85rem 0; border-bottom:1px solid #f1f5f9;">
+                        <div class="admin-activity-icon" style="background:${item.color}15; color:${item.color}; width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                             <i class="fas ${esc(item.icon)}"></i>
                         </div>
                         <div style="flex-grow:1;">
-                            <div style="font-weight:600; font-size:0.88rem; color:#fff;">${esc(item.title)}</div>
-                            <div style="font-size:0.8rem; color:var(--aff-text-muted);">${esc(item.subtitle)}</div>
-                            <span style="font-size:0.72rem; color:rgba(255,255,255,0.4);">${new Date(item.time).toLocaleString()}</span>
+                            <div style="font-weight:700; font-size:0.9rem; color:#1f2937;">${esc(item.title)}</div>
+                            <div style="font-size:0.82rem; color:#4b5563; margin-top:2px;">${esc(item.subtitle)}</div>
+                            <span style="font-size:0.75rem; color:#9ca3af; font-weight:500;">${new Date(item.time).toLocaleString()}</span>
                         </div>
                     </div>
                 `).join('');
