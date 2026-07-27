@@ -8,17 +8,298 @@
 
     const AdminService = {
         /**
-         * Fetch advanced admin analytics securely from Supabase RPC.
+         * Fetch advanced admin analytics securely from Supabase RPC or direct queries.
          */
         async getAdminAnalytics() {
-            const client = window.AmieleSupabase.getClient();
+            return await this.getComprehensiveAdminAnalytics();
+        },
+
+        /**
+         * Fetch 100% live Supabase comprehensive analytics for the Admin Panel.
+         */
+        async getComprehensiveAdminAnalytics() {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             if (!client) return null;
+
             try {
-                const { data, error } = await client.rpc('get_admin_analytics');
-                if (error) throw error;
-                return data;
-            } catch (e) {
-                console.error('[Amiele:Admin] Error fetching admin analytics:', e);
+                // Execute optimized parallel queries
+                const [
+                    { data: orders },
+                    { data: products },
+                    { data: affiliates },
+                    { data: commissions },
+                    { data: clicks },
+                    { data: withdrawals },
+                    { data: profiles }
+                ] = await Promise.all([
+                    client.from('orders').select('id, order_number, quantity, status, payment_status, country, customer_name, customer_email, phone, created_at, product_id, referral_code, affiliate_id, product:products(name, price)').order('created_at', { ascending: false }),
+                    client.from('products').select('id, name, price, category'),
+                    client.from('affiliates').select('user_id, referral_code, sales_count, created_at, profile:profiles(full_name, email)'),
+                    client.from('commissions').select('id, amount, status, created_at, order_id, affiliate_id'),
+                    client.from('affiliate_clicks').select('id, created_at, referral_code, affiliate_id, user_agent').order('created_at', { ascending: false }).limit(100),
+                    client.from('affiliate_withdrawals').select('id, amount, status, created_at, affiliate_id').order('created_at', { ascending: false }),
+                    client.from('profiles').select('id, full_name, email, role, created_at')
+                ]);
+
+                const allOrders = orders || [];
+                const allProducts = products || [];
+                const allAffiliates = affiliates || [];
+                const allCommissions = commissions || [];
+                const allClicks = clicks || [];
+                const allWithdrawals = withdrawals || [];
+                const allProfiles = profiles || [];
+
+                let exchangeRate = 120;
+                try {
+                    const { data: exRate } = await client.rpc('get_exchange_rate');
+                    if (exRate) exchangeRate = parseFloat(exRate);
+                } catch (e) {}
+
+                // 1. Revenue & Order Status Metrics
+                let totalRevenue = 0;
+                let revenueThisMonth = 0;
+                let pendingOrders = 0;
+                let confirmedOrders = 0;
+                let shippedOrders = 0;
+                let deliveredOrders = 0;
+                let cancelledOrders = 0;
+
+                const now = new Date();
+                const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+
+                const productSalesMap = {};
+                const countryOrdersMap = {};
+                const customerIdentities = new Set();
+                const customerOrderCountMap = {};
+
+                allOrders.forEach(o => {
+                    const priceUSD = (o.product && o.product.price) ? parseFloat(o.product.price) : 100;
+                    const orderAmountETB = priceUSD * (o.quantity || 1) * exchangeRate;
+                    const orderTime = new Date(o.created_at).getTime();
+
+                    const isPaidOrConfirmed = (o.payment_status === 'paid' || o.status === 'confirmed' || o.status === 'shipped' || o.status === 'delivered');
+
+                    if (isPaidOrConfirmed) {
+                        totalRevenue += orderAmountETB;
+                        if (orderTime >= startOfCurrentMonth) {
+                            revenueThisMonth += orderAmountETB;
+                        }
+                    }
+
+                    // Status Breakdown
+                    const st = (o.status || 'pending').toLowerCase();
+                    const pst = (o.payment_status || '').toLowerCase();
+
+                    if (st === 'confirmed') confirmedOrders++;
+                    else if (st === 'shipped') shippedOrders++;
+                    else if (st === 'delivered') deliveredOrders++;
+                    else if (st === 'cancelled') cancelledOrders++;
+                    else pendingOrders++;
+
+                    // Country Breakdown
+                    const countryName = (o.country && o.country !== 'N/A') ? o.country.trim() : 'Ethiopia';
+                    countryOrdersMap[countryName] = (countryOrdersMap[countryName] || 0) + 1;
+
+                    // Product Sales Map
+                    const prodName = o.product ? o.product.name : (o.product_name || 'Ethiopian Begena');
+                    if (!productSalesMap[prodName]) {
+                        productSalesMap[prodName] = { unitsSold: 0, revenueETB: 0 };
+                    }
+                    productSalesMap[prodName].unitsSold += (o.quantity || 1);
+                    if (isPaidOrConfirmed) {
+                        productSalesMap[prodName].revenueETB += orderAmountETB;
+                    }
+
+                    // Customer Analytics
+                    const custKey = (o.customer_email && o.customer_email !== 'N/A') ? o.customer_email.toLowerCase() : (o.phone || o.customer_name || 'guest');
+                    customerIdentities.add(custKey);
+                    customerOrderCountMap[custKey] = (customerOrderCountMap[custKey] || 0) + 1;
+                });
+
+                const totalOrdersCount = allOrders.length;
+                const paidOrdersCount = confirmedOrders + shippedOrders + deliveredOrders;
+                const avgOrderValue = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 0;
+
+                // 2. User & Affiliate Metrics
+                const totalCustomersCount = Math.max(customerIdentities.size, allProfiles.filter(p => p.role === 'customer').length);
+                const totalAffiliatesCount = Math.max(allAffiliates.length, allProfiles.filter(p => p.role === 'affiliate').length);
+
+                // Top Affiliate
+                const affEarningsMap = {};
+                allCommissions.forEach(c => {
+                    if (c.status === 'approved' && c.affiliate_id) {
+                        affEarningsMap[c.affiliate_id] = (affEarningsMap[c.affiliate_id] || 0) + parseFloat(c.amount || 0);
+                    }
+                });
+
+                let topAffiliate = { name: 'N/A', referralCode: 'N/A', salesCount: 0, totalEarnings: 0 };
+                let maxSales = -1;
+
+                allAffiliates.forEach(a => {
+                    const earnings = affEarningsMap[a.user_id] || 0;
+                    const sales = Math.max(a.sales_count || 0, allOrders.filter(o => o.affiliate_id === a.user_id && (o.payment_status === 'paid' || o.status === 'confirmed')).length);
+                    if (sales > maxSales) {
+                        maxSales = sales;
+                        const name = a.profile ? a.profile.full_name : (a.referral_code || 'Partner');
+                        topAffiliate = {
+                            name,
+                            referralCode: a.referral_code || 'N/A',
+                            salesCount: sales,
+                            totalEarnings: earnings
+                        };
+                    }
+                });
+
+                // Best Selling Product
+                let bestSellingProduct = { name: 'N/A', unitsSold: 0, revenueETB: 0 };
+                let maxUnits = -1;
+                Object.keys(productSalesMap).forEach(name => {
+                    if (productSalesMap[name].unitsSold > maxUnits) {
+                        maxUnits = productSalesMap[name].unitsSold;
+                        bestSellingProduct = {
+                            name,
+                            unitsSold: productSalesMap[name].unitsSold,
+                            revenueETB: productSalesMap[name].revenueETB
+                        };
+                    }
+                });
+
+                // 3. Monthly Revenue Progression (Last 6 Months)
+                const monthlyRevenueData = [];
+                for (let i = 5; i >= 0; i--) {
+                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const monthLabel = d.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+                    const mStart = d.getTime();
+                    const mEnd = new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime();
+
+                    let monthRev = 0;
+                    let monthCount = 0;
+
+                    allOrders.forEach(o => {
+                        const ot = new Date(o.created_at).getTime();
+                        if (ot >= mStart && ot < mEnd) {
+                            monthCount++;
+                            if (o.payment_status === 'paid' || o.status === 'confirmed') {
+                                const priceUSD = (o.product && o.product.price) ? parseFloat(o.product.price) : 100;
+                                monthRev += priceUSD * (o.quantity || 1) * exchangeRate;
+                            }
+                        }
+                    });
+
+                    monthlyRevenueData.push({
+                        month: monthLabel,
+                        revenue: Math.round(monthRev),
+                        ordersCount: monthCount
+                    });
+                }
+
+                // 4. Orders by Country List
+                const countryList = Object.keys(countryOrdersMap).map(country => ({
+                    country,
+                    count: countryOrdersMap[country],
+                    percentage: totalOrdersCount > 0 ? Math.round((countryOrdersMap[country] / totalOrdersCount) * 100) : 0
+                })).sort((a, b) => b.count - a.count);
+
+                // 5. Affiliate Leaderboard
+                const affiliateLeaderboard = allAffiliates.map(a => {
+                    const name = a.profile ? a.profile.full_name : (a.referral_code || 'Affiliate Partner');
+                    const earnings = affEarningsMap[a.user_id] || 0;
+                    const sales = Math.max(a.sales_count || 0, allOrders.filter(o => o.affiliate_id === a.user_id && (o.payment_status === 'paid' || o.status === 'confirmed')).length);
+                    return {
+                        userId: a.user_id,
+                        name,
+                        code: a.referral_code,
+                        salesCount: sales,
+                        totalEarnings: earnings
+                    };
+                }).sort((a, b) => b.salesCount - a.salesCount).slice(0, 10);
+
+                // 6. Top Products List
+                const topProductsList = Object.keys(productSalesMap).map(name => ({
+                    name,
+                    unitsSold: productSalesMap[name].unitsSold,
+                    revenueETB: productSalesMap[name].revenueETB
+                })).sort((a, b) => b.unitsSold - a.unitsSold).slice(0, 10);
+
+                // 7. Customer Analytics Breakdown
+                let repeatCustomers = 0;
+                Object.values(customerOrderCountMap).forEach(cnt => {
+                    if (cnt > 1) repeatCustomers++;
+                });
+
+                const customerAnalytics = {
+                    totalCustomers: totalCustomersCount,
+                    repeatCustomers,
+                    repeatRate: customerIdentities.size > 0 ? Math.round((repeatCustomers / customerIdentities.size) * 100) : 0,
+                    avgCustomerSpend: totalCustomersCount > 0 ? Math.round(totalRevenue / totalCustomersCount) : 0
+                };
+
+                // 8. Recent Activity Feed (Combined)
+                const activityFeed = [];
+                allOrders.slice(0, 5).forEach(o => {
+                    activityFeed.push({
+                        type: 'order',
+                        icon: 'fa-shopping-cart',
+                        color: '#2e7d32',
+                        title: `New Order (${o.order_number || '#' + o.id.slice(0, 4)})`,
+                        subtitle: `${o.customer_name || 'Customer'} placed order for ${o.product ? o.product.name : 'Begena'}`,
+                        time: o.created_at
+                    });
+                });
+                allClicks.slice(0, 5).forEach(c => {
+                    activityFeed.push({
+                        type: 'click',
+                        icon: 'fa-mouse-pointer',
+                        color: '#0288d1',
+                        title: `Referral Link Clicked`,
+                        subtitle: `Code: ${c.referral_code || 'General'}`,
+                        time: c.created_at
+                    });
+                });
+                allWithdrawals.slice(0, 5).forEach(w => {
+                    activityFeed.push({
+                        type: 'payout',
+                        icon: 'fa-hand-holding-usd',
+                        color: '#ed6c02',
+                        title: `Payout Request (${w.status.toUpperCase()})`,
+                        subtitle: `ETB ${parseFloat(w.amount).toLocaleString()} via ${w.method}`,
+                        time: w.created_at
+                    });
+                });
+
+                activityFeed.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+                return {
+                    summaryCards: {
+                        totalRevenue: Math.round(totalRevenue),
+                        revenueThisMonth: Math.round(revenueThisMonth),
+                        totalOrders: totalOrdersCount,
+                        pendingOrders,
+                        confirmedOrders,
+                        shippedOrders,
+                        deliveredOrders,
+                        totalCustomers: totalCustomersCount,
+                        totalAffiliates: totalAffiliatesCount,
+                        topAffiliate,
+                        bestSellingProduct,
+                        avgOrderValue
+                    },
+                    monthlyRevenueData,
+                    countryList,
+                    affiliateLeaderboard,
+                    topProductsList,
+                    orderStatusBreakdown: {
+                        pending: pendingOrders,
+                        confirmed: confirmedOrders,
+                        shipped: shippedOrders,
+                        delivered: deliveredOrders,
+                        cancelled: cancelledOrders
+                    },
+                    customerAnalytics,
+                    activityFeed: activityFeed.slice(0, 15)
+                };
+            } catch (err) {
+                console.error('[Amiele:Admin] Error in getComprehensiveAdminAnalytics:', err);
                 return null;
             }
         },

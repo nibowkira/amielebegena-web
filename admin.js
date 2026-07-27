@@ -37,80 +37,216 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (tabName === 'announcements') renderAnnouncementsList();
     };
 
-    // 2. Dashboard Analytics Overview
+    // 2. Dashboard Analytics Overview (100% Live Supabase)
     async function renderDashboardStats() {
-        let users = [];
-        let apps = [];
-        let analytics = null;
+        console.log('[Amiele:Admin] Rendering Comprehensive Analytics Dashboard...');
+        const updatedEl = document.getElementById('admin-last-updated');
+        if (updatedEl) updatedEl.textContent = 'Updating...';
 
-        if (window.AdminService) {
+        let analytics = null;
+        if (window.AdminService && typeof window.AdminService.getComprehensiveAdminAnalytics === 'function') {
             try {
-                users = await window.AdminService.getUsers();
-            } catch (e) {
-                console.error('[Amiele:Admin] Error fetching users:', e);
-            }
-            try {
-                apps = await window.AdminService.getApplications();
-            } catch (e) {
-                console.error('[Amiele:Admin] Error fetching applications:', e);
-                const appsEl = document.getElementById('admin-stat-apps');
-                if (appsEl) appsEl.textContent = 'ERR';
-            }
-            try {
-                analytics = await window.AdminService.getAdminAnalytics();
+                analytics = await window.AdminService.getComprehensiveAdminAnalytics();
             } catch (e) {
                 console.error('[Amiele:Admin] Error fetching analytics:', e);
             }
         }
 
-        const affiliatesCount = users.filter(u => u.role === 'affiliate').length;
-        const pendingAppsCount = apps.filter(a => a.status === 'pending').length;
+        if (updatedEl) updatedEl.textContent = 'Updated: ' + new Date().toLocaleTimeString();
 
-        const elUsers = document.getElementById('admin-stat-users');
-        if (elUsers) elUsers.textContent = users.length;
-        
-        const elApps = document.getElementById('admin-stat-apps');
-        if (elApps) elApps.textContent = pendingAppsCount;
-        
-        const elAff = document.getElementById('admin-stat-affiliates');
-        if (elAff) elAff.textContent = affiliatesCount;
+        if (!analytics) {
+            console.warn('[Amiele:Admin] Analytics data unavailable or empty.');
+            return;
+        }
 
-        if (analytics) {
-            // Populate Advanced Analytics
-            const elRev = document.getElementById('admin-stat-monthly-rev');
-            if (elRev) elRev.textContent = `ETB ${parseFloat(analytics.monthly_revenue).toLocaleString()}`;
-            
-            const elAov = document.getElementById('admin-stat-aov');
-            if (elAov) elAov.textContent = `ETB ${parseFloat(analytics.average_order_value).toLocaleString()}`;
-            
-            const elOrders = document.getElementById('admin-stat-monthly-orders');
-            if (elOrders) elOrders.textContent = analytics.monthly_orders;
-            
-            const elConv = document.getElementById('admin-stat-conv');
-            if (elConv) elConv.textContent = `${parseFloat(analytics.conversion_rate).toFixed(1)}%`;
-            
-            const elTopAff = document.getElementById('admin-top-affiliates');
-            if (elTopAff && analytics.top_affiliates && analytics.top_affiliates.length > 0) {
-                elTopAff.innerHTML = analytics.top_affiliates.map(a => `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <span>${esc(a.full_name)} (${esc(a.referral_code)})</span>
-                        <strong style="color:var(--aff-primary);">${a.sales_count} Sales</strong>
+        const cards = analytics.summaryCards || {};
+
+        // 1. Populate 12 Summary Cards
+        const elRev = document.getElementById('card-total-revenue');
+        if (elRev) elRev.textContent = `ETB ${(cards.totalRevenue || 0).toLocaleString()}`;
+
+        const elRevMo = document.getElementById('card-revenue-month');
+        if (elRevMo) elRevMo.textContent = `ETB ${(cards.revenueThisMonth || 0).toLocaleString()}`;
+
+        const elTotOrd = document.getElementById('card-total-orders');
+        if (elTotOrd) elTotOrd.textContent = (cards.totalOrders || 0).toLocaleString();
+
+        const elPendOrd = document.getElementById('card-pending-orders');
+        if (elPendOrd) elPendOrd.textContent = (cards.pendingOrders || 0).toLocaleString();
+
+        const elConfOrd = document.getElementById('card-confirmed-orders');
+        if (elConfOrd) elConfOrd.textContent = (cards.confirmedOrders || 0).toLocaleString();
+
+        const elShipOrd = document.getElementById('card-shipped-orders');
+        if (elShipOrd) elShipOrd.textContent = (cards.shippedOrders || 0).toLocaleString();
+
+        const elDelOrd = document.getElementById('card-delivered-orders');
+        if (elDelOrd) elDelOrd.textContent = (cards.deliveredOrders || 0).toLocaleString();
+
+        const elCust = document.getElementById('card-total-customers');
+        if (elCust) elCust.textContent = (cards.totalCustomers || 0).toLocaleString();
+
+        const elAff = document.getElementById('card-total-affiliates');
+        if (elAff) elAff.textContent = (cards.totalAffiliates || 0).toLocaleString();
+
+        const elTopAff = document.getElementById('card-top-affiliate');
+        const elTopAffSub = document.getElementById('card-top-affiliate-sub');
+        if (elTopAff && cards.topAffiliate) {
+            elTopAff.textContent = cards.topAffiliate.name || 'N/A';
+            if (elTopAffSub) elTopAffSub.textContent = `${cards.topAffiliate.salesCount || 0} Sales • ETB ${(cards.topAffiliate.totalEarnings || 0).toLocaleString()}`;
+        }
+
+        const elTopProd = document.getElementById('card-top-product');
+        const elTopProdSub = document.getElementById('card-top-product-sub');
+        if (elTopProd && cards.bestSellingProduct) {
+            elTopProd.textContent = cards.bestSellingProduct.name || 'N/A';
+            if (elTopProdSub) elTopProdSub.textContent = `${cards.bestSellingProduct.unitsSold || 0} Units Sold`;
+        }
+
+        const elAov = document.getElementById('card-aov');
+        if (elAov) elAov.textContent = `ETB ${(cards.avgOrderValue || 0).toLocaleString()}`;
+
+
+        // 2. Render Monthly Revenue Chart
+        const chartContainer = document.getElementById('chart-monthly-revenue');
+        if (chartContainer && analytics.monthlyRevenueData) {
+            const data = analytics.monthlyRevenueData;
+            const maxRev = Math.max(1, ...data.map(d => d.revenue));
+
+            chartContainer.innerHTML = data.map(d => {
+                const heightPct = Math.max(10, Math.round((d.revenue / maxRev) * 100));
+                return `
+                    <div class="admin-chart-bar-wrap">
+                        <div class="admin-chart-bar" style="height:${heightPct}%;" data-tooltip="ETB ${d.revenue.toLocaleString()} (${d.ordersCount} Orders)"></div>
+                        <span class="admin-chart-label">${esc(d.month)}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 3. Render Orders by Country
+        const countryContainer = document.getElementById('container-country-orders');
+        if (countryContainer && analytics.countryList) {
+            const list = analytics.countryList;
+            if (list.length === 0) {
+                countryContainer.innerHTML = '<div style="color:var(--aff-text-muted); font-size:0.85rem;">No orders recorded yet.</div>';
+            } else {
+                countryContainer.innerHTML = list.slice(0, 5).map(c => `
+                    <div class="admin-progress-row">
+                        <div class="admin-progress-header">
+                            <span><i class="fas fa-map-marker-alt" style="color:#0288d1; margin-right:4px;"></i> ${esc(c.country)}</span>
+                            <strong>${c.count} Orders (${c.percentage}%)</strong>
+                        </div>
+                        <div class="admin-progress-bg">
+                            <div class="admin-progress-fill" style="width:${Math.max(5, c.percentage)}%; background:#0288d1;"></div>
+                        </div>
                     </div>
                 `).join('');
-            } else if (elTopAff) {
-                elTopAff.innerHTML = '<span style="color:#666">No data available</span>';
             }
-            
-            const elTopProd = document.getElementById('admin-top-products');
-            if (elTopProd && analytics.top_products && analytics.top_products.length > 0) {
-                elTopProd.innerHTML = analytics.top_products.map(p => `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <span>${esc(p.name)}</span>
-                        <strong style="color:var(--aff-primary);">${p.qty_sold} Sold</strong>
+        }
+
+        // 4. Render Affiliate Leaderboard
+        const affLeaderboardContainer = document.getElementById('container-affiliate-leaderboard');
+        if (affLeaderboardContainer && analytics.affiliateLeaderboard) {
+            const list = analytics.affiliateLeaderboard;
+            if (list.length === 0) {
+                affLeaderboardContainer.innerHTML = '<div style="color:var(--aff-text-muted); font-size:0.85rem;">No affiliate sales recorded yet.</div>';
+            } else {
+                affLeaderboardContainer.innerHTML = list.slice(0, 5).map((a, idx) => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-weight:bold; color:${idx === 0 ? '#ffd700' : '#888'}; font-size:0.85rem;">#${idx + 1}</span>
+                            <div>
+                                <div style="font-weight:600; font-size:0.9rem;">${esc(a.name)}</div>
+                                <span style="font-size:0.75rem; color:var(--aff-text-muted);">Ref: ${esc(a.code || 'N/A')}</span>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-weight:bold; color:var(--aff-primary); font-size:0.9rem;">${a.salesCount} Sales</div>
+                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.6);">ETB ${a.totalEarnings.toLocaleString()}</span>
+                        </div>
                     </div>
                 `).join('');
-            } else if (elTopProd) {
-                elTopProd.innerHTML = '<span style="color:#666">No data available</span>';
+            }
+        }
+
+        // 5. Render Best Selling Products
+        const prodContainer = document.getElementById('container-top-products');
+        if (prodContainer && analytics.topProductsList) {
+            const list = analytics.topProductsList;
+            if (list.length === 0) {
+                prodContainer.innerHTML = '<div style="color:var(--aff-text-muted); font-size:0.85rem;">No product sales recorded yet.</div>';
+            } else {
+                prodContainer.innerHTML = list.slice(0, 5).map(p => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.6rem 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+                        <div>
+                            <div style="font-weight:600; font-size:0.9rem;">${esc(p.name)}</div>
+                            <span style="font-size:0.75rem; color:var(--aff-text-muted);">${p.unitsSold} Units Sold</span>
+                        </div>
+                        <strong style="color:#ffd700; font-size:0.9rem;">ETB ${p.revenueETB.toLocaleString()}</strong>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 6. Render Order Status Breakdown & Customer Funnel
+        const funnelContainer = document.getElementById('container-status-customer-analytics');
+        if (funnelContainer) {
+            const st = analytics.orderStatusBreakdown || {};
+            const cust = analytics.customerAnalytics || {};
+            const tot = cards.totalOrders || 1;
+
+            funnelContainer.innerHTML = `
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
+                    <div style="background:rgba(237,108,2,0.1); border:1px solid rgba(237,108,2,0.25); padding:0.85rem; border-radius:10px; text-align:center;">
+                        <span style="font-size:0.75rem; color:#ed6c02; text-transform:uppercase;">Pending</span>
+                        <div style="font-size:1.4rem; font-weight:bold; color:#fff;">${st.pending || 0}</div>
+                    </div>
+                    <div style="background:rgba(46,125,50,0.1); border:1px solid rgba(46,125,50,0.25); padding:0.85rem; border-radius:10px; text-align:center;">
+                        <span style="font-size:0.75rem; color:#2e7d32; text-transform:uppercase;">Confirmed</span>
+                        <div style="font-size:1.4rem; font-weight:bold; color:#fff;">${st.confirmed || 0}</div>
+                    </div>
+                    <div style="background:rgba(2,136,209,0.1); border:1px solid rgba(2,136,209,0.25); padding:0.85rem; border-radius:10px; text-align:center;">
+                        <span style="font-size:0.75rem; color:#0288d1; text-transform:uppercase;">Shipped</span>
+                        <div style="font-size:1.4rem; font-weight:bold; color:#fff;">${st.shipped || 0}</div>
+                    </div>
+                    <div style="background:rgba(156,39,176,0.1); border:1px solid rgba(156,39,176,0.25); padding:0.85rem; border-radius:10px; text-align:center;">
+                        <span style="font-size:0.75rem; color:#9c27b0; text-transform:uppercase;">Delivered</span>
+                        <div style="font-size:1.4rem; font-weight:bold; color:#fff;">${st.delivered || 0}</div>
+                    </div>
+                </div>
+                <div style="padding-top:0.75rem; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; font-size:0.85rem;">
+                    <div>
+                        <span style="color:var(--aff-text-muted);">Repeat Customer Rate:</span>
+                        <strong style="color:#ffd700; margin-left:4px;">${cust.repeatRate || 0}%</strong>
+                    </div>
+                    <div>
+                        <span style="color:var(--aff-text-muted);">Avg Spend / Customer:</span>
+                        <strong style="color:#fff; margin-left:4px;">ETB ${(cust.avgCustomerSpend || 0).toLocaleString()}</strong>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 7. Render Recent Activity Feed
+        const activityContainer = document.getElementById('container-recent-activity');
+        if (activityContainer && analytics.activityFeed) {
+            const feed = analytics.activityFeed;
+            if (feed.length === 0) {
+                activityContainer.innerHTML = '<div style="color:var(--aff-text-muted); font-size:0.85rem;">No recent system activity.</div>';
+            } else {
+                activityContainer.innerHTML = feed.map(item => `
+                    <div class="admin-activity-item">
+                        <div class="admin-activity-icon" style="background:${item.color}22; color:${item.color};">
+                            <i class="fas ${esc(item.icon)}"></i>
+                        </div>
+                        <div style="flex-grow:1;">
+                            <div style="font-weight:600; font-size:0.88rem; color:#fff;">${esc(item.title)}</div>
+                            <div style="font-size:0.8rem; color:var(--aff-text-muted);">${esc(item.subtitle)}</div>
+                            <span style="font-size:0.72rem; color:rgba(255,255,255,0.4);">${new Date(item.time).toLocaleString()}</span>
+                        </div>
+                    </div>
+                `).join('');
             }
         }
     }

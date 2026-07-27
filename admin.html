@@ -54,63 +54,147 @@
             
             <!-- ADMIN DASHBOARD OVERVIEW -->
             <div id="tab-dashboard" class="aff-tab-pane active">
-                <div class="aff-header-row">
+                <div class="aff-header-row" style="margin-bottom:1.5rem;">
                     <div>
-                        <span class="level-label" style="text-transform:uppercase; letter-spacing: 0.1em; color: var(--aff-text-muted);">ANALYTICS ENGINE</span>
-                        <h1>Overview Metrics</h1>
+                        <span class="level-label" style="text-transform:uppercase; letter-spacing: 0.1em; color: var(--aff-text-muted);">LIVE SUPABASE ENGINE</span>
+                        <h1>Admin Analytics Dashboard</h1>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <span id="admin-last-updated" style="font-size:0.8rem; color:var(--aff-text-muted);">Updated: Just now</span>
+                        <button class="aff-btn" onclick="renderDashboardStats()" style="padding:0.4rem 0.86rem; font-size:0.85rem; background:rgba(255,215,0,0.15); border:1px solid rgba(255,215,0,0.4); color:#ffd700; border-radius:6px; cursor:pointer;">
+                            <i class="fas fa-sync-alt"></i> Refresh Data
+                        </button>
                     </div>
                 </div>
 
-                <div class="aff-stats-grid">
-                    <div class="aff-stat-card">
-                        <h3>Registered Users</h3>
-                        <div class="aff-stat-value" id="admin-stat-users">0</div>
+                <!-- 12 Summary Cards Grid -->
+                <div class="admin-summary-grid">
+                    <div class="admin-summary-card gold-card">
+                        <h4>Total Revenue</h4>
+                        <div class="val" id="card-total-revenue">ETB 0</div>
+                        <div class="sub-text">Confirmed & Paid Sales</div>
                     </div>
-                    <div class="aff-stat-card accent-card">
-                        <h3>Pending Applications</h3>
-                        <div class="aff-stat-value" id="admin-stat-apps">0</div>
+                    <div class="admin-summary-card accent-blue">
+                        <h4>Revenue This Month</h4>
+                        <div class="val" id="card-revenue-month">ETB 0</div>
+                        <div class="sub-text">Current Calendar Month</div>
                     </div>
-                    <div class="aff-stat-card">
-                        <h3>Active Partners</h3>
-                        <div class="aff-stat-value" id="admin-stat-affiliates">0</div>
+                    <div class="admin-summary-card">
+                        <h4>Total Orders</h4>
+                        <div class="val" id="card-total-orders">0</div>
+                        <div class="sub-text">All Orders Recorded</div>
                     </div>
-                    <div class="aff-stat-card">
-                        <h3>Total Earnings Processed</h3>
-                        <div class="aff-stat-value" id="admin-stat-payouts">ETB 0</div>
+                    <div class="admin-summary-card">
+                        <h4>Pending Orders</h4>
+                        <div class="val" id="card-pending-orders" style="color:#ed6c02;">0</div>
+                        <div class="sub-text">Awaiting Approval</div>
+                    </div>
+                    <div class="admin-summary-card">
+                        <h4>Confirmed Orders</h4>
+                        <div class="val" id="card-confirmed-orders" style="color:#2e7d32;">0</div>
+                        <div class="sub-text">Payment Approved</div>
+                    </div>
+                    <div class="admin-summary-card">
+                        <h4>Shipped Orders</h4>
+                        <div class="val" id="card-shipped-orders" style="color:#0288d1;">0</div>
+                        <div class="sub-text">In Fulfillment</div>
+                    </div>
+                    <div class="admin-summary-card">
+                        <h4>Delivered Orders</h4>
+                        <div class="val" id="card-delivered-orders" style="color:#9c27b0;">0</div>
+                        <div class="sub-text">Completed Deliveries</div>
+                    </div>
+                    <div class="admin-summary-card">
+                        <h4>Total Customers</h4>
+                        <div class="val" id="card-total-customers">0</div>
+                        <div class="sub-text">Unique Buyer Identities</div>
+                    </div>
+                    <div class="admin-summary-card">
+                        <h4>Total Affiliates</h4>
+                        <div class="val" id="card-total-affiliates">0</div>
+                        <div class="sub-text">Active Partners</div>
+                    </div>
+                    <div class="admin-summary-card">
+                        <h4>Top Affiliate</h4>
+                        <div class="val" id="card-top-affiliate" style="font-size:1.25rem;">N/A</div>
+                        <div class="sub-text" id="card-top-affiliate-sub">0 Sales</div>
+                    </div>
+                    <div class="admin-summary-card">
+                        <h4>Best Selling Product</h4>
+                        <div class="val" id="card-top-product" style="font-size:1.15rem;">N/A</div>
+                        <div class="sub-text" id="card-top-product-sub">0 Units Sold</div>
+                    </div>
+                    <div class="admin-summary-card">
+                        <h4>Average Order Value</h4>
+                        <div class="val" id="card-aov">ETB 0</div>
+                        <div class="sub-text">Revenue Per Order</div>
                     </div>
                 </div>
 
-                <div class="aff-card" style="padding: 2rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:1rem;">
-                        <h2>Advanced Analytics</h2>
-                    </div>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-                        <div>
-                            <span style="color:var(--aff-text-muted); font-size:0.85rem; text-transform:uppercase;">Monthly Revenue</span>
-                            <div id="admin-stat-monthly-rev" style="font-size:1.8rem; font-weight:bold; color:var(--aff-primary);">ETB 0</div>
+                <!-- Section 1 & 2: Monthly Revenue Chart & Orders By Country -->
+                <div class="admin-analytics-grid-2col">
+                    <div class="admin-analytics-card">
+                        <div class="admin-analytics-card-header">
+                            <h3><i class="fas fa-chart-bar" style="color:#ffd700;"></i> Monthly Revenue Progression</h3>
+                            <span style="font-size:0.75rem; color:var(--aff-text-muted);">Last 6 Months</span>
                         </div>
-                        <div>
-                            <span style="color:var(--aff-text-muted); font-size:0.85rem; text-transform:uppercase;">Average Order Value</span>
-                            <div id="admin-stat-aov" style="font-size:1.8rem; font-weight:bold;">ETB 0</div>
-                        </div>
-                        <div>
-                            <span style="color:var(--aff-text-muted); font-size:0.85rem; text-transform:uppercase;">Monthly Orders</span>
-                            <div id="admin-stat-monthly-orders" style="font-size:1.8rem; font-weight:bold;">0</div>
-                        </div>
-                        <div>
-                            <span style="color:var(--aff-text-muted); font-size:0.85rem; text-transform:uppercase;">Overall Conversion</span>
-                            <div id="admin-stat-conv" style="font-size:1.8rem; font-weight:bold;">0%</div>
+                        <div class="admin-revenue-chart" id="chart-monthly-revenue">
+                            <div style="color:var(--aff-text-muted); font-size:0.85rem; margin:auto;">Loading chart data...</div>
                         </div>
                     </div>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top:2rem;">
-                        <div>
-                            <h3 style="margin-bottom:1rem; font-size:1rem; color:var(--aff-text-muted);">Top Affiliates</h3>
-                            <div id="admin-top-affiliates" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px;">Loading...</div>
+
+                    <div class="admin-analytics-card">
+                        <div class="admin-analytics-card-header">
+                            <h3><i class="fas fa-globe-africa" style="color:#0288d1;"></i> Orders by Country</h3>
+                            <span style="font-size:0.75rem; color:var(--aff-text-muted);">Geographic Distribution</span>
                         </div>
-                        <div>
-                            <h3 style="margin-bottom:1rem; font-size:1rem; color:var(--aff-text-muted);">Top Products</h3>
-                            <div id="admin-top-products" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:8px;">Loading...</div>
+                        <div id="container-country-orders">
+                            <div style="color:var(--aff-text-muted); font-size:0.85rem;">Loading geographic data...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3 & 4: Affiliate Leaderboard & Best Selling Products -->
+                <div class="admin-analytics-grid-2col">
+                    <div class="admin-analytics-card">
+                        <div class="admin-analytics-card-header">
+                            <h3><i class="fas fa-trophy" style="color:#ffd700;"></i> Affiliate Leaderboard</h3>
+                            <span style="font-size:0.75rem; color:var(--aff-text-muted);">Ranked by Sales & Commissions</span>
+                        </div>
+                        <div id="container-affiliate-leaderboard">
+                            <div style="color:var(--aff-text-muted); font-size:0.85rem;">Loading leaderboard...</div>
+                        </div>
+                    </div>
+
+                    <div class="admin-analytics-card">
+                        <div class="admin-analytics-card-header">
+                            <h3><i class="fas fa-box-open" style="color:#2e7d32;"></i> Best Selling Products</h3>
+                            <span style="font-size:0.75rem; color:var(--aff-text-muted);">Units Sold & Revenue</span>
+                        </div>
+                        <div id="container-top-products">
+                            <div style="color:var(--aff-text-muted); font-size:0.85rem;">Loading product performance...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5, 6, 7: Status Breakdown, Customer Analytics, Recent Activity Feed -->
+                <div class="admin-analytics-grid-2col">
+                    <div class="admin-analytics-card">
+                        <div class="admin-analytics-card-header">
+                            <h3><i class="fas fa-tasks" style="color:#ed6c02;"></i> Order Status & Customer Funnel</h3>
+                        </div>
+                        <div id="container-status-customer-analytics">
+                            <div style="color:var(--aff-text-muted); font-size:0.85rem;">Loading status & customer data...</div>
+                        </div>
+                    </div>
+
+                    <div class="admin-analytics-card">
+                        <div class="admin-analytics-card-header">
+                            <h3><i class="fas fa-stream" style="color:#9c27b0;"></i> Real-Time Activity Feed</h3>
+                            <span style="font-size:0.75rem; color:var(--aff-text-muted);">Orders, Clicks & Payouts</span>
+                        </div>
+                        <div id="container-recent-activity" style="max-height:360px; overflow-y:auto;">
+                            <div style="color:var(--aff-text-muted); font-size:0.85rem;">Loading live activity stream...</div>
                         </div>
                     </div>
                 </div>

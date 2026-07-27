@@ -1894,3 +1894,188 @@ textarea:focus-visible {
     }
 }
 
+/* ==========================================================================
+   ADMIN ANALYTICS DASHBOARD SYSTEM STYLES
+   ========================================================================== */
+.admin-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 1.15rem;
+    margin-bottom: 2rem;
+}
+
+.admin-summary-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 1.25rem 1.4rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-summary-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.admin-summary-card.gold-card {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(20, 35, 27, 0.95));
+    border-color: rgba(255, 215, 0, 0.35);
+}
+
+.admin-summary-card.accent-blue {
+    background: linear-gradient(135deg, rgba(2, 136, 209, 0.12), rgba(20, 35, 27, 0.95));
+    border-color: rgba(2, 136, 209, 0.35);
+}
+
+.admin-summary-card h4 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--aff-text-muted, #888);
+    margin-bottom: 0.5rem;
+}
+
+.admin-summary-card .val {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.admin-summary-card .sub-text {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.35rem;
+}
+
+.admin-analytics-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.75rem;
+}
+
+@media (max-width: 1024px) {
+    .admin-analytics-grid-2col {
+        grid-template-columns: 1fr;
+    }
+}
+
+.admin-analytics-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.admin-analytics-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-analytics-card-header h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-revenue-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 180px;
+    gap: 12px;
+    padding-top: 1rem;
+}
+
+.admin-chart-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.admin-chart-bar {
+    width: 100%;
+    max-width: 40px;
+    background: linear-gradient(180deg, #ffd700, #2e7d32);
+    border-radius: 6px 6px 0 0;
+    transition: height 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+}
+
+.admin-chart-bar:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.admin-chart-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.admin-progress-row {
+    margin-bottom: 1rem;
+}
+
+.admin-progress-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 0.4rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.admin-progress-bg {
+    background: rgba(255, 255, 255, 0.08);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.admin-progress-fill {
+    height: 100%;
+    background: var(--aff-primary, #2e7d32);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.admin-activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.admin-activity-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
