@@ -584,7 +584,7 @@
 
             console.log("Order updated:", updatedOrder);
 
-            // 4. Create Commission & Increment Affiliate Sales Count
+            // 4. Create Commission & Increment Affiliate Sales Count (Idempotent)
             let commission = null;
             let commAmount = 1200;
 
@@ -593,9 +593,7 @@
                 const orderAmountETB = itemPriceUSD * (order.quantity || 1) * 120;
                 commAmount = Math.max(1200, Math.round(orderAmountETB * 0.10));
 
-                console.log("Before inserting commission");
-
-                // Check for existing commission to prevent duplicates
+                // Check for existing commission to prevent duplicate creation
                 const { data: existingComm, error: existingCommErr } = await client
                     .from('commissions')
                     .select('*')
@@ -609,8 +607,9 @@
 
                 if (existingComm) {
                     commission = existingComm;
-                    console.log("Commission inserted:", commission);
+                    console.log("Commission exists:", commission);
                 } else {
+                    console.log("Before inserting commission");
                     const { data: newComm, error: insertCommErr } = await client
                         .from('commissions')
                         .insert({
@@ -628,31 +627,30 @@
                     if (insertCommErr) {
                         console.error("Supabase Commission Insert Error:", insertCommErr);
                         throw new Error("Failed to insert commission into Supabase: " + insertCommErr.message);
-                    } else {
-                        commission = newComm;
-                        console.log("Commission inserted:", commission);
                     }
-                }
 
-                // 5. Increment sales_count on affiliates table
-                console.log("Before updating affiliate");
-                if (affiliateRec) {
-                    const currentSales = (affiliateRec.sales_count && !isNaN(affiliateRec.sales_count)) ? parseInt(affiliateRec.sales_count, 10) : 0;
-                    const { data: affiliateUpdate, error: affUpdateErr } = await client
-                        .from('affiliates')
-                        .update({
-                            sales_count: currentSales + 1,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('user_id', affiliateId)
-                        .select('*')
-                        .single();
+                    commission = newComm;
+                    console.log("Commission created:", commission);
 
-                    if (affUpdateErr) {
-                        console.error("Supabase Affiliate Update Error:", affUpdateErr);
-                        throw new Error("Failed to update affiliate sales_count in Supabase: " + affUpdateErr.message);
-                    } else {
-                        console.log("Affiliate updated:", affiliateUpdate);
+                    // 5. Increment sales_count ONLY when a NEW commission was created
+                    if (affiliateRec) {
+                        console.log("Before updating affiliate sales_count");
+                        const currentSales = (affiliateRec.sales_count && !isNaN(affiliateRec.sales_count)) ? parseInt(affiliateRec.sales_count, 10) : 0;
+                        const { data: affiliateUpdate, error: affUpdateErr } = await client
+                            .from('affiliates')
+                            .update({
+                                sales_count: currentSales + 1,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('user_id', affiliateId)
+                            .select('*')
+                            .single();
+
+                        if (affUpdateErr) {
+                            console.error("Supabase Affiliate Update Error:", affUpdateErr);
+                        } else {
+                            console.log("sales_count updated:", affiliateUpdate);
+                        }
                     }
                 }
             }
