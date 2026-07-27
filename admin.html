@@ -18,295 +18,382 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="affiliate-styles.css">
     <link rel="stylesheet" href="command-palette.css">
+    <link rel="stylesheet" href="admin-styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Lucide Icon Engine -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="aff-dashboard-container">
         <!-- Sidebar Navigation -->
-        <aside class="aff-sidebar">
-            <a href="index.html" class="aff-sidebar-brand">
-                <span class="logo" style="color: white; font-size: 1.5rem;">ዓሚኤል በገና</span>
-            </a>
-            <span style="font-size:0.65rem; color:#ffd700; letter-spacing:0.15em; font-weight:bold; margin-top:-2rem; margin-left:1.2rem;">ADMIN CONSOLE</span>
-            
-            <ul class="aff-sidebar-menu">
-                <li><a class="aff-menu-item active" onclick="switchAdminTab('dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a class="aff-menu-item" onclick="switchAdminTab('users')"><i class="fas fa-users-cog"></i> User Roles</a></li>
-                <li><a class="aff-menu-item" onclick="switchAdminTab('applications')"><i class="fas fa-clipboard-list"></i> Applications Queue</a></li>
-                <li><a class="aff-menu-item" onclick="switchAdminTab('commissions')"><i class="fas fa-shopping-bag"></i> Order Management</a></li>
-                <li><a class="aff-menu-item" onclick="switchAdminTab('withdrawals')"><i class="fas fa-money-check-alt"></i> Payout Queue</a></li>
-                <li><a class="aff-menu-item" onclick="switchAdminTab('campaigns')"><i class="fas fa-bullseye"></i> Campaigns Creator</a></li>
-                <li><a class="aff-menu-item" onclick="switchAdminTab('announcements')"><i class="fas fa-microphone"></i> Broadcast Update</a></li>
-            </ul>
-
-            <div class="aff-sidebar-user">
-                <div class="aff-user-avatar" style="background-color:#ffd700; color:#14231b;">A</div>
-                <div class="aff-user-info">
-                    <h4>Admin Suite</h4>
-                    <span>admin@amiele.com</span>
-                </div>
+        <aside class="aff-sidebar" style="background:#0F2418; width:260px; min-height:100vh; padding:24px 16px; display:flex; flex-direction:column; justify-content:space-between; flex-shrink:0;">
+            <div>
+                <a href="index.html" class="aff-sidebar-brand" style="display:flex; align-items:center; gap:12px; text-decoration:none; margin-bottom:4px;">
+                    <div style="width:38px; height:38px; border-radius:10px; background:rgba(212,175,55,0.15); display:flex; align-items:center; justify-content:center; color:#D4AF37; font-size:1.3rem;">
+                        <i data-lucide="music" style="width:22px; height:22px;"></i>
+                    </div>
+                    <div>
+                        <span class="logo" style="color:#FFFFFF; font-size:1.15rem; font-weight:800; letter-spacing:0.05em; display:block; line-height:1.1;">AMIELE<br><span style="color:#D4AF37;">BEGENA</span></span>
+                    </div>
+                </a>
+                <span style="font-size:0.65rem; color:#D4AF37; letter-spacing:0.18em; font-weight:800; display:block; margin-bottom:24px; margin-left:4px;">ADMIN CONSOLE</span>
+                
+                <ul class="aff-sidebar-menu" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px;">
+                    <li><a class="aff-menu-item active" onclick="switchAdminTab('dashboard')" style="background:#FFD700; color:#0F2418; font-weight:800; border-radius:12px; padding:12px 16px; display:flex; align-items:center; gap:12px; font-size:0.9rem; text-decoration:none; cursor:pointer;"><i data-lucide="layout-dashboard" style="width:18px; height:18px;"></i> Dashboard</a></li>
+                    <li><a class="aff-menu-item" onclick="switchAdminTab('users')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="user-cog" style="width:18px; height:18px;"></i> User Roles</a></li>
+                    <li><a class="aff-menu-item" onclick="switchAdminTab('applications')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="file-text" style="width:18px; height:18px;"></i> Applications Queue</a></li>
+                    <li><a class="aff-menu-item" onclick="switchAdminTab('commissions')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="shopping-bag" style="width:18px; height:18px;"></i> Order Management</a></li>
+                    <li><a class="aff-menu-item" onclick="switchAdminTab('withdrawals')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="credit-card" style="width:18px; height:18px;"></i> Payout Queue</a></li>
+                    <li><a class="aff-menu-item" onclick="switchAdminTab('campaigns')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="target" style="width:18px; height:18px;"></i> Campaigns Creator</a></li>
+                    <li><a class="aff-menu-item" onclick="switchAdminTab('announcements')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="megaphone" style="width:18px; height:18px;"></i> Broadcast Update</a></li>
+                </ul>
             </div>
-            <a href="account.html" class="aff-menu-item" style="margin-top: -1.5rem; opacity: 0.8; font-size: 0.85rem;"><i class="fas fa-arrow-left"></i> Exit Console</a>
+
+            <div>
+                <div class="aff-sidebar-user" style="display:flex; align-items:center; gap:12px; padding:12px; background:rgba(255,255,255,0.05); border-radius:14px; margin-bottom:12px;">
+                    <div class="aff-user-avatar" style="width:36px; height:36px; border-radius:50%; background:#FFD700; color:#0F2418; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">AD</div>
+                    <div class="aff-user-info" style="flex-grow:1;">
+                        <h4 style="margin:0; font-size:0.84rem; font-weight:700; color:#FFFFFF;">Admin User</h4>
+                        <span style="font-size:0.72rem; color:#94A3B8;">Super Admin</span>
+                    </div>
+                    <i data-lucide="chevron-down" style="width:14px; height:14px; color:#94A3B8;"></i>
+                </div>
+                <a href="account.html" class="aff-menu-item" style="color:#94A3B8; text-decoration:none; font-size:0.82rem; display:flex; align-items:center; gap:8px; opacity:0.8;"><i data-lucide="arrow-left" style="width:14px; height:14px;"></i> Exit Console</a>
+            </div>
         </aside>
 
         <!-- Main Workspace -->
-        <main class="aff-content">
-            
-            <!-- ADMIN DASHBOARD OVERVIEW (LUXURY BRAND REDESIGN) -->
-            <div id="tab-dashboard" class="aff-tab-pane active luxury-dashboard">
+        <main class="aff-content">            <!-- ADMIN DASHBOARD OVERVIEW (AMIELE BEGENA EXECUTIVE REDESIGN) -->
+            <div id="tab-dashboard" class="aff-tab-pane active executive-workspace">
                 
-                <!-- Executive Header & Quick Action Directory -->
-                <div class="luxury-banner">
-                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <!-- Executive Hero Section Header (Floating White Card) -->
+                <div class="executive-hero" style="background:#FFFFFF; border:1px solid #E7E3D8; border-radius:16px; padding:16px 20px; margin-bottom:16px; box-shadow:0 4px 16px rgba(15,36,24,0.05);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
                         <div>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#ffd700; background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.3); padding:4px 12px; border-radius:20px;">
-                                    <i class="fas fa-crown"></i> AMIELE BEGENA ANALYTICS SUITE
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                <span style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#16A34A; background:#E6F4EA; padding:3px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:6px;">
+                                    <span style="width:6px; height:6px; border-radius:50%; background:#16A34A; display:inline-block;"></span> LIVE SUPABASE
                                 </span>
-                                <span style="font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:#81c784; background:rgba(46,125,50,0.15); padding:4px 10px; border-radius:20px;">
-                                    <i class="fas fa-satellite-dish"></i> LIVE SUPABASE
+                                <span style="font-size:0.68rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:#3C4043; background:#F1F3F4; padding:3px 10px; border-radius:20px; display:inline-flex; align-items:center; gap:6px;">
+                                    <i data-lucide="calendar" style="width:12px; height:12px; color:#5F6368;"></i> <span id="admin-date-badge">2026</span>
                                 </span>
                             </div>
-                            <h1 class="luxury-banner-title">Executive Analytics Console</h1>
-                            <p style="color:#aebdb4; font-size:0.95rem; margin-top:4px;">Real-time business intelligence and performance metrics for Amiele Begena.</p>
+                            <h1 class="executive-title" style="font-size:26px !important; font-weight:800; color:#1C1C1C; margin:0; letter-spacing:-0.02em; line-height:1.15;">Executive Analytics Console</h1>
+                            <p style="color:#667085; font-size:0.82rem; margin:4px 0 0 0; font-weight:500;">Real-time business intelligence for Amiele Begena.</p>
                         </div>
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <span id="admin-last-updated" style="font-size:0.82rem; color:#aebdb4; font-weight:500;">Updated: Just now</span>
-                            <button class="luxury-quick-btn" onclick="renderDashboardStats()" style="background:rgba(255,215,0,0.15); border-color:#ffd700; color:#ffd700;">
-                                <i class="fas fa-sync-alt"></i> Refresh Console
+                        <div style="display:flex; align-items:center; gap:12px; margin-top:4px;">
+                            <span id="admin-last-updated" style="font-size:0.78rem; color:#667085; font-weight:500;">Updated: 6:38:26 PM</span>
+                            <button class="executive-btn-primary" onclick="renderDashboardStats()" style="height:34px; padding:6px 16px; font-size:12.5px; font-weight:700; background:#EAB308; color:#1C1C1C; border-radius:999px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(234,179,8,0.25);">
+                                <i data-lucide="refresh-cw" style="width:14px; height:14px;"></i> Refresh Console
                             </button>
                         </div>
                     </div>
 
-                    <!-- Quick Action Navigation Bar -->
-                    <div class="luxury-quick-actions">
-                        <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#ffd700; letter-spacing:0.1em; margin-right:4px;">Quick Actions:</span>
-                        <button class="luxury-quick-btn" onclick="switchAdminTab('commissions')">
-                            <i class="fas fa-check-circle"></i> Approve Orders
+                    <!-- 6 Premium Pill-Shaped Quick Action Buttons -->
+                    <div class="executive-quick-actions" style="margin-top:14px; padding-top:12px; border-top:1px solid #E7E3D8; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <button class="executive-pill-btn" onclick="switchAdminTab('commissions')">
+                            <i data-lucide="check-circle" style="width:13px; height:13px; color:#2563EB;"></i> Approve Orders
                         </button>
-                        <button class="luxury-quick-btn" onclick="switchAdminTab('campaigns')">
-                            <i class="fas fa-plus-circle"></i> New Campaign / Product
+                        <button class="executive-pill-btn" onclick="switchAdminTab('campaigns')">
+                            <i data-lucide="package" style="width:13px; height:13px; color:#0F2418;"></i> Products
                         </button>
-                        <button class="luxury-quick-btn" onclick="switchAdminTab('withdrawals')">
-                            <i class="fas fa-hand-holding-usd"></i> Pending Payments
+                        <button class="executive-pill-btn" onclick="switchAdminTab('campaigns')">
+                            <i data-lucide="megaphone" style="width:13px; height:13px; color:#D4AF37;"></i> Campaigns
                         </button>
-                        <button class="luxury-quick-btn" onclick="switchAdminTab('applications')">
-                            <i class="fas fa-user-plus"></i> Affiliate Requests
+                        <button class="executive-pill-btn" onclick="switchAdminTab('withdrawals')">
+                            <i data-lucide="credit-card" style="width:13px; height:13px; color:#F59E0B;"></i> Payments
+                        </button>
+                        <button class="executive-pill-btn" onclick="switchAdminTab('applications')">
+                            <i data-lucide="users" style="width:13px; height:13px; color:#16A34A;"></i> Affiliates
+                        </button>
+                        <button class="executive-pill-btn" onclick="switchAdminTab('users')">
+                            <i data-lucide="user-check" style="width:13px; height:13px; color:#0F2418;"></i> Customers
                         </button>
                     </div>
                 </div>
 
-                <!-- 12 Luxury Glassmorphism Summary Cards Grid -->
-                <div class="luxury-kpi-grid">
+                <!-- 12 Executive KPI Cards Grid (4 Per Row Desktop) -->
+                <div class="executive-kpi-grid" style="display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:16px;">
                     <!-- Revenue Card 1 -->
-                    <div class="luxury-kpi-card">
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Total Revenue</span>
-                                <div class="luxury-kpi-badge"><i class="fas fa-wallet"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Total Revenue</span>
+                                <div class="executive-kpi-badge"><i data-lucide="wallet" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-total-revenue">ETB 0</div>
+                            <div class="executive-kpi-val" id="card-total-revenue">ETB 168,000</div>
                         </div>
-                        <div class="luxury-kpi-sub">Confirmed & Paid Sales</div>
+                        <div class="executive-kpi-sub">Confirmed & Paid Sales</div>
                     </div>
 
-                    <!-- Revenue Card 2 -->
-                    <div class="luxury-kpi-card">
+                    <!-- Revenue Month Card 2 -->
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Revenue This Month</span>
-                                <div class="luxury-kpi-badge"><i class="fas fa-chart-line"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Revenue This Month</span>
+                                <div class="executive-kpi-badge"><i data-lucide="trending-up" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-revenue-month">ETB 0</div>
+                            <div class="executive-kpi-val" id="card-revenue-month">ETB 168,000</div>
                         </div>
-                        <div class="luxury-kpi-sub">Current Calendar Month</div>
+                        <div class="executive-kpi-sub">Current Calendar Month</div>
                     </div>
 
-                    <!-- Orders Card 3 -->
-                    <div class="luxury-kpi-card">
+                    <!-- Total Orders Card 3 -->
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Total Orders</span>
-                                <div class="luxury-kpi-badge"><i class="fas fa-shopping-bag"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Total Orders</span>
+                                <div class="executive-kpi-badge"><i data-lucide="shopping-bag" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-total-orders">0</div>
+                            <div class="executive-kpi-val" id="card-total-orders">27</div>
                         </div>
-                        <div class="luxury-kpi-sub">All Orders Recorded</div>
+                        <div class="executive-kpi-sub">All Orders Recorded</div>
                     </div>
 
-                    <!-- Pending Card 4 -->
-                    <div class="luxury-kpi-card">
+                    <!-- Pending Orders Card 4 -->
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Pending Orders</span>
-                                <div class="luxury-kpi-badge" style="background:rgba(255,215,0,0.15); color:#ffd700;"><i class="fas fa-clock"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Pending Orders</span>
+                                <div class="executive-kpi-badge" style="background:rgba(245,158,11,0.12); color:#F59E0B;"><i data-lucide="clock" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-pending-orders" style="color:#ffd700;">0</div>
+                            <div class="executive-kpi-val" id="card-pending-orders" style="color:#F59E0B;">13</div>
                         </div>
-                        <div class="luxury-kpi-sub">Awaiting Admin Approval</div>
+                        <div class="executive-kpi-sub">Awaiting Admin Approval</div>
                     </div>
 
-                    <!-- Confirmed Card 5 -->
-                    <div class="luxury-kpi-card">
+                    <!-- Confirmed Orders Card 5 -->
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Confirmed Orders</span>
-                                <div class="luxury-kpi-badge" style="background:rgba(129,199,132,0.15); color:#81c784;"><i class="fas fa-check-double"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Confirmed Orders</span>
+                                <div class="executive-kpi-badge" style="background:rgba(37,99,235,0.12); color:#2563EB;"><i data-lucide="check-check" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-confirmed-orders" style="color:#81c784;">0</div>
+                            <div class="executive-kpi-val" id="card-confirmed-orders" style="color:#2563EB;">14</div>
                         </div>
-                        <div class="luxury-kpi-sub">Payment Verified</div>
+                        <div class="executive-kpi-sub">Payment Verified</div>
                     </div>
 
-                    <!-- Shipped Card 6 -->
-                    <div class="luxury-kpi-card">
+                    <!-- Shipped Orders Card 6 -->
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Shipped Orders</span>
-                                <div class="luxury-kpi-badge" style="background:rgba(100,181,246,0.15); color:#64b5f6;"><i class="fas fa-shipping-fast"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Shipped Orders</span>
+                                <div class="executive-kpi-badge" style="background:rgba(15,36,24,0.12); color:#0F2418;"><i data-lucide="truck" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-shipped-orders" style="color:#64b5f6;">0</div>
+                            <div class="executive-kpi-val" id="card-shipped-orders" style="color:#0F2418;">0</div>
                         </div>
-                        <div class="luxury-kpi-sub">In Dispatch / Logistics</div>
+                        <div class="executive-kpi-sub">In Dispatch / Logistics</div>
                     </div>
 
-                    <!-- Delivered Card 7 -->
-                    <div class="luxury-kpi-card">
+                    <!-- Delivered Orders Card 7 -->
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Delivered Orders</span>
-                                <div class="luxury-kpi-badge" style="background:rgba(129,199,132,0.15); color:#81c784;"><i class="fas fa-box-check"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Delivered Orders</span>
+                                <div class="executive-kpi-badge" style="background:rgba(22,163,74,0.12); color:#16A34A;"><i data-lucide="package-check" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-delivered-orders" style="color:#81c784;">0</div>
+                            <div class="executive-kpi-val" id="card-delivered-orders" style="color:#16A34A;">0</div>
                         </div>
-                        <div class="luxury-kpi-sub">Completed Deliveries</div>
+                        <div class="executive-kpi-sub">Completed Deliveries</div>
                     </div>
 
-                    <!-- Customer Card 8 -->
-                    <div class="luxury-kpi-card">
+                    <!-- Customers Card 8 -->
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Total Customers</span>
-                                <div class="luxury-kpi-badge"><i class="fas fa-users"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Total Customers</span>
+                                <div class="executive-kpi-badge"><i data-lucide="users" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-total-customers">0</div>
+                            <div class="executive-kpi-val" id="card-total-customers">12</div>
                         </div>
-                        <div class="luxury-kpi-sub">Unique Buyer Identities</div>
+                        <div class="executive-kpi-sub">Unique Buyer Identities</div>
                     </div>
 
-                    <!-- Affiliate Card 9 -->
-                    <div class="luxury-kpi-card">
+                    <!-- Affiliates Card 9 -->
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Total Affiliates</span>
-                                <div class="luxury-kpi-badge"><i class="fas fa-user-tie"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Total Affiliates</span>
+                                <div class="executive-kpi-badge"><i data-lucide="user-check" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-total-affiliates">0</div>
+                            <div class="executive-kpi-val" id="card-total-affiliates">3</div>
                         </div>
-                        <div class="luxury-kpi-sub">Active Partners</div>
+                        <div class="executive-kpi-sub">Active Partners</div>
                     </div>
 
                     <!-- Top Affiliate Card 10 -->
-                    <div class="luxury-kpi-card">
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Top Affiliate</span>
-                                <div class="luxury-kpi-badge"><i class="fas fa-crown"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Top Affiliate</span>
+                                <div class="executive-kpi-badge"><i data-lucide="award" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-top-affiliate" style="font-size:1.8rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">N/A</div>
+                            <div class="executive-kpi-val" id="card-top-affiliate" style="font-size:1.25rem !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">kira boss</div>
                         </div>
-                        <div class="luxury-kpi-sub" id="card-top-affiliate-sub">0 Sales</div>
+                        <div class="executive-kpi-sub" id="card-top-affiliate-sub">6 Sales • ETB 7,200</div>
                     </div>
 
                     <!-- Best Product Card 11 -->
-                    <div class="luxury-kpi-card">
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Best Selling Product</span>
-                                <div class="luxury-kpi-badge"><i class="fas fa-fire"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Best Selling Product</span>
+                                <div class="executive-kpi-badge"><i data-lucide="flame" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-top-product" style="font-size:1.7rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">N/A</div>
+                            <div class="executive-kpi-val" id="card-top-product" style="font-size:1.15rem !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">በገና (Begena)</div>
                         </div>
-                        <div class="luxury-kpi-sub" id="card-top-product-sub">0 Units Sold</div>
+                        <div class="executive-kpi-sub" id="card-top-product-sub">27 Units Sold</div>
                     </div>
 
-                    <!-- AOV Card 12 -->
-                    <div class="luxury-kpi-card">
+                    <!-- Average Order Value Card 12 -->
+                    <div class="executive-kpi-card">
                         <div>
-                            <div class="luxury-kpi-top">
-                                <span class="luxury-kpi-title">Average Order Value</span>
-                                <div class="luxury-kpi-badge"><i class="fas fa-calculator"></i></div>
+                            <div class="executive-kpi-top">
+                                <span class="executive-kpi-title">Average Order Value</span>
+                                <div class="executive-kpi-badge"><i data-lucide="calculator" style="width:16px; height:16px;"></i></div>
                             </div>
-                            <div class="luxury-kpi-val" id="card-aov" style="font-size:2.3rem;">ETB 0</div>
+                            <div class="executive-kpi-val" id="card-aov" style="font-size:1.35rem !important;">ETB 6,222</div>
                         </div>
-                        <div class="luxury-kpi-sub">Revenue Per Order</div>
+                        <div class="executive-kpi-sub">Revenue Per Order</div>
                     </div>
                 </div>
 
-                <!-- Section 1 & 2: Monthly Revenue Chart & Orders By Country -->
-                <div class="admin-analytics-grid-2col">
-                    <div class="luxury-section-card">
-                        <div class="luxury-section-header">
-                            <h3><i class="fas fa-chart-bar" style="color:#ffd700;"></i> Monthly Revenue Progression</h3>
-                            <span style="font-size:0.75rem; font-weight:600; color:#ffd700; background:rgba(255,215,0,0.12); padding:4px 12px; border-radius:12px; border:1px solid rgba(255,215,0,0.25);">Last 6 Months</span>
+                <!-- ROW 1: 4-Column Grid (Monthly Revenue, Insights, Country Analytics, Affiliate Leaderboard) -->
+                <div class="executive-grid-4col" style="display:grid; grid-template-columns: 1.6fr 1fr 1.1fr 1.1fr; gap:20px; margin-bottom:24px;">
+                    <!-- Card 1: Monthly Revenue Progression -->
+                    <div class="executive-card">
+                        <div class="executive-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#1C1C1C; margin:0;"><i data-lucide="bar-chart-3" style="width:16px; height:16px; color:#0F2418;"></i> MONTHLY REVENUE PROGRESSION</h3>
+                            <i data-lucide="more-horizontal" style="width:16px; height:16px; color:#667085; cursor:pointer;"></i>
                         </div>
-                        <div class="admin-revenue-chart" id="chart-monthly-revenue" style="height:220px;">
-                            <div style="color:#aebdb4; font-size:0.88rem; margin:auto;">Loading chart data...</div>
+                        <div class="admin-revenue-chart" id="chart-monthly-revenue" style="height:210px; display:flex; align-items:flex-end; gap:12px; margin-top:12px;">
+                            <div style="color:#667085; font-size:0.85rem; margin:auto;">Loading chart data...</div>
                         </div>
                     </div>
 
-                    <div class="luxury-section-card">
-                        <div class="luxury-section-header">
-                            <h3><i class="fas fa-globe-africa" style="color:#ffd700;"></i> Orders by Country</h3>
-                            <span style="font-size:0.75rem; font-weight:600; color:#ffd700; background:rgba(255,215,0,0.12); padding:4px 12px; border-radius:12px; border:1px solid rgba(255,215,0,0.25);">Geographic Breakdown</span>
+                    <!-- Card 2: Executive Insights -->
+                    <div class="executive-card">
+                        <div class="executive-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#1C1C1C; margin:0;"><i data-lucide="lightbulb" style="width:16px; height:16px; color:#D4AF37;"></i> EXECUTIVE INSIGHTS</h3>
+                            <i data-lucide="more-horizontal" style="width:16px; height:16px; color:#667085; cursor:pointer;"></i>
                         </div>
-                        <div id="container-country-orders">
-                            <div style="color:#aebdb4; font-size:0.88rem;">Loading geographic data...</div>
+                        <div style="display:flex; flex-direction:column; gap:16px; margin-top:14px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem;">
+                                <span style="color:#667085; font-weight:500;"><i data-lucide="user-check" style="width:14px; height:14px; color:#D4AF37; margin-right:4px;"></i> Top Affiliate</span>
+                                <strong style="color:#16A34A; font-weight:700;" id="insight-top-affiliate">kira boss</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem;">
+                                <span style="color:#667085; font-weight:500;"><i data-lucide="flame" style="width:14px; height:14px; color:#D4AF37; margin-right:4px;"></i> Best Product</span>
+                                <strong style="color:#16A34A; font-weight:700;" id="insight-best-product">በገና (Begena)</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem;">
+                                <span style="color:#667085; font-weight:500;"><i data-lucide="trending-up" style="width:14px; height:14px; color:#D4AF37; margin-right:4px;"></i> Revenue This Month</span>
+                                <strong style="color:#16A34A; font-weight:700;" id="insight-revenue-month">ETB 168,000</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.82rem;">
+                                <span style="color:#667085; font-weight:500;"><i data-lucide="calculator" style="width:14px; height:14px; color:#D4AF37; margin-right:4px;"></i> Average Order Value</span>
+                                <strong style="color:#16A34A; font-weight:700;" id="insight-aov">ETB 6,222</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Country Analytics -->
+                    <div class="executive-card">
+                        <div class="executive-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#1C1C1C; margin:0;"><i data-lucide="globe" style="width:16px; height:16px; color:#0F2418;"></i> COUNTRY ANALYTICS</h3>
+                            <i data-lucide="more-horizontal" style="width:16px; height:16px; color:#667085; cursor:pointer;"></i>
+                        </div>
+                        <div id="container-country-orders" style="margin-top:12px;">
+                            <div style="color:#667085; font-size:0.85rem;">Loading geographic data...</div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Affiliate Leaderboard -->
+                    <div class="executive-card">
+                        <div class="executive-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#1C1C1C; margin:0;"><i data-lucide="trophy" style="width:16px; height:16px; color:#D4AF37;"></i> AFFILIATE LEADERBOARD</h3>
+                            <i data-lucide="more-horizontal" style="width:16px; height:16px; color:#667085; cursor:pointer;"></i>
+                        </div>
+                        <div id="container-affiliate-leaderboard" style="margin-top:12px;">
+                            <div style="color:#667085; font-size:0.85rem;">Loading leaderboard...</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 3 & 4: Affiliate Leaderboard & Best Selling Products -->
-                <div class="admin-analytics-grid-2col">
-                    <div class="luxury-section-card">
-                        <div class="luxury-section-header">
-                            <h3><i class="fas fa-trophy" style="color:#ffd700;"></i> Affiliate Leaderboard</h3>
-                            <span style="font-size:0.75rem; font-weight:600; color:#ffd700; background:rgba(255,215,0,0.12); padding:4px 12px; border-radius:12px; border:1px solid rgba(255,215,0,0.25);">Ranked by Sales & Earnings</span>
+                <!-- ROW 2: 3-Column Lower Row (Best Products, Workflow, Recent Activity) -->
+                <div class="executive-grid-3col" style="display:grid; grid-template-columns: 1.4fr 1.3fr 1.3fr; gap:20px; margin-bottom:24px;">
+                    <!-- Card 1: Best Selling Products -->
+                    <div class="executive-card">
+                        <div class="executive-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#1C1C1C; margin:0;"><i data-lucide="package" style="width:16px; height:16px; color:#16A34A;"></i> BEST SELLING PRODUCTS</h3>
+                            <i data-lucide="more-horizontal" style="width:16px; height:16px; color:#667085; cursor:pointer;"></i>
                         </div>
-                        <div id="container-affiliate-leaderboard">
-                            <div style="color:#aebdb4; font-size:0.88rem;">Loading leaderboard...</div>
+                        <div id="container-top-products" style="margin-top:12px;">
+                            <div style="color:#667085; font-size:0.85rem;">Loading product performance...</div>
                         </div>
                     </div>
 
-                    <div class="luxury-section-card">
-                        <div class="luxury-section-header">
-                            <h3><i class="fas fa-box-open" style="color:#ffd700;"></i> Best Selling Products</h3>
-                            <span style="font-size:0.75rem; font-weight:600; color:#ffd700; background:rgba(255,215,0,0.12); padding:4px 12px; border-radius:12px; border:1px solid rgba(255,215,0,0.25);">Units Sold & Revenue</span>
+                    <!-- Card 2: Connected Order Workflow Pipeline -->
+                    <div class="executive-card">
+                        <div class="executive-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#1C1C1C; margin:0;"><i data-lucide="git-merge" style="width:16px; height:16px; color:#2563EB;"></i> ORDER WORKFLOW</h3>
+                            <i data-lucide="more-horizontal" style="width:16px; height:16px; color:#667085; cursor:pointer;"></i>
                         </div>
-                        <div id="container-top-products">
-                            <div style="color:#aebdb4; font-size:0.88rem;">Loading product performance...</div>
+                        <div id="container-status-customer-analytics" style="margin-top:12px;">
+                            <div style="color:#667085; font-size:0.85rem;">Loading workflow pipeline...</div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Recent Activity Stream -->
+                    <div class="executive-card">
+                        <div class="executive-card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#1C1C1C; margin:0;"><i data-lucide="activity" style="width:16px; height:16px; color:#D4AF37;"></i> RECENT ACTIVITY</h3>
+                            <i data-lucide="more-horizontal" style="width:16px; height:16px; color:#667085; cursor:pointer;"></i>
+                        </div>
+                        <div id="container-recent-activity" style="max-height:340px; overflow-y:auto; margin-top:12px;">
+                            <div style="color:#667085; font-size:0.85rem;">Loading activity stream...</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 5, 6, 7: Status Breakdown, Customer Analytics, Recent Activity Feed -->
-                <div class="admin-analytics-grid-2col">
-                    <div class="luxury-section-card">
-                        <div class="luxury-section-header">
-                            <h3><i class="fas fa-tasks" style="color:#ffd700;"></i> Order Status & Customer Funnel</h3>
-                        </div>
-                        <div id="container-status-customer-analytics">
-                            <div style="color:#aebdb4; font-size:0.88rem;">Loading status & customer data...</div>
-                        </div>
+                <!-- ROW 3: Full-Width Performance Summary Card -->
+                <div class="executive-card" style="margin-bottom:24px; padding:20px 24px;">
+                    <div class="executive-card-header" style="border-bottom:none; margin-bottom:12px; padding-bottom:0;">
+                        <h3 style="font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#1C1C1C; margin:0;">PERFORMANCE SUMMARY</h3>
                     </div>
-
-                    <div class="luxury-section-card">
-                        <div class="luxury-section-header">
-                            <h3><i class="fas fa-stream" style="color:#ffd700;"></i> Real-Time Activity Feed</h3>
-                            <span style="font-size:0.75rem; font-weight:600; color:#ffd700; background:rgba(255,215,0,0.12); padding:4px 12px; border-radius:12px; border:1px solid rgba(255,215,0,0.25);">Live Stream</span>
+                    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:24px; align-items:center;">
+                        <div style="display:flex; align-items:center; justify-content:space-between;">
+                            <div>
+                                <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:#667085; display:block;">REVENUE GROWTH</span>
+                                <div style="font-size:1.6rem; font-weight:800; color:#1C1C1C; margin-top:2px;">+28.4%</div>
+                                <span style="font-size:0.75rem; color:#667085;">vs last month</span>
+                            </div>
+                            <svg width="60" height="30" viewBox="0 0 60 30" fill="none"><path d="M2 24L15 18L30 22L45 10L58 4" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round"/></svg>
                         </div>
-                        <div id="container-recent-activity" style="max-height:380px; overflow-y:auto;">
-                            <div style="color:#aebdb4; font-size:0.88rem;">Loading live activity stream...</div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; border-left:1px solid #E7E3D8; padding-left:20px;">
+                            <div>
+                                <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:#667085; display:block;">AFFILIATE CONVERSION</span>
+                                <div style="font-size:1.6rem; font-weight:800; color:#1C1C1C; margin-top:2px;">12.6%</div>
+                                <span style="font-size:0.75rem; color:#667085;">Click to Sale Rate</span>
+                            </div>
+                            <svg width="60" height="30" viewBox="0 0 60 30" fill="none"><path d="M2 22L15 25L30 18L45 20L58 6" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round"/></svg>
+                        </div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; border-left:1px solid #E7E3D8; padding-left:20px;">
+                            <div>
+                                <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:#667085; display:block;">ORDER CONVERSION</span>
+                                <div style="font-size:1.6rem; font-weight:800; color:#1C1C1C; margin-top:2px;">18.7%</div>
+                                <span style="font-size:0.75rem; color:#667085;">Visit to Order Rate</span>
+                            </div>
+                            <svg width="60" height="30" viewBox="0 0 60 30" fill="none"><path d="M2 25L15 16L30 20L45 12L58 5" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round"/></svg>
+                        </div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; border-left:1px solid #E7E3D8; padding-left:20px;">
+                            <div>
+                                <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:#667085; display:block;">CUSTOMER RETENTION</span>
+                                <div style="font-size:1.6rem; font-weight:800; color:#1C1C1C; margin-top:2px;">64.3%</div>
+                                <span style="font-size:0.75rem; color:#667085;">Returning Customers</span>
+                            </div>
+                            <svg width="60" height="30" viewBox="0 0 60 30" fill="none"><path d="M2 20L15 24L30 15L45 18L58 8" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round"/></svg>
                         </div>
                     </div>
                 </div>

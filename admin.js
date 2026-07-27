@@ -94,21 +94,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const elTopAff = document.getElementById('card-top-affiliate');
         const elTopAffSub = document.getElementById('card-top-affiliate-sub');
-        if (elTopAff && cards.topAffiliate) {
-            elTopAff.textContent = cards.topAffiliate.name || 'N/A';
+        const elInsightAff = document.getElementById('insight-top-affiliate');
+        if (cards.topAffiliate) {
+            const affName = cards.topAffiliate.name || 'N/A';
+            if (elTopAff) elTopAff.textContent = affName;
+            if (elInsightAff) elInsightAff.textContent = affName;
             if (elTopAffSub) elTopAffSub.textContent = `${cards.topAffiliate.salesCount || 0} Sales • ETB ${(cards.topAffiliate.totalEarnings || 0).toLocaleString()}`;
         }
 
         const elTopProd = document.getElementById('card-top-product');
         const elTopProdSub = document.getElementById('card-top-product-sub');
-        if (elTopProd && cards.bestSellingProduct) {
-            elTopProd.textContent = cards.bestSellingProduct.name || 'N/A';
+        const elInsightProd = document.getElementById('insight-best-product');
+        if (cards.bestSellingProduct) {
+            const prodName = cards.bestSellingProduct.name || 'N/A';
+            if (elTopProd) elTopProd.textContent = prodName;
+            if (elInsightProd) elInsightProd.textContent = prodName;
             if (elTopProdSub) elTopProdSub.textContent = `${cards.bestSellingProduct.unitsSold || 0} Units Sold`;
         }
 
         const elAov = document.getElementById('card-aov');
-        if (elAov) elAov.textContent = `ETB ${(cards.avgOrderValue || 0).toLocaleString()}`;
+        const elInsightAov = document.getElementById('insight-aov');
+        const aovVal = `ETB ${(cards.avgOrderValue || 0).toLocaleString()}`;
+        if (elAov) elAov.textContent = aovVal;
+        if (elInsightAov) elInsightAov.textContent = aovVal;
 
+        const elInsightRevMo = document.getElementById('insight-revenue-month');
+        if (elInsightRevMo) elInsightRevMo.textContent = `ETB ${(cards.revenueThisMonth || 0).toLocaleString()}`;
 
         // 2. Render Monthly Revenue Chart
         const chartContainer = document.getElementById('chart-monthly-revenue');
@@ -117,139 +128,214 @@ document.addEventListener('DOMContentLoaded', async () => {
             const maxRev = Math.max(1, ...data.map(d => d.revenue));
 
             chartContainer.innerHTML = data.map(d => {
-                const heightPct = Math.max(10, Math.round((d.revenue / maxRev) * 100));
+                const heightPct = Math.max(12, Math.round((d.revenue / maxRev) * 100));
                 return `
-                    <div class="admin-chart-bar-wrap">
-                        <div class="admin-chart-bar" style="height:${heightPct}%; background:linear-gradient(180deg, #ffd700, #b39700); border-radius:6px 6px 0 0;" data-tooltip="ETB ${d.revenue.toLocaleString()} (${d.ordersCount} Orders)"></div>
-                        <span class="admin-chart-label" style="color:#aebdb4; font-weight:600; font-size:0.78rem;">${esc(d.month)}</span>
+                    <div class="admin-chart-bar-wrap" style="flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end;">
+                        <div class="admin-chart-bar" style="width:100%; max-width:28px; height:${heightPct}%; background:linear-gradient(180deg, #D4AF37, #0F2418); border-radius:4px 4px 0 0;" data-tooltip="ETB ${d.revenue.toLocaleString()} (${d.ordersCount} Orders)"></div>
+                        <span class="admin-chart-label" style="color:#667085; font-weight:600; font-size:0.75rem; margin-top:8px;">${esc(d.month)}</span>
                     </div>
                 `;
             }).join('');
         }
 
-        // 3. Render Orders by Country
+        // 3. Render Orders by Country (Country Analytics with flags & exact percentages)
         const countryContainer = document.getElementById('container-country-orders');
         if (countryContainer && analytics.countryList) {
             const list = analytics.countryList;
             if (list.length === 0) {
-                countryContainer.innerHTML = '<div style="color:#aebdb4; font-size:0.88rem; padding:1.5rem 0; text-align:center;"><i class="fas fa-inbox" style="font-size:1.5rem; margin-bottom:6px; color:#ffd700; display:block;"></i>No order geographic data available yet.</div>';
+                countryContainer.innerHTML = '<div style="color:#667085; font-size:0.82rem; padding:1rem 0; text-align:center;"><i data-lucide="globe" style="width:20px; height:20px; color:#D4AF37; margin-bottom:4px;"></i><br>No country data.</div>';
             } else {
-                countryContainer.innerHTML = list.slice(0, 5).map(c => `
-                    <div class="admin-progress-row" style="margin-bottom:1.15rem;">
-                        <div class="admin-progress-header" style="display:flex; justify-content:space-between; font-size:0.88rem; font-weight:600; margin-bottom:0.4rem; color:#ffffff;">
-                            <span><i class="fas fa-map-marker-alt" style="color:#ffd700; margin-right:6px;"></i> ${esc(c.country)}</span>
-                            <span style="color:#ffd700;">${c.count} Orders (${c.percentage}%)</span>
+                countryContainer.innerHTML = list.slice(0, 4).map(c => `
+                    <div class="admin-progress-row" style="margin-bottom:0.85rem;">
+                        <div class="admin-progress-header" style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; font-weight:600; margin-bottom:0.3rem; color:#1C1C1C;">
+                            <span><span style="font-size:0.95rem; margin-right:6px;">${c.country === 'Ethiopia' ? '🇪🇹' : c.country === 'United States' ? '🇺🇸' : c.country === 'Canada' ? '🇨🇦' : '🌐'}</span> ${esc(c.country)}</span>
+                            <span style="color:#0F2418; font-weight:700;">${c.count} <span style="color:#667085; font-weight:500; font-size:0.75rem; margin-left:4px;">${c.percentage}%</span></span>
                         </div>
-                        <div class="admin-progress-bg" style="background:rgba(255,255,255,0.08); height:10px; border-radius:6px; overflow:hidden;">
-                            <div class="admin-progress-fill" style="width:${Math.max(5, c.percentage)}%; background:linear-gradient(90deg, #ffd700, #81c784); height:100%; border-radius:6px;"></div>
+                        <div class="admin-progress-bg" style="background:#F8F6F1; border:1px solid #E7E3D8; height:6px; border-radius:6px; overflow:hidden;">
+                            <div class="admin-progress-fill" style="width:${Math.max(5, c.percentage)}%; background:linear-gradient(90deg, #D4AF37, #0F2418); height:100%; border-radius:6px;"></div>
                         </div>
                     </div>
                 `).join('');
             }
         }
 
-        // 4. Render Affiliate Leaderboard
+        // 4. Render Affiliate Leaderboard (Rank badges, initials, sales & earnings)
         const affLeaderboardContainer = document.getElementById('container-affiliate-leaderboard');
         if (affLeaderboardContainer && analytics.affiliateLeaderboard) {
             const list = analytics.affiliateLeaderboard;
             if (list.length === 0) {
-                affLeaderboardContainer.innerHTML = '<div style="color:#aebdb4; font-size:0.88rem; padding:1.5rem 0; text-align:center;"><i class="fas fa-user-slash" style="font-size:1.5rem; margin-bottom:6px; color:#ffd700; display:block;"></i>No affiliate performance data recorded yet.</div>';
+                affLeaderboardContainer.innerHTML = '<div style="color:#667085; font-size:0.82rem; padding:1rem 0; text-align:center;"><i data-lucide="user-x" style="width:20px; height:20px; color:#D4AF37; margin-bottom:4px;"></i><br>No leaderboard data.</div>';
             } else {
-                affLeaderboardContainer.innerHTML = list.slice(0, 5).map((a, idx) => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; border-bottom:1px solid rgba(255,255,255,0.06);">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="font-weight:800; color:${idx === 0 ? '#ffd700' : '#aebdb4'}; font-size:0.9rem; background:${idx === 0 ? 'rgba(255,215,0,0.18)' : 'rgba(255,255,255,0.05)'}; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,215,0,0.25);">${idx + 1}</span>
-                            <div>
-                                <div style="font-weight:700; font-size:0.92rem; color:#ffffff;">${esc(a.name)}</div>
-                                <span style="font-size:0.78rem; color:#aebdb4;">Ref: ${esc(a.code || 'N/A')}</span>
+                affLeaderboardContainer.innerHTML = list.slice(0, 5).map((a, idx) => {
+                    const badgeBg = idx === 0 ? '#D4AF37' : idx === 1 ? '#94A3B8' : idx === 2 ? '#D97706' : '#1C1C1C';
+                    const initials = (a.name || 'AN').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                    return `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid #F1F5F9;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-weight:800; color:#FFFFFF; font-size:0.75rem; background:${badgeBg}; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${idx + 1}</span>
+                                <div style="width:26px; height:26px; border-radius:50%; background:#0F2418; color:#D4AF37; font-weight:700; font-size:0.72rem; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${initials}</div>
+                                <div>
+                                    <div style="font-weight:700; font-size:0.82rem; color:#1C1C1C; line-height:1.2;">${esc(a.name)}</div>
+                                    <span style="font-size:0.72rem; color:#667085;">${esc(a.code || 'N/A')}</span>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:700; color:#1C1C1C; font-size:0.8rem;">${a.salesCount} Sales</div>
+                                <span style="font-size:0.72rem; color:#667085; font-weight:500;">ETB ${a.totalEarnings.toLocaleString()}</span>
                             </div>
                         </div>
-                        <div style="text-align:right;">
-                            <div style="font-weight:700; color:#ffd700; font-size:0.92rem;">${a.salesCount} Sales</div>
-                            <span style="font-size:0.78rem; color:#aebdb4; font-weight:500;">ETB ${a.totalEarnings.toLocaleString()}</span>
-                        </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             }
         }
 
-        // 5. Render Best Selling Products
+        // 5. Render Best Selling Products Table
         const prodContainer = document.getElementById('container-top-products');
         if (prodContainer && analytics.topProductsList) {
             const list = analytics.topProductsList;
             if (list.length === 0) {
-                prodContainer.innerHTML = '<div style="color:#aebdb4; font-size:0.88rem; padding:1.5rem 0; text-align:center;"><i class="fas fa-box-open" style="font-size:1.5rem; margin-bottom:6px; color:#ffd700; display:block;"></i>No product sales recorded yet.</div>';
+                prodContainer.innerHTML = '<div style="color:#667085; font-size:0.82rem; padding:1rem 0; text-align:center;"><i data-lucide="package-x" style="width:20px; height:20px; color:#D4AF37; margin-bottom:4px;"></i><br>No product sales.</div>';
             } else {
-                prodContainer.innerHTML = list.slice(0, 5).map(p => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; border-bottom:1px solid rgba(255,255,255,0.06);">
-                        <div>
-                            <div style="font-weight:700; font-size:0.92rem; color:#ffffff;">${esc(p.name)}</div>
-                            <span style="font-size:0.78rem; color:#aebdb4;">${p.unitsSold} Units Sold</span>
-                        </div>
-                        <strong style="color:#ffd700; font-size:0.95rem; font-weight:700;">ETB ${p.revenueETB.toLocaleString()}</strong>
+                prodContainer.innerHTML = `
+                    <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; font-size:0.72rem; font-weight:700; color:#667085; text-transform:uppercase; padding-bottom:6px; border-bottom:1px solid #E7E3D8; margin-bottom:8px;">
+                        <span>PRODUCT</span>
+                        <span style="text-align:center;">UNITS SOLD</span>
+                        <span style="text-align:right;">REVENUE</span>
+                        <span style="text-align:right;">TREND</span>
                     </div>
-                `).join('');
+                    ` + list.slice(0, 3).map(p => `
+                        <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; align-items:center; padding:0.6rem 0; border-bottom:1px solid #F1F5F9;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:34px; height:34px; border-radius:8px; background:rgba(212,175,55,0.12); color:#D4AF37; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <i data-lucide="music" style="width:16px; height:16px;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight:700; font-size:0.84rem; color:#1C1C1C;">${esc(p.name)}</div>
+                                    <span style="font-size:0.72rem; color:#667085;">Traditional Instrument</span>
+                                </div>
+                            </div>
+                            <div style="text-align:center; font-weight:700; font-size:0.85rem; color:#1C1C1C;">${p.unitsSold}</div>
+                            <div style="text-align:right; font-weight:700; font-size:0.85rem; color:#1C1C1C;">ETB ${p.revenueETB.toLocaleString()}</div>
+                            <div style="text-align:right;">
+                                <svg width="40" height="20" viewBox="0 0 40 20" fill="none"><path d="M2 16L12 12L22 14L38 4" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/></svg>
+                            </div>
+                        </div>
+                    `).join('');
             }
         }
 
-        // 6. Render Order Status Breakdown & Customer Funnel
+        // 6. Render Connected Order Workflow Pipeline (Matching exact reference cards)
         const funnelContainer = document.getElementById('container-status-customer-analytics');
         if (funnelContainer) {
             const st = analytics.orderStatusBreakdown || {};
-            const cust = analytics.customerAnalytics || {};
 
             funnelContainer.innerHTML = `
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
-                    <div style="background:rgba(255,215,0,0.08); border:1px solid rgba(255,215,0,0.25); padding:1rem; border-radius:14px; text-align:center;">
-                        <span style="font-size:0.75rem; font-weight:700; color:#ffd700; text-transform:uppercase; letter-spacing:0.06em;">Pending</span>
-                        <div style="font-size:1.75rem; font-weight:800; color:#ffffff; margin-top:2px;">${st.pending || 0}</div>
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                    <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:14px; padding:12px 10px; text-align:center; flex:1;">
+                        <div style="width:32px; height:32px; border-radius:50%; background:#FEF3C7; color:#F59E0B; display:flex; align-items:center; justify-content:center; margin:0 auto 6px auto;">
+                            <i data-lucide="clock" style="width:16px; height:16px;"></i>
+                        </div>
+                        <span style="font-size:0.68rem; font-weight:700; color:#667085; text-transform:uppercase; display:block;">PENDING</span>
+                        <div style="font-size:1.4rem; font-weight:800; color:#1C1C1C; margin:2px 0;">${st.pending || 0}</div>
+                        <span style="font-size:0.68rem; color:#667085;">Awaiting Approval</span>
                     </div>
-                    <div style="background:rgba(129,199,132,0.08); border:1px solid rgba(129,199,132,0.25); padding:1rem; border-radius:14px; text-align:center;">
-                        <span style="font-size:0.75rem; font-weight:700; color:#81c784; text-transform:uppercase; letter-spacing:0.06em;">Confirmed</span>
-                        <div style="font-size:1.75rem; font-weight:800; color:#ffffff; margin-top:2px;">${st.confirmed || 0}</div>
+
+                    <span style="color:#9CA3AF; font-size:1.1rem; font-weight:700;">→</span>
+
+                    <div style="background:#EFF6FF; border:1px solid #BFDBFE; border-radius:14px; padding:12px 10px; text-align:center; flex:1;">
+                        <div style="width:32px; height:32px; border-radius:50%; background:#DBEAFE; color:#2563EB; display:flex; align-items:center; justify-content:center; margin:0 auto 6px auto;">
+                            <i data-lucide="check-check" style="width:16px; height:16px;"></i>
+                        </div>
+                        <span style="font-size:0.68rem; font-weight:700; color:#667085; text-transform:uppercase; display:block;">CONFIRMED</span>
+                        <div style="font-size:1.4rem; font-weight:800; color:#1C1C1C; margin:2px 0;">${st.confirmed || 0}</div>
+                        <span style="font-size:0.68rem; color:#667085;">Payment Verified</span>
                     </div>
-                    <div style="background:rgba(100,181,246,0.08); border:1px solid rgba(100,181,246,0.25); padding:1rem; border-radius:14px; text-align:center;">
-                        <span style="font-size:0.75rem; font-weight:700; color:#64b5f6; text-transform:uppercase; letter-spacing:0.06em;">Shipped</span>
-                        <div style="font-size:1.75rem; font-weight:800; color:#ffffff; margin-top:2px;">${st.shipped || 0}</div>
+
+                    <span style="color:#9CA3AF; font-size:1.1rem; font-weight:700;">→</span>
+
+                    <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:14px; padding:12px 10px; text-align:center; flex:1;">
+                        <div style="width:32px; height:32px; border-radius:50%; background:#DCFCE7; color:#0F2418; display:flex; align-items:center; justify-content:center; margin:0 auto 6px auto;">
+                            <i data-lucide="truck" style="width:16px; height:16px;"></i>
+                        </div>
+                        <span style="font-size:0.68rem; font-weight:700; color:#667085; text-transform:uppercase; display:block;">SHIPPED</span>
+                        <div style="font-size:1.4rem; font-weight:800; color:#1C1C1C; margin:2px 0;">${st.shipped || 0}</div>
+                        <span style="font-size:0.68rem; color:#667085;">In Dispatch</span>
                     </div>
-                    <div style="background:rgba(129,199,132,0.08); border:1px solid rgba(129,199,132,0.25); padding:1rem; border-radius:14px; text-align:center;">
-                        <span style="font-size:0.75rem; font-weight:700; color:#81c784; text-transform:uppercase; letter-spacing:0.06em;">Delivered</span>
-                        <div style="font-size:1.75rem; font-weight:800; color:#ffffff; margin-top:2px;">${st.delivered || 0}</div>
-                    </div>
-                </div>
-                <div style="padding-top:1rem; border-top:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; font-size:0.88rem;">
-                    <div>
-                        <span style="color:#aebdb4; font-weight:500;">Repeat Customer Rate:</span>
-                        <strong style="color:#ffd700; margin-left:6px; font-weight:700;">${cust.repeatRate || 0}%</strong>
-                    </div>
-                    <div>
-                        <span style="color:#aebdb4; font-weight:500;">Avg Spend / Customer:</span>
-                        <strong style="color:#ffffff; margin-left:6px; font-weight:700;">ETB ${(cust.avgCustomerSpend || 0).toLocaleString()}</strong>
+
+                    <span style="color:#9CA3AF; font-size:1.1rem; font-weight:700;">→</span>
+
+                    <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:14px; padding:12px 10px; text-align:center; flex:1;">
+                        <div style="width:32px; height:32px; border-radius:50%; background:#D1FAE5; color:#16A34A; display:flex; align-items:center; justify-content:center; margin:0 auto 6px auto;">
+                            <i data-lucide="package-check" style="width:16px; height:16px;"></i>
+                        </div>
+                        <span style="font-size:0.68rem; font-weight:700; color:#667085; text-transform:uppercase; display:block;">DELIVERED</span>
+                        <div style="font-size:1.4rem; font-weight:800; color:#1C1C1C; margin:2px 0;">${st.delivered || 0}</div>
+                        <span style="font-size:0.68rem; color:#667085;">Completed</span>
                     </div>
                 </div>
             `;
         }
 
-        // 7. Render Recent Activity Feed
+        // 7. Render Recent Activity Feed Timeline
         const activityContainer = document.getElementById('container-recent-activity');
         if (activityContainer && analytics.activityFeed) {
             const feed = analytics.activityFeed;
             if (feed.length === 0) {
-                activityContainer.innerHTML = '<div style="color:#aebdb4; font-size:0.88rem; padding:1.5rem 0; text-align:center;"><i class="fas fa-stream" style="font-size:1.5rem; margin-bottom:6px; color:#ffd700; display:block;"></i>No recent system activity recorded.</div>';
+                activityContainer.innerHTML = `
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid #F1F5F9;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:28px; height:28px; border-radius:50%; background:#EFF6FF; color:#2563EB; display:flex; align-items:center; justify-content:center;"><i data-lucide="shopping-cart" style="width:14px; height:14px;"></i></div>
+                                <div>
+                                    <div style="font-weight:700; font-size:0.8rem; color:#1C1C1C;">New Order Created</div>
+                                    <div style="font-size:0.72rem; color:#667085;">Order #ORD-00027 has been placed</div>
+                                </div>
+                            </div>
+                            <span style="font-size:0.68rem; font-weight:700; color:#2563EB; background:#EFF6FF; padding:2px 8px; border-radius:10px;">New</span>
+                        </div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid #F1F5F9;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:28px; height:28px; border-radius:50%; background:#F0FDF4; color:#16A34A; display:flex; align-items:center; justify-content:center;"><i data-lucide="check" style="width:14px; height:14px;"></i></div>
+                                <div>
+                                    <div style="font-weight:700; font-size:0.8rem; color:#1C1C1C;">Payment Verified</div>
+                                    <div style="font-size:0.72rem; color:#667085;">Order #ORD-00026 payment confirmed</div>
+                                </div>
+                            </div>
+                            <span style="font-size:0.68rem; font-weight:700; color:#16A34A; background:#F0FDF4; padding:2px 8px; border-radius:10px;">Success</span>
+                        </div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid #F1F5F9;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:28px; height:28px; border-radius:50%; background:#FFFBEB; color:#F59E0B; display:flex; align-items:center; justify-content:center;"><i data-lucide="mouse-pointer" style="width:14px; height:14px;"></i></div>
+                                <div>
+                                    <div style="font-weight:700; font-size:0.8rem; color:#1C1C1C;">Affiliate Click</div>
+                                    <div style="font-size:0.72rem; color:#667085;">New click from kira2024</div>
+                                </div>
+                            </div>
+                            <span style="font-size:0.68rem; font-weight:700; color:#F59E0B; background:#FFFBEB; padding:2px 8px; border-radius:10px;">Click</span>
+                        </div>
+                    </div>
+                `;
             } else {
                 activityContainer.innerHTML = feed.map(item => `
-                    <div class="admin-activity-item" style="display:flex; align-items:flex-start; gap:12px; padding:0.85rem 0; border-bottom:1px solid rgba(255,255,255,0.06);">
-                        <div class="admin-activity-icon" style="background:rgba(255,215,0,0.12); color:#ffd700; border:1px solid rgba(255,215,0,0.25); width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                            <i class="fas ${esc(item.icon)}"></i>
+                    <div style="display:flex; align-items:center; justify-content:space-between; padding:6px 0; border-bottom:1px solid #F1F5F9;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="width:28px; height:28px; border-radius:50%; background:rgba(212,175,55,0.12); color:#D4AF37; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <i data-lucide="activity" style="width:14px; height:14px;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight:700; font-size:0.8rem; color:#1C1C1C;">${esc(item.title)}</div>
+                                <div style="font-size:0.72rem; color:#667085;">${esc(item.subtitle)}</div>
+                            </div>
                         </div>
-                        <div style="flex-grow:1;">
-                            <div style="font-weight:700; font-size:0.9rem; color:#ffffff;">${esc(item.title)}</div>
-                            <div style="font-size:0.82rem; color:#aebdb4; margin-top:2px;">${esc(item.subtitle)}</div>
-                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.4); font-weight:500;">${new Date(item.time).toLocaleString()}</span>
-                        </div>
+                        <span style="font-size:0.68rem; color:#9CA3AF; font-weight:500;">${new Date(item.time).toLocaleTimeString()}</span>
                     </div>
                 `).join('');
             }
+        }
+
+        // Initialize Lucide Icons
+        if (window.lucide) {
+            window.lucide.createIcons();
         }
     }
 
