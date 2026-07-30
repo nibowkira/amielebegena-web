@@ -2894,6 +2894,980 @@ img {
 .wa-modal-btn.confirm:hover {
     background: #ffe240;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
 }
 
+/* ============================================================================
+   CUSTOMER DASHBOARD — WORLD CLASS DESIGN SYSTEM
+   ============================================================================ */
+
+:root {
+    --dash-ivory: #F8F6F1;
+    --dash-white: #FFFFFF;
+    --dash-forest: #0F2418;
+    --dash-gold: #D4AF37;
+    --dash-gold-light: rgba(212, 175, 55, 0.12);
+    --dash-charcoal: #1C1C1C;
+    --dash-border: #E7E3D8;
+    --dash-muted: #6E7571;
+    --dash-radius: 18px;
+    --dash-shadow: 0 6px 20px rgba(15, 36, 24, 0.05);
+    --dash-shadow-hover: 0 12px 30px rgba(15, 36, 24, 0.1);
+    --dash-transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dashboard-wrapper {
+    background-color: var(--dash-ivory);
+    min-height: 100vh;
+    padding: 2rem 1.5rem 4rem;
+}
+
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────────────── */
+.dashboard-sidebar {
+    background: var(--dash-white);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 24px 16px;
+    box-shadow: var(--dash-shadow);
+    position: sticky;
+    top: 100px;
+}
+
+.dash-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dash-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--dash-charcoal);
+    cursor: pointer;
+    transition: var(--dash-transition);
+    user-select: none;
+}
+
+.dash-nav-item i {
+    font-size: 1.1rem;
+    color: var(--dash-muted);
+    width: 20px;
+    text-align: center;
+    transition: var(--dash-transition);
+}
+
+.dash-nav-item:hover {
+    background: rgba(15, 36, 24, 0.04);
+    color: var(--dash-forest);
+}
+
+.dash-nav-item:hover i {
+    color: var(--dash-forest);
+}
+
+.dash-nav-item.active {
+    background: var(--dash-forest);
+    color: #FFFFFF;
+}
+
+.dash-nav-item.active i {
+    color: var(--dash-gold);
+}
+
+.dash-nav-divider {
+    height: 1px;
+    background: var(--dash-border);
+    margin: 12px 6px;
+}
+
+/* ── MAIN CONTENT AREA ─────────────────────────────────────────────────── */
+.dashboard-main {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* ── HERO PROFILE CARD ──────────────────────────────────────────────────── */
+.dash-hero-card {
+    background: var(--dash-white);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 28px 32px;
+    box-shadow: var(--dash-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.dash-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--dash-forest), var(--dash-gold));
+}
+
+.dash-hero-left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.dash-avatar-wrapper {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    flex-shrink: 0;
+}
+
+.dash-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--dash-forest);
+    color: var(--dash-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    font-family: 'Cormorant Garamond', serif;
+    border: 3px solid var(--dash-white);
+    box-shadow: 0 4px 14px rgba(15, 36, 24, 0.15);
+    background-size: cover;
+    background-position: center;
+}
+
+.dash-avatar-upload-btn {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--dash-gold);
+    color: var(--dash-forest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: 2px solid var(--dash-white);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: var(--dash-transition);
+}
+
+.dash-avatar-upload-btn:hover {
+    transform: scale(1.1);
+    background: #E5C158;
+}
+
+.dash-user-details h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dash-forest);
+    margin: 0 0 6px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dash-badge-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--dash-gold-light);
+    color: #9E7D1A;
+    font-size: 0.75rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.dash-user-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 0.88rem;
+    color: var(--dash-muted);
+}
+
+.dash-user-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dash-hero-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+    min-width: 220px;
+}
+
+.dash-completion-box {
+    width: 100%;
+    background: var(--dash-ivory);
+    border: 1px solid var(--dash-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+}
+
+.dash-completion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--dash-forest);
+    margin-bottom: 6px;
+}
+
+.dash-completion-bar {
+    height: 6px;
+    background: var(--dash-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dash-completion-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--dash-forest), var(--dash-gold));
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+/* ── KPI STAT CARDS GRID ────────────────────────────────────────────────── */
+.dash-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.dash-stat-card {
+    background: var(--dash-white);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 22px 24px;
+    box-shadow: var(--dash-shadow);
+    transition: var(--dash-transition);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.dash-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--dash-shadow-hover);
+    border-color: var(--dash-gold);
+}
+
+.dash-stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.dash-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(15, 36, 24, 0.05);
+    color: var(--dash-forest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    transition: var(--dash-transition);
+}
+
+.dash-stat-card:hover .dash-stat-icon {
+    background: var(--dash-forest);
+    color: var(--dash-gold);
+}
+
+.dash-stat-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--dash-muted);
+}
+
+.dash-stat-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--dash-forest);
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+
+.dash-stat-desc {
+    font-size: 0.82rem;
+    color: var(--dash-muted);
+}
+
+/* ── CURRENT ORDER TRACKER SPOTLIGHT ────────────────────────────────────── */
+.dash-tracker-card {
+    background: var(--dash-white);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 28px 32px;
+    box-shadow: var(--dash-shadow);
+}
+
+.dash-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.dash-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--dash-forest);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dash-section-title i {
+    color: var(--dash-gold);
+    font-size: 1.3rem;
+}
+
+.dash-order-spotlight {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.dash-order-info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed var(--dash-border);
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.dash-order-product-meta {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.dash-order-img {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid var(--dash-border);
+}
+
+.dash-order-details-meta h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--dash-forest);
+    margin: 0 0 4px 0;
+}
+
+.dash-order-subtext {
+    font-size: 0.85rem;
+    color: var(--dash-muted);
+}
+
+.dash-order-actions-meta {
+    display: flex;
+    gap: 12px;
+}
+
+/* ── FULFILLMENT TIMELINE ───────────────────────────────────────────────── */
+.dash-timeline-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: relative;
+    padding: 20px 10px 10px;
+}
+
+.dash-timeline-line {
+    position: absolute;
+    top: 36px;
+    left: 40px;
+    right: 40px;
+    height: 3px;
+    background: var(--dash-border);
+    z-index: 1;
+}
+
+.dash-timeline-progress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--dash-forest), var(--dash-gold));
+    transition: width 0.5s ease;
+}
+
+.dash-timeline-step {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+}
+
+.dash-step-dot {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--dash-white);
+    border: 2px solid var(--dash-border);
+    color: var(--dash-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    transition: var(--dash-transition);
+}
+
+.dash-timeline-step.completed .dash-step-dot {
+    background: var(--dash-forest);
+    border-color: var(--dash-forest);
+    color: var(--dash-gold);
+}
+
+.dash-timeline-step.active .dash-step-dot {
+    background: var(--dash-gold);
+    border-color: var(--dash-gold);
+    color: var(--dash-forest);
+    box-shadow: 0 0 0 6px var(--dash-gold-light);
+    animation: pulseStep 2s infinite;
+}
+
+@keyframes pulseStep {
+    0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+}
+
+.dash-step-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--dash-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.dash-timeline-step.completed .dash-step-label,
+.dash-timeline-step.active .dash-step-label {
+    color: var(--dash-forest);
+}
+
+/* ── RECENT NOTIFICATIONS SECTION ────────────────────────────────────────── */
+.dash-notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dash-notification-item {
+    background: var(--dash-white);
+    border: 1px solid var(--dash-border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: var(--dash-transition);
+}
+
+.dash-notification-item:hover {
+    border-color: var(--dash-gold);
+    box-shadow: var(--dash-shadow);
+}
+
+.dash-notif-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--dash-gold-light);
+    color: var(--dash-forest);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.dash-notif-body {
+    flex: 1;
+}
+
+.dash-notif-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--dash-forest);
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dash-notif-unread-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--dash-gold);
+    display: inline-block;
+}
+
+.dash-notif-msg {
+    font-size: 0.85rem;
+    color: var(--dash-muted);
+}
+
+.dash-notif-time {
+    font-size: 0.78rem;
+    color: var(--dash-muted);
+    flex-shrink: 0;
+}
+
+/* ── RECENT ORDERS TABLE ─────────────────────────────────────────────────── */
+.dash-orders-table-wrapper {
+    background: var(--dash-white);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 24px;
+    box-shadow: var(--dash-shadow);
+    overflow-x: auto;
+}
+
+.dash-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.dash-table th {
+    padding: 14px 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--dash-muted);
+    border-bottom: 1px solid var(--dash-border);
+}
+
+.dash-table td {
+    padding: 18px 16px;
+    border-bottom: 1px solid var(--dash-ivory);
+    vertical-align: middle;
+}
+
+.dash-table tr:hover td {
+    background: var(--dash-ivory);
+}
+
+.dash-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.dash-status-badge.pending { background: #FFF9E6; color: #B7791F; border: 1px solid #FEEBC8; }
+.dash-status-badge.verified { background: #EBF8FF; color: #2B6CB0; border: 1px solid #BEE3F8; }
+.dash-status-badge.preparing { background: #EBF8FF; color: #2B6CB0; border: 1px solid #BEE3F8; }
+.dash-status-badge.crafting { background: #FAF5FF; color: #6B46C1; border: 1px solid #E9D8FD; }
+.dash-status-badge.packed { background: #F0FFF4; color: #276749; border: 1px solid #C6F6D5; }
+.dash-status-badge.shipped { background: #F0FFF4; color: #2F855A; border: 1px solid #C6F6D5; }
+.dash-status-badge.delivered { background: #E6FFFA; color: #234E52; border: 1px solid #B2F5EA; }
+.dash-status-badge.cancelled { background: #FFF5F5; color: #C53030; border: 1px solid #FEB2B2; }
+
+/* ── WISHLIST GRID ───────────────────────────────────────────────────────── */
+.dash-wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.dash-wishlist-card {
+    background: var(--dash-white);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    overflow: hidden;
+    box-shadow: var(--dash-shadow);
+    transition: var(--dash-transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.dash-wishlist-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--dash-shadow-hover);
+    border-color: var(--dash-gold);
+}
+
+.dash-wishlist-img {
+    height: 180px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.dash-wishlist-body {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+}
+
+.dash-wishlist-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--dash-forest);
+    margin: 0;
+}
+
+.dash-wishlist-price {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dash-gold);
+}
+
+/* ── CULTURAL IMPACT SECTION ────────────────────────────────────────────── */
+.dash-cultural-card {
+    background: linear-gradient(135deg, var(--dash-forest) 0%, #1A3C2A 100%);
+    border-radius: var(--dash-radius);
+    padding: 36px 40px;
+    color: #FFFFFF;
+    box-shadow: 0 10px 30px rgba(15, 36, 24, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.dash-cultural-card::after {
+    content: 'ዓሚኤል';
+    position: absolute;
+    right: -20px;
+    bottom: -30px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 10rem;
+    opacity: 0.05;
+    color: var(--dash-gold);
+    pointer-events: none;
+}
+
+.dash-cultural-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin: 28px 0 20px 0;
+}
+
+.dash-cultural-stat-box {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+}
+
+.dash-cultural-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--dash-gold);
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.dash-cultural-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── SHIPPING ADDRESSES GRID ────────────────────────────────────────────── */
+.dash-address-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.dash-address-card {
+    background: var(--dash-white);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 24px;
+    box-shadow: var(--dash-shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+}
+
+.dash-address-card.default {
+    border-color: var(--dash-gold);
+}
+
+.dash-address-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--dash-gold-light);
+    color: #9E7D1A;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+}
+
+.dash-address-add-btn {
+    border: 2px dashed var(--dash-border);
+    background: transparent;
+    border-radius: var(--dash-radius);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--dash-muted);
+    cursor: pointer;
+    transition: var(--dash-transition);
+}
+
+.dash-address-add-btn:hover {
+    border-color: var(--dash-gold);
+    color: var(--dash-forest);
+    background: var(--dash-white);
+}
+
+/* ── AFFILIATE DASHBOARD SECTION ────────────────────────────────────────── */
+.dash-affiliate-card {
+    background: var(--dash-white);
+    border: 1px solid var(--dash-border);
+    border-radius: var(--dash-radius);
+    padding: 28px 32px;
+    box-shadow: var(--dash-shadow);
+}
+
+/* ── ELEGANT EMPTY STATES ────────────────────────────────────────────────── */
+.dash-empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    background: var(--dash-white);
+    border: 1px dashed var(--dash-border);
+    border-radius: var(--dash-radius);
+}
+
+.dash-empty-icon {
+    font-size: 3rem;
+    color: var(--dash-muted);
+    margin-bottom: 16px;
+    opacity: 0.6;
+}
+
+.dash-empty-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--dash-forest);
+    margin-bottom: 6px;
+}
+
+.dash-empty-text {
+    font-size: 0.9rem;
+    color: var(--dash-muted);
+    max-width: 400px;
+    margin: 0 auto 20px auto;
+}
+
+/* ── BUTTON UTILITIES ───────────────────────────────────────────────────── */
+.dash-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--dash-transition);
+    border: none;
+    text-decoration: none;
+}
+
+.dash-btn-primary {
+    background: var(--dash-forest);
+    color: #FFFFFF;
+}
+
+.dash-btn-primary:hover {
+    background: #153826;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 36, 24, 0.2);
+}
+
+.dash-btn-gold {
+    background: var(--dash-gold);
+    color: var(--dash-forest);
+}
+
+.dash-btn-gold:hover {
+    background: #E5C158;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+}
+
+.dash-btn-outline {
+    background: transparent;
+    border: 1px solid var(--dash-border);
+    color: var(--dash-forest);
+}
+
+.dash-btn-outline:hover {
+    border-color: var(--dash-forest);
+    background: rgba(15, 36, 24, 0.03);
+}
+
+/* ── RESPONSIVE BREAKPOINTS ─────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-sidebar {
+        position: relative;
+        top: 0;
+    }
+
+    .dash-nav-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scrollbar-width: none;
+    }
+
+    .dash-nav-list::-webkit-scrollbar {
+        display: none;
+    }
+
+    .dash-nav-item {
+        white-space: nowrap;
+    }
+
+    .dash-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-wishlist-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-wrapper {
+        padding: 1rem 1rem 3rem;
+    }
+
+    .dash-hero-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dash-hero-right {
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .dash-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-wishlist-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-cultural-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-address-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-timeline-container {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .dash-timeline-line {
+        display: none;
+    }
+
+    .dash-timeline-step {
+        flex-direction: row;
+        gap: 12px;
+    }
+
+    .dash-step-dot {
+        margin-bottom: 0;
+    }
+}

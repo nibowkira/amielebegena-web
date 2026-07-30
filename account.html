@@ -11,7 +11,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Account - amielebegena</title>
+    <title>Customer Dashboard — Amiele Begena</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
+    <!-- Navbar -->
     <header class="navbar">
         <div class="nav-left">
             <a href="index.html" style="text-decoration:none;"><span class="logo">ዓሚኤል በገና</span></a>
@@ -37,17 +38,19 @@
                 <option value="EUR">EUR</option>
             </select>
 
+            <div id="notification-bell-mount"></div>
 
             <button id="cart-button" class="icon-btn" aria-label="Shopping Cart">
                 🛒
                 <span class="cart-count">0</span>
             </button>
-            <a href="account.html" class="icon-btn" style="text-decoration:none;" aria-label="User Account">👤</a>
+            <a href="account.html" class="icon-btn" style="text-decoration:none; color: var(--dash-gold);" aria-label="User Account">👤</a>
             <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
                 <span></span><span></span><span></span>
             </button>
         </div>
     </header>
+
     <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
     <nav class="mobile-nav" id="mobile-nav">
         <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">&times;</button>
@@ -58,149 +61,358 @@
         <a href="track-order.html">Track Order</a>
     </nav>
 
-    <main class="account-page-wrapper">
-        <div class="account-header-top">
-            <span class="section-subtitle">CURATOR WORKSPACE</span>
-            <h1>Your Account.</h1>
-        </div>
+    <!-- Main Customer Dashboard -->
+    <main class="dashboard-wrapper">
+        <div class="dashboard-container">
+            <!-- Sidebar Navigation -->
+            <aside class="dashboard-sidebar">
+                <ul class="dash-nav-list">
+                    <li class="dash-nav-item active" data-tab="dashboard" onclick="switchDashTab('dashboard')">
+                        <i class="fa-solid fa-house"></i> Dashboard
+                    </li>
+                    <li class="dash-nav-item" data-tab="orders" onclick="switchDashTab('orders')">
+                        <i class="fa-solid fa-box"></i> Orders
+                    </li>
+                    <li class="dash-nav-item" data-tab="tracker" onclick="switchDashTab('tracker')">
+                        <i class="fa-solid fa-truck-fast"></i> Track Active Order
+                    </li>
+                    <li class="dash-nav-item" data-tab="wishlist" onclick="switchDashTab('wishlist')">
+                        <i class="fa-solid fa-heart"></i> Saved Wishlist
+                    </li>
+                    <li class="dash-nav-item" data-tab="notifications" onclick="switchDashTab('notifications')">
+                        <i class="fa-solid fa-bell"></i> Notifications
+                    </li>
+                    <li class="dash-nav-item" data-tab="addresses" onclick="switchDashTab('addresses')">
+                        <i class="fa-solid fa-location-dot"></i> Shipping Addresses
+                    </li>
+                    <li class="dash-nav-item" data-tab="impact" onclick="switchDashTab('impact')">
+                        <i class="fa-solid fa-seedling"></i> Cultural Impact
+                    </li>
+                    <li class="dash-nav-item" id="nav-affiliate-tab" style="display: none;" data-tab="affiliate" onclick="switchDashTab('affiliate')">
+                        <i class="fa-solid fa-chart-line"></i> Affiliate Portal
+                    </li>
+                    
+                    <div class="dash-nav-divider"></div>
 
-        <div class="account-container">
-            <aside class="account-sidebar">
-                <ul class="sidebar-nav">
-                    <li id="nav-details" class="active" onclick="switchAccountTab('details')">Account Details</li>
-                    <li id="nav-orders" onclick="switchAccountTab('orders')">Order History</li>
-                    <li id="nav-saved" onclick="switchAccountTab('saved')">Saved Items</li>
-                    <li id="nav-impact" onclick="switchAccountTab('impact')">Cultural Impact</li>
-                    <li id="nav-shipping" onclick="switchAccountTab('shipping')">Shipping Addresses</li>
-                    <li id="nav-affiliate-portal" style="display:none; font-weight:600; color:var(--dark-green);">Affiliate Dashboard</li>
+                    <li class="dash-nav-item" data-tab="settings" onclick="switchDashTab('settings')">
+                        <i class="fa-solid fa-gear"></i> Settings
+                    </li>
+                    <li class="dash-nav-item" id="dash-logout-btn" style="color: #C53030;">
+                        <i class="fa-solid fa-right-from-bracket" style="color: #C53030;"></i> Log Out
+                    </li>
                 </ul>
-                <div class="archivist-level-card">
-                    <span class="level-label">ARCHIVIST LEVEL</span>
-                    <h3>Master Artisan</h3>
-                    <p>You've preserved 12 units of musical heritage this year.</p>
-                    <div class="progress-bar-placeholder"></div>
-                </div>
             </aside>
 
-            <section class="account-main">
-                <div id="sec-details" class="account-tab-content active">
-                    <div class="account-section">
-                        <h2>Account Details</h2>
-                        <form class="account-form">
-                            <div class="profile-avatar-section" style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem;">
-                                <div id="profile-avatar-display" style="width: 80px; height: 80px; border-radius: 50%; background: var(--dark-green); color: white; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 600; text-transform: uppercase; background-size: cover; background-position: center; border: 1px solid rgba(0,0,0,0.1);">
-                                    -
+            <!-- Main Content Container -->
+            <div class="dashboard-main">
+
+                <!-- SECTION 1: MAIN DASHBOARD OVERVIEW -->
+                <div id="sec-dashboard" class="dash-tab-content">
+                    <!-- Hero Profile Card -->
+                    <div class="dash-hero-card">
+                        <div class="dash-hero-left">
+                            <div class="dash-avatar-wrapper">
+                                <div id="dash-avatar-display" class="dash-avatar">-</div>
+                                <label for="dash-avatar-input" class="dash-avatar-upload-btn" title="Upload New Avatar">
+                                    <i class="fa-solid fa-camera"></i>
+                                </label>
+                                <input type="file" id="dash-avatar-input" accept="image/*" style="display: none;">
+                            </div>
+                            <div class="dash-user-details">
+                                <h2>
+                                    <span id="dash-user-name">Loading Profile...</span>
+                                    <span class="dash-badge-verified"><i class="fa-solid fa-shield-check"></i> Verified</span>
+                                </h2>
+                                <div class="dash-user-meta">
+                                    <span class="dash-user-meta-item"><i class="fa-solid fa-envelope"></i> <span id="dash-user-email">-</span></span>
+                                    <span class="dash-user-meta-item"><i class="fa-solid fa-id-card"></i> ID: <strong id="dash-user-id">-</strong></span>
+                                    <span class="dash-user-meta-item"><i class="fa-solid fa-calendar-days"></i> Member since <span id="dash-user-joined">-</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dash-hero-right">
+                            <button type="button" class="dash-btn dash-btn-outline" onclick="switchDashTab('settings')">
+                                <i class="fa-solid fa-pen"></i> Edit Profile
+                            </button>
+                            <div class="dash-completion-box">
+                                <div class="dash-completion-header">
+                                    <span>Profile Completion</span>
+                                    <span id="dash-completion-pct">85%</span>
+                                </div>
+                                <div class="dash-completion-bar">
+                                    <div id="dash-completion-fill" class="dash-completion-fill" style="width: 85%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4 KPI Stat Cards Grid -->
+                    <div class="dash-kpi-grid">
+                        <div class="dash-stat-card" onclick="switchDashTab('orders')" style="cursor: pointer;">
+                            <div class="dash-stat-header">
+                                <span class="dash-stat-title">Total Orders</span>
+                                <div class="dash-stat-icon"><i class="fa-solid fa-box"></i></div>
+                            </div>
+                            <div id="kpi-orders-count" class="dash-stat-number">0</div>
+                            <div class="dash-stat-desc">Lifetime orders placed</div>
+                        </div>
+
+                        <div class="dash-stat-card" onclick="switchDashTab('tracker')" style="cursor: pointer;">
+                            <div class="dash-stat-header">
+                                <span class="dash-stat-title">Active Orders</span>
+                                <div class="dash-stat-icon" style="background: rgba(212, 175, 55, 0.15); color: var(--dash-gold);"><i class="fa-solid fa-truck-fast"></i></div>
+                            </div>
+                            <div id="kpi-active-count" class="dash-stat-number">0</div>
+                            <div class="dash-stat-desc">Currently in craftsmanship</div>
+                        </div>
+
+                        <div class="dash-stat-card" onclick="switchDashTab('wishlist')" style="cursor: pointer;">
+                            <div class="dash-stat-header">
+                                <span class="dash-stat-title">Saved Items</span>
+                                <div class="dash-stat-icon"><i class="fa-solid fa-heart"></i></div>
+                            </div>
+                            <div id="kpi-wishlist-count" class="dash-stat-number">0</div>
+                            <div class="dash-stat-desc">In your wish list</div>
+                        </div>
+
+                        <div class="dash-stat-card" onclick="switchDashTab('notifications')" style="cursor: pointer;">
+                            <div class="dash-stat-header">
+                                <span class="dash-stat-title">Unread Alerts</span>
+                                <div class="dash-stat-icon"><i class="fa-solid fa-bell"></i></div>
+                            </div>
+                            <div id="kpi-notifications-count" class="dash-stat-number">0</div>
+                            <div class="dash-stat-desc">Real-time update alerts</div>
+                        </div>
+                    </div>
+
+                    <!-- Current Order Spotlight -->
+                    <div class="dash-tracker-card">
+                        <div class="dash-section-header">
+                            <h3 class="dash-section-title"><i class="fa-solid fa-compass"></i> Current Order Tracker</h3>
+                            <button type="button" class="dash-btn dash-btn-outline" onclick="switchDashTab('orders')">All History</button>
+                        </div>
+
+                        <div id="spotlight-order-container">
+                            <div class="dash-empty-state">
+                                <i class="fa-solid fa-box-open dash-empty-icon"></i>
+                                <div class="dash-empty-title">No Active Orders</div>
+                                <div class="dash-empty-text">You don't have any orders in craftsmanship right now. Explore our authentic Ethiopian instrument collection.</div>
+                                <a href="products.html" class="dash-btn dash-btn-gold"><i class="fa-solid fa-store"></i> Explore Collection</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Notifications Spotlight -->
+                    <div class="dash-tracker-card">
+                        <div class="dash-section-header">
+                            <h3 class="dash-section-title"><i class="fa-solid fa-bell"></i> Recent Notifications</h3>
+                            <a href="notifications.html" class="dash-btn dash-btn-outline">Notification Center</a>
+                        </div>
+                        <div id="recent-notifications-container" class="dash-notifications-list">
+                            <p style="color: var(--dash-muted); font-size: 0.9rem;">Loading notifications...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: ORDERS HISTORY -->
+                <div id="sec-orders" class="dash-tab-content" style="display: none;">
+                    <div class="dash-tracker-card">
+                        <div class="dash-section-header">
+                            <h3 class="dash-section-title"><i class="fa-solid fa-box-archive"></i> Order History</h3>
+                            <span style="color: var(--dash-muted); font-size: 0.85rem;" id="orders-total-badge">0 Orders</span>
+                        </div>
+                        <div class="dash-orders-table-wrapper">
+                            <table class="dash-table">
+                                <thead>
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Product</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Total</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-orders-tbody">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: var(--dash-muted); padding: 30px;">Loading order history...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: TRACK ACTIVE ORDER -->
+                <div id="sec-tracker" class="dash-tab-content" style="display: none;">
+                    <div class="dash-tracker-card">
+                        <div class="dash-section-header">
+                            <h3 class="dash-section-title"><i class="fa-solid fa-route"></i> Craftsmanship & Shipping Timeline</h3>
+                        </div>
+                        <div id="full-tracker-container">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: SAVED WISHLIST -->
+                <div id="sec-wishlist" class="dash-tab-content" style="display: none;">
+                    <div class="dash-tracker-card">
+                        <div class="dash-section-header">
+                            <h3 class="dash-section-title"><i class="fa-solid fa-heart"></i> Saved Wishlist</h3>
+                        </div>
+                        <div id="dash-wishlist-container" class="dash-wishlist-grid">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 5: NOTIFICATIONS -->
+                <div id="sec-notifications" class="dash-tab-content" style="display: none;">
+                    <div class="dash-tracker-card">
+                        <div class="dash-section-header">
+                            <h3 class="dash-section-title"><i class="fa-solid fa-bell"></i> Real-Time Notifications</h3>
+                            <a href="notifications.html" class="dash-btn dash-btn-gold">Open Full Center</a>
+                        </div>
+                        <div id="full-notifications-container" class="dash-notifications-list">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 6: SHIPPING ADDRESSES -->
+                <div id="sec-addresses" class="dash-tab-content" style="display: none;">
+                    <div class="dash-tracker-card">
+                        <div class="dash-section-header">
+                            <h3 class="dash-section-title"><i class="fa-solid fa-location-dot"></i> Shipping Addresses</h3>
+                            <button type="button" class="dash-btn dash-btn-primary" onclick="showAddAddressModal()"><i class="fa-solid fa-plus"></i> Add Address</button>
+                        </div>
+                        <div class="dash-address-grid">
+                            <div class="dash-address-card default">
+                                <span class="dash-address-badge">Default</span>
+                                <div>
+                                    <strong style="font-size: 1.1rem; color: var(--dash-forest);" id="addr-name">Primary Shipping Address</strong>
+                                    <p style="color: var(--dash-muted); margin: 8px 0 0 0; font-size: 0.9rem; line-height: 1.5;" id="addr-details">
+                                        Mexico Square, Kirkos Sub-City<br>
+                                        Addis Ababa, Ethiopia<br>
+                                        Phone: +251 96 426 1817
+                                    </p>
+                                </div>
+                                <div style="display: flex; gap: 10px; margin-top: 12px;">
+                                    <button type="button" class="dash-btn dash-btn-outline" style="padding: 6px 14px; font-size: 0.8rem;" onclick="showAddAddressModal()">Edit</button>
+                                </div>
+                            </div>
+                            <div class="dash-address-add-btn" onclick="showAddAddressModal()">
+                                <i class="fa-solid fa-plus" style="font-size: 1.8rem; color: var(--dash-gold);"></i>
+                                <span style="font-weight: 600; font-size: 0.95rem;">Add New Shipping Address</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 7: CULTURAL IMPACT -->
+                <div id="sec-impact" class="dash-tab-content" style="display: none;">
+                    <div class="dash-cultural-card">
+                        <span style="font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; color: var(--dash-gold); text-transform: uppercase;">CULTURAL HERITAGE ARCHIVE</span>
+                        <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; margin: 8px 0; color: #FFFFFF;">Your Cultural Impact</h2>
+                        <p style="color: rgba(255,255,255,0.85); font-size: 1.05rem; max-width: 600px; line-height: 1.6;">
+                            Through your patronage of authentic Ethiopian string craftsmanship, you directly sustain master artisans and safeguard sacred acoustic traditions.
+                        </p>
+                        <div class="dash-cultural-stats">
+                            <div class="dash-cultural-stat-box">
+                                <div id="impact-instruments-count" class="dash-cultural-number">1</div>
+                                <div class="dash-cultural-label">Handcrafted Instrument</div>
+                            </div>
+                            <div class="dash-cultural-stat-box">
+                                <div class="dash-cultural-number">100%</div>
+                                <div class="dash-cultural-label">Authentic Highland Wood</div>
+                            </div>
+                            <div class="dash-cultural-stat-box">
+                                <div class="dash-cultural-number">2</div>
+                                <div class="dash-cultural-label">Artisan Families Supported</div>
+                            </div>
+                        </div>
+                        <p style="font-style: italic; color: var(--dash-gold); font-size: 1rem; margin: 10px 0 0 0;">
+                            "Thank you for preserving Ethiopian musical heritage."
+                        </p>
+                    </div>
+                </div>
+
+                <!-- SECTION 8: AFFILIATE DASHBOARD -->
+                <div id="sec-affiliate" class="dash-tab-content" style="display: none;">
+                    <div class="dash-affiliate-card">
+                        <div class="dash-section-header">
+                            <h3 class="dash-section-title"><i class="fa-solid fa-chart-line"></i> Affiliate Partner Overview</h3>
+                            <a href="affiliate-dashboard.html" class="dash-btn dash-btn-gold">Full Partner Dashboard</a>
+                        </div>
+                        <div id="affiliate-summary-container">
+                            <p style="color: var(--dash-muted);">Loading affiliate stats...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 9: ACCOUNT SETTINGS -->
+                <div id="sec-settings" class="dash-tab-content" style="display: none;">
+                    <div class="dash-tracker-card">
+                        <div class="dash-section-header">
+                            <h3 class="dash-section-title"><i class="fa-solid fa-gear"></i> Account Settings</h3>
+                        </div>
+                        <form id="settings-form" style="display: flex; flex-direction: column; gap: 20px;">
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                                <div>
+                                    <label style="display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--dash-muted); margin-bottom: 6px;">Full Name</label>
+                                    <input type="text" id="settings-name" class="account-input" style="width: 100%; box-sizing: border-box; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 10px; font-size: 0.95rem;">
                                 </div>
                                 <div>
-                                    <label for="avatar-file-input" class="btn-primary" style="cursor: pointer; padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-block; background-color: var(--dark-green); color: white; border-radius: 4px;">Upload New Avatar</label>
-                                    <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
-                                    <p style="font-size: 0.8rem; color: rgba(0,0,0,0.5); margin-top: 0.25rem;">PNG, JPG up to 2MB</p>
+                                    <label style="display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--dash-muted); margin-bottom: 6px;">Email Reference (Read Only)</label>
+                                    <input type="email" id="settings-email" readonly class="account-input" style="width: 100%; box-sizing: border-box; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 10px; font-size: 0.95rem; background: var(--dash-ivory); opacity: 0.7; cursor: not-allowed;">
                                 </div>
                             </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>FULL NAME</label>
-                                    <input type="text" id="profile-name" class="account-input" value="Elena V. Thorne">
+
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--dash-muted); margin-bottom: 6px;">Biography / Note to Curator</label>
+                                <textarea id="settings-bio" rows="3" class="account-textarea" style="width: 100%; box-sizing: border-box; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 10px; font-size: 0.95rem; font-family: 'Outfit', sans-serif;"></textarea>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                                <div>
+                                    <label style="display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--dash-muted); margin-bottom: 6px;">Preferred Currency</label>
+                                    <select id="settings-currency" class="account-input" onchange="changeCurrency(this.value)" style="width: 100%; box-sizing: border-box; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 10px; font-size: 0.95rem;">
+                                        <option value="ETB">ETB — Ethiopian Birr</option>
+                                        <option value="USD">USD — US Dollar</option>
+                                        <option value="EUR">EUR — Euro</option>
+                                    </select>
                                 </div>
-                                <div class="form-group">
-                                    <label>EMAIL REFERENCE</label>
-                                    <input type="email" id="profile-email" class="account-input" value="elena.thorne@archives.org" readonly style="opacity: 0.7; cursor: not-allowed;">
+                                <div>
+                                    <label style="display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--dash-muted); margin-bottom: 6px;">Interface Language</label>
+                                    <select class="account-input" style="width: 100%; box-sizing: border-box; padding: 12px 16px; border: 1px solid var(--dash-border); border-radius: 10px; font-size: 0.95rem;">
+                                        <option value="en">English (US)</option>
+                                        <option value="am">አማርኛ (Amharic)</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div class="form-group full-width">
-                                <label>BIOGRAPHY / NOTE TO CURATOR</label>
-                                <textarea id="profile-bio" class="account-textarea">Devoted collector of traditional strings and a student of ancient highland resonance techniques.</textarea>
-                            </div>
-                            <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
-                                <button type="button" id="update-profile-btn" class="btn-primary">UPDATE ARCHIVE</button>
-                                <button type="button" id="logout-btn" class="btn-primary" style="background-color: transparent; border: 1px solid var(--dark-green); color: var(--dark-green);">LOG OUT</button>
-                                <div id="affiliate-action-container" style="display: inline-block;"></div>
+
+                            <div style="padding-top: 10px; border-top: 1px solid var(--dash-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                                <button type="button" id="save-settings-btn" class="dash-btn dash-btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+                                <button type="button" class="dash-btn dash-btn-outline" style="color: #C53030; border-color: #FEB2B2;" onclick="alert('Account deletion requires security confirmation. Please contact support at amielebegena@gmail.com')">
+                                    <i class="fa-solid fa-trash-can"></i> Delete Account
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
 
-                <div id="sec-impact" class="account-tab-content">
-                    <div class="sustainability-banner">
-                        <div class="banner-content">
-                            <span class="banner-subtitle">CULTURAL IMPACT REPORT</span>
-                            <h2>Your Archive Participation is Growing.</h2>
-                            <p>Through your support, we've funded 14 weeks of artisan training in traditional wood carving and string tensioning.</p>
-                        </div>
-                        <div class="banner-stats">
-                            <div class="stat-box">
-                                <span class="stat-number">14</span>
-                                <span class="stat-label">ARTISANS SUPPORTED</span>
-                            </div>
-                            <div class="stat-box">
-                                <span class="stat-number">32kg</span>
-                                <span class="stat-label">HERITAGE WOOD SAVED</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="sec-saved" class="account-tab-content">
-                    <div class="account-section">
-                        <h2>Saved Items</h2>
-                        <div id="saved-items-container" class="product-grid" style="margin-top: 1.5rem;">
-                            <!-- Saved items injected by JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <div id="sec-orders" class="account-tab-content">
-                    <div class="account-section">
-                        <div class="section-header-row" style="margin-bottom: 1.5rem;">
-                            <h2>Order History</h2>
-                            <a href="#" class="link">View All Archive Shipments</a>
-                        </div>
-                        <div class="order-list" id="orders-list-container">
-                            <!-- Injected dynamically by JS -->
-                            <p style="color: rgba(0,0,0,0.5);">Loading order history...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="sec-shipping" class="account-tab-content">
-                    <div class="account-section">
-                        <h2>Shipping Addresses</h2>
-                        <div class="address-grid">
-                            <div class="address-card">
-                                <div class="address-card-header">
-                                    <span class="address-type">RESIDENTIAL STUDIO</span>
-                                    <span class="address-badge">PRIMARY</span>
-                                </div>
-                                <div class="address-body">
-                                    <strong>Elena Thorne</strong><br>
-                                    1422 Mossy Glen Way<br>
-                                    Suite 48, Silverlake<br>
-                                    California, 90026
-                                </div>
-                                <div class="address-actions">
-                                    <span class="action-link">EDIT</span>
-                                    <span class="action-link">REMOVE</span>
-                                </div>
-                            </div>
-                            <div class="address-card add-new-card">
-                                <div class="add-icon">+</div>
-                                <span class="add-text">ADD NEW REPOSITORY</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            </div>
         </div>
-        
+
+        <!-- Cart Drawer overlay -->
         <div id="cart-overlay" class="cart-overlay hidden"></div>
         <div id="cart-drawer" class="cart-drawer hidden">
             <div class="cart-header">
                 <h3>Your Cart</h3>
                 <button id="close-cart" class="close-btn">&times;</button>
             </div>
-            <div id="cart-items" class="cart-items-container">
-                <!-- Cart items JS -->
-            </div>
+            <div id="cart-items" class="cart-items-container"></div>
             <div class="cart-footer">
                 <div class="cart-total-row">
                     <span>Total</span>
@@ -211,6 +423,7 @@
         </div>
     </main>
 
+    <!-- Footer -->
     <footer class="main-footer">
         <div class="footer-top">
             <div class="footer-brand">
@@ -262,7 +475,7 @@
 
     <div id="toast-container"></div>
 
-
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-client.js"></script>
     <script src="js/auth.js"></script>
@@ -276,258 +489,391 @@
     <script src="js/notifications-service.js"></script>
     <script src="js/notifications-bell.js"></script>
     <script src="script.js"></script>
+
+    <!-- Customer Dashboard Controller -->
     <script>
+        let currentUser = null;
+        let cachedOrders = [];
+
+        // Tab Switcher Logic
+        function switchDashTab(tabId) {
+            document.querySelectorAll('.dash-nav-item').forEach(item => {
+                if (item.dataset.tab === tabId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            document.querySelectorAll('.dash-tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+
+            const targetSection = document.getElementById(`sec-${tabId}`);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+        }
+
+        function showAddAddressModal() {
+            const name = prompt('Enter recipient name:', currentUser ? currentUser.name : '');
+            if (!name) return;
+            const addr = prompt('Enter full shipping address:', 'Mexico Square, Addis Ababa');
+            if (addr) {
+                document.getElementById('addr-name').textContent = name;
+                document.getElementById('addr-details').innerHTML = `${window.AmieleSanitize.escapeHtml(addr)}<br>Phone: ${currentUser.phone || '+251 96 426 1817'}`;
+                showToast('Shipping address updated!', 'success');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
-            const user = await window.getCurrentUser();
-            if (!user) {
+            currentUser = await window.getCurrentUser();
+            if (!currentUser) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // Wait for DB cache initialization
-            if (window.AmieleDB && window.AmieleDB.ready) {
-                await window.AmieleDB.ready;
-            }
+            // Sync User Info in Hero Profile
+            document.getElementById('dash-user-name').textContent = currentUser.name || 'Valued Customer';
+            document.getElementById('dash-user-email').textContent = currentUser.email || 'N/A';
+            document.getElementById('dash-user-id').textContent = currentUser.id ? currentUser.id.slice(0, 8).toUpperCase() : 'CUST-001';
+            
+            const joinDate = currentUser.createdAt ? new Date(currentUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Jul 2026';
+            document.getElementById('dash-user-joined').textContent = joinDate;
 
-            // Sync account info fields
-            const nameField = document.getElementById('profile-name');
-            if (nameField) nameField.value = user.name;
-
-            const emailField = document.getElementById('profile-email');
-            if (emailField) emailField.value = user.email;
-
-            const bioField = document.getElementById('profile-bio');
-            if (bioField && user.bio) bioField.value = user.bio;
-
-            // Avatar loading & uploading
-            const avatarDisplay = document.getElementById('profile-avatar-display');
-            const fileInput = document.getElementById('avatar-file-input');
+            // Avatar Display
+            const avatarDisplay = document.getElementById('dash-avatar-display');
+            const avatarInput = document.getElementById('dash-avatar-input');
 
             async function loadAvatar() {
-                if (user.photoUrl) {
+                if (currentUser.photoUrl) {
                     try {
                         const client = window.AmieleSupabase.getClient();
-                        let path = user.photoUrl;
+                        let path = currentUser.photoUrl;
                         if (path.startsWith('http')) {
                             const parts = path.split('/user-avatars/');
-                            if (parts.length > 1) {
-                                path = parts[1];
-                            }
+                            if (parts.length > 1) path = parts[1];
                         }
-                        const { data, error } = await client.storage
-                            .from('user-avatars')
-                            .download(path);
+                        const { data, error } = await client.storage.from('user-avatars').download(path);
                         if (error) throw error;
-
-                        const objectUrl = URL.createObjectURL(data);
-                        avatarDisplay.style.backgroundImage = `url('${objectUrl}')`;
+                        avatarDisplay.style.backgroundImage = `url('${URL.createObjectURL(data)}')`;
                         avatarDisplay.textContent = '';
-                    } catch (err) {
-                        console.error('Failed to load avatar:', err);
+                    } catch (e) {
                         avatarDisplay.style.backgroundImage = 'none';
-                        avatarDisplay.textContent = user.name ? user.name.charAt(0) : '-';
+                        avatarDisplay.textContent = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'C';
                     }
                 } else {
                     avatarDisplay.style.backgroundImage = 'none';
-                    avatarDisplay.textContent = user.name ? user.name.charAt(0) : '-';
+                    avatarDisplay.textContent = currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'C';
                 }
             }
             loadAvatar();
 
-            if (fileInput) {
-                fileInput.addEventListener('change', async (e) => {
+            if (avatarInput) {
+                avatarInput.addEventListener('change', async (e) => {
                     const file = e.target.files[0];
                     if (!file) return;
-
                     if (file.size > 2 * 1024 * 1024) {
-                        showToast('Avatar file size must be less than 2MB.', 'error');
+                        showToast('Avatar file size must be less than 2MB.', 'warning');
                         return;
                     }
-
                     avatarDisplay.textContent = '...';
-
                     try {
                         const client = window.AmieleSupabase.getClient();
                         const fileExt = file.name.split('.').pop();
-                        const filePath = `${user.id}/avatar_${Date.now()}.${fileExt}`;
-
-                        const { error: uploadError } = await client.storage
-                            .from('user-avatars')
-                            .upload(filePath, file, { cacheControl: '3600', upsert: true });
-
+                        const filePath = `${currentUser.id}/avatar_${Date.now()}.${fileExt}`;
+                        const { error: uploadError } = await client.storage.from('user-avatars').upload(filePath, file, { upsert: true });
                         if (uploadError) throw uploadError;
-
-                        // Save file path relative to bucket or full URL
-                        const { error: updateError } = await client
-                            .from('profiles')
-                            .update({ avatar_url: filePath })
-                            .eq('id', user.id);
-
-                        if (updateError) throw updateError;
-
-                        user.photoUrl = filePath;
+                        await client.from('profiles').update({ avatar_url: filePath }).eq('id', currentUser.id);
+                        currentUser.photoUrl = filePath;
                         await loadAvatar();
                         showToast('Avatar updated successfully!', 'success');
                     } catch (err) {
-                        console.error(err);
                         showToast(err.message || 'Avatar upload failed.', 'error');
                         await loadAvatar();
                     }
                 });
             }
 
-            // Profile saving
-            const updateBtn = document.getElementById('update-profile-btn');
-            if (updateBtn) {
-                updateBtn.addEventListener('click', async () => {
-                    const name = nameField.value.trim();
-                    const bio = bioField.value.trim();
+            // Sync Settings form
+            document.getElementById('settings-name').value = currentUser.name || '';
+            document.getElementById('settings-email').value = currentUser.email || '';
+            if (currentUser.bio) document.getElementById('settings-bio').value = currentUser.bio;
 
-                    if (!name) {
-                        showToast('Name cannot be empty.', 'warning');
-                        return;
-                    }
+            document.getElementById('save-settings-btn').addEventListener('click', async () => {
+                const newName = document.getElementById('settings-name').value.trim();
+                const newBio = document.getElementById('settings-bio').value.trim();
+                if (!newName) {
+                    showToast('Name cannot be empty.', 'warning');
+                    return;
+                }
+                try {
+                    const client = window.AmieleSupabase.getClient();
+                    const { error } = await client.from('profiles').update({ full_name: newName, bio: newBio }).eq('id', currentUser.id);
+                    if (error) throw error;
+                    showToast('Profile settings saved successfully!', 'success');
+                    document.getElementById('dash-user-name').textContent = newName;
+                } catch (err) {
+                    showToast(err.message || 'Failed to update settings.', 'error');
+                }
+            });
 
-                    updateBtn.disabled = true;
-                    updateBtn.textContent = 'SAVING...';
+            document.getElementById('dash-logout-btn').addEventListener('click', () => {
+                if (window.AuthService) window.AuthService.logout();
+                else window.location.href = 'login.html';
+            });
 
-                    try {
-                        const client = window.AmieleSupabase.getClient();
-                        const { error } = await client
-                            .from('profiles')
-                            .update({ full_name: name, bio: bio })
-                            .eq('id', user.id);
-
-                        if (error) throw error;
-
-                        await window.AuthService.getCurrentUser(true);
-                        showToast('Profile updated successfully!', 'success');
-                    } catch (err) {
-                        console.error(err);
-                        showToast(err.message || 'Failed to update profile.', 'error');
-                    } finally {
-                        updateBtn.disabled = false;
-                        updateBtn.textContent = 'UPDATE ARCHIVE';
-                    }
-                });
+            // Affiliate Tab Setup
+            const affiliateNavTab = document.getElementById('nav-affiliate-tab');
+            if (currentUser.role === 'affiliate') {
+                affiliateNavTab.style.display = 'flex';
+                loadAffiliateSummary();
             }
 
-            const actionContainer = document.getElementById('affiliate-action-container');
-            const sidebarPortal = document.getElementById('nav-affiliate-portal');
+            // Fetch Orders and render Order History + Spotlight Tracker
+            loadUserOrders();
 
-            if (user.role === 'admin') {
-                if (sidebarPortal) {
-                    sidebarPortal.style.display = 'block';
-                    sidebarPortal.textContent = 'Admin Console';
-                    sidebarPortal.addEventListener('click', () => {
-                        window.location.href = 'admin.html';
-                    });
-                }
-                if (actionContainer) {
-                    actionContainer.innerHTML = '<a href="admin.html" class="btn-primary" style="text-decoration:none; background-color: var(--dark-green); color: white;">ADMIN CONSOLE</a>';
-                }
-            } else if (user.role === 'affiliate') {
-                if (sidebarPortal) {
-                    sidebarPortal.style.display = 'block';
-                    sidebarPortal.textContent = 'Affiliate Dashboard';
-                    sidebarPortal.addEventListener('click', () => {
-                        window.location.href = 'affiliate-dashboard.html';
-                    });
-                }
-                if (actionContainer) {
-                    actionContainer.innerHTML = '<a href="affiliate-dashboard.html" class="btn-primary" style="text-decoration:none; background-color: var(--dark-green); color: white;">AFFILIATE DASHBOARD</a>';
-                }
-            } else {
-                // Regular user -> check application status (Supabase query first, fallback to LocalStorage)
-                let app = null;
-                if (window.AffiliateService) {
-                    try {
-                        app = await window.AffiliateService.getUserApplication(user.id);
-                    } catch (e) {
-                        console.warn('[Amiele:Account] Supabase app check failed, falling back to local DB:', e);
-                    }
-                }
-                if (!app && window.AmieleDB) {
-                    app = window.AmieleDB.getUserApplication(user.id);
-                }
-                if (app && app.status === 'pending') {
-                    if (actionContainer) {
-                        actionContainer.innerHTML = '<button type="button" class="btn-primary" disabled style="opacity:0.6; cursor:not-allowed;">APPLICATION PENDING</button>';
-                    }
-                } else {
-                    // Show Become an Affiliate button
-                    if (actionContainer) {
-                        actionContainer.innerHTML = '<a href="affiliate.html" class="btn-primary" style="text-decoration:none; background-color: #ffd700; color: #14231b; font-weight:600;">BECOME AN AFFILIATE</a>';
-                    }
-                }
-            }
+            // Fetch Notifications
+            loadNotificationsPreview();
 
-            // Render Order History from Supabase
-            async function renderOrderHistory() {
-                const container = document.getElementById('orders-list-container');
-                if (!container) return;
+            // Render Wishlist
+            renderWishlist();
+        });
 
-                if (!window.OrdersService) {
-                    container.innerHTML = '<p style="color: rgba(0,0,0,0.5);">Order history service is offline.</p>';
+        async function loadUserOrders() {
+            const tbody = document.getElementById('dash-orders-tbody');
+            const spotlightContainer = document.getElementById('spotlight-order-container');
+            const fullTrackerContainer = document.getElementById('full-tracker-container');
+
+            if (!window.OrdersService) return;
+
+            try {
+                cachedOrders = await window.OrdersService.getUserOrders(currentUser.id);
+                const orderCount = cachedOrders ? cachedOrders.length : 0;
+
+                document.getElementById('kpi-orders-count').textContent = orderCount;
+                document.getElementById('orders-total-badge').textContent = `${orderCount} Order${orderCount === 1 ? '' : 's'}`;
+                document.getElementById('impact-instruments-count').textContent = Math.max(1, orderCount);
+
+                if (!cachedOrders || cachedOrders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--dash-muted); padding: 30px;">No orders found in your history.</td></tr>`;
+                    document.getElementById('kpi-active-count').textContent = 0;
                     return;
                 }
 
-                try {
-                    const dbOrders = await window.OrdersService.getUserOrders(user.id);
-                    container.innerHTML = '';
+                // Render Table
+                tbody.innerHTML = cachedOrders.map(order => {
+                    const product = order.product || {};
+                    const esc = window.AmieleSanitize.escapeHtml;
+                    const dateStr = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const statusClass = (order.fulfillment_status || order.status || 'pending').toLowerCase();
+                    const formattedTotal = typeof formatPrice === 'function' ? formatPrice((product.price || 0) * (order.quantity || 1)) : '$' + ((product.price || 0) * (order.quantity || 1)).toFixed(2);
 
-                    if (!dbOrders || dbOrders.length === 0) {
-                        container.innerHTML = '<p style="color: rgba(0,0,0,0.5);">You have not placed any orders yet.</p>';
-                        return;
-                    }
+                    return `
+                        <tr>
+                            <td><strong>#${esc(order.order_number || order.id.slice(0, 8).toUpperCase())}</strong></td>
+                            <td>${esc(product.name || order.product_name || 'Begena / Krar')}</td>
+                            <td>${dateStr}</td>
+                            <td><span class="dash-status-badge ${statusClass}">${esc(order.fulfillment_status || order.status || 'Pending')}</span></td>
+                            <td><strong>${formattedTotal}</strong></td>
+                            <td>
+                                <button type="button" class="dash-btn dash-btn-outline" style="padding: 4px 10px; font-size: 0.78rem;" onclick="alert('Order Details:\\nOrder #: ${esc(order.order_number || order.id)}\\nCustomer: ${esc(order.customer_name)}\\nProduct: ${esc(product.name || 'Instrument')}\\nNotes: ${esc(order.notes || 'None')}')">Details</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
 
-                    dbOrders.forEach(order => {
-                        const product = order.product || {};
-                        const images = product.product_images || [];
-                        const coverImage = images.find(img => img.is_cover) || images[0] || {};
-                        
-                        let imgUrl = coverImage.storage_path || 'image/photo_2025-10-01_07-26-53.jpg';
-                        if (imgUrl && !imgUrl.startsWith('http') && !imgUrl.startsWith('image/') && !imgUrl.includes('/')) {
-                            const client = window.AmieleSupabase.getClient();
-                            const { data: { publicUrl } } = client.storage
-                                .from('product-images')
-                                .getPublicUrl(imgUrl);
-                            imgUrl = publicUrl;
-                        }
+                // Render Spotlight Active Order Tracker
+                const activeOrder = cachedOrders.find(o => (o.fulfillment_status || o.status || '').toLowerCase() !== 'delivered') || cachedOrders[0];
 
-                        const dateString = new Date(order.created_at).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                        });
+                if (activeOrder) {
+                    document.getElementById('kpi-active-count').textContent = (activeOrder.fulfillment_status || activeOrder.status || '').toLowerCase() !== 'delivered' ? 1 : 0;
+                    
+                    const p = activeOrder.product || {};
+                    const images = p.product_images || [];
+                    const cover = images.find(i => i.is_cover) || images[0] || {};
+                    let imgUrl = cover.storage_path || 'image/photo_2025-10-01_07-26-53.jpg';
+                    const esc = window.AmieleSanitize.escapeHtml;
 
-                        const esc = window.AmieleSanitize ? window.AmieleSanitize.escapeHtml : function(v) { return v == null ? '' : String(v); };
+                    const activeStatus = (activeOrder.fulfillment_status || activeOrder.status || 'Pending');
+                    
+                    const timelineHTML = renderFulfillmentTimeline(activeStatus);
 
-                        const orderItem = document.createElement('div');
-                        orderItem.className = 'order-item';
-                        orderItem.innerHTML = `
-                            <div class="order-image" style="background-image: url('${esc(imgUrl)}');"></div>
-                            <div class="order-details">
-                                <span class="order-date">${dateString.toUpperCase()} • #${esc(order.id.slice(0, 8).toUpperCase())}</span>
-                                <h4>${esc(product.name || 'Instrument')}</h4>
-                                <span class="order-status">${order.quantity} item${order.quantity > 1 ? 's' : ''} • ${esc(order.status.toUpperCase())}</span>
+                    const trackerHTML = `
+                        <div class="dash-order-spotlight">
+                            <div class="dash-order-info-row">
+                                <div class="dash-order-product-meta">
+                                    <img src="${esc(imgUrl)}" alt="Product" class="dash-order-img" onerror="this.src='image/photo_2025-10-01_07-26-53.jpg'">
+                                    <div class="dash-order-details-meta">
+                                        <h4>${esc(p.name || activeOrder.product_name || 'Handcrafted Begena')}</h4>
+                                        <div class="dash-order-subtext">Order #${esc(activeOrder.order_number || activeOrder.id.slice(0, 8).toUpperCase())} • Est. Delivery: ${esc(activeOrder.estimated_delivery || '7-14 Business Days')}</div>
+                                    </div>
+                                </div>
+                                <div class="dash-order-actions-meta">
+                                    <a href="track-order.html?order=${encodeURIComponent(activeOrder.order_number || '')}" class="dash-btn dash-btn-gold"><i class="fa-solid fa-truck-fast"></i> Track Package</a>
+                                </div>
                             </div>
-                            <div class="order-price">${typeof formatPrice === 'function' ? formatPrice(product.price * order.quantity) : '$' + (product.price * order.quantity).toFixed(2)}</div>
-                            <button class="order-btn btn-light-green" onclick="alert('Order notes: ${esc(order.notes || 'None')}')">DETAILS</button>
-                        `;
-                        container.appendChild(orderItem);
-                    });
-                } catch (err) {
-                    console.error('Failed to load order history:', err);
-                    container.innerHTML = '<p style="color: red;">Failed to load order history.</p>';
+                            ${timelineHTML}
+                        </div>
+                    `;
+
+                    spotlightContainer.innerHTML = trackerHTML;
+                    if (fullTrackerContainer) fullTrackerContainer.innerHTML = trackerHTML;
                 }
+            } catch (err) {
+                console.error('Failed to load orders:', err);
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red; padding: 20px;">Failed to load order history.</td></tr>`;
             }
-            renderOrderHistory();
-        });
+        }
+
+        function renderFulfillmentTimeline(currentStatus) {
+            const steps = [
+                { key: 'pending', label: 'Pending', icon: 'fa-clock' },
+                { key: 'payment verified', label: 'Payment Verified', icon: 'fa-shield-check' },
+                { key: 'preparing', label: 'Preparing', icon: 'fa-box-open' },
+                { key: 'crafting', label: 'Crafting', icon: 'fa-hammer' },
+                { key: 'packed', label: 'Packed', icon: 'fa-box' },
+                { key: 'shipped', label: 'Shipped', icon: 'fa-plane' },
+                { key: 'delivered', label: 'Delivered', icon: 'fa-circle-check' }
+            ];
+
+            const curIdx = steps.findIndex(s => s.key === currentStatus.toLowerCase());
+            const progressPct = curIdx >= 0 ? Math.min(100, Math.round((curIdx / (steps.length - 1)) * 100)) : 10;
+
+            return `
+                <div class="dash-timeline-container">
+                    <div class="dash-timeline-line">
+                        <div class="dash-timeline-progress" style="width: ${progressPct}%;"></div>
+                    </div>
+                    ${steps.map((step, idx) => {
+                        let stateClass = '';
+                        if (idx < curIdx) stateClass = 'completed';
+                        else if (idx === curIdx) stateClass = 'active';
+
+                        return `
+                            <div class="dash-timeline-step ${stateClass}">
+                                <div class="dash-step-dot">
+                                    <i class="fa-solid ${step.icon}"></i>
+                                </div>
+                                <span class="dash-step-label">${step.label}</span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        async function loadNotificationsPreview() {
+            const container = document.getElementById('recent-notifications-container');
+            const fullContainer = document.getElementById('full-notifications-container');
+
+            if (!window.NotificationsService) {
+                container.innerHTML = '<p style="color: var(--dash-muted);">Notification service unavailable.</p>';
+                return;
+            }
+
+            try {
+                const res = await window.NotificationsService.getNotifications({ page: 1, limit: 5 });
+                const notifs = res.data || [];
+                const unreadCount = await window.NotificationsService.getUnreadCount();
+
+                document.getElementById('kpi-notifications-count').textContent = unreadCount;
+
+                if (notifs.length === 0) {
+                    const emptyHTML = `
+                        <div class="dash-empty-state" style="padding: 24px;">
+                            <i class="fa-solid fa-bell-slash dash-empty-icon" style="font-size: 2rem;"></i>
+                            <div class="dash-empty-title" style="font-size: 1.1rem;">No Recent Notifications</div>
+                        </div>
+                    `;
+                    container.innerHTML = emptyHTML;
+                    if (fullContainer) fullContainer.innerHTML = emptyHTML;
+                    return;
+                }
+
+                const notifsHTML = notifs.map(n => {
+                    const esc = window.AmieleSanitize.escapeHtml;
+                    const timeAgo = typeof formatRelativeTime === 'function' ? formatRelativeTime(n.created_at) : new Date(n.created_at).toLocaleDateString();
+
+                    return `
+                        <div class="dash-notification-item">
+                            <div class="dash-notif-icon"><i class="fa-solid fa-bell"></i></div>
+                            <div class="dash-notif-body">
+                                <div class="dash-notif-title">
+                                    ${esc(n.title)}
+                                    ${!n.is_read ? '<span class="dash-notif-unread-dot"></span>' : ''}
+                                </div>
+                                <div class="dash-notif-msg">${esc(n.message)}</div>
+                            </div>
+                            <span class="dash-notif-time">${timeAgo}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = notifsHTML;
+                if (fullContainer) fullContainer.innerHTML = notifsHTML;
+            } catch (err) {
+                container.innerHTML = '<p style="color: var(--dash-muted);">Failed to load notifications.</p>';
+            }
+        }
+
+        function renderWishlist() {
+            const container = document.getElementById('dash-wishlist-container');
+            const savedIds = window.AmieleDB ? window.AmieleDB.getWishlist() : [];
+
+            document.getElementById('kpi-wishlist-count').textContent = savedIds.length;
+
+            if (savedIds.length === 0) {
+                container.innerHTML = `
+                    <div class="dash-empty-state" style="grid-column: 1 / -1;">
+                        <i class="fa-solid fa-heart-crack dash-empty-icon"></i>
+                        <div class="dash-empty-title">Your Wishlist is Empty</div>
+                        <div class="dash-empty-text">Save your favorite Begena, Krar, and Kebero instruments to review them anytime.</div>
+                        <a href="products.html" class="dash-btn dash-btn-gold"><i class="fa-solid fa-bag-shopping"></i> Browse Instruments</a>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = savedIds.map(id => `
+                    <div class="dash-wishlist-card">
+                        <div class="dash-wishlist-img" style="background-image: url('image/photo_2025-10-01_07-26-53.jpg');"></div>
+                        <div class="dash-wishlist-body">
+                            <h4 class="dash-wishlist-title">Ethiopian Instrument #${id}</h4>
+                            <div class="dash-wishlist-price">ETB 15,000</div>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <a href="products.html" class="dash-btn dash-btn-primary" style="flex: 1;">View</a>
+                                <button type="button" class="dash-btn dash-btn-outline" onclick="window.AmieleDB.removeFromWishlist('${id}'); renderWishlist();">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function loadAffiliateSummary() {
+            const container = document.getElementById('affiliate-summary-container');
+            if (!window.AffiliateService) return;
+            try {
+                const stats = await window.AffiliateService.getAffiliateStats(currentUser.id);
+                container.innerHTML = `
+                    <div class="dash-kpi-grid">
+                        <div class="dash-stat-card">
+                            <span class="dash-stat-title">Referral Link Clicks</span>
+                            <div class="dash-stat-number">${stats.clicks || 0}</div>
+                        </div>
+                        <div class="dash-stat-card">
+                            <span class="dash-stat-title">Conversions</span>
+                            <div class="dash-stat-number">${stats.conversions || 0}</div>
+                        </div>
+                        <div class="dash-stat-card">
+                            <span class="dash-stat-title">Total Commission</span>
+                            <div class="dash-stat-number" style="color: var(--dash-gold);">ETB ${(stats.totalCommission || 0).toLocaleString()}</div>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                container.innerHTML = '<p style="color: var(--dash-muted);">Failed to load affiliate summary.</p>';
+            }
+        }
     </script>
 </body>
 </html>
-
-
-
-
