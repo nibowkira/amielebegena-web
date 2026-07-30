@@ -25,19 +25,30 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     <style>
         /* ============================================================
-           TRACK ORDER PAGE — DEDICATED STYLES
-           Amiele Brand: Warm Ivory, Forest Green, Luxury Gold, White
+           TRACK ORDER PAGE — BRAND AESTHETICS & TYPOGRAPHY
+           Benaiah Font System & Web Brand Palette
+           Dark Green: #14231b / #0F2418
+           Parchment: #f9f8f4 / #f8f6f1
+           Luxury Gold: #D4AF37
            ============================================================ */
 
+        @font-face {
+            font-family: 'Benaiah';
+            src: url('Benaiah_536454528f.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         .track-page {
-            background: #F8F6F1;
+            background: #F9F8F4;
             min-height: 100vh;
             padding-top: 90px;
+            font-family: 'Outfit', 'Benaiah', sans-serif;
         }
 
         /* ── Hero Banner ─────────────────────────────────────────── */
         .track-hero {
-            background: linear-gradient(135deg, #0F2418 0%, #1a3a28 50%, #0F2418 100%);
+            background: linear-gradient(135deg, #14231b 0%, #1e3328 50%, #14231b 100%);
             padding: 60px 24px 50px;
             text-align: center;
             position: relative;
@@ -51,15 +62,15 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle at 30% 40%, rgba(212,175,55,0.08) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 60%, rgba(212,175,55,0.05) 0%, transparent 40%);
+            background: radial-gradient(circle at 30% 40%, rgba(212,175,55,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(212,175,55,0.06) 0%, transparent 40%);
             pointer-events: none;
         }
 
         .track-hero-subtitle {
             display: inline-block;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.75rem;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 0.85rem;
             font-weight: 600;
             letter-spacing: 3px;
             text-transform: uppercase;
@@ -69,19 +80,20 @@
         }
 
         .track-hero h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: clamp(1.8rem, 4vw, 2.8rem);
-            font-weight: 600;
+            font-family: 'Benaiah', 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 4.5vw, 3.2rem);
+            font-weight: 400;
             color: #FFFFFF;
             margin: 0 0 10px;
             position: relative;
+            letter-spacing: 0.5px;
         }
 
         .track-hero p {
             font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
-            color: rgba(255,255,255,0.65);
-            max-width: 520px;
+            font-size: 0.98rem;
+            color: rgba(245,244,240,0.75);
+            max-width: 540px;
             margin: 0 auto;
             line-height: 1.6;
             position: relative;
@@ -89,7 +101,7 @@
 
         /* ── Search Form Container ───────────────────────────────── */
         .track-search-section {
-            max-width: 560px;
+            max-width: 580px;
             margin: -30px auto 0;
             padding: 0 20px;
             position: relative;
@@ -99,37 +111,37 @@
         .track-search-card {
             background: #FFFFFF;
             border-radius: 16px;
-            padding: 32px 28px;
-            box-shadow: 0 8px 32px rgba(15,36,24,0.08), 0 2px 8px rgba(15,36,24,0.04);
-            border: 1px solid #E7E3D8;
+            padding: 34px 30px;
+            box-shadow: 0 10px 36px rgba(20,35,27,0.08), 0 2px 8px rgba(20,35,27,0.04);
+            border: 1px solid #eeebe1;
         }
 
         .track-search-card h2 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #0F2418;
+            font-family: 'Benaiah', 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            color: #14231b;
             margin: 0 0 6px;
         }
 
         .track-search-card .search-subtitle {
             font-family: 'Outfit', sans-serif;
-            font-size: 0.8rem;
-            color: #7a7d79;
+            font-size: 0.82rem;
+            color: #6a6e6b;
             margin: 0 0 24px;
             line-height: 1.5;
         }
 
         .track-form-group {
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .track-form-group label {
             display: block;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.78rem;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 0.9rem;
             font-weight: 600;
-            color: #0F2418;
+            color: #14231b;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 6px;
@@ -137,12 +149,12 @@
 
         .track-form-group input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 13px 16px;
             font-family: 'Outfit', sans-serif;
             font-size: 0.95rem;
-            color: #0F2418;
-            background: #FAF9F5;
-            border: 1.5px solid #E7E3D8;
+            color: #14231b;
+            background: #F9F8F4;
+            border: 1.5px solid #eeebe1;
             border-radius: 10px;
             outline: none;
             transition: border-color 0.3s, box-shadow 0.3s;
@@ -151,36 +163,37 @@
 
         .track-form-group input:focus {
             border-color: #D4AF37;
-            box-shadow: 0 0 0 3px rgba(212,175,55,0.12);
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
+            background: #FFFFFF;
         }
 
         .track-form-group input::placeholder {
-            color: #b0ad9e;
+            color: #a09d90;
         }
 
         .track-form-group .input-hint {
             font-family: 'Outfit', sans-serif;
-            font-size: 0.72rem;
-            color: #9a9d96;
-            margin-top: 4px;
+            font-size: 0.74rem;
+            color: #7a7d79;
+            margin-top: 5px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
         }
 
         .track-form-group .input-hint i {
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             color: #D4AF37;
         }
 
         .track-search-btn {
             width: 100%;
-            padding: 14px 24px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 600;
+            padding: 15px 24px;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 500;
             color: #FFFFFF;
-            background: linear-gradient(135deg, #0F2418, #1a3a28);
+            background: linear-gradient(135deg, #14231b, #1e3328);
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -189,9 +202,10 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-top: 8px;
+            margin-top: 10px;
             position: relative;
             overflow: hidden;
+            letter-spacing: 0.5px;
         }
 
         .track-search-btn::after {
@@ -199,7 +213,7 @@
             position: absolute;
             top: 0; left: -100%;
             width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.15), transparent);
+            background: linear-gradient(90deg, transparent, rgba(212,175,55,0.2), transparent);
             transition: left 0.5s;
         }
 
@@ -209,7 +223,7 @@
 
         .track-search-btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(15,36,24,0.2);
+            box-shadow: 0 8px 24px rgba(20,35,27,0.25);
         }
 
         .track-search-btn:disabled {
@@ -261,8 +275,8 @@
 
         /* ── Result Container ────────────────────────────────────── */
         .track-results-section {
-            max-width: 700px;
-            margin: 32px auto 60px;
+            max-width: 720px;
+            margin: 36px auto 60px;
             padding: 0 20px;
         }
 
@@ -279,12 +293,12 @@
             background: #FFFFFF;
             border-radius: 16px;
             padding: 28px;
-            border: 1px solid #E7E3D8;
+            border: 1px solid #eeebe1;
             margin-bottom: 20px;
         }
 
         .skeleton-line {
-            background: linear-gradient(90deg, #f0ede6 25%, #e8e5dc 50%, #f0ede6 75%);
+            background: linear-gradient(90deg, #f9f8f4 25%, #eeebe1 50%, #f9f8f4 75%);
             background-size: 200% 100%;
             animation: skeletonShimmer 1.5s infinite;
             border-radius: 6px;
@@ -317,29 +331,29 @@
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #FAF9F5, #F0EDE6);
+            background: linear-gradient(135deg, #F9F8F4, #eeebe1);
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
             font-size: 2rem;
-            color: #b0ad9e;
-            border: 2px dashed #E7E3D8;
+            color: #a09d90;
+            border: 2px dashed #eeebe1;
         }
 
         .track-not-found h3 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #0F2418;
+            font-family: 'Benaiah', 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-weight: 400;
+            color: #14231b;
             margin: 0 0 8px;
         }
 
         .track-not-found p {
             font-family: 'Outfit', sans-serif;
-            font-size: 0.85rem;
-            color: #7a7d79;
-            max-width: 380px;
+            font-size: 0.88rem;
+            color: #6a6e6b;
+            max-width: 400px;
             margin: 0 auto;
             line-height: 1.6;
         }
@@ -363,19 +377,19 @@
             background: #FFFFFF;
             border-radius: 16px;
             padding: 0;
-            border: 1px solid #E7E3D8;
+            border: 1px solid #eeebe1;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(15,36,24,0.05);
+            box-shadow: 0 6px 24px rgba(20,35,27,0.06);
         }
 
         .order-result-header {
-            background: linear-gradient(135deg, #0F2418, #1a3a28);
-            padding: 24px 28px;
+            background: linear-gradient(135deg, #14231b, #1e3328);
+            padding: 26px 30px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 14px;
         }
 
         .order-result-header .order-id-block {
@@ -384,80 +398,87 @@
         }
 
         .order-result-header .order-label {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.7rem;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 0.78rem;
             font-weight: 600;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: rgba(212,175,55,0.8);
+            color: #D4AF37;
             margin-bottom: 4px;
         }
 
         .order-result-header .order-number-display {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.15rem;
-            font-weight: 700;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
             color: #FFFFFF;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
         .order-status-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 14px;
+            padding: 7px 16px;
             border-radius: 20px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.75rem;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 0.85rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .order-status-badge.pending {
-            background: rgba(212,175,55,0.15);
+            background: rgba(212,175,55,0.18);
             color: #D4AF37;
+            border: 1px solid rgba(212,175,55,0.3);
         }
         .order-status-badge.verified {
-            background: rgba(56,161,105,0.15);
+            background: rgba(56,161,105,0.18);
             color: #38A169;
+            border: 1px solid rgba(56,161,105,0.3);
         }
         .order-status-badge.preparing, .order-status-badge.crafting {
-            background: rgba(49,130,206,0.15);
+            background: rgba(49,130,206,0.18);
             color: #3182CE;
+            border: 1px solid rgba(49,130,206,0.3);
         }
         .order-status-badge.packed {
-            background: rgba(128,90,213,0.15);
+            background: rgba(128,90,213,0.18);
             color: #805AD5;
+            border: 1px solid rgba(128,90,213,0.3);
         }
         .order-status-badge.shipped {
-            background: rgba(237,137,54,0.15);
+            background: rgba(237,137,54,0.18);
             color: #ED8936;
+            border: 1px solid rgba(237,137,54,0.3);
         }
         .order-status-badge.delivered {
-            background: rgba(56,161,105,0.2);
+            background: rgba(56,161,105,0.22);
             color: #2F855A;
+            border: 1px solid rgba(56,161,105,0.35);
         }
         .order-status-badge.cancelled {
-            background: rgba(229,62,62,0.15);
+            background: rgba(229,62,62,0.18);
             color: #E53E3E;
+            border: 1px solid rgba(229,62,62,0.3);
         }
 
         .order-result-body {
-            padding: 28px;
+            padding: 30px;
         }
 
         .order-details-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px 32px;
-            margin-bottom: 28px;
+            gap: 22px 36px;
+            margin-bottom: 30px;
         }
 
         @media (max-width: 500px) {
             .order-details-grid {
                 grid-template-columns: 1fr;
-                gap: 16px;
+                gap: 18px;
             }
         }
 
@@ -467,20 +488,20 @@
         }
 
         .order-detail-item .detail-label {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.7rem;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 0.78rem;
             font-weight: 600;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: #9a9d96;
+            color: #7a7d79;
             margin-bottom: 4px;
         }
 
         .order-detail-item .detail-value {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.92rem;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 1.1rem;
             font-weight: 500;
-            color: #0F2418;
+            color: #14231b;
             line-height: 1.4;
         }
 
@@ -492,29 +513,46 @@
         /* ── Divider ─────────────────────────────────────────────── */
         .track-divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, #E7E3D8, transparent);
-            margin: 0 0 28px;
+            background: linear-gradient(90deg, transparent, #eeebe1, transparent);
+            margin: 0 0 30px;
         }
 
         /* ── Vertical Craftsmanship Timeline ─────────────────────── */
+        .craftsmanship-timeline-title {
+            font-family: 'Benaiah', 'Cormorant Garamond', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #14231b;
+            margin: 0 0 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .craftsmanship-timeline-title i {
+            color: #D4AF37;
+        }
+
         .craftsmanship-timeline {
             position: relative;
-            padding: 0 0 0 44px;
+            padding: 0 0 0 46px;
         }
 
         .craftsmanship-timeline::before {
             content: '';
             position: absolute;
-            left: 17px;
+            left: 18px;
             top: 0;
             bottom: 0;
             width: 2px;
-            background: #E7E3D8;
+            background: #eeebe1;
         }
 
         .timeline-stage {
             position: relative;
-            padding: 0 0 28px 0;
+            padding: 0 0 30px 0;
         }
 
         .timeline-stage:last-child {
@@ -523,24 +561,24 @@
 
         .timeline-dot {
             position: absolute;
-            left: -44px;
+            left: -46px;
             top: 0;
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             z-index: 1;
             transition: all 0.3s ease;
         }
 
         /* Upcoming (default) */
         .timeline-stage.upcoming .timeline-dot {
-            background: #FAF9F5;
-            border: 2px solid #E7E3D8;
-            color: #c4c1b8;
+            background: #F9F8F4;
+            border: 2px solid #eeebe1;
+            color: #b0ad9e;
         }
 
         /* Completed */
@@ -555,13 +593,13 @@
             background: linear-gradient(135deg, #D4AF37, #C49B2F);
             border: 2px solid #D4AF37;
             color: #FFFFFF;
-            box-shadow: 0 0 0 6px rgba(212,175,55,0.15), 0 2px 8px rgba(212,175,55,0.3);
+            box-shadow: 0 0 0 6px rgba(212,175,55,0.18), 0 2px 10px rgba(212,175,55,0.35);
             animation: activePulse 2s ease-in-out infinite;
         }
 
         @keyframes activePulse {
-            0%, 100% { box-shadow: 0 0 0 6px rgba(212,175,55,0.15), 0 2px 8px rgba(212,175,55,0.3); }
-            50% { box-shadow: 0 0 0 10px rgba(212,175,55,0.08), 0 4px 16px rgba(212,175,55,0.2); }
+            0%, 100% { box-shadow: 0 0 0 6px rgba(212,175,55,0.18), 0 2px 10px rgba(212,175,55,0.35); }
+            50% { box-shadow: 0 0 0 10px rgba(212,175,55,0.1), 0 4px 18px rgba(212,175,55,0.25); }
         }
 
         .timeline-stage-content {
@@ -570,56 +608,57 @@
         }
 
         .timeline-stage-name {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.88rem;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 1.05rem;
             font-weight: 600;
-            color: #0F2418;
+            color: #14231b;
             margin-bottom: 2px;
         }
 
         .timeline-stage.upcoming .timeline-stage-name {
-            color: #b0ad9e;
-            font-weight: 500;
+            color: #a09d90;
+            font-weight: 400;
         }
 
         .timeline-stage.active .timeline-stage-name {
             color: #D4AF37;
+            font-weight: 600;
         }
 
         .timeline-stage-time {
             font-family: 'Outfit', sans-serif;
-            font-size: 0.75rem;
-            color: #7a7d79;
+            font-size: 0.78rem;
+            color: #6a6e6b;
         }
 
         .timeline-stage-notes {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.78rem;
-            color: #9a9d96;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            color: #7a7d79;
             font-style: italic;
-            margin-top: 2px;
+            margin-top: 3px;
         }
 
         /* ── Shipping Info Card ───────────────────────────────────── */
         .shipping-info-card {
-            background: linear-gradient(135deg, #FAF9F5, #F5F2EB);
+            background: linear-gradient(135deg, #F9F8F4, #FAF9F5);
             border-radius: 12px;
-            padding: 20px 24px;
-            margin-top: 24px;
-            border: 1px solid #E7E3D8;
+            padding: 22px 26px;
+            margin-top: 28px;
+            border: 1px solid #eeebe1;
         }
 
         .shipping-info-card h4 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.78rem;
-            font-weight: 700;
+            font-family: 'Benaiah', 'Cormorant Garamond', serif;
+            font-size: 1.15rem;
+            font-weight: 600;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: #0F2418;
-            margin: 0 0 12px;
+            color: #14231b;
+            margin: 0 0 14px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .shipping-info-card h4 i {
@@ -629,7 +668,7 @@
         .shipping-info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px 24px;
+            gap: 14px 26px;
         }
 
         @media (max-width: 500px) {
@@ -642,25 +681,25 @@
         .track-help-section {
             text-align: center;
             padding: 40px 24px 60px;
-            max-width: 500px;
+            max-width: 520px;
             margin: 0 auto;
         }
 
         .track-help-section p {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.85rem;
-            color: #7a7d79;
-            margin-bottom: 16px;
+            font-family: 'Outfit', 'Benaiah', sans-serif;
+            font-size: 0.9rem;
+            color: #6a6e6b;
+            margin-bottom: 18px;
         }
 
         .track-help-btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 10px 24px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.85rem;
-            font-weight: 600;
+            gap: 10px;
+            padding: 12px 26px;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
             color: #FFFFFF;
             background: #25D366;
             border: none;
@@ -673,8 +712,9 @@
         .track-help-btn:hover {
             background: #1ebe59;
             transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(37,211,102,0.3);
+            box-shadow: 0 6px 20px rgba(37,211,102,0.35);
         }
+
 
         /* ── Responsive ──────────────────────────────────────────── */
         @media (max-width: 600px) {
@@ -1076,8 +1116,8 @@
                         <div class="track-divider"></div>
 
                         <!-- Craftsmanship Timeline -->
-                        <h3 style="font-family:'Outfit',sans-serif; font-size:0.78rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#0F2418; margin:0 0 20px; display:flex; align-items:center; gap:8px;">
-                            <i class="fas fa-route" style="color:#D4AF37;"></i>
+                        <h3 class="craftsmanship-timeline-title">
+                            <i class="fas fa-route"></i>
                             CRAFTSMANSHIP JOURNEY
                         </h3>
                         <div class="craftsmanship-timeline">`;
