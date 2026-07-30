@@ -20,6 +20,46 @@ window.AmieleDB = {
         notifications: []
     },
 
+    // ── WISHLIST API ──────────────────────────────────────────────────────────
+    getWishlist() {
+        try {
+            const raw = localStorage.getItem(DB_PREFIX + 'wishlist');
+            return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+            return [];
+        }
+    },
+
+    addToWishlist(productId) {
+        if (!productId) return this.getWishlist();
+        const list = this.getWishlist();
+        const strId = String(productId);
+        if (!list.includes(strId)) {
+            list.push(strId);
+            localStorage.setItem(DB_PREFIX + 'wishlist', JSON.stringify(list));
+        }
+        return list;
+    },
+
+    removeFromWishlist(productId) {
+        if (!productId) return this.getWishlist();
+        const strId = String(productId);
+        let list = this.getWishlist();
+        list = list.filter(id => id !== strId);
+        localStorage.setItem(DB_PREFIX + 'wishlist', JSON.stringify(list));
+        return list;
+    },
+
+    toggleWishlist(productId) {
+        const list = this.getWishlist();
+        const strId = String(productId);
+        if (list.includes(strId)) {
+            return this.removeFromWishlist(strId);
+        } else {
+            return this.addToWishlist(strId);
+        }
+    },
+
     async init() {
         if (!localStorage.getItem(DB_PREFIX + 'initialized')) {
             this.seedDemoData();
