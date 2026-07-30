@@ -64,8 +64,18 @@
     <!-- Main Customer Dashboard -->
     <main class="dashboard-wrapper">
         <div class="dashboard-container">
+            <!-- Mobile Sidebar Toggle -->
+            <button id="dash-sidebar-toggle" class="dash-sidebar-toggle" aria-label="Open dashboard menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <!-- Mobile Sidebar Overlay -->
+            <div id="dash-sidebar-overlay" class="dash-sidebar-overlay"></div>
             <!-- Sidebar Navigation -->
-            <aside class="dashboard-sidebar">
+            <aside class="dashboard-sidebar" id="dashboard-sidebar">
+                <div class="dash-sidebar-mobile-header">
+                    <span class="dash-sidebar-mobile-title">Dashboard</span>
+                    <button id="dash-sidebar-close" class="dash-sidebar-close" aria-label="Close menu">&times;</button>
+                </div>
                 <ul class="dash-nav-list">
                     <li class="dash-nav-item active" data-tab="dashboard" onclick="switchDashTab('dashboard')">
                         <i class="fa-solid fa-house"></i> Dashboard
@@ -583,7 +593,37 @@
             if (targetSection) {
                 targetSection.style.display = 'block';
             }
+
+            // Close mobile sidebar drawer after tab selection
+            closeDashSidebar();
         }
+
+        // ── MOBILE SIDEBAR DRAWER CONTROLLER ─────────────────────────────────
+        function openDashSidebar() {
+            const sidebar = document.getElementById('dashboard-sidebar');
+            const overlay = document.getElementById('dash-sidebar-overlay');
+            if (sidebar) sidebar.classList.add('open');
+            if (overlay) overlay.classList.add('open');
+            document.body.classList.add('dash-drawer-open');
+        }
+
+        function closeDashSidebar() {
+            const sidebar = document.getElementById('dashboard-sidebar');
+            const overlay = document.getElementById('dash-sidebar-overlay');
+            if (sidebar) sidebar.classList.remove('open');
+            if (overlay) overlay.classList.remove('open');
+            document.body.classList.remove('dash-drawer-open');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('dash-sidebar-toggle');
+            const closeBtn = document.getElementById('dash-sidebar-close');
+            const overlay = document.getElementById('dash-sidebar-overlay');
+
+            if (toggleBtn) toggleBtn.addEventListener('click', openDashSidebar);
+            if (closeBtn) closeBtn.addEventListener('click', closeDashSidebar);
+            if (overlay) overlay.addEventListener('click', closeDashSidebar);
+        });
 
         // Smart Portal Navigator (Admin / Affiliate / Apply)
         function handleAffiliateClick(e) {

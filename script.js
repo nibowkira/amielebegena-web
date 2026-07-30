@@ -271,8 +271,13 @@ function renderProducts(category) {
         filtered.sort((a, b) => a.id - b.id);
     }
 
+    // Build a lookup set of saved product IDs from the unified wishlist store
+    const _wishlistIds = (window.AmieleDB && typeof window.AmieleDB.getWishlist === 'function')
+        ? new Set(window.AmieleDB.getWishlist().map(String))
+        : new Set();
+
     filtered.forEach((product, index) => {
-        const isSaved = localStorage.getItem('saved_' + product.id) === 'true';
+        const isSaved = _wishlistIds.has(String(product.id));
         const card = document.createElement('div');
         card.className = 'product-card reveal animate-left';
         card.style.transitionDelay = `${(index % 4) * 0.1}s`; // Staggered entrance
@@ -723,29 +728,37 @@ window.switchAccountTab = function(tabName) {
     });
 };
 
-// Save Item Logic
+// Save Item Logic — Uses unified AmieleDB wishlist store
 window.toggleSave = function(productId, btn) {
-    const key = 'saved_' + productId;
-    const isSaved = localStorage.getItem(key) === 'true';
+    const strId = String(productId);
+    const wishlist = (window.AmieleDB && typeof window.AmieleDB.getWishlist === 'function')
+        ? window.AmieleDB.getWishlist() : [];
+    const isSaved = wishlist.map(String).includes(strId);
+
+    if (window.AmieleDB && typeof window.AmieleDB.toggleWishlist === 'function') {
+        window.AmieleDB.toggleWishlist(strId);
+    }
+
     if (isSaved) {
-        localStorage.removeItem(key);
         btn.classList.remove('saved');
         btn.innerHTML = '♡';
     } else {
-        localStorage.setItem(key, 'true');
         btn.classList.add('saved');
         btn.innerHTML = '♥';
     }
     renderSavedItems();
 };
 
-// Render Saved Items on Account Page
+// Render Saved Items on Account Page — reads from unified AmieleDB wishlist
 function renderSavedItems() {
     const container = document.getElementById('saved-items-container');
     if (!container) return;
 
-    const savedProducts = products.filter(p => localStorage.getItem('saved_' + p.id) === 'true');
-    
+    const savedIds = (window.AmieleDB && typeof window.AmieleDB.getWishlist === 'function')
+        ? new Set(window.AmieleDB.getWishlist().map(String))
+        : new Set();
+    const savedProducts = products.filter(p => savedIds.has(String(p.id)));
+
     if (savedProducts.length === 0) {
         container.innerHTML = '<p style="color: #6a6e6b;">You haven\'t saved any archival items yet.</p>';
         return;
@@ -758,7 +771,7 @@ function renderSavedItems() {
         card.innerHTML = `
             <div class="product-image-wrap artisan-photo-wrap">
 
-                <button class="save-item-btn saved" onclick="event.stopPropagation(); unsaveFromAccount(${esc(product.id)}, this)" title="Remove from saved">♥</button>
+                <button class="save-item-btn saved" onclick="event.stopPropagation(); unsaveFromAccount('${esc(product.id)}', this)" title="Remove from saved">♥</button>
                 <img loading="lazy" src="${esc(product.image)}" alt="${esc(product.name)}">
             </div>
             <div class="product-info">
@@ -785,7 +798,9 @@ function renderSavedItems() {
 
 
 window.unsaveFromAccount = function(productId, btn) {
-    localStorage.removeItem('saved_' + productId);
+    if (window.AmieleDB && typeof window.AmieleDB.removeFromWishlist === 'function') {
+        window.AmieleDB.removeFromWishlist(String(productId));
+    }
     renderSavedItems();
 };
 

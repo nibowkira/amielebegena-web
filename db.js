@@ -64,6 +64,26 @@ window.AmieleDB = {
         if (!localStorage.getItem(DB_PREFIX + 'initialized')) {
             this.seedDemoData();
         }
+        // One-time migration: move legacy 'saved_X' keys into unified wishlist array
+        if (!localStorage.getItem(DB_PREFIX + 'wishlist_migrated')) {
+            const currentList = this.getWishlist();
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('saved_') && localStorage.getItem(key) === 'true') {
+                    const productId = key.replace('saved_', '');
+                    if (!currentList.includes(productId)) {
+                        currentList.push(productId);
+                    }
+                    keysToRemove.push(key);
+                }
+            }
+            if (currentList.length > 0) {
+                localStorage.setItem(DB_PREFIX + 'wishlist', JSON.stringify(currentList));
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+            localStorage.setItem(DB_PREFIX + 'wishlist_migrated', 'true');
+        }
     },
 
     seedDemoData() {
