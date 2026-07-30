@@ -53,7 +53,7 @@ BEGIN
         o.customer_name,
         o.phone,
         o.customer_email,
-        o.product_name,
+        COALESCE(p.name, 'Ethiopian Instrument') AS product_name,
         o.quantity,
         o.country,
         o.payment_status,
@@ -70,6 +70,7 @@ BEGIN
         o.notes
     INTO v_order
     FROM public.orders o
+    LEFT JOIN public.products p ON p.id = o.product_id
     WHERE upper(o.order_number) = v_order_number
       AND (
           -- Match by phone: strip all non-digits and compare last 9 digits
