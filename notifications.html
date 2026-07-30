@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HWVNQZSCYP"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-HWVNQZSCYP');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Center | Amiele Begena</title>
+    <meta name="description" content="Amiele Begena real-time platform notification center for customers, affiliates, and admins.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        /* ============================================================
+           NOTIFICATION CENTER — PREMIUM BRAND STYLES
+           Inspired by Vercel, Linear, Notion, Stripe
+           ============================================================ */
+
+        @font-face {
+            font-family: 'Benaiah';
+            src: url('Benaiah_536454528f.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        .notif-center-page {
+            background: #F8F6F1;
+            min-height: 100vh;
+            padding-top: 90px;
+            padding-bottom: 80px;
+            font-family: 'Outfit', 'Benaiah', sans-serif;
+        }
+
+        .notif-center-container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ── Page Header ─────────────────────────────────────────── */
+        .nc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .nc-title-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nc-title-block h1 {
+            font-family: 'Benaiah', 'Cormorant Garamond', serif;
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+            font-weight: 500;
+            color: #0F2418;
+            margin: 0;
+        }
+
+        .nc-badge-pill {
+            background: linear-gradient(135deg, #D4AF37, #C49B2F);
+            color: #FFFFFF;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .nc-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nc-btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background: #FFFFFF;
+            border: 1px solid #E7E3D8;
+            border-radius: 10px;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 500;
+            color: #0F2418;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(15,36,24,0.04);
+        }
+
+        .nc-btn-secondary:hover {
+            border-color: #D4AF37;
+            color: #D4AF37;
+            transform: translateY(-1px);
+        }
+
+        /* ── Controls Bar: Search & Filter Pills ─────────────────── */
+        .nc-controls-card {
+            background: #FFFFFF;
+            border-radius: 18px;
+            padding: 20px 24px;
+            box-shadow: 0 4px 20px rgba(15,36,24,0.04);
+            border: 1px solid #E7E3D8;
+            margin-bottom: 24px;
+        }
+
+        .nc-search-box {
+            position: relative;
+            margin-bottom: 18px;
+        }
+
+        .nc-search-box i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9a9d96;
+            font-size: 0.9rem;
+        }
+
+        .nc-search-input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            color: #0F2418;
+            background: #F8F6F1;
+            border: 1.5px solid #E7E3D8;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.25s ease;
+            box-sizing: border-box;
+        }
+
+        .nc-search-input:focus {
+            border-color: #D4AF37;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
+        }
+
+        .nc-filter-pills {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .nc-filter-pills::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .nc-filter-pills::-webkit-scrollbar-thumb {
+            background: #E7E3D8;
+            border-radius: 2px;
+        }
+
+        .nc-pill {
+            background: #F8F6F1;
+            border: 1px solid #E7E3D8;
+            border-radius: 20px;
+            padding: 7px 16px;
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #0F2418;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nc-pill:hover {
+            border-color: #D4AF37;
+            color: #D4AF37;
+        }
+
+        .nc-pill.active {
+            background: #0F2418;
+            color: #FFFFFF;
+            border-color: #0F2418;
+        }
+
+        /* ── Notification Cards List ─────────────────────────────── */
+        .nc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .nc-card {
+            background: #FFFFFF;
+            border-radius: 18px;
+            padding: 22px 24px;
+            border: 1px solid #E7E3D8;
+            box-shadow: 0 4px 16px rgba(15,36,24,0.03);
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            position: relative;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .nc-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(15,36,24,0.08);
+            border-color: #D4AF37;
+        }
+
+        .nc-card.unread {
+            background: #FFFFFF;
+            border-left: 4px solid #D4AF37;
+        }
+
+        .nc-card.read {
+            opacity: 0.88;
+        }
+
+        .nc-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: #F8F6F1;
+            border: 1px solid #E7E3D8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #0F2418;
+            flex-shrink: 0;
+        }
+
+        .nc-card.unread .nc-card-icon {
+            background: rgba(212,175,55,0.12);
+            color: #D4AF37;
+            border-color: rgba(212,175,55,0.3);
+        }
+
+        .nc-card-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .nc-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .nc-card-title {
+            font-family: 'Benaiah', 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0F2418;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nc-indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .nc-indicator-dot.gold {
+            background: #D4AF37;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.2);
+        }
+
+        .nc-indicator-dot.gray {
+            background: #d0cece;
+        }
+
+        .nc-card-time {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            color: #9a9d96;
+            white-space: nowrap;
+        }
+
+        .nc-card-msg {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.92rem;
+            color: #555855;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .nc-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .nc-ref-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            background: #F8F6F1;
+            border: 1px solid #E7E3D8;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #7a7d79;
+            text-transform: uppercase;
+        }
+
+        .nc-card-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nc-action-icon-btn {
+            background: none;
+            border: none;
+            color: #9a9d96;
+            font-size: 0.9rem;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nc-action-icon-btn:hover {
+            color: #C53030;
+            background: #FFF5F5;
+        }
+
+        /* ── Empty & Skeleton States ─────────────────────────────── */
+        .nc-empty-card {
+            background: #FFFFFF;
+            border-radius: 18px;
+            padding: 60px 24px;
+            text-align: center;
+            border: 1px solid #E7E3D8;
+        }
+
+        .nc-empty-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #F8F6F1;
+            border: 2px dashed #E7E3D8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+            font-size: 2rem;
+            color: #b0ad9e;
+        }
+
+        .nc-empty-card h3 {
+            font-family: 'Benaiah', 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            color: #0F2418;
+            margin: 0 0 6px;
+        }
+
+        .nc-empty-card p {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            color: #7a7d79;
+            margin: 0;
+        }
+
+        /* ── Pagination ──────────────────────────────────────────── */
+        .nc-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 28px;
+        }
+
+        .nc-page-info {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            color: #7a7d79;
+        }
+
+        .nc-page-btn-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── Responsive ──────────────────────────────────────────── */
+        @media (max-width: 600px) {
+            .nc-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .nc-card {
+                padding: 18px;
+                gap: 12px;
+            }
+            .nc-card-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="nav-left">
+            <a href="index.html" style="text-decoration:none;"><span class="logo">ዓሚኤል በገና</span></a>
+        </div>
+        <nav class="nav-center" id="main-nav">
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="about.html">About Our Products</a>
+            <a href="about-us.html">About Us</a>
+            <a href="track-order.html">Track Order</a>
+        </nav>
+        <div class="nav-right">
+            <select class="currency-switcher" onchange="changeCurrency(this.value)">
+                <option value="ETB">ETB</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+            </select>
+
+            <button id="cart-button" class="icon-btn" aria-label="Shopping Cart">
+                🛒
+                <span class="cart-count">0</span>
+            </button>
+            <a href="account.html" class="icon-btn" style="text-decoration:none;" aria-label="User Account">👤</a>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+    <nav class="mobile-nav" id="mobile-nav">
+        <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">&times;</button>
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="about.html">About Our Products</a>
+        <a href="about-us.html">About Us</a>
+        <a href="track-order.html">Track Order</a>
+    </nav>
+
+    <main class="notif-center-page">
+        <div class="notif-center-container">
+
+            <!-- ── Page Header ────────────────────────────────────── -->
+            <div class="nc-header">
+                <div class="nc-title-block">
+                    <h1>Notification Center</h1>
+                    <span class="nc-badge-pill" id="nc-unread-pill">0 unread</span>
+                </div>
+                <div class="nc-header-actions">
+                    <button class="nc-btn-secondary" id="nc-btn-mark-all">
+                        <i class="fas fa-check-double"></i>
+                        Mark All as Read
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── Search & Filter Controls ───────────────────────── -->
+            <div class="nc-controls-card">
+                <div class="nc-search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="nc-search-input" id="nc-search-input" placeholder="Search notifications by title or message...">
+                </div>
+                <div class="nc-filter-pills" id="nc-filter-pills">
+                    <button class="nc-pill active" data-filter="all">All</button>
+                    <button class="nc-pill" data-filter="unread">Unread</button>
+                    <button class="nc-pill" data-filter="orders">Orders</button>
+                    <button class="nc-pill" data-filter="payments">Payments</button>
+                    <button class="nc-pill" data-filter="shipping">Shipping</button>
+                    <button class="nc-pill" data-filter="affiliate">Affiliate</button>
+                    <button class="nc-pill" data-filter="system">System</button>
+                </div>
+            </div>
+
+            <!-- ── Notification List ───────────────────────────── -->
+            <div class="nc-list" id="nc-list">
+                <div class="nc-empty-card">
+                    <i class="fas fa-spinner fa-spin" style="font-size:2rem; color:#D4AF37; margin-bottom:12px;"></i>
+                    <p>Loading notifications from database...</p>
+                </div>
+            </div>
+
+            <!-- ── Pagination ──────────────────────────────────── -->
+            <div class="nc-pagination" id="nc-pagination">
+                <span class="nc-page-info" id="nc-page-info">Showing 0 of 0</span>
+                <div class="nc-page-btn-group">
+                    <button class="nc-btn-secondary" id="nc-prev-btn" disabled>&larr; Previous</button>
+                    <button class="nc-btn-secondary" id="nc-next-btn" disabled>Next &rarr;</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <p>&copy; 2026 amielebegena. ALL RIGHTS RESERVED.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/notifications-service.js"></script>
+    <script src="js/notifications-bell.js"></script>
+    <script src="js/utils/sanitize.js"></script>
+
+    <script>
+    /**
+     * Amiele Begena — Dedicated Notification Center Logic
+     */
+    (function () {
+        'use strict';
+
+        let currentPage = 1;
+        let currentFilter = 'all';
+        let currentSearch = '';
+        let totalPages = 1;
+
+        const listEl       = document.getElementById('nc-list');
+        const unreadPill   = document.getElementById('nc-unread-pill');
+        const searchInput  = document.getElementById('nc-search-input');
+        const filterPills  = document.getElementById('nc-filter-pills');
+        const markAllBtn   = document.getElementById('nc-btn-mark-all');
+        const prevBtn      = document.getElementById('nc-prev-btn');
+        const nextBtn      = document.getElementById('nc-next-btn');
+        const pageInfo     = document.getElementById('nc-page-info');
+
+        const esc = window.AmieleSanitize
+            ? window.AmieleSanitize.escapeHtml
+            : function (v) { return v == null ? '' : String(v).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); };
+
+        function formatRelativeTime(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const date = new Date(dateStr);
+                const now = new Date();
+                const diffSec = Math.floor((now - date) / 1000);
+                if (diffSec < 60) return 'Just now';
+                const diffMin = Math.floor(diffSec / 60);
+                if (diffMin < 60) return `${diffMin} min ago`;
+                const diffHr = Math.floor(diffMin / 60);
+                if (diffHr < 24) return `${diffHr} ${diffHr === 1 ? 'hour' : 'hours'} ago`;
+                const diffDays = Math.floor(diffHr / 24);
+                if (diffDays === 1) return 'Yesterday';
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } catch { return ''; }
+        }
+
+        function getNotificationIcon(type) {
+            const t = (type || '').toLowerCase();
+            if (t.includes('order_created')) return 'fa-shopping-bag';
+            if (t.includes('payment')) return 'fa-check-circle';
+            if (t.includes('preparing')) return 'fa-scissors';
+            if (t.includes('crafting')) return 'fa-hammer';
+            if (t.includes('packed')) return 'fa-box';
+            if (t.includes('shipped')) return 'fa-plane-departure';
+            if (t.includes('delivered')) return 'fa-box-open';
+            if (t.includes('commission')) return 'fa-coins';
+            if (t.includes('withdrawal')) return 'fa-wallet';
+            if (t.includes('affiliate')) return 'fa-user-check';
+            if (t.includes('warning') || t.includes('stock')) return 'fa-exclamation-triangle';
+            return 'fa-bell';
+        }
+
+        function getNavigationTarget(item) {
+            const refType = (item.reference_type || '').toLowerCase();
+            const type = (item.type || '').toLowerCase();
+            const role = item.user_role || 'customer';
+
+            if (refType === 'order') {
+                if (role === 'admin') return 'admin.html#orders';
+                return `track-order.html?order=${encodeURIComponent(item.reference_id || '')}`;
+            }
+            if (refType === 'withdrawal' || type.includes('withdrawal')) {
+                if (role === 'admin') return 'admin.html#withdrawals';
+                return 'affiliate-dashboard.html#withdrawals';
+            }
+            if (refType === 'commission' || type.includes('commission')) {
+                return 'affiliate-dashboard.html#commissions';
+            }
+            if (refType === 'application' || type.includes('affiliate')) {
+                return 'admin.html#affiliates';
+            }
+            return null;
+        }
+
+        async function loadNotifications() {
+            if (!window.NotificationsService) return;
+
+            const res = await window.NotificationsService.getNotifications({
+                page: currentPage,
+                limit: 15,
+                filter: currentFilter,
+                search: currentSearch
+            });
+
+            if (!res.success) {
+                listEl.innerHTML = `
+                    <div class="nc-empty-card">
+                        <i class="fas fa-exclamation-circle" style="color:#C53030; font-size:2rem; margin-bottom:8px;"></i>
+                        <h3>Failed to Load Notifications</h3>
+                        <p>${esc(res.error || 'Error fetching notifications.')}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Update unread pill
+            unreadPill.textContent = `${res.unreadCount} unread`;
+
+            // Pagination info
+            totalPages = res.totalPages || 1;
+            pageInfo.textContent = `Page ${res.page} of ${totalPages} (${res.totalCount} total)`;
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+
+            if (!res.notifications || !res.notifications.length) {
+                listEl.innerHTML = `
+                    <div class="nc-empty-card">
+                        <div class="nc-empty-icon"><i class="fas fa-bell-slash"></i></div>
+                        <h3>No Notifications Found</h3>
+                        <p>No notifications match your current filter or search criteria.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = res.notifications.map((item) => {
+                const isUnread = !item.is_read;
+                const icon = getNotificationIcon(item.type);
+                const relTime = formatRelativeTime(item.created_at);
+                const targetUrl = getNavigationTarget(item);
+
+                return `
+                    <div class="nc-card ${isUnread ? 'unread' : 'read'}" data-id="${item.id}" data-target="${targetUrl || ''}">
+                        <div class="nc-card-icon">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="nc-card-content">
+                            <div class="nc-card-top">
+                                <div class="nc-card-title">
+                                    <span class="nc-indicator-dot ${isUnread ? 'gold' : 'gray'}"></span>
+                                    ${esc(item.title)}
+                                </div>
+                                <span class="nc-card-time">${relTime}</span>
+                            </div>
+                            <div class="nc-card-msg">${esc(item.message)}</div>
+                            <div class="nc-card-footer">
+                                ${item.reference_type ? `<span class="nc-ref-tag"><i class="fas fa-tag"></i> ${esc(item.reference_type)}</span>` : '<span></span>'}
+                                <div class="nc-card-actions">
+                                    <button class="nc-action-icon-btn nc-delete-btn" data-id="${item.id}" title="Delete notification">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Card click listeners
+            listEl.querySelectorAll('.nc-card').forEach((card) => {
+                card.addEventListener('click', async (e) => {
+                    if (e.target.closest('.nc-delete-btn')) return;
+
+                    const id = card.getAttribute('data-id');
+                    const target = card.getAttribute('data-target');
+
+                    if (window.NotificationsService) {
+                        await window.NotificationsService.markAsRead(id);
+                    }
+
+                    if (target) {
+                        window.location.href = target;
+                    } else {
+                        loadNotifications();
+                    }
+                });
+            });
+
+            // Delete button listeners
+            listEl.querySelectorAll('.nc-delete-btn').forEach((btn) => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const id = btn.getAttribute('data-id');
+                    if (window.NotificationsService && id) {
+                        await window.NotificationsService.deleteNotification(id);
+                        loadNotifications();
+                    }
+                });
+            });
+        }
+
+        // Search Input Handler (Debounced)
+        let searchTimer = null;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                currentSearch = searchInput.value;
+                currentPage = 1;
+                loadNotifications();
+            }, 300);
+        });
+
+        // Filter Pills Handler
+        filterPills.querySelectorAll('.nc-pill').forEach((pill) => {
+            pill.addEventListener('click', () => {
+                filterPills.querySelectorAll('.nc-pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                currentFilter = pill.getAttribute('data-filter');
+                currentPage = 1;
+                loadNotifications();
+            });
+        });
+
+        // Mark All Read
+        markAllBtn.addEventListener('click', async () => {
+            if (window.NotificationsService) {
+                await window.NotificationsService.markAllAsRead();
+                loadNotifications();
+            }
+        });
+
+        // Pagination Prev / Next
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadNotifications();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadNotifications();
+            }
+        });
+
+        // Initial Load
+        loadNotifications();
+
+        // Supabase Realtime Listener
+        if (window.NotificationsService) {
+            window.NotificationsService.subscribeToRealtime(() => {
+                loadNotifications();
+            });
+        }
+    })();
+    </script>
+</body>
+</html>
