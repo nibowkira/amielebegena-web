@@ -111,6 +111,49 @@
                 session_id: sessionId,
                 notes: notes
             });
+        },
+
+        /**
+         * Track an order as a guest (no login required).
+         * Calls the SECURITY DEFINER RPC `track_guest_order` which verifies
+         * order_number + phone/email before returning tracking data.
+         *
+         * @param {string} orderNumber — The order number (e.g. "AMI-20260730-ABC1")
+         * @param {string} contactInfo — Phone number or email for verification
+         * @returns {Promise<Object>} { success, order_number, fulfillment_status, timeline, ... } or { success: false, error }
+         */
+        async trackOrder(orderNumber, contactInfo) {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) {
+                console.error('[Amiele:Orders] Supabase client is not initialized!');
+                return {
+                    success: false,
+                    error: 'Database connection unavailable. Please refresh and try again.'
+                };
+            }
+
+            try {
+                const { data, error } = await client.rpc('track_guest_order', {
+                    p_order_number: orderNumber,
+                    p_contact_info: contactInfo
+                });
+
+                if (error) {
+                    console.error('[Amiele:Orders] Track order RPC error:', error);
+                    return {
+                        success: false,
+                        error: error.message || 'Failed to look up order.'
+                    };
+                }
+
+                return data || { success: false, error: 'No response from server.' };
+            } catch (err) {
+                console.error('[Amiele:Orders] Track order exception:', err);
+                return {
+                    success: false,
+                    error: 'Server error. Please check your internet connection and try again.'
+                };
+            }
         }
     };
 
