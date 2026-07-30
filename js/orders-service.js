@@ -154,6 +154,145 @@
                     error: 'Server error. Please check your internet connection and try again.'
                 };
             }
+        },
+
+        /**
+         * Fetch current logged-in customer's orders from public.orders with filtering & pagination.
+         * @param {Object} opts
+         * @param {number} [opts.page=1]
+         * @param {number} [opts.limit=20]
+         * @param {string} [opts.status='all'] - 'all'|'pending'|'payment verified'|'preparing'|'crafting'|'packed'|'shipped'|'delivered'|'cancelled'
+         * @param {string} [opts.search=''] - Order number or product search string
+         * @returns {Promise<Object>} { success: true, orders: [], totalCount, page, totalPages }
+         */
+        async getCustomerOrders(opts = {}) {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) {
+                return { success: false, error: 'Database connection unavailable.', orders: [], totalCount: 0 };
+            }
+
+            try {
+                // Get authenticated session
+                const { data: { session }, error: sessionErr } = await client.auth.getSession();
+                if (sessionErr || !session || !session.user) {
+                    return { success: false, unauthenticated: true, orders: [], totalCount: 0 };
+                }
+
+                const user = session.user;
+                const page = Math.max(1, parseInt(opts.page, 10) || 1);
+                const limit = Math.max(1, Math.min(100, parseInt(opts.limit, 10) || 20));
+                const from = (page - 1) * limit;
+                const to = from + limit - 1;
+                const statusFilter = (opts.status || 'all').toLowerCase().trim();
+                const search = (opts.search || '').trim();
+
+                // Build query scoped strictly to authenticated customer
+                let query = client
+                    .from('orders')
+                    .select('*, product:products(id, name, price, description, product_images(storage_path, is_cover))', { count: 'exact' });
+
+                // Match by customer_id or customer_email
+                if (user.email) {
+                    query = query.or(`customer_id.eq.${user.id},customer_email.eq.${user.email}`);
+                } else {
+                    query = query.eq('customer_id', user.id);
+                }
+
+                // Filter by fulfillment status or general status
+                if (statusFilter !== 'all') {
+                    if (statusFilter === 'payment verified' || statusFilter === 'verified') {
+                        query = query.or('payment_status.ilike.%verified%,fulfillment_status.ilike.%payment verified%');
+                    } else {
+                        query = query.or(`fulfillment_status.ilike.%${statusFilter}%,status.ilike.%${statusFilter}%`);
+                    }
+                }
+
+                // Search query by order_number or notes/country
+                if (search) {
+                    query = query.or(`order_number.ilike.%${search}%,notes.ilike.%${search}%`);
+                }
+
+                // Order by newest first
+                query = query.order('created_at', { ascending: false }).range(from, to);
+
+                const { data, count, error } = await query;
+
+                if (error) {
+                    console.error('[Amiele:Orders] Query error:', error);
+                    return { success: false, error: error.message, orders: [], totalCount: 0 };
+                }
+
+                return {
+                    success: true,
+                    orders: data || [],
+                    totalCount: count || 0,
+                    page,
+                    totalPages: Math.ceil((count || 0) / limit)
+                };
+            } catch (err) {
+                console.error('[Amiele:Orders] getCustomerOrders exception:', err);
+                return { success: false, error: 'Failed to load order history.', orders: [], totalCount: 0 };
+            }
+        },
+
+        /**
+         * Get full details of a specific order including fulfillment audit timeline history.
+         * @param {string} orderIdOrNumber
+         * @returns {Promise<Object>} { success: true, order, timeline }
+         */
+        async getOrderDetails(orderIdOrNumber) {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client || !orderIdOrNumber) {
+                return { success: false, error: 'Invalid order reference.' };
+            }
+
+            try {
+                // Fetch single order
+                let query = client
+                    .from('orders')
+                    .select('*, product:products(id, name, price, description, product_images(storage_path, is_cover))');
+
+                if (orderIdOrNumber.includes('-') && orderIdOrNumber.length < 30) {
+                    query = query.eq('order_number', orderIdOrNumber);
+                } else {
+                    query = query.eq('id', orderIdOrNumber);
+                }
+
+                const { data: order, error } = await query.single();
+                if (error || !order) {
+                    return { success: false, error: error ? error.message : 'Order not found.' };
+                }
+
+                // Fetch fulfillment timeline history if table available
+                let timeline = [];
+                try {
+                    const { data: history } = await client
+                        .from('order_fulfillment_history')
+                        .select('*')
+                        .eq('order_id', order.id)
+                        .order('created_at', { ascending: true });
+                    if (history) timeline = history;
+                } catch (e) {
+                    console.warn('[Amiele:Orders] Timeline history query non-critical error:', e);
+                }
+
+                return {
+                    success: true,
+                    order,
+                    timeline
+                };
+            } catch (err) {
+                console.error('[Amiele:Orders] getOrderDetails exception:', err);
+                return { success: false, error: 'Could not fetch order details.' };
+            }
+        },
+
+        /**
+         * Deprecated helper alias for backward compatibility.
+         */
+        async getUserOrders(userId) {
+            const res = await this.getCustomerOrders({ page: 1, limit: 100 });
+            return res.orders || [];
         }
     };
 

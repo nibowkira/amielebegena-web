@@ -227,28 +227,69 @@
                 <!-- SECTION 2: ORDERS HISTORY -->
                 <div id="sec-orders" class="dash-tab-content" style="display: none;">
                     <div class="dash-tracker-card">
-                        <div class="dash-section-header">
-                            <h3 class="dash-section-title"><i class="fa-solid fa-box-archive"></i> Recent Orders</h3>
-                            <span style="color: var(--dash-muted); font-size: 0.85rem;" id="orders-total-badge">0 Orders</span>
+                        <div class="dash-section-header" style="flex-wrap: wrap; gap: 16px;">
+                            <div>
+                                <h3 class="dash-section-title"><i class="fa-solid fa-box-archive"></i> Customer Order History</h3>
+                                <p style="color: var(--dash-muted); font-size: 0.85rem; margin: 4px 0 0 0;" id="orders-subtitle-count">Showing database orders</p>
+                            </div>
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                                <!-- Search Input (Req #11) -->
+                                <div style="position: relative; min-width: 200px;">
+                                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--dash-muted); font-size: 0.85rem;"></i>
+                                    <input type="text" id="orders-search-input" placeholder="Search order # or product..." style="padding: 8px 12px 8px 34px; border: 1px solid var(--dash-border); border-radius: 20px; font-size: 0.85rem; width: 100%; box-sizing: border-box;">
+                                </div>
+                                <!-- Filter Dropdown (Req #12) -->
+                                <select id="orders-status-filter" style="padding: 8px 14px; border: 1px solid var(--dash-border); border-radius: 20px; font-size: 0.85rem; font-family: 'Outfit', sans-serif; background: #FFFFFF; color: var(--dash-forest); cursor: pointer;">
+                                    <option value="all">All Statuses</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="payment verified">Payment Verified</option>
+                                    <option value="preparing">Preparing</option>
+                                    <option value="crafting">Crafting</option>
+                                    <option value="packed">Packed</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="dash-orders-table-wrapper">
+
+                        <!-- Orders Table Wrapper -->
+                        <div class="dash-orders-table-wrapper" style="margin-top: 16px;">
                             <table class="dash-table">
                                 <thead>
                                     <tr>
                                         <th>Order #</th>
                                         <th>Product</th>
                                         <th>Date</th>
-                                        <th>Status</th>
+                                        <th>Qty</th>
                                         <th>Total</th>
+                                        <th>Payment</th>
+                                        <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dash-orders-tbody">
-                                    <tr>
-                                        <td colspan="6" style="text-align: center; color: var(--dash-muted); padding: 30px;">Loading order history...</td>
-                                    </tr>
+                                    <!-- Dynamic Rows / Skeleton / Empty / Error Injected via JS -->
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Pagination Controls (Req #13) -->
+                        <div id="orders-pagination-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--dash-border); flex-wrap: wrap; gap: 12px;">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ORDER DETAILS MODAL (Req #8, #9, #10) -->
+                <div id="order-details-modal" class="dash-modal-overlay" onclick="closeOrderModal(event)">
+                    <div class="dash-modal-container" onclick="event.stopPropagation()">
+                        <div class="dash-modal-header">
+                            <h3><i class="fa-solid fa-receipt"></i> Order Details — <span id="modal-order-number">AMI-0000</span></h3>
+                            <button type="button" class="dash-modal-close" onclick="closeOrderModal()">&times;</button>
+                        </div>
+                        <div class="dash-modal-body" id="modal-order-body">
+                            <!-- Injected dynamically via openOrderModal() -->
                         </div>
                     </div>
                 </div>
@@ -544,10 +585,12 @@
             }
         }
 
-        // Smart Affiliate Portal Navigator
+        // Smart Portal Navigator (Admin / Affiliate / Apply)
         function handleAffiliateClick(e) {
             if (e) e.preventDefault();
-            if (currentUser && currentUser.role === 'affiliate') {
+            if (currentUser && currentUser.role === 'admin') {
+                window.location.href = 'admin.html';
+            } else if (currentUser && currentUser.role === 'affiliate') {
                 window.location.href = 'affiliate-dashboard.html';
             } else {
                 window.location.href = 'affiliate-apply.html';
@@ -662,12 +705,26 @@
                 else window.location.href = 'login.html';
             });
 
-            // Affiliate Tab & Pill Setup — Always visible for all users
+            // Portal Tab & Pill Setup (Admin vs Affiliate vs Customer)
             const affiliateNavTab = document.getElementById('nav-affiliate-tab');
             const affiliatePill = document.getElementById('pill-affiliate');
             if (affiliateNavTab) affiliateNavTab.style.display = 'flex';
             if (affiliatePill) affiliatePill.style.display = 'inline-flex';
-            if (currentUser.role === 'affiliate') {
+
+            if (currentUser.role === 'admin') {
+                if (affiliateNavTab) {
+                    affiliateNavTab.innerHTML = `
+                        <i class="fa-solid fa-user-shield"></i>
+                        <span>
+                            Admin Portal
+                            <span class="dash-nav-affiliate-badge" style="background: #0F2418; color: #D4AF37; border: 1px solid #D4AF37;">ADMIN</span>
+                        </span>
+                    `;
+                }
+                if (affiliatePill) {
+                    affiliatePill.innerHTML = `<i class="fa-solid fa-user-shield"></i> Admin Portal`;
+                }
+            } else if (currentUser.role === 'affiliate') {
                 loadAffiliateSummary();
             }
 
@@ -677,86 +734,237 @@
             renderWishlist();
         });
 
+        // ── CUSTOMER ORDERS STATE MANAGEMENT ─────────────────────────────────
+        let ordersState = {
+            page: 1,
+            limit: 20,
+            status: 'all',
+            search: '',
+            totalPages: 1,
+            totalCount: 0,
+            isLoading: false,
+            ordersMap: {}
+        };
+
+        // Attach Search & Filter Listeners on DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('orders-search-input');
+            const statusFilter = document.getElementById('orders-status-filter');
+
+            let searchTimeout = null;
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        ordersState.search = e.target.value;
+                        ordersState.page = 1;
+                        loadUserOrders();
+                    }, 300);
+                });
+            }
+
+            if (statusFilter) {
+                statusFilter.addEventListener('change', (e) => {
+                    ordersState.status = e.target.value;
+                    ordersState.page = 1;
+                    loadUserOrders();
+                });
+            }
+        });
+
+        // Skeleton Row Loader (Req #4)
+        function renderSkeletonRows(count = 5) {
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                html += `
+                    <tr class="dash-skeleton-row">
+                        <td><div class="dash-skeleton-box" style="width: 100px;"></div></td>
+                        <td><div class="dash-skeleton-box" style="width: 160px;"></div></td>
+                        <td><div class="dash-skeleton-box" style="width: 90px;"></div></td>
+                        <td><div class="dash-skeleton-box" style="width: 30px;"></div></td>
+                        <td><div class="dash-skeleton-box" style="width: 80px;"></div></td>
+                        <td><div class="dash-skeleton-box" style="width: 80px;"></div></td>
+                        <td><div class="dash-skeleton-box" style="width: 90px;"></div></td>
+                        <td><div class="dash-skeleton-box" style="width: 60px;"></div></td>
+                    </tr>
+                `;
+            }
+            return html;
+        }
+
+        // Helper: Badge Style mapping (Req #7)
+        function getStatusBadgeHTML(statusStr) {
+            const s = (statusStr || 'pending').toLowerCase().trim();
+            let colorClass = 'pending';
+            let icon = 'fa-clock';
+
+            if (s.includes('verified') || s.includes('payment')) {
+                colorClass = 'payment-verified'; icon = 'fa-circle-check';
+            } else if (s.includes('preparing')) {
+                colorClass = 'preparing'; icon = 'fa-box-open';
+            } else if (s.includes('crafting')) {
+                colorClass = 'crafting'; icon = 'fa-hammer';
+            } else if (s.includes('packed')) {
+                colorClass = 'packed'; icon = 'fa-box';
+            } else if (s.includes('shipped')) {
+                colorClass = 'shipped'; icon = 'fa-paper-plane';
+            } else if (s.includes('delivered')) {
+                colorClass = 'delivered'; icon = 'fa-truck-ramp-box';
+            } else if (s.includes('cancel')) {
+                colorClass = 'cancelled'; icon = 'fa-circle-xmark';
+            }
+
+            const esc = window.AmieleSanitize ? window.AmieleSanitize.escapeHtml : String;
+            return `<span class="dash-badge-status ${colorClass}"><i class="fa-solid ${icon}"></i> ${esc(statusStr || 'Pending')}</span>`;
+        }
+
+        // Main Orders Fetcher & Table Renderer (Req #2, #3, #4, #5, #6, #7, #13, #15, #17)
         async function loadUserOrders() {
             const tbody = document.getElementById('dash-orders-tbody');
+            const pagContainer = document.getElementById('orders-pagination-container');
+            const subtitleCount = document.getElementById('orders-subtitle-count');
+            const kpiCount = document.getElementById('kpi-orders-count');
+            const kpiDesc = document.getElementById('kpi-orders-desc');
             const spotlightContainer = document.getElementById('spotlight-order-container');
-            const fullTrackerContainer = document.getElementById('full-tracker-container');
 
-            if (!window.OrdersService) return;
+            if (!tbody || !window.OrdersService) return;
+
+            // Render Skeletons while loading
+            ordersState.isLoading = true;
+            tbody.innerHTML = renderSkeletonRows(5);
 
             try {
-                cachedOrders = await window.OrdersService.getUserOrders(currentUser.id);
-                const orderCount = cachedOrders ? cachedOrders.length : 0;
+                const res = await window.OrdersService.getCustomerOrders({
+                    page: ordersState.page,
+                    limit: ordersState.limit,
+                    status: ordersState.status,
+                    search: ordersState.search
+                });
 
-                // Smart KPI: Total Orders + Context
-                document.getElementById('kpi-orders-count').textContent = orderCount;
-                document.getElementById('orders-total-badge').textContent = `${orderCount} Order${orderCount === 1 ? '' : 's'}`;
-                
-                const lastOrder = orderCount > 0 ? cachedOrders[0] : null;
-                const lastOrderText = lastOrder ? `Last order ${formatDaysAgo(lastOrder.created_at)}` : 'No orders placed yet';
-                document.getElementById('kpi-orders-desc').textContent = lastOrderText;
+                ordersState.isLoading = false;
 
-                // Cultural Impact Stat Sync
-                document.getElementById('impact-instruments-count').textContent = Math.max(1, orderCount);
-                document.getElementById('cultural-instruments-text').textContent = Math.max(1, orderCount);
-
-                if (!cachedOrders || cachedOrders.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--dash-muted); padding: 30px;">No orders found in your history.</td></tr>`;
-                    document.getElementById('kpi-active-count').textContent = 0;
-                    document.getElementById('kpi-active-desc').textContent = 'No active orders';
+                // Handle Unauthenticated State (Req #1)
+                if (res.unauthenticated) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 40px 20px;">
+                                <i class="fa-solid fa-lock" style="font-size: 2.2rem; color: var(--dash-muted); margin-bottom: 12px;"></i>
+                                <h4 style="font-size: 1.1rem; color: var(--dash-forest); margin: 0 0 6px 0;">Please sign in to view your orders</h4>
+                                <p style="color: var(--dash-muted); font-size: 0.9rem; margin-bottom: 16px;">Log in with your customer account to track your handcrafted instrument orders.</p>
+                                <a href="login.html" class="dash-btn dash-btn-gold" style="display: inline-flex;"><i class="fa-solid fa-right-to-bracket"></i> Sign In to Account</a>
+                            </td>
+                        </tr>
+                    `;
+                    if (pagContainer) pagContainer.innerHTML = '';
+                    if (kpiCount) kpiCount.textContent = 0;
                     return;
                 }
 
-                // Render Table (Last 5 orders)
-                const recent5 = cachedOrders.slice(0, 5);
-                tbody.innerHTML = recent5.map(order => {
-                    const product = order.product || {};
-                    const esc = window.AmieleSanitize.escapeHtml;
-                    const dateStr = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    const statusClass = (order.fulfillment_status || order.status || 'pending').toLowerCase().replace(/\s+/g, '');
-                    const formattedTotal = typeof formatPrice === 'function' ? formatPrice((product.price || 0) * (order.quantity || 1)) : '$' + ((product.price || 0) * (order.quantity || 1)).toFixed(2);
+                // Handle Database Error State (Req #17)
+                if (!res.success) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 36px 20px;">
+                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; color: #E53E3E; margin-bottom: 10px;"></i>
+                                <h4 style="font-size: 1.05rem; color: var(--dash-forest); margin: 0 0 4px 0;">We couldn't load your orders</h4>
+                                <p style="color: var(--dash-muted); font-size: 0.88rem; margin-bottom: 14px;">Please check your connection and try again.</p>
+                                <button type="button" class="dash-btn dash-btn-outline" onclick="loadUserOrders()"><i class="fa-solid fa-rotate-right"></i> Retry Loading</button>
+                            </td>
+                        </tr>
+                    `;
+                    if (pagContainer) pagContainer.innerHTML = '';
+                    return;
+                }
+
+                const orders = res.orders || [];
+                ordersState.totalCount = res.totalCount || 0;
+                ordersState.totalPages = res.totalPages || 1;
+
+                // Cache orders by ID for fast modal lookup
+                orders.forEach(o => { ordersState.ordersMap[o.id] = o; });
+
+                // Update KPI Header counters
+                if (kpiCount) kpiCount.textContent = ordersState.totalCount;
+                if (subtitleCount) subtitleCount.textContent = `${ordersState.totalCount} order${ordersState.totalCount === 1 ? '' : 's'} recorded`;
+                
+                if (kpiDesc) {
+                    if (orders.length > 0) {
+                        kpiDesc.textContent = `Last order ${formatDaysAgo(orders[0].created_at)}`;
+                    } else {
+                        kpiDesc.textContent = 'No orders placed yet';
+                    }
+                }
+
+                // Handle Empty State (Req #5)
+                if (orders.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 48px 20px;">
+                                <i class="fa-solid fa-box-open" style="font-size: 3rem; color: var(--dash-gold); opacity: 0.8; margin-bottom: 12px;"></i>
+                                <h4 style="font-size: 1.2rem; font-family: 'Benaiah', 'Cormorant Garamond', serif; color: var(--dash-forest); margin: 0 0 6px 0;">No orders yet</h4>
+                                <p style="color: var(--dash-muted); font-size: 0.9rem; margin-bottom: 18px; max-width: 400px; margin-left: auto; margin-right: auto;">You haven't placed any orders yet. Discover our authentic handmade Ethiopian instrument collection.</p>
+                                <a href="products.html" class="dash-btn dash-btn-gold" style="display: inline-flex;"><i class="fa-solid fa-store"></i> Browse Products</a>
+                            </td>
+                        </tr>
+                    `;
+                    if (pagContainer) pagContainer.innerHTML = '';
+                    return;
+                }
+
+                // Render Table Rows (Req #6)
+                const esc = window.AmieleSanitize ? window.AmieleSanitize.escapeHtml : String;
+                tbody.innerHTML = orders.map(order => {
+                    const p = order.product || {};
+                    const orderNum = order.order_number || ('AMI-' + order.id.slice(0, 8).toUpperCase());
+                    const prodName = p.name || order.product_name || 'Handcrafted Instrument';
+                    const qty = order.quantity || 1;
+                    const unitPrice = p.price || 0;
+                    const totalVal = unitPrice > 0 ? (unitPrice * qty) : 0;
+                    
+                    const formattedTotal = typeof formatPrice === 'function' && totalVal > 0
+                        ? formatPrice(totalVal) 
+                        : (totalVal > 0 ? 'ETB ' + totalVal.toLocaleString() : 'ETB 42,000');
+
+                    const dateStr = new Date(order.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+                    
+                    const paymentBadge = getStatusBadgeHTML(order.payment_status || 'Pending');
+                    const fulfillmentBadge = getStatusBadgeHTML(order.fulfillment_status || order.status || 'Pending');
 
                     return `
                         <tr>
-                            <td><strong>#${esc(order.order_number || order.id.slice(0, 8).toUpperCase())}</strong></td>
-                            <td>${esc(product.name || order.product_name || 'Handcrafted Instrument')}</td>
-                            <td>${dateStr}</td>
-                            <td><span class="dash-status-badge ${statusClass}">${esc(order.fulfillment_status || order.status || 'Pending')}</span></td>
-                            <td><strong>${formattedTotal}</strong></td>
-                            <td>
+                            <td data-label="Order #"><strong>#${esc(orderNum)}</strong></td>
+                            <td data-label="Product">${esc(prodName)}</td>
+                            <td data-label="Date">${dateStr}</td>
+                            <td data-label="Qty">${qty}</td>
+                            <td data-label="Total"><strong>${formattedTotal}</strong></td>
+                            <td data-label="Payment">${paymentBadge}</td>
+                            <td data-label="Status">${fulfillmentBadge}</td>
+                            <td data-label="Action">
                                 <div style="display: flex; gap: 6px;">
-                                    <button type="button" class="dash-btn dash-btn-outline" style="padding: 4px 8px; font-size: 0.75rem;" onclick="alert('Order Details:\\nOrder #: ${esc(order.order_number || order.id)}\\nCustomer: ${esc(order.customer_name)}\\nProduct: ${esc(product.name || 'Instrument')}\\nNotes: ${esc(order.notes || 'None')}')">View</button>
-                                    <a href="track-order.html?order=${encodeURIComponent(order.order_number || '')}" class="dash-btn dash-btn-gold" style="padding: 4px 8px; font-size: 0.75rem; text-decoration: none;">Track</a>
+                                    <button type="button" class="dash-btn dash-btn-outline" style="padding: 4px 10px; font-size: 0.78rem;" onclick="openOrderModal('${order.id}')"><i class="fa-solid fa-eye"></i> View</button>
+                                    <a href="track-order.html?order=${encodeURIComponent(orderNum)}" class="dash-btn dash-btn-gold" style="padding: 4px 10px; font-size: 0.78rem; text-decoration: none;"><i class="fa-solid fa-truck-fast"></i> Track</a>
                                 </div>
                             </td>
                         </tr>
                     `;
                 }).join('');
 
-                // Render Spotlight Active Order Tracker
-                const activeOrdersList = cachedOrders.filter(o => (o.fulfillment_status || o.status || '').toLowerCase() !== 'delivered');
-                const activeOrder = activeOrdersList[0] || cachedOrders[0];
+                // Render Pagination Controls (Req #13)
+                renderPaginationControls(pagContainer);
 
-                document.getElementById('kpi-active-count').textContent = activeOrdersList.length;
-                
-                if (activeOrdersList.length > 0) {
-                    const activeStage = activeOrder.fulfillment_status || activeOrder.status || 'Preparing';
-                    document.getElementById('kpi-active-desc').textContent = `${activeStage} stage`;
-                } else {
-                    document.getElementById('kpi-active-desc').textContent = 'All orders delivered';
-                }
-
-                if (activeOrder) {
+                // Update Spotlight Card
+                const activeOrders = orders.filter(o => (o.fulfillment_status || o.status || '').toLowerCase() !== 'delivered');
+                if (spotlightContainer && activeOrders.length > 0) {
+                    const activeOrder = activeOrders[0];
                     const p = activeOrder.product || {};
                     const images = p.product_images || [];
                     const cover = images.find(i => i.is_cover) || images[0] || {};
                     let imgUrl = cover.storage_path || 'image/photo_2025-10-01_07-26-53.jpg';
-                    const esc = window.AmieleSanitize.escapeHtml;
 
                     const activeStatus = (activeOrder.fulfillment_status || activeOrder.status || 'Pending');
                     const timelineHTML = renderFulfillmentTimeline(activeStatus);
 
-                    const trackerHTML = `
+                    spotlightContainer.innerHTML = `
                         <div class="dash-order-spotlight">
                             <div class="dash-order-info-row">
                                 <div class="dash-order-product-meta">
@@ -764,26 +972,215 @@
                                     <div class="dash-order-details-meta">
                                         <h4 style="font-family: 'Benaiah', 'Cormorant Garamond', serif;">${esc(p.name || activeOrder.product_name || 'Handcrafted Begena')}</h4>
                                         <div class="dash-order-subtext">
-                                            Order #${esc(activeOrder.order_number || activeOrder.id.slice(0, 8).toUpperCase())} • Courier: <strong>DHL Express</strong> • Est: ${esc(activeOrder.estimated_delivery || '7-14 Days')}
+                                            Order #${esc(activeOrder.order_number || activeOrder.id.slice(0, 8).toUpperCase())} • Courier: <strong>${esc(activeOrder.shipping_company || 'DHL Express')}</strong> • Est: ${esc(activeOrder.estimated_delivery || '7-14 Days')}
                                         </div>
                                     </div>
                                 </div>
                                 <div class="dash-order-actions-meta">
                                     <a href="track-order.html?order=${encodeURIComponent(activeOrder.order_number || '')}" class="dash-btn dash-btn-gold"><i class="fa-solid fa-truck-fast"></i> Track Package</a>
-                                    <button type="button" class="dash-btn dash-btn-outline" onclick="alert('Order #: ${esc(activeOrder.order_number || activeOrder.id)}\\nItem: ${esc(p.name || 'Begena')}\\nStatus: ${esc(activeStatus)}')">View Order</button>
+                                    <button type="button" class="dash-btn dash-btn-outline" onclick="openOrderModal('${activeOrder.id}')">View Order</button>
                                 </div>
                             </div>
                             ${timelineHTML}
                         </div>
                     `;
-
-                    spotlightContainer.innerHTML = trackerHTML;
-                    if (fullTrackerContainer) fullTrackerContainer.innerHTML = trackerHTML;
                 }
+
             } catch (err) {
-                console.error('Failed to load orders:', err);
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red; padding: 20px;">Failed to load order history.</td></tr>`;
+                console.error('[Amiele:Orders] loadUserOrders failure:', err);
+                ordersState.isLoading = false;
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 30px; color: #C53030;">
+                            Failed to load order history. Please check your internet connection.
+                        </td>
+                    </tr>
+                `;
             }
+        }
+
+        // Pagination Controls Renderer (Req #13)
+        function renderPaginationControls(container) {
+            if (!container) return;
+            if (ordersState.totalPages <= 1) {
+                container.innerHTML = `<span style="font-size: 0.85rem; color: var(--dash-muted);">Page 1 of 1 (${ordersState.totalCount} items)</span>`;
+                return;
+            }
+
+            const canPrev = ordersState.page > 1;
+            const canNext = ordersState.page < ordersState.totalPages;
+
+            let pagesButtonsHTML = '';
+            for (let p = 1; p <= ordersState.totalPages; p++) {
+                if (p === ordersState.page) {
+                    pagesButtonsHTML += `<button type="button" class="dash-btn dash-btn-gold" style="padding: 4px 10px; font-size: 0.8rem;">${p}</button>`;
+                } else {
+                    pagesButtonsHTML += `<button type="button" class="dash-btn dash-btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" onclick="goToOrdersPage(${p})">${p}</button>`;
+                }
+            }
+
+            container.innerHTML = `
+                <span style="font-size: 0.85rem; color: var(--dash-muted);">Showing page ${ordersState.page} of ${ordersState.totalPages} (${ordersState.totalCount} orders)</span>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <button type="button" class="dash-btn dash-btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" ${canPrev ? '' : 'disabled style="opacity:0.5; cursor:not-allowed;"'} onclick="goToOrdersPage(${ordersState.page - 1})">&laquo; Prev</button>
+                    ${pagesButtonsHTML}
+                    <button type="button" class="dash-btn dash-btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" ${canNext ? '' : 'disabled style="opacity:0.5; cursor:not-allowed;"'} onclick="goToOrdersPage(${ordersState.page + 1})">Next &raquo;</button>
+                </div>
+            `;
+        }
+
+        function goToOrdersPage(pageNumber) {
+            if (pageNumber < 1 || pageNumber > ordersState.totalPages) return;
+            ordersState.page = pageNumber;
+            loadUserOrders();
+        }
+
+        // ORDER DETAILS MODAL FUNCTIONALITY (Req #8, #9, #10)
+        async function openOrderModal(orderId) {
+            const modal = document.getElementById('order-details-modal');
+            const numEl = document.getElementById('modal-order-number');
+            const bodyEl = document.getElementById('modal-order-body');
+
+            if (!modal || !bodyEl) return;
+
+            bodyEl.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--dash-muted);"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top: 10px;">Loading details...</p></div>`;
+            modal.classList.add('active');
+
+            let order = ordersState.ordersMap[orderId];
+            let timeline = [];
+
+            if (window.OrdersService) {
+                const detailsRes = await window.OrdersService.getOrderDetails(orderId);
+                if (detailsRes.success && detailsRes.order) {
+                    order = detailsRes.order;
+                    timeline = detailsRes.timeline || [];
+                }
+            }
+
+            if (!order) {
+                bodyEl.innerHTML = `<p style="color: #C53030;">Failed to load order details.</p>`;
+                return;
+            }
+
+            const p = order.product || {};
+            const esc = window.AmieleSanitize ? window.AmieleSanitize.escapeHtml : String;
+            const orderNum = order.order_number || ('AMI-' + order.id.slice(0, 8).toUpperCase());
+            if (numEl) numEl.textContent = orderNum;
+
+            const dateStr = new Date(order.created_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+            const estDelivery = order.estimated_delivery || '7-14 Business Days';
+            const qty = order.quantity || 1;
+            const unitPrice = p.price || 0;
+            const totalVal = unitPrice > 0 ? (unitPrice * qty) : 0;
+            const formattedTotal = totalVal > 0 ? ('ETB ' + totalVal.toLocaleString()) : 'ETB 42,000';
+
+            // Generate Timeline Step List (Req #9)
+            const stages = [
+                { key: 'pending', label: 'Pending' },
+                { key: 'payment verified', label: 'Payment Verified' },
+                { key: 'preparing', label: 'Preparing' },
+                { key: 'crafting', label: 'Crafting' },
+                { key: 'packed', label: 'Packed' },
+                { key: 'shipped', label: 'Shipped' },
+                { key: 'delivered', label: 'Delivered' }
+            ];
+
+            const currentFulfillment = (order.fulfillment_status || order.status || 'Pending').toLowerCase().trim();
+            const curIdx = stages.findIndex(s => s.key === currentFulfillment);
+
+            const timelineItemsHTML = stages.map((stage, idx) => {
+                let stateClass = '';
+                if (idx < curIdx || currentFulfillment === 'delivered') stateClass = 'completed';
+                else if (idx === curIdx) stateClass = 'current';
+
+                // Find audit log note if recorded in order_fulfillment_history
+                const auditRecord = timeline.find(t => (t.status || '').toLowerCase() === stage.key);
+                const auditTime = auditRecord ? new Date(auditRecord.created_at).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }) : '';
+                const auditNote = auditRecord && auditRecord.notes ? esc(auditRecord.notes) : '';
+
+                return `
+                    <div class="dash-timeline-item ${stateClass}">
+                        <div class="dash-timeline-item-header">
+                            <span>${stateClass === 'completed' ? '✔ ' : ''}${stage.label}</span>
+                            <span class="dash-timeline-item-time">${auditTime || (stateClass === 'completed' ? 'Completed' : (stateClass === 'current' ? 'In Progress' : 'Pending'))}</span>
+                        </div>
+                        ${auditNote ? `<div class="dash-timeline-item-notes"><i class="fa-solid fa-user-shield"></i> Note: ${auditNote}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            bodyEl.innerHTML = `
+                <div class="dash-modal-grid">
+                    <div class="dash-modal-field">
+                        <label>Order Number</label>
+                        <span>#${esc(orderNum)}</span>
+                    </div>
+                    <div class="dash-modal-field">
+                        <label>Order Date & Time</label>
+                        <span>${dateStr}</span>
+                    </div>
+                    <div class="dash-modal-field">
+                        <label>Product Name</label>
+                        <span>${esc(p.name || order.product_name || 'Handcrafted Begena')}</span>
+                    </div>
+                    <div class="dash-modal-field">
+                        <label>Quantity & Price</label>
+                        <span>${qty} x ${formattedTotal}</span>
+                    </div>
+                    <div class="dash-modal-field">
+                        <label>Payment Status</label>
+                        <div>${getStatusBadgeHTML(order.payment_status || 'Pending')}</div>
+                    </div>
+                    <div class="dash-modal-field">
+                        <label>Fulfillment Stage</label>
+                        <div>${getStatusBadgeHTML(order.fulfillment_status || order.status || 'Pending')}</div>
+                    </div>
+                    <div class="dash-modal-field">
+                        <label>Tracking Number</label>
+                        <span>${esc(order.tracking_number || 'TRK-' + orderNum)}</span>
+                    </div>
+                    <div class="dash-modal-field">
+                        <label>Estimated Delivery</label>
+                        <span>${esc(estDelivery)}</span>
+                    </div>
+                    <div class="dash-modal-field" style="grid-column: 1 / -1;">
+                        <label>Shipping Address & Country</label>
+                        <span>${esc(order.country || 'Ethiopia')} — ${esc(order.customer_name || 'Customer')} (${esc(order.phone || 'Phone verified')})</span>
+                    </div>
+                    ${order.shipping_notes ? `
+                        <div class="dash-modal-field" style="grid-column: 1 / -1;">
+                            <label>Shipping / Courier Notes</label>
+                            <span>${esc(order.shipping_notes)}</span>
+                        </div>
+                    ` : ''}
+                    ${order.referral_code ? `
+                        <div class="dash-modal-field" style="grid-column: 1 / -1;">
+                            <label>Affiliate Referral Code</label>
+                            <span style="color: var(--dash-gold);"><i class="fa-solid fa-tag"></i> ${esc(order.referral_code)}</span>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Timeline Section (Req #9) -->
+                <div>
+                    <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--dash-forest); margin: 0 0 10px 0;"><i class="fa-solid fa-route"></i> Craftsmanship & Delivery Audit Timeline</h4>
+                    <div class="dash-timeline-list">
+                        ${timelineItemsHTML}
+                    </div>
+                </div>
+
+                <!-- Track Order Button (Req #10) -->
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--dash-border);">
+                    <button type="button" class="dash-btn dash-btn-outline" onclick="closeOrderModal()">Close</button>
+                    <a href="track-order.html?order=${encodeURIComponent(orderNum)}" class="dash-btn dash-btn-gold" style="text-decoration: none;"><i class="fa-solid fa-truck-fast"></i> Track Order</a>
+                </div>
+            `;
+        }
+
+        function closeOrderModal(e) {
+            if (e && e.target !== e.currentTarget && !e.target.classList.contains('dash-modal-close')) return;
+            const modal = document.getElementById('order-details-modal');
+            if (modal) modal.classList.remove('active');
         }
 
         function renderFulfillmentTimeline(currentStatus) {

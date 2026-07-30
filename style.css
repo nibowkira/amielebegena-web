@@ -3335,6 +3335,310 @@ a.dash-action-pill:hover i {
     color: var(--dash-gold);
 }
 
+/* ── STATUS BADGES (REQUIREMENT #7) ────────────────────────────────────── */
+.dash-badge-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 4px 10px !important;
+    border-radius: 20px !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    text-transform: capitalize !important;
+}
+
+.dash-badge-status.pending, .dash-badge-status.gray {
+    background: #EDF2F7 !important;
+    color: #4A5568 !important;
+    border: 1px solid #CBD5E0 !important;
+}
+
+.dash-badge-status.verified, .dash-badge-status.payment-verified, .dash-badge-status.blue {
+    background: #EBF8FF !important;
+    color: #2B6CB0 !important;
+    border: 1px solid #BEE3F8 !important;
+}
+
+.dash-badge-status.preparing, .dash-badge-status.orange {
+    background: #FFFAF0 !important;
+    color: #DD6B20 !important;
+    border: 1px solid #FBD38D !important;
+}
+
+.dash-badge-status.crafting, .dash-badge-status.purple {
+    background: #FAF5FF !important;
+    color: #805AD5 !important;
+    border: 1px solid #E9D8FD !important;
+}
+
+.dash-badge-status.packed, .dash-badge-status.gold {
+    background: rgba(212, 175, 55, 0.12) !important;
+    color: #977712 !important;
+    border: 1px solid rgba(212, 175, 55, 0.35) !important;
+}
+
+.dash-badge-status.shipped, .dash-badge-status.teal {
+    background: #E6FFFA !important;
+    color: #319795 !important;
+    border: 1px solid #B2F5EA !important;
+}
+
+.dash-badge-status.delivered, .dash-badge-status.green {
+    background: #F0FFF4 !important;
+    color: #2F855A !important;
+    border: 1px solid #C6F6D5 !important;
+}
+
+.dash-badge-status.cancelled, .dash-badge-status.red {
+    background: #FFF5F5 !important;
+    color: #C53030 !important;
+    border: 1px solid #FEB2B2 !important;
+}
+
+/* ── ANIMATED SKELETON ROW (REQUIREMENT #4) ────────────────────────────── */
+@keyframes skeletonShimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: 200px 0; }
+}
+
+.dash-skeleton-row td {
+    padding: 16px 12px;
+}
+
+.dash-skeleton-box {
+    height: 18px;
+    background: #f0ede4;
+    background-image: linear-gradient(90deg, #f0ede4 0px, #fdfbf7 40px, #f0ede4 80px);
+    background-size: 400px 100%;
+    animation: skeletonShimmer 1.4s ease-in-out infinite;
+    border-radius: 6px;
+}
+
+/* ── ORDER DETAILS MODAL (REQUIREMENT #8 & #9) ──────────────────────────── */
+.dash-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 36, 24, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.dash-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dash-modal-container {
+    background: #FFFFFF;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 680px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(15, 36, 24, 0.2);
+    border: 1px solid #E7E3D8;
+    display: flex;
+    flex-direction: column;
+}
+
+.dash-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #E7E3D8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #F8F6F1;
+}
+
+.dash-modal-header h3 {
+    margin: 0;
+    font-family: 'Benaiah', 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    color: #0F2418;
+}
+
+.dash-modal-close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #4A5568;
+}
+
+.dash-modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.dash-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    background: #F9F8F4;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #eeebe1;
+}
+
+.dash-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dash-modal-field label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #718096;
+}
+
+.dash-modal-field span {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0F2418;
+}
+
+/* Modal Timeline */
+.dash-timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 10px;
+    position: relative;
+    padding-left: 24px;
+}
+
+.dash-timeline-list::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: #E2E8F0;
+}
+
+.dash-timeline-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dash-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #CBD5E0;
+    border: 2px solid #FFFFFF;
+}
+
+.dash-timeline-item.completed::before {
+    background: #38A169;
+}
+
+.dash-timeline-item.current::before {
+    background: #D4AF37;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+}
+
+.dash-timeline-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #2D3748;
+}
+
+.dash-timeline-item.completed .dash-timeline-item-header {
+    color: #2F855A;
+}
+
+.dash-timeline-item.current .dash-timeline-item-header {
+    color: #977712;
+}
+
+.dash-timeline-item-time {
+    font-size: 0.78rem;
+    color: #A0AEC0;
+    font-weight: normal;
+}
+
+.dash-timeline-item-notes {
+    font-size: 0.82rem;
+    color: #718096;
+    background: #FFFFFF;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #EDF2F7;
+    margin-top: 2px;
+}
+
+/* ── MOBILE STACKED CARDS (REQUIREMENT #14) ─────────────────────────────── */
+@media (max-width: 768px) {
+    .dash-table thead {
+        display: none;
+    }
+
+    .dash-table, .dash-table tbody, .dash-table tr, .dash-table td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dash-table tr {
+        background: #FFFFFF;
+        border: 1px solid #E7E3D8;
+        border-radius: 14px;
+        margin-bottom: 16px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(15, 36, 24, 0.04);
+    }
+
+    .dash-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px dashed #eeebe1;
+        font-size: 0.9rem;
+    }
+
+    .dash-table td:last-child {
+        border-bottom: none;
+        padding-top: 12px;
+    }
+
+    .dash-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        color: #718096;
+    }
+}
+
 .dash-stat-title {
     font-size: 0.8rem;
     font-weight: 600;
