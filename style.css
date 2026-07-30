@@ -3088,23 +3088,27 @@ img {
     font-family: 'Cormorant Garamond', serif;
     font-size: 2rem;
     font-weight: 700;
+    font-family: 'Benaiah', 'Cormorant Garamond', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
     color: var(--dash-forest);
-    margin: 0 0 6px 0;
+    margin: 0 0 4px 0;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
+    line-height: 1.2;
 }
 
 .dash-badge-verified {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 10px;
+    padding: 2px 8px;
     border-radius: 20px;
     background: var(--dash-gold-light);
     color: #9E7D1A;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
     text-transform: uppercase;
@@ -3115,46 +3119,50 @@ img {
 .dash-user-meta {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     flex-wrap: wrap;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     color: var(--dash-muted);
 }
 
 .dash-user-meta-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .dash-hero-right {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 16px;
-    min-width: 220px;
+    gap: 10px;
+    min-width: 200px;
+}
+
+.dash-hero-edit-btn-top {
+    font-size: 0.82rem;
+    padding: 6px 14px;
 }
 
 .dash-completion-box {
     width: 100%;
     background: var(--dash-ivory);
     border: 1px solid var(--dash-border);
-    border-radius: 12px;
-    padding: 12px 16px;
+    border-radius: 10px;
+    padding: 8px 12px;
 }
 
 .dash-completion-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--dash-forest);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .dash-completion-bar {
-    height: 6px;
     background: var(--dash-border);
     border-radius: 4px;
     overflow: hidden;

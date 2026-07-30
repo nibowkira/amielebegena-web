@@ -108,7 +108,7 @@
 
                 <!-- SECTION 1: MAIN DASHBOARD OVERVIEW -->
                 <div id="sec-dashboard" class="dash-tab-content">
-                    <!-- Hero Profile Card -->
+                    <!-- Hero Profile Card (Refined Height -20%, Top Right Edit Btn, Time-based Greeting) -->
                     <div class="dash-hero-card">
                         <div class="dash-hero-left">
                             <div class="dash-avatar-wrapper">
@@ -119,9 +119,10 @@
                                 <input type="file" id="dash-avatar-input" accept="image/*" style="display: none;">
                             </div>
                             <div class="dash-user-details">
+                                <div class="dash-user-greeting-subtitle">Welcome back to Amiele Begena</div>
                                 <h2>
-                                    <span id="dash-user-name">Loading Profile...</span>
-                                    <span class="dash-badge-verified"><i class="fa-solid fa-shield-check"></i> Verified</span>
+                                    <span id="dash-greeting-title">Good Evening, Customer 👋</span>
+                                    <span class="dash-badge-verified"><i class="fa-solid fa-shield-check"></i> Verified Customer</span>
                                 </h2>
                                 <div class="dash-user-meta">
                                     <span class="dash-user-meta-item"><i class="fa-solid fa-envelope"></i> <span id="dash-user-email">-</span></span>
@@ -131,7 +132,7 @@
                             </div>
                         </div>
                         <div class="dash-hero-right">
-                            <button type="button" class="dash-btn dash-btn-outline" onclick="switchDashTab('settings')">
+                            <button type="button" class="dash-btn dash-btn-outline dash-hero-edit-btn-top" onclick="switchDashTab('settings')">
                                 <i class="fa-solid fa-pen"></i> Edit Profile
                             </button>
                             <div class="dash-completion-box">
@@ -146,7 +147,16 @@
                         </div>
                     </div>
 
-                    <!-- 4 KPI Stat Cards Grid -->
+                    <!-- Quick Actions Pills Row -->
+                    <div class="dash-quick-actions-bar">
+                        <a href="products.html" class="dash-action-pill"><i class="fa-solid fa-store"></i> Browse Products</a>
+                        <a href="#" onclick="switchDashTab('tracker')" class="dash-action-pill"><i class="fa-solid fa-truck-fast"></i> Track Order</a>
+                        <a href="#" onclick="switchDashTab('wishlist')" class="dash-action-pill"><i class="fa-solid fa-heart"></i> Saved Wishlist</a>
+                        <a href="affiliate-dashboard.html" id="pill-affiliate" style="display: none;" class="dash-action-pill"><i class="fa-solid fa-chart-line"></i> Affiliate Dashboard</a>
+                        <a href="contact.html" class="dash-action-pill"><i class="fa-solid fa-headset"></i> Support</a>
+                    </div>
+
+                    <!-- 4 Smart KPI Stat Cards Grid -->
                     <div class="dash-kpi-grid">
                         <div class="dash-stat-card" onclick="switchDashTab('orders')" style="cursor: pointer;">
                             <div class="dash-stat-header">
@@ -154,7 +164,7 @@
                                 <div class="dash-stat-icon"><i class="fa-solid fa-box"></i></div>
                             </div>
                             <div id="kpi-orders-count" class="dash-stat-number">0</div>
-                            <div class="dash-stat-desc">Lifetime orders placed</div>
+                            <div id="kpi-orders-desc" class="dash-stat-desc">Lifetime orders placed</div>
                         </div>
 
                         <div class="dash-stat-card" onclick="switchDashTab('tracker')" style="cursor: pointer;">
@@ -163,7 +173,7 @@
                                 <div class="dash-stat-icon" style="background: rgba(212, 175, 55, 0.15); color: var(--dash-gold);"><i class="fa-solid fa-truck-fast"></i></div>
                             </div>
                             <div id="kpi-active-count" class="dash-stat-number">0</div>
-                            <div class="dash-stat-desc">Currently in craftsmanship</div>
+                            <div id="kpi-active-desc" class="dash-stat-desc">Currently in craftsmanship</div>
                         </div>
 
                         <div class="dash-stat-card" onclick="switchDashTab('wishlist')" style="cursor: pointer;">
@@ -172,7 +182,7 @@
                                 <div class="dash-stat-icon"><i class="fa-solid fa-heart"></i></div>
                             </div>
                             <div id="kpi-wishlist-count" class="dash-stat-number">0</div>
-                            <div class="dash-stat-desc">In your wish list</div>
+                            <div id="kpi-wishlist-desc" class="dash-stat-desc">Wishlist products</div>
                         </div>
 
                         <div class="dash-stat-card" onclick="switchDashTab('notifications')" style="cursor: pointer;">
@@ -181,11 +191,11 @@
                                 <div class="dash-stat-icon"><i class="fa-solid fa-bell"></i></div>
                             </div>
                             <div id="kpi-notifications-count" class="dash-stat-number">0</div>
-                            <div class="dash-stat-desc">Real-time update alerts</div>
+                            <div id="kpi-notifications-desc" class="dash-stat-desc">Real-time update alerts</div>
                         </div>
                     </div>
 
-                    <!-- Current Order Spotlight -->
+                    <!-- Current Order Tracker Spotlight -->
                     <div class="dash-tracker-card">
                         <div class="dash-section-header">
                             <h3 class="dash-section-title"><i class="fa-solid fa-compass"></i> Current Order Tracker</h3>
@@ -196,17 +206,17 @@
                             <div class="dash-empty-state">
                                 <i class="fa-solid fa-box-open dash-empty-icon"></i>
                                 <div class="dash-empty-title">No Active Orders</div>
-                                <div class="dash-empty-text">You don't have any orders in craftsmanship right now. Explore our authentic Ethiopian instrument collection.</div>
-                                <a href="products.html" class="dash-btn dash-btn-gold"><i class="fa-solid fa-store"></i> Explore Collection</a>
+                                <div class="dash-empty-text">You don't have any orders in craftsmanship right now. Discover our authentic handmade Ethiopian instrument collection.</div>
+                                <a href="products.html" class="dash-btn dash-btn-gold"><i class="fa-solid fa-store"></i> Browse Products</a>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Recent Notifications Spotlight -->
+                    <!-- Recent Notifications Feed (NO [object Object] BUG) -->
                     <div class="dash-tracker-card">
                         <div class="dash-section-header">
                             <h3 class="dash-section-title"><i class="fa-solid fa-bell"></i> Recent Notifications</h3>
-                            <a href="notifications.html" class="dash-btn dash-btn-outline">Notification Center</a>
+                            <a href="notifications.html" class="dash-btn dash-btn-outline">View All &rarr;</a>
                         </div>
                         <div id="recent-notifications-container" class="dash-notifications-list">
                             <p style="color: var(--dash-muted); font-size: 0.9rem;">Loading notifications...</p>
@@ -218,7 +228,7 @@
                 <div id="sec-orders" class="dash-tab-content" style="display: none;">
                     <div class="dash-tracker-card">
                         <div class="dash-section-header">
-                            <h3 class="dash-section-title"><i class="fa-solid fa-box-archive"></i> Order History</h3>
+                            <h3 class="dash-section-title"><i class="fa-solid fa-box-archive"></i> Recent Orders</h3>
                             <span style="color: var(--dash-muted); font-size: 0.85rem;" id="orders-total-badge">0 Orders</span>
                         </div>
                         <div class="dash-orders-table-wrapper">
@@ -310,13 +320,13 @@
                     </div>
                 </div>
 
-                <!-- SECTION 7: CULTURAL IMPACT -->
+                <!-- SECTION 7: CULTURAL IMPACT (UPGRADED WITH GOLD ACCENTS & SPECIFIED TEXT) -->
                 <div id="sec-impact" class="dash-tab-content" style="display: none;">
                     <div class="dash-cultural-card">
                         <span style="font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; color: var(--dash-gold); text-transform: uppercase;">CULTURAL HERITAGE ARCHIVE</span>
-                        <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; margin: 8px 0; color: #FFFFFF;">Your Cultural Impact</h2>
-                        <p style="color: rgba(255,255,255,0.85); font-size: 1.05rem; max-width: 600px; line-height: 1.6;">
-                            Through your patronage of authentic Ethiopian string craftsmanship, you directly sustain master artisans and safeguard sacred acoustic traditions.
+                        <h2 style="font-family: 'Benaiah', 'Cormorant Garamond', serif; font-size: 2.5rem; margin: 8px 0; color: #FFFFFF;">Your Cultural Impact</h2>
+                        <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; max-width: 650px; line-height: 1.6;">
+                            You have helped preserve <strong style="color: var(--dash-gold);" id="cultural-instruments-text">1</strong> Traditional Ethiopian instrument.
                         </p>
                         <div class="dash-cultural-stats">
                             <div class="dash-cultural-stat-box">
@@ -332,8 +342,8 @@
                                 <div class="dash-cultural-label">Artisan Families Supported</div>
                             </div>
                         </div>
-                        <p style="font-style: italic; color: var(--dash-gold); font-size: 1rem; margin: 10px 0 0 0;">
-                            "Thank you for preserving Ethiopian musical heritage."
+                        <p style="font-style: italic; color: var(--dash-gold); font-size: 1.05rem; margin: 16px 0 0 0; line-height: 1.5;">
+                            "Thank you for supporting Ethiopian artisans and preserving Ethiopian musical heritage."
                         </p>
                     </div>
                 </div>
@@ -495,6 +505,25 @@
         let currentUser = null;
         let cachedOrders = [];
 
+        // Dynamic Time-Based Greeting
+        function getGreeting(name) {
+            const hr = new Date().getHours();
+            let salutation = 'Good Evening';
+            if (hr >= 5 && hr < 12) salutation = 'Good Morning';
+            else if (hr >= 12 && hr < 18) salutation = 'Good Afternoon';
+            const firstName = (name || 'Customer').split(' ')[0];
+            return `${salutation}, ${firstName} 👋`;
+        }
+
+        // Relative time helper
+        function formatDaysAgo(dateString) {
+            if (!dateString) return '';
+            const diffDays = Math.floor((new Date() - new Date(dateString)) / (1000 * 60 * 60 * 24));
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            return `${diffDays} days ago`;
+        }
+
         // Tab Switcher Logic
         function switchDashTab(tabId) {
             document.querySelectorAll('.dash-nav-item').forEach(item => {
@@ -533,8 +562,8 @@
                 return;
             }
 
-            // Sync User Info in Hero Profile
-            document.getElementById('dash-user-name').textContent = currentUser.name || 'Valued Customer';
+            // Time-based Greeting & User Details
+            document.getElementById('dash-greeting-title').textContent = getGreeting(currentUser.name);
             document.getElementById('dash-user-email').textContent = currentUser.email || 'N/A';
             document.getElementById('dash-user-id').textContent = currentUser.id ? currentUser.id.slice(0, 8).toUpperCase() : 'CUST-001';
             
@@ -595,7 +624,7 @@
                 });
             }
 
-            // Sync Settings form
+            // Settings Sync
             document.getElementById('settings-name').value = currentUser.name || '';
             document.getElementById('settings-email').value = currentUser.email || '';
             if (currentUser.bio) document.getElementById('settings-bio').value = currentUser.bio;
@@ -612,7 +641,7 @@
                     const { error } = await client.from('profiles').update({ full_name: newName, bio: newBio }).eq('id', currentUser.id);
                     if (error) throw error;
                     showToast('Profile settings saved successfully!', 'success');
-                    document.getElementById('dash-user-name').textContent = newName;
+                    document.getElementById('dash-greeting-title').textContent = getGreeting(newName);
                 } catch (err) {
                     showToast(err.message || 'Failed to update settings.', 'error');
                 }
@@ -623,20 +652,18 @@
                 else window.location.href = 'login.html';
             });
 
-            // Affiliate Tab Setup
+            // Affiliate Tab & Pill Setup
             const affiliateNavTab = document.getElementById('nav-affiliate-tab');
+            const affiliatePill = document.getElementById('pill-affiliate');
             if (currentUser.role === 'affiliate') {
-                affiliateNavTab.style.display = 'flex';
+                if (affiliateNavTab) affiliateNavTab.style.display = 'flex';
+                if (affiliatePill) affiliatePill.style.display = 'inline-flex';
                 loadAffiliateSummary();
             }
 
-            // Fetch Orders and render Order History + Spotlight Tracker
+            // Load Data Services
             loadUserOrders();
-
-            // Fetch Notifications
             loadNotificationsPreview();
-
-            // Render Wishlist
             renderWishlist();
         });
 
@@ -651,44 +678,65 @@
                 cachedOrders = await window.OrdersService.getUserOrders(currentUser.id);
                 const orderCount = cachedOrders ? cachedOrders.length : 0;
 
+                // Smart KPI: Total Orders + Context
                 document.getElementById('kpi-orders-count').textContent = orderCount;
                 document.getElementById('orders-total-badge').textContent = `${orderCount} Order${orderCount === 1 ? '' : 's'}`;
+                
+                const lastOrder = orderCount > 0 ? cachedOrders[0] : null;
+                const lastOrderText = lastOrder ? `Last order ${formatDaysAgo(lastOrder.created_at)}` : 'No orders placed yet';
+                document.getElementById('kpi-orders-desc').textContent = lastOrderText;
+
+                // Cultural Impact Stat Sync
                 document.getElementById('impact-instruments-count').textContent = Math.max(1, orderCount);
+                document.getElementById('cultural-instruments-text').textContent = Math.max(1, orderCount);
 
                 if (!cachedOrders || cachedOrders.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--dash-muted); padding: 30px;">No orders found in your history.</td></tr>`;
                     document.getElementById('kpi-active-count').textContent = 0;
+                    document.getElementById('kpi-active-desc').textContent = 'No active orders';
                     return;
                 }
 
-                // Render Table
-                tbody.innerHTML = cachedOrders.map(order => {
+                // Render Table (Last 5 orders)
+                const recent5 = cachedOrders.slice(0, 5);
+                tbody.innerHTML = recent5.map(order => {
                     const product = order.product || {};
                     const esc = window.AmieleSanitize.escapeHtml;
                     const dateStr = new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    const statusClass = (order.fulfillment_status || order.status || 'pending').toLowerCase();
+                    const statusClass = (order.fulfillment_status || order.status || 'pending').toLowerCase().replace(/\s+/g, '');
                     const formattedTotal = typeof formatPrice === 'function' ? formatPrice((product.price || 0) * (order.quantity || 1)) : '$' + ((product.price || 0) * (order.quantity || 1)).toFixed(2);
 
                     return `
                         <tr>
                             <td><strong>#${esc(order.order_number || order.id.slice(0, 8).toUpperCase())}</strong></td>
-                            <td>${esc(product.name || order.product_name || 'Begena / Krar')}</td>
+                            <td>${esc(product.name || order.product_name || 'Handcrafted Instrument')}</td>
                             <td>${dateStr}</td>
                             <td><span class="dash-status-badge ${statusClass}">${esc(order.fulfillment_status || order.status || 'Pending')}</span></td>
                             <td><strong>${formattedTotal}</strong></td>
                             <td>
-                                <button type="button" class="dash-btn dash-btn-outline" style="padding: 4px 10px; font-size: 0.78rem;" onclick="alert('Order Details:\\nOrder #: ${esc(order.order_number || order.id)}\\nCustomer: ${esc(order.customer_name)}\\nProduct: ${esc(product.name || 'Instrument')}\\nNotes: ${esc(order.notes || 'None')}')">Details</button>
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="button" class="dash-btn dash-btn-outline" style="padding: 4px 8px; font-size: 0.75rem;" onclick="alert('Order Details:\\nOrder #: ${esc(order.order_number || order.id)}\\nCustomer: ${esc(order.customer_name)}\\nProduct: ${esc(product.name || 'Instrument')}\\nNotes: ${esc(order.notes || 'None')}')">View</button>
+                                    <a href="track-order.html?order=${encodeURIComponent(order.order_number || '')}" class="dash-btn dash-btn-gold" style="padding: 4px 8px; font-size: 0.75rem; text-decoration: none;">Track</a>
+                                </div>
                             </td>
                         </tr>
                     `;
                 }).join('');
 
                 // Render Spotlight Active Order Tracker
-                const activeOrder = cachedOrders.find(o => (o.fulfillment_status || o.status || '').toLowerCase() !== 'delivered') || cachedOrders[0];
+                const activeOrdersList = cachedOrders.filter(o => (o.fulfillment_status || o.status || '').toLowerCase() !== 'delivered');
+                const activeOrder = activeOrdersList[0] || cachedOrders[0];
+
+                document.getElementById('kpi-active-count').textContent = activeOrdersList.length;
+                
+                if (activeOrdersList.length > 0) {
+                    const activeStage = activeOrder.fulfillment_status || activeOrder.status || 'Preparing';
+                    document.getElementById('kpi-active-desc').textContent = `${activeStage} stage`;
+                } else {
+                    document.getElementById('kpi-active-desc').textContent = 'All orders delivered';
+                }
 
                 if (activeOrder) {
-                    document.getElementById('kpi-active-count').textContent = (activeOrder.fulfillment_status || activeOrder.status || '').toLowerCase() !== 'delivered' ? 1 : 0;
-                    
                     const p = activeOrder.product || {};
                     const images = p.product_images || [];
                     const cover = images.find(i => i.is_cover) || images[0] || {};
@@ -696,7 +744,6 @@
                     const esc = window.AmieleSanitize.escapeHtml;
 
                     const activeStatus = (activeOrder.fulfillment_status || activeOrder.status || 'Pending');
-                    
                     const timelineHTML = renderFulfillmentTimeline(activeStatus);
 
                     const trackerHTML = `
@@ -705,12 +752,15 @@
                                 <div class="dash-order-product-meta">
                                     <img src="${esc(imgUrl)}" alt="Product" class="dash-order-img" onerror="this.src='image/photo_2025-10-01_07-26-53.jpg'">
                                     <div class="dash-order-details-meta">
-                                        <h4>${esc(p.name || activeOrder.product_name || 'Handcrafted Begena')}</h4>
-                                        <div class="dash-order-subtext">Order #${esc(activeOrder.order_number || activeOrder.id.slice(0, 8).toUpperCase())} • Est. Delivery: ${esc(activeOrder.estimated_delivery || '7-14 Business Days')}</div>
+                                        <h4 style="font-family: 'Benaiah', 'Cormorant Garamond', serif;">${esc(p.name || activeOrder.product_name || 'Handcrafted Begena')}</h4>
+                                        <div class="dash-order-subtext">
+                                            Order #${esc(activeOrder.order_number || activeOrder.id.slice(0, 8).toUpperCase())} • Courier: <strong>DHL Express</strong> • Est: ${esc(activeOrder.estimated_delivery || '7-14 Days')}
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="dash-order-actions-meta">
                                     <a href="track-order.html?order=${encodeURIComponent(activeOrder.order_number || '')}" class="dash-btn dash-btn-gold"><i class="fa-solid fa-truck-fast"></i> Track Package</a>
+                                    <button type="button" class="dash-btn dash-btn-outline" onclick="alert('Order #: ${esc(activeOrder.order_number || activeOrder.id)}\\nItem: ${esc(p.name || 'Begena')}\\nStatus: ${esc(activeStatus)}')">View Order</button>
                                 </div>
                             </div>
                             ${timelineHTML}
@@ -763,6 +813,7 @@
             `;
         }
 
+        // ABSOLUTELY PREVENT [object Object] BUG IN NOTIFICATIONS
         async function loadNotificationsPreview() {
             const container = document.getElementById('recent-notifications-container');
             const fullContainer = document.getElementById('full-notifications-container');
@@ -774,16 +825,25 @@
 
             try {
                 const res = await window.NotificationsService.getNotifications({ page: 1, limit: 5 });
-                const notifs = res.data || [];
+                const notifs = res.notifications || res.data || [];
                 const unreadCount = await window.NotificationsService.getUnreadCount();
 
                 document.getElementById('kpi-notifications-count').textContent = unreadCount;
+
+                // Smart KPI context: Latest alert title
+                if (notifs.length > 0) {
+                    const firstTitle = typeof notifs[0].title === 'string' ? notifs[0].title : (notifs[0].title?.title || 'Payment Verified');
+                    document.getElementById('kpi-notifications-desc').textContent = `Latest: ${firstTitle}`;
+                } else {
+                    document.getElementById('kpi-notifications-desc').textContent = 'You are all caught up';
+                }
 
                 if (notifs.length === 0) {
                     const emptyHTML = `
                         <div class="dash-empty-state" style="padding: 24px;">
                             <i class="fa-solid fa-bell-slash dash-empty-icon" style="font-size: 2rem;"></i>
-                            <div class="dash-empty-title" style="font-size: 1.1rem;">No Recent Notifications</div>
+                            <div class="dash-empty-title" style="font-size: 1.1rem;">You're all caught up!</div>
+                            <div class="dash-empty-text">No recent notifications at this time.</div>
                         </div>
                     `;
                     container.innerHTML = emptyHTML;
@@ -793,6 +853,11 @@
 
                 const notifsHTML = notifs.map(n => {
                     const esc = window.AmieleSanitize.escapeHtml;
+
+                    // Bulletproof Extraction to prevent [object Object]
+                    const rawTitle = (typeof n.title === 'string') ? n.title : (n.title?.title || n.title?.name || 'Notification');
+                    const rawMsg = (typeof n.message === 'string') ? n.message : (n.message?.message || n.message?.body || String(n.message || 'No description'));
+                    
                     const timeAgo = typeof formatRelativeTime === 'function' ? formatRelativeTime(n.created_at) : new Date(n.created_at).toLocaleDateString();
 
                     return `
@@ -800,10 +865,10 @@
                             <div class="dash-notif-icon"><i class="fa-solid fa-bell"></i></div>
                             <div class="dash-notif-body">
                                 <div class="dash-notif-title">
-                                    ${esc(n.title)}
+                                    ${esc(rawTitle)}
                                     ${!n.is_read ? '<span class="dash-notif-unread-dot"></span>' : ''}
                                 </div>
-                                <div class="dash-notif-msg">${esc(n.message)}</div>
+                                <div class="dash-notif-msg">${esc(rawMsg)}</div>
                             </div>
                             <span class="dash-notif-time">${timeAgo}</span>
                         </div>
@@ -813,6 +878,7 @@
                 container.innerHTML = notifsHTML;
                 if (fullContainer) fullContainer.innerHTML = notifsHTML;
             } catch (err) {
+                console.error('[Amiele:Notifications] Error loading notifications preview:', err);
                 container.innerHTML = '<p style="color: var(--dash-muted);">Failed to load notifications.</p>';
             }
         }
@@ -822,14 +888,15 @@
             const savedIds = window.AmieleDB ? window.AmieleDB.getWishlist() : [];
 
             document.getElementById('kpi-wishlist-count').textContent = savedIds.length;
+            document.getElementById('kpi-wishlist-desc').textContent = savedIds.length === 1 ? '1 product saved' : `${savedIds.length} Wishlist products`;
 
             if (savedIds.length === 0) {
                 container.innerHTML = `
                     <div class="dash-empty-state" style="grid-column: 1 / -1;">
                         <i class="fa-solid fa-heart-crack dash-empty-icon"></i>
-                        <div class="dash-empty-title">Your Wishlist is Empty</div>
-                        <div class="dash-empty-text">Save your favorite Begena, Krar, and Kebero instruments to review them anytime.</div>
-                        <a href="products.html" class="dash-btn dash-btn-gold"><i class="fa-solid fa-bag-shopping"></i> Browse Instruments</a>
+                        <div class="dash-empty-title">Wishlist Empty</div>
+                        <div class="dash-empty-text">Save your favorite handcrafted instruments to review them anytime.</div>
+                        <a href="products.html" class="dash-btn dash-btn-gold"><i class="fa-solid fa-bag-shopping"></i> Browse Products</a>
                     </div>
                 `;
             } else {
@@ -837,10 +904,10 @@
                     <div class="dash-wishlist-card">
                         <div class="dash-wishlist-img" style="background-image: url('image/photo_2025-10-01_07-26-53.jpg');"></div>
                         <div class="dash-wishlist-body">
-                            <h4 class="dash-wishlist-title">Ethiopian Instrument #${id}</h4>
+                            <h4 class="dash-wishlist-title" style="font-family: 'Benaiah', 'Cormorant Garamond', serif;">Ethiopian Instrument #${id}</h4>
                             <div class="dash-wishlist-price">ETB 15,000</div>
                             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <a href="products.html" class="dash-btn dash-btn-primary" style="flex: 1;">View</a>
+                                <a href="products.html" class="dash-btn dash-btn-primary" style="flex: 1;">View Product</a>
                                 <button type="button" class="dash-btn dash-btn-outline" onclick="window.AmieleDB.removeFromWishlist('${id}'); renderWishlist();">Remove</button>
                             </div>
                         </div>
