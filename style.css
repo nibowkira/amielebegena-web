@@ -2997,6 +2997,57 @@ img {
     margin: 12px 6px;
 }
 
+/* ── AFFILIATE PORTAL — BOLD PROMO NAV ITEM ───────────────────────────── */
+.dash-nav-affiliate-promo {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(15, 36, 24, 0.06) 100%) !important;
+    border: 1.5px solid rgba(212, 175, 55, 0.35) !important;
+    border-radius: 14px !important;
+    padding: 14px 18px !important;
+    font-size: 1.02rem !important;
+    font-weight: 700 !important;
+    color: var(--dash-forest) !important;
+    position: relative;
+    margin-top: 4px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.dash-nav-affiliate-promo i {
+    color: #D4AF37 !important;
+    font-size: 1.25rem !important;
+}
+
+.dash-nav-affiliate-promo:hover {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.22) 0%, rgba(15, 36, 24, 0.10) 100%) !important;
+    border-color: #D4AF37 !important;
+    transform: translateX(3px);
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.18) !important;
+}
+
+.dash-nav-affiliate-promo.active {
+    background: linear-gradient(135deg, #0F2418 0%, #1a3a28 100%) !important;
+    border-color: #D4AF37 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 18px rgba(15, 36, 24, 0.25) !important;
+}
+
+.dash-nav-affiliate-promo.active i {
+    color: #D4AF37 !important;
+}
+
+.dash-nav-affiliate-badge {
+    display: inline-block;
+    background: #D4AF37;
+    color: #0F2418;
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-left: 8px;
+    vertical-align: middle;
+    line-height: 1.4;
+}
+
 /* ── MAIN CONTENT AREA ─────────────────────────────────────────────────── */
 .dashboard-main {
     display: flex;
