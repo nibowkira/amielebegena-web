@@ -92,10 +92,10 @@ BEGIN
     -- ── Fetch fulfillment history timeline ────────────────────────────────
     SELECT COALESCE(jsonb_agg(
         jsonb_build_object(
-            'status',     h.new_status,
-            'changed_at', h.changed_at,
+            'status',     h.status,
+            'changed_at', h.created_at,
             'notes',      h.notes
-        ) ORDER BY h.changed_at ASC
+        ) ORDER BY h.created_at ASC
     ), '[]'::jsonb)
     INTO v_history
     FROM public.order_fulfillment_history h
