@@ -3175,6 +3175,63 @@ img {
     transition: width 0.6s ease;
 }
 
+/* ── QUICK ACTION PILLS BAR (HIGH SPECIFICITY) ────────────────────────── */
+.dash-quick-actions-bar {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    overflow-x: auto !important;
+    padding: 4px 0 8px 0 !important;
+    margin: 4px 0 8px 0 !important;
+    scrollbar-width: none !important;
+}
+
+.dash-quick-actions-bar::-webkit-scrollbar {
+    display: none !important;
+}
+
+.dash-quick-actions-bar a.dash-action-pill,
+a.dash-action-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 18px !important;
+    border-radius: 30px !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E7E3D8 !important;
+    color: #0F2418 !important;
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 2px 6px rgba(15, 36, 24, 0.04) !important;
+    text-decoration: none !important;
+}
+
+.dash-quick-actions-bar a.dash-action-pill i,
+a.dash-action-pill i {
+    color: #D4AF37 !important;
+    font-size: 0.95rem !important;
+    transition: color 0.25s ease !important;
+}
+
+.dash-quick-actions-bar a.dash-action-pill:hover,
+a.dash-action-pill:hover {
+    background: #0F2418 !important;
+    color: #FFFFFF !important;
+    border-color: #0F2418 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 14px rgba(15, 36, 24, 0.15) !important;
+    text-decoration: none !important;
+}
+
+.dash-quick-actions-bar a.dash-action-pill:hover i,
+a.dash-action-pill:hover i {
+    color: #D4AF37 !important;
+}
+
 /* ── KPI STAT CARDS GRID ────────────────────────────────────────────────── */
 .dash-kpi-grid {
     display: grid;

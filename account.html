@@ -826,13 +826,17 @@
             try {
                 const res = await window.NotificationsService.getNotifications({ page: 1, limit: 5 });
                 const notifs = res.notifications || res.data || [];
-                const unreadCount = await window.NotificationsService.getUnreadCount();
+                
+                // FIX [object Object] BUG: getUnreadCount() returns { success, count }
+                const unreadRes = await window.NotificationsService.getUnreadCount();
+                const unreadCount = typeof unreadRes === 'number' ? unreadRes : (unreadRes && typeof unreadRes.count === 'number' ? unreadRes.count : 0);
 
                 document.getElementById('kpi-notifications-count').textContent = unreadCount;
 
                 // Smart KPI context: Latest alert title
                 if (notifs.length > 0) {
-                    const firstTitle = typeof notifs[0].title === 'string' ? notifs[0].title : (notifs[0].title?.title || 'Payment Verified');
+                    const rawFirstTitle = notifs[0].title;
+                    const firstTitle = typeof rawFirstTitle === 'string' ? rawFirstTitle : (rawFirstTitle?.title || 'Payment Verified');
                     document.getElementById('kpi-notifications-desc').textContent = `Latest: ${firstTitle}`;
                 } else {
                     document.getElementById('kpi-notifications-desc').textContent = 'You are all caught up';
