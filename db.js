@@ -125,7 +125,7 @@ window.AmieleDB = {
             id: 'usr_' + Date.now(),
             name: name,
             email: email,
-            password: password,
+            password: btoa(password), // Obfuscated for local demo fallback
             role: 'user', // Default role
             joinedAt: new Date().toISOString()
         };
@@ -140,7 +140,7 @@ window.AmieleDB = {
 
     login(email, password) {
         const users = this.getUsers();
-        const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+        const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === btoa(password));
         if (!user) {
             throw new Error('Invalid email or password.');
         }
@@ -345,21 +345,7 @@ window.AmieleDB = {
         return apps.find(a => a.userId === userId);
     },
 
-    // ----------------------------------------
-    // ORDERS MODULE
-    // ----------------------------------------
-    getOrders() {
-        return [];
-    },
 
-    saveOrders() {
-        // Supabase PostgreSQL is the sole source of truth for orders
-    },
-
-    addOrder() {
-        // Orders are created exclusively via Supabase Edge Function / API
-        return null;
-    },
 
     // ----------------------------------------
     // AFFILIATE METADATA MODULE

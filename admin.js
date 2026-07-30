@@ -507,53 +507,68 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // 5. Order Management Queue
-    async function renderCommissionsQueue() {
-        const tbody = document.getElementById('commissions-table-body');
-        if (!tbody) return;
+    let currentFulfillmentFilter = 'all';
+    let currentFulfillmentQuery = '';
+    let cachedFulfillmentOrders = [];
 
-        let orders = [];
+    window.filterFulfillmentOrders = function(filterName, btnEl) {
+        currentFulfillmentFilter = filterName;
+        document.querySelectorAll('.fulfillment-filter-btn').forEach(btn => btn.classList.remove('active'));
+        if (btnEl) btnEl.classList.add('active');
+        renderCommissionsQueueUI();
+    };
+
+    window.searchFulfillmentOrders = function(query) {
+        currentFulfillmentQuery = (query || '').toLowerCase().trim();
+        renderCommissionsQueueUI();
+    };
+
+    // 5. Order Management Queue & Fulfillment Workflow
+    async function renderCommissionsQueue() {
         if (window.AdminService) {
             try {
-                orders = await window.AdminService.getOrders();
+                cachedFulfillmentOrders = await window.AdminService.getOrders();
             } catch (e) {
                 console.error('[Amiele:Admin] Error fetching orders:', e);
             }
         }
+        renderCommissionsQueueUI();
+    }
+
+    function renderCommissionsQueueUI() {
+        const tbody = document.getElementById('commissions-table-body');
+        if (!tbody) return;
+
         tbody.innerHTML = '';
 
-        if (!orders || orders.length === 0) {
+        if (!cachedFulfillmentOrders || cachedFulfillmentOrders.length === 0) {
             tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 3rem 0; color: var(--aff-text-muted);">No orders logged yet.</td></tr>';
             return;
         }
 
-        orders.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(o => {
+        let filtered = cachedFulfillmentOrders.filter(o => {
+            if (currentFulfillmentFilter !== 'all') {
+                const fSt = (o.fulfillmentStatus || 'Pending').toLowerCase();
+                if (fSt !== currentFulfillmentFilter.toLowerCase()) return false;
+            }
+            if (currentFulfillmentQuery) {
+                const searchStr = `${o.orderNumber} ${o.customerName} ${o.customerEmail} ${o.phone} ${o.productName} ${o.country} ${o.affiliateCode}`.toLowerCase();
+                if (!searchStr.includes(currentFulfillmentQuery)) return false;
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 2.5rem 0; color: var(--aff-text-muted);">No matching orders found.</td></tr>';
+            return;
+        }
+
+        filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(o => {
             const date = new Date(o.createdAt).toLocaleDateString();
 
-            // Build action buttons based on payment and order status
-            let actions = '';
-            if (o.paymentStatus === 'pending_payment') {
-                actions = `
-                    <button class="aff-btn" style="padding:0.35rem 0.7rem; font-size:0.72rem; background-color:#2e7d32; margin:2px 0;" onclick="approveOrderPayment('${esc(o.id)}', '${esc(o.orderNumber)}')">✓ Approve Payment</button>
-                    <button class="aff-btn" style="padding:0.35rem 0.7rem; font-size:0.72rem; background-color:#c62828; margin:2px 0;" onclick="rejectOrderPayment('${esc(o.id)}', '${esc(o.orderNumber)}')">✗ Reject</button>
-                `;
-            } else if (o.paymentStatus === 'paid') {
-                if (o.orderStatus === 'confirmed') {
-                    actions = `
-                        <button class="aff-btn" style="padding:0.35rem 0.7rem; font-size:0.72rem; background-color:#1565c0; margin:2px 0;" onclick="markOrderShipped('${esc(o.id)}')">📦 Ship</button>
-                        <button class="aff-btn" style="padding:0.35rem 0.7rem; font-size:0.72rem; background-color:#c62828; margin:2px 0;" onclick="cancelOrder('${esc(o.id)}')">Cancel</button>
-                    `;
-                } else if (o.orderStatus === 'shipped') {
-                    actions = `
-                        <button class="aff-btn" style="padding:0.35rem 0.7rem; font-size:0.72rem; background-color:#2e7d32; margin:2px 0;" onclick="markOrderDelivered('${esc(o.id)}')">✓ Delivered</button>
-                    `;
-                } else {
-                    actions = '<span style="color:var(--aff-text-muted); font-size:0.75rem;">Complete</span>';
-                }
-            } else {
-                actions = '<span style="color:var(--aff-text-muted); font-size:0.75rem;">—</span>';
-            }
+            const stageLower = (o.fulfillmentStatus || 'Pending').toLowerCase().replace(/\s+/g, '-');
+            const stageBadge = `<span class="fulfillment-badge ${stageLower}">${esc(o.fulfillmentStatus || 'Pending')}</span>`;
 
-            // Payment badge color
             let payBadgeClass = o.paymentStatus === 'paid' ? 'confirmed' : (o.paymentStatus === 'failed' ? 'cancelled' : 'pending');
 
             const row = document.createElement('tr');
@@ -564,14 +579,250 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td>${esc(o.country)}</td>
                 <td>${esc(o.referralCode)}<br><small style="color:var(--aff-text-muted);">${esc(o.affiliateCode)}</small></td>
                 <td><span class="aff-badge ${payBadgeClass}">${esc(o.paymentStatus)}</span></td>
-                <td><span class="aff-badge ${esc(o.orderStatus)}">${esc(o.orderStatus)}</span></td>
-                <td style="font-weight:600;">ETB ${o.orderAmount.toLocaleString()}</td>
-                <td>${date}</td>
-                <td style="white-space:nowrap;">${actions}</td>
+                <td>${stageBadge}</td>
+                <td style="font-weight:700; color:#0F2418;">ETB ${o.orderAmount.toLocaleString()}</td>
+                <td style="font-size:0.8rem;">${date}</td>
+                <td style="text-align:right;">
+                    <button class="aff-btn-sm" style="background:#0F2418; color:#FFD700; border:none; border-radius:8px; padding:6px 12px; font-weight:700; font-size:0.75rem; cursor:pointer;" onclick="openOrderFulfillmentModal('${esc(o.id)}')">
+                        <i data-lucide="eye" style="width:13px; height:13px; vertical-align:middle; margin-right:4px;"></i> Details & Actions
+                    </button>
+                </td>
             `;
             tbody.appendChild(row);
         });
+
+        if (window.lucide) window.lucide.createIcons();
     }
+
+    // WhatsApp Automated Notification Generator
+    window.generateWhatsAppFulfillmentMessage = function(order, stage, shippingCompany = '', trackingNo = '') {
+        const name = order.customerName || 'Valued Customer';
+        const num = order.orderNumber || '#ORD-0001';
+        const courier = shippingCompany || order.shippingCompany || 'DHL Express';
+        const tracking = trackingNo || order.trackingNumber || 'N/A';
+
+        switch (stage) {
+            case 'Payment Verified':
+                return `Hello ${name},\n\nWe have received your payment.\nYour order ${num} is now confirmed.\n\nThank you for supporting Ethiopian craftsmanship.`;
+            case 'Preparing':
+                return `Hello ${name},\n\nOur team has started preparing your handmade instrument.\nWe will keep you updated.`;
+            case 'Crafting':
+                return `Hello ${name},\n\nYour Begena/Kirar is currently being handcrafted by our artisan.`;
+            case 'Packed':
+                return `Hello ${name},\n\nYour instrument has been carefully packed and is ready for shipment.`;
+            case 'Shipped':
+                return `Hello ${name},\n\nGreat news!\nYour order has been shipped.\n\nCourier: ${courier}\nTracking Number: ${tracking}\n\nThank you for choosing Amiele Begena.`;
+            case 'Delivered':
+                return `Hello ${name},\n\nAccording to our records your order has been delivered.\nWe hope you enjoy your handmade instrument.\n\nThank you for supporting Ethiopian craftsmanship.`;
+            case 'Cancelled':
+                return `Hello ${name},\n\nYour order ${num} has been cancelled.\nPlease contact our support team if you have any questions.`;
+            default:
+                return `Hello ${name},\n\nUpdate regarding your order ${num}: Status is currently ${stage}.\n\nThank you for supporting Amiele Begena.`;
+        }
+    };
+
+    // Open Order Fulfillment Workflow Modal
+    window.openOrderFulfillmentModal = function(orderId) {
+        const order = cachedFulfillmentOrders.find(o => o.id === orderId);
+        if (!order) {
+            showToast('Order details not found.', 'error');
+            return;
+        }
+
+        const modalEl = document.getElementById('order-details-modal-backdrop');
+        const modalTitle = document.getElementById('modal-order-number');
+        const modalBody = document.getElementById('order-details-modal-body');
+
+        if (modalTitle) {
+            modalTitle.textContent = `Order ${order.orderNumber}`;
+        }
+
+        const stages = ['Pending', 'Payment Verified', 'Preparing', 'Crafting', 'Packed', 'Shipped', 'Delivered'];
+        const currentStageIdx = stages.indexOf(order.fulfillmentStatus || 'Pending');
+
+        // Render Horizontal Timeline
+        let timelineHtml = '<div class="fulfillment-timeline">';
+        stages.forEach((stg, idx) => {
+            let stepClass = '';
+            let stepIcon = idx + 1;
+            let timestampText = '';
+
+            if (order.fulfillmentStatus === 'Cancelled') {
+                stepClass = idx === 0 ? 'completed' : '';
+            } else if (idx < currentStageIdx) {
+                stepClass = 'completed';
+                stepIcon = '✓';
+            } else if (idx === currentStageIdx) {
+                stepClass = 'current';
+                stepIcon = '●';
+            }
+
+            if (order.history && order.history.length > 0) {
+                const hItem = order.history.find(h => h.status === stg);
+                if (hItem) {
+                    timestampText = new Date(hItem.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                }
+            }
+
+            timelineHtml += `
+                <div class="timeline-step ${stepClass}">
+                    <div class="step-icon">${stepIcon}</div>
+                    <div class="step-title">${esc(stg)}</div>
+                    <div class="step-time">${esc(timestampText)}</div>
+                </div>
+            `;
+        });
+        timelineHtml += '</div>';
+
+        const initialWaMsg = generateWhatsAppFulfillmentMessage(order, order.fulfillmentStatus || 'Payment Verified');
+        const cleanPhone = (order.phone || '').replace(/[^0-9]/g, '');
+
+        modalBody.innerHTML = `
+            ${timelineHtml}
+
+            <!-- 1. Customer & Order Information Grid -->
+            <div class="fulfillment-section-card">
+                <div class="fulfillment-section-title">
+                    <i data-lucide="user-check" style="width:16px; height:16px; color:#D4AF37;"></i> Customer & Order Overview
+                </div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; font-size:0.82rem;">
+                    <div><span style="color:#667085;">Customer Name:</span><br><strong style="color:#0F2418;">${esc(order.customerName)}</strong></div>
+                    <div><span style="color:#667085;">Phone Number:</span><br><strong>📞 ${esc(order.phone)}</strong></div>
+                    <div><span style="color:#667085;">Email Address:</span><br><strong>${esc(order.customerEmail)}</strong></div>
+                    <div><span style="color:#667085;">Delivery Country:</span><br><strong>${esc(order.country)}</strong></div>
+                    <div><span style="color:#667085;">Product Purchased:</span><br><strong style="color:#0F2418;">${esc(order.productName)}</strong></div>
+                    <div><span style="color:#667085;">Quantity:</span><br><strong>${esc(order.quantity)} Unit(s)</strong></div>
+                    <div><span style="color:#667085;">Total Order Value:</span><br><strong style="color:#16A34A; font-size:1rem;">ETB ${order.orderAmount.toLocaleString()}</strong></div>
+                    <div><span style="color:#667085;">Affiliate Referral:</span><br><strong>${esc(order.referralCode)} (${esc(order.affiliateCode)})</strong></div>
+                    <div><span style="color:#667085;">Payment Status:</span><br><span class="aff-badge ${order.paymentStatus === 'paid' ? 'confirmed' : 'pending'}">${esc(order.paymentStatus)}</span></div>
+                    <div><span style="color:#667085;">Current Stage:</span><br><span class="fulfillment-badge ${(order.fulfillmentStatus || 'Pending').toLowerCase().replace(/\s+/g, '-')}">${esc(order.fulfillmentStatus || 'Pending')}</span></div>
+                </div>
+            </div>
+
+            <!-- 2. Shipping & Tracking Details -->
+            <div class="fulfillment-section-card">
+                <div class="fulfillment-section-title">
+                    <i data-lucide="truck" style="width:16px; height:16px; color:#0F2418;"></i> Shipping & Dispatch Information
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; font-size:0.82rem; margin-bottom:10px;">
+                    <div>
+                        <label style="font-weight:700; color:#667085; display:block; margin-bottom:4px;">Courier / Shipping Company</label>
+                        <input type="text" id="modal-courier-input" value="${esc(order.shippingCompany || '')}" placeholder="e.g. DHL Express, FedEx" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid #E7E3D8; font-size:0.82rem;">
+                    </div>
+                    <div>
+                        <label style="font-weight:700; color:#667085; display:block; margin-bottom:4px;">Tracking Number</label>
+                        <input type="text" id="modal-tracking-input" value="${esc(order.trackingNumber || '')}" placeholder="e.g. DHL-98234120" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid #E7E3D8; font-size:0.82rem;">
+                    </div>
+                    <div>
+                        <label style="font-weight:700; color:#667085; display:block; margin-bottom:4px;">Estimated Delivery</label>
+                        <input type="text" id="modal-est-delivery-input" value="${esc(order.estimatedDelivery || '')}" placeholder="e.g. Aug 5 - Aug 8" style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid #E7E3D8; font-size:0.82rem;">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-weight:700; color:#667085; display:block; margin-bottom:4px;">Shipping & Dispatch Notes</label>
+                    <textarea id="modal-shipping-notes" rows="2" placeholder="Packaging requirements, fragile wood handling, artisan signature details..." style="width:100%; padding:8px 12px; border-radius:8px; border:1px solid #E7E3D8; font-size:0.82rem;">${esc(order.shippingNotes || '')}</textarea>
+                </div>
+            </div>
+
+            <!-- 3. Fulfillment Action Buttons -->
+            <div class="fulfillment-section-card">
+                <div class="fulfillment-section-title">
+                    <i data-lucide="zap" style="width:16px; height:16px; color:#D4AF37;"></i> Update Order Fulfillment Stage
+                </div>
+                <div class="fulfillment-actions-grid">
+                    <button class="action-btn-stage btn-verify" onclick="triggerFulfillmentStageUpdate('${order.id}', 'Payment Verified')">
+                        <i data-lucide="check-check" style="width:14px; height:14px;"></i> Verify Payment
+                    </button>
+                    <button class="action-btn-stage btn-prepare" onclick="triggerFulfillmentStageUpdate('${order.id}', 'Preparing')">
+                        <i data-lucide="scissors" style="width:14px; height:14px;"></i> Start Preparing
+                    </button>
+                    <button class="action-btn-stage btn-craft" onclick="triggerFulfillmentStageUpdate('${order.id}', 'Crafting')">
+                        <i data-lucide="hammer" style="width:14px; height:14px;"></i> Start Crafting
+                    </button>
+                    <button class="action-btn-stage btn-pack" onclick="triggerFulfillmentStageUpdate('${order.id}', 'Packed')">
+                        <i data-lucide="package" style="width:14px; height:14px;"></i> Pack Order
+                    </button>
+                    <button class="action-btn-stage btn-ship" onclick="triggerFulfillmentStageUpdate('${order.id}', 'Shipped')">
+                        <i data-lucide="truck" style="width:14px; height:14px;"></i> Mark Shipped
+                    </button>
+                    <button class="action-btn-stage btn-deliver" onclick="triggerFulfillmentStageUpdate('${order.id}', 'Delivered')">
+                        <i data-lucide="package-check" style="width:14px; height:14px;"></i> Mark Delivered
+                    </button>
+                    <button class="action-btn-stage btn-cancel" onclick="triggerFulfillmentStageUpdate('${order.id}', 'Cancelled')">
+                        <i data-lucide="x-circle" style="width:14px; height:14px;"></i> Cancel Order
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. Automated WhatsApp Customer Update -->
+            <div class="fulfillment-section-card" style="background:#F0FDF4; border-color:#BBF7D0;">
+                <div class="fulfillment-section-title" style="color:#0F2418;">
+                    <i data-lucide="message-square" style="width:16px; height:16px; color:#16A34A;"></i> Automated WhatsApp Customer Message
+                </div>
+                <p style="font-size:0.75rem; color:#667085; margin:0 0 8px 0;">Auto-generated status notification tailored for customer delivery via WhatsApp:</p>
+                <textarea id="modal-wa-preview" rows="4" style="width:100%; padding:10px; border-radius:8px; border:1px solid #BBF7D0; font-size:0.8rem; background:#FFFFFF; font-family:monospace; margin-bottom:10px;">${esc(initialWaMsg)}</textarea>
+                <a id="modal-wa-send-btn" href="https://wa.me/${cleanPhone}?text=${encodeURIComponent(initialWaMsg)}" target="_blank" class="aff-btn" style="background:#25D366; color:#FFFFFF; border:none; text-decoration:none; font-weight:800; font-size:0.82rem; padding:8px 16px; border-radius:8px; display:inline-flex; align-items:center; gap:8px;">
+                    <i class="fa-brands fa-whatsapp" style="font-size:1.1rem;"></i> Send Update via WhatsApp
+                </a>
+            </div>
+
+            <!-- 5. History Audit Log -->
+            <div class="fulfillment-section-card">
+                <div class="fulfillment-section-title">
+                    <i data-lucide="history" style="width:16px; height:16px; color:#667085;"></i> Order Fulfillment History Log
+                </div>
+                <div style="max-height:180px; overflow-y:auto; font-size:0.78rem;">
+                    ${order.history && order.history.length > 0 ? order.history.map(h => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #F1F5F9;">
+                            <div>
+                                <span class="fulfillment-badge ${(h.status || '').toLowerCase().replace(/\s+/g, '-')}">${esc(h.status)}</span>
+                                <span style="margin-left:8px; color:#1C1C1C; font-weight:600;">${esc(h.notes || '')}</span>
+                            </div>
+                            <div style="text-align:right; color:#667085; font-size:0.72rem;">
+                                <span>by ${esc(h.admin_name || 'Admin')}</span> • <span>${new Date(h.created_at).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    `).join('') : '<div style="color:#667085; text-align:center; padding:10px;">No timeline history logs yet.</div>'}
+                </div>
+            </div>
+        `;
+
+        modalEl.classList.add('show');
+        if (window.lucide) window.lucide.createIcons();
+    };
+
+    window.closeOrderFulfillmentModal = function() {
+        const modalEl = document.getElementById('order-details-modal-backdrop');
+        if (modalEl) modalEl.classList.remove('show');
+    };
+
+    window.triggerFulfillmentStageUpdate = async function(orderId, newStage) {
+        const courier = document.getElementById('modal-courier-input') ? document.getElementById('modal-courier-input').value.trim() : '';
+        const trackingNo = document.getElementById('modal-tracking-input') ? document.getElementById('modal-tracking-input').value.trim() : '';
+        const estDelivery = document.getElementById('modal-est-delivery-input') ? document.getElementById('modal-est-delivery-input').value.trim() : '';
+        const notes = document.getElementById('modal-shipping-notes') ? document.getElementById('modal-shipping-notes').value.trim() : '';
+
+        try {
+            const currentUser = await window.getCurrentUser();
+            await window.AdminService.updateFulfillmentStatus(orderId, newStage, {
+                tracking_number: trackingNo,
+                shipping_company: courier,
+                shipping_notes: notes,
+                estimated_delivery: estDelivery
+            }, notes || `Order stage updated to ${newStage}`, currentUser);
+
+            showToast(`Order status updated to ${newStage}!`, 'success');
+
+            // Re-fetch orders list and re-open modal with fresh data
+            cachedFulfillmentOrders = await window.AdminService.getOrders();
+            renderCommissionsQueueUI();
+            renderDashboardStats();
+
+            openOrderFulfillmentModal(orderId);
+        } catch (err) {
+            showToast(err.message || 'Failed to update fulfillment status', 'error');
+        }
+    };
 
     window.approveOrderPayment = async function(orderId, orderNumber) {
         const confirmed = await showConfirmModal('Approve Payment', `Approve payment for order <strong>${orderNumber}</strong>? This will calculate and credit the affiliate commission automatically.`);
@@ -941,6 +1192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Close active confirm modal backdrops with Escape
         if (e.key === 'Escape') {
+            if (window.closeOrderFulfillmentModal) window.closeOrderFulfillmentModal();
             const backdrop = document.getElementById('custom-modal-backdrop');
             if (backdrop && backdrop.classList.contains('show')) {
                 const cancelBtn = document.getElementById('modal-btn-cancel');

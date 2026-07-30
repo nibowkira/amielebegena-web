@@ -35,6 +35,25 @@ td, th, label, small, strong,
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Sidebar Menu Items — Active / Inactive States */
+.aff-sidebar .aff-menu-item {
+    color: #94A3B8 !important;
+    background: transparent !important;
+    font-weight: 600 !important;
+    transition: background 0.2s, color 0.2s;
+}
+
+.aff-sidebar .aff-menu-item.active {
+    background: #FFD700 !important;
+    color: #0F2418 !important;
+    font-weight: 800 !important;
+}
+
+.aff-sidebar .aff-menu-item:not(.active):hover {
+    background: rgba(255, 255, 255, 0.07) !important;
+    color: #FFFFFF !important;
+}
+
 /* Page Root & Layout */
 body {
     background-color: #f6f4ee;
@@ -575,6 +594,314 @@ body {
     font-weight: 800 !important;
     border-radius: 10px !important;
 }
+
+/* ==========================================================================
+   ORDER FULFILLMENT WORKFLOW & TIMELINE STYLES
+   ========================================================================== */
+
+/* Fulfillment Filter Pills */
+.fulfillment-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #FFFFFF;
+    border: 1px solid #E7E3D8;
+    border-radius: 14px;
+}
+
+.fulfillment-filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #E7E3D8;
+    background: #F8F6F1;
+    color: #0F2418;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fulfillment-filter-btn:hover {
+    background: #E7E3D8;
+}
+
+.fulfillment-filter-btn.active {
+    background: #0F2418;
+    color: #FFD700;
+    border-color: #0F2418;
+}
+
+/* Status Badges */
+.fulfillment-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.fulfillment-badge.pending { background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; }
+.fulfillment-badge.payment-verified { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
+.fulfillment-badge.preparing { background: #F5F3FF; color: #7C3AED; border: 1px solid #DDD6FE; }
+.fulfillment-badge.crafting { background: #FFF7ED; color: #EA580C; border: 1px solid #FFEDD5; }
+.fulfillment-badge.packed { background: #FEF3C7; color: #B45309; border: 1px solid #FCD34D; }
+.fulfillment-badge.shipped { background: #F0FDF4; color: #0F2418; border: 1px solid #BBF7D0; }
+.fulfillment-badge.delivered { background: #ECFDF5; color: #16A34A; border: 1px solid #A7F3D0; }
+.fulfillment-badge.cancelled { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+
+/* Horizontal Fulfillment Timeline */
+.fulfillment-timeline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: relative;
+    padding: 16px 0;
+    margin: 20px 0;
+}
+
+.fulfillment-timeline::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: 24px;
+    right: 24px;
+    height: 3px;
+    background: #E7E3D8;
+    z-index: 1;
+}
+
+.timeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+    text-align: center;
+}
+
+.timeline-step .step-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 2px solid #CBD5E1;
+    color: #94A3B8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    transition: all 0.25s ease;
+}
+
+.timeline-step .step-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748B;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+}
+
+.timeline-step .step-time {
+    font-size: 0.65rem;
+    color: #94A3B8;
+    line-height: 1.2;
+}
+
+.timeline-step.completed .step-icon {
+    background: #16A34A;
+    border-color: #16A34A;
+    color: #FFFFFF;
+}
+
+.timeline-step.completed .step-title {
+    color: #0F2418;
+}
+
+.timeline-step.current .step-icon {
+    background: #0F2418;
+    border-color: #D4AF37;
+    color: #FFD700;
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.25);
+    transform: scale(1.15);
+}
+
+.timeline-step.current .step-title {
+    color: #D4AF37;
+    font-weight: 800;
+}
+
+/* Order Details Modal Container */
+.fulfillment-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(7, 21, 13, 0.7);
+    backdrop-filter: blur(6px);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.fulfillment-modal-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.fulfillment-modal {
+    background: #F8F6F1;
+    border-radius: 20px;
+    border: 1px solid #E7E3D8;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 820px;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.fulfillment-modal-header {
+    background: #0F2418;
+    color: #FFFFFF;
+    padding: 20px 24px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.fulfillment-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.fulfillment-modal-close {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #FFFFFF;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.fulfillment-modal-close:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.fulfillment-modal-body {
+    padding: 24px;
+}
+
+.fulfillment-section-card {
+    background: #FFFFFF;
+    border: 1px solid #E7E3D8;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+}
+
+.fulfillment-section-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #0F2418;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Fulfillment Action Button Grid */
+.fulfillment-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.action-btn-stage {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #E7E3D8;
+    background: #FFFFFF;
+    color: #0F2418;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.action-btn-stage:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(15, 36, 24, 0.12);
+}
+
+.action-btn-stage.btn-verify { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+.action-btn-stage.btn-prepare { background: #F5F3FF; color: #6D28D9; border-color: #DDD6FE; }
+.action-btn-stage.btn-craft { background: #FFF7ED; color: #C2410C; border-color: #FFEDD5; }
+.action-btn-stage.btn-pack { background: #FEF3C7; color: #92400E; border-color: #FCD34D; }
+.action-btn-stage.btn-ship { background: #F0FDF4; color: #0F2418; border-color: #BBF7D0; font-weight: 800; }
+.action-btn-stage.btn-deliver { background: #ECFDF5; color: #15803D; border-color: #A7F3D0; font-weight: 800; }
+.action-btn-stage.btn-cancel { background: #FEF2F2; color: #B91C1C; border-color: #FECACA; }
+
+/* Responsive Adjustments for Mobile */
+@media (max-width: 640px) {
+    .fulfillment-timeline {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        padding-left: 20px;
+    }
+    .fulfillment-timeline::before {
+        left: 36px;
+        top: 20px;
+        bottom: 20px;
+        width: 3px;
+        height: auto;
+    }
+    .timeline-step {
+        flex-direction: row;
+        gap: 12px;
+        text-align: left;
+    }
+    .timeline-step .step-icon {
+        margin-bottom: 0;
+    }
+}
+
 
 .custom-modal-btn.cancel {
     background: #FAF8F2 !important;
