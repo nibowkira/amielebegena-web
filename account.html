@@ -84,7 +84,7 @@
                         <i class="fa-solid fa-location-dot"></i> Shipping Addresses
                     </li>
 
-                    <li class="dash-nav-item dash-nav-affiliate-promo" id="nav-affiliate-tab" style="display: none;" data-tab="affiliate" onclick="switchDashTab('affiliate')">
+                    <li class="dash-nav-item dash-nav-affiliate-promo" id="nav-affiliate-tab" data-tab="affiliate" onclick="handleAffiliateClick(event)">
                         <i class="fa-solid fa-chart-line"></i>
                         <span>
                             Affiliate Portal
@@ -149,7 +149,7 @@
 
                     <!-- Quick Actions Pills Row -->
                     <div class="dash-quick-actions-bar">
-                        <a href="affiliate-dashboard.html" id="pill-affiliate" style="display: none;" class="dash-action-pill"><i class="fa-solid fa-chart-line"></i> Affiliate Dashboard</a>
+                        <a href="#" id="pill-affiliate" onclick="handleAffiliateClick(event)" class="dash-action-pill"><i class="fa-solid fa-chart-line"></i> Affiliate Portal</a>
                         <a href="products.html" class="dash-action-pill"><i class="fa-solid fa-store"></i> Browse Products</a>
                         <a href="#" onclick="switchDashTab('tracker')" class="dash-action-pill"><i class="fa-solid fa-truck-fast"></i> Track Order</a>
                         <a href="#" onclick="switchDashTab('wishlist')" class="dash-action-pill"><i class="fa-solid fa-heart"></i> Saved Wishlist</a>
@@ -544,6 +544,16 @@
             }
         }
 
+        // Smart Affiliate Portal Navigator
+        function handleAffiliateClick(e) {
+            if (e) e.preventDefault();
+            if (currentUser && currentUser.role === 'affiliate') {
+                window.location.href = 'affiliate-dashboard.html';
+            } else {
+                window.location.href = 'affiliate-apply.html';
+            }
+        }
+
         function showAddAddressModal() {
             const name = prompt('Enter recipient name:', currentUser ? currentUser.name : '');
             if (!name) return;
@@ -652,12 +662,12 @@
                 else window.location.href = 'login.html';
             });
 
-            // Affiliate Tab & Pill Setup
+            // Affiliate Tab & Pill Setup — Always visible for all users
             const affiliateNavTab = document.getElementById('nav-affiliate-tab');
             const affiliatePill = document.getElementById('pill-affiliate');
+            if (affiliateNavTab) affiliateNavTab.style.display = 'flex';
+            if (affiliatePill) affiliatePill.style.display = 'inline-flex';
             if (currentUser.role === 'affiliate') {
-                if (affiliateNavTab) affiliateNavTab.style.display = 'flex';
-                if (affiliatePill) affiliatePill.style.display = 'inline-flex';
                 loadAffiliateSummary();
             }
 
