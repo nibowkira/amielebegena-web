@@ -382,16 +382,16 @@
             // Build DOM structure
             this.container.innerHTML = `
                 <div class="notif-bell-wrapper" id="notif-bell-wrapper">
-                    <button class="notif-bell-btn" id="notif-bell-btn" aria-label="Notifications" title="Notifications">
+                    <button class="notif-bell-btn" id="notif-bell-btn" aria-label="Notifications" aria-expanded="false" aria-haspopup="dialog" title="Notifications">
                         <i class="fas fa-bell"></i>
                         <span class="notif-badge hidden" id="notif-badge">0</span>
                     </button>
-                    <div class="notif-dropdown" id="notif-dropdown">
+                    <div class="notif-dropdown" id="notif-dropdown" role="dialog" aria-label="Notifications" aria-hidden="true">
                         <div class="notif-dropdown-header">
                             <h3>Notifications</h3>
                             <div class="notif-header-actions">
                                 <button class="notif-btn-text" id="notif-mark-all">Mark all read</button>
-                                <a href="notifications.html" class="notif-btn-text gold">Center &rarr;</a>
+                                <a href="notifications.html" class="notif-btn-text gold">Notification Center &rarr;</a>
                             </div>
                         </div>
                         <div class="notif-dropdown-body" id="notif-dropdown-list">
@@ -401,7 +401,7 @@
                             </div>
                         </div>
                         <div class="notif-dropdown-footer">
-                            <a href="notifications.html">View Notification Center</a>
+                            <a href="notifications.html">View All Notifications</a>
                         </div>
                     </div>
                 </div>
@@ -463,12 +463,48 @@
         openDropdown() {
             this.isOpen = true;
             this.dropdownEl.classList.add('show');
+            this.bellBtn.setAttribute('aria-expanded', 'true');
+            this.dropdownEl.setAttribute('aria-hidden', 'false');
             this.refresh();
+            // Trap focus inside the dropdown
+            this._trapFocus();
         }
 
         closeDropdown() {
             this.isOpen = false;
             this.dropdownEl.classList.remove('show');
+            this.bellBtn.setAttribute('aria-expanded', 'false');
+            this.dropdownEl.setAttribute('aria-hidden', 'true');
+            // Return focus to bell
+            this.bellBtn.focus();
+            this._releaseFocus();
+        }
+
+        _trapFocus() {
+            this._focusHandler = (e) => {
+                if (e.key !== 'Tab') return;
+                const focusable = this.dropdownEl.querySelectorAll(
+                    'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                );
+                if (!focusable.length) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            };
+            document.addEventListener('keydown', this._focusHandler);
+        }
+
+        _releaseFocus() {
+            if (this._focusHandler) {
+                document.removeEventListener('keydown', this._focusHandler);
+                this._focusHandler = null;
+            }
         }
 
         async refresh() {

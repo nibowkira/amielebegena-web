@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (tabName === 'applications') renderApplicationsQueue();
         if (tabName === 'commissions') renderCommissionsQueue();
         if (tabName === 'withdrawals') renderWithdrawalsQueue();
-        if (tabName === 'commission-center') renderCommissionCenter();
         if (tabName === 'campaigns') renderCampaignsList();
         if (tabName === 'announcements') renderAnnouncementsList();
     };
@@ -940,7 +939,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <td><strong>${esc(w.id)}</strong></td>
                 <td>${esc(w.affiliateId)}</td>
                 <td style="font-weight:600;">ETB ${w.amount.toLocaleString()}</td>
-                <td>${esc(w.method)}<br>${esc(w.phone)}<br><small style="color:var(--aff-text-muted);">${esc(w.account || '—')}</small></td>
+                <td>${esc(w.method)}<br>${esc(w.phone)}</td>
                 <td>${date}</td>
                 <td><span class="aff-badge ${esc(w.status)}">${esc(w.status)}</span></td>
                 <td>${actions}</td>
@@ -995,162 +994,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast(err.message, 'error');
             }
         }
-    };
-
-    window.exportCommissionCenter = async function(format) {
-        if (!window.AdminService) { showToast('AdminService unavailable', 'error'); return; }
-        const data = await window.AdminService.getCommissionCenterData();
-        if (!data || !data.ledger || data.ledger.length === 0) { showToast('No data to export', 'warning'); return; }
-
-        const rows = data.ledger.map(l => ({
-            Affiliate: l.affiliateName,
-            'Order Number': l.orderNumber,
-            Customer: l.customerName,
-            Product: l.productName,
-            'Product Price (ETB)': l.productPrice,
-            'Commission %': l.commissionPct,
-            'Commission Amount (ETB)': l.commissionAmount,
-            Status: l.status,
-            'Payment Date': l.paymentDate ? new Date(l.paymentDate).toLocaleDateString() : '—',
-            'Withdrawal Date': l.withdrawalDate ? new Date(l.withdrawalDate).toLocaleDateString() : '—'
-        }));
-
-        if (format === 'csv') {
-            const headers = Object.keys(rows[0]).join(',');
-            const csvRows = rows.map(r => Object.values(r).map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
-            const csv = headers + '\n' + csvRows.join('\n');
-            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'commission_center_' + new Date().toISOString().slice(0, 10) + '.csv';
-            link.click();
-            URL.revokeObjectURL(link.href);
-            showToast('CSV exported successfully', 'success');
-        } else if (format === 'excel') {
-            // Generates an HTML table wrapped as .xls for Excel compatibility
-            let html = '<table><thead><tr>';
-            Object.keys(rows[0]).forEach(h => { html += '<th>' + h + '</th>'; });
-            html += '</tr></thead><tbody>';
-            rows.forEach(r => {
-                html += '<tr>';
-                Object.values(r).forEach(v => { html += '<td>' + String(v) + '</td>'; });
-                html += '</tr>';
-            });
-            html += '</tbody></table>';
-            const blob = new Blob(['\uFEFF' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'commission_center_' + new Date().toISOString().slice(0, 10) + '.xls';
-            link.click();
-            URL.revokeObjectURL(link.href);
-            showToast('Excel exported successfully', 'success');
-        }
-    };
-
-    // Commission Center
-    async function renderCommissionCenter() {
-        const data = window.AdminService ? await window.AdminService.getCommissionCenterData() : null;
-        if (!data) {
-            document.getElementById('cc-total') && (document.getElementById('cc-total').textContent = 'No data');
-            return;
-        }
-
-        // KPIs
-        const kpi = data.kpis;
-        const setKpi = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        setKpi('cc-total', 'ETB ' + kpi.totalCommission.toLocaleString());
-        setKpi('cc-pending', 'ETB ' + kpi.pending.toLocaleString());
-        setKpi('cc-available', 'ETB ' + kpi.available.toLocaleString());
-        setKpi('cc-paid', 'ETB ' + kpi.paid.toLocaleString());
-        setKpi('cc-withdrawn', 'ETB ' + kpi.withdrawn.toLocaleString());
-        setKpi('cc-affiliates', kpi.affiliateCount);
-        setKpi('cc-payout-requests', kpi.payoutRequests);
-
-        // Rankings
-        const rankDiv = document.getElementById('cc-rankings');
-        if (rankDiv) {
-            if (data.rankings.length === 0) {
-                rankDiv.innerHTML = '<p style="color:var(--aff-text-muted);">No affiliate earnings yet.</p>';
-            } else {
-                let html = '<table class="aff-table"><thead><tr><th>#</th><th>Affiliate</th><th>Total Earned</th><th>Sales</th><th>Avg Commission</th></tr></thead><tbody>';
-                data.rankings.slice(0, 10).forEach((r, i) => {
-                    html += `<tr><td>${i + 1}</td><td><strong>${esc(r.name)}</strong></td><td>ETB ${r.totalEarned.toLocaleString()}</td><td>${r.salesCount}</td><td>ETB ${r.avgCommission.toLocaleString()}</td></tr>`;
-                });
-                html += '</tbody></table>';
-                rankDiv.innerHTML = html;
-            }
-        }
-
-        // Monthly
-        const monthDiv = document.getElementById('cc-monthly');
-        if (monthDiv) {
-            if (data.monthly.length === 0) {
-                monthDiv.innerHTML = '<p style="color:var(--aff-text-muted);">No monthly data.</p>';
-            } else {
-                let html = '<table class="aff-table"><thead><tr><th>Month</th><th>Commission (ETB)</th><th>Bar</th></tr></thead><tbody>';
-                const maxAmt = Math.max(...data.monthly.map(m => m.amount), 1);
-                data.monthly.forEach(m => {
-                    const pct = Math.round((m.amount / maxAmt) * 100);
-                    html += `<tr><td>${m.month}</td><td>ETB ${m.amount.toLocaleString()}</td><td><div style="height:8px; width:${pct}%; max-width:200px; background:var(--aff-primary); border-radius:4px;"></div></td></tr>`;
-                });
-                html += '</tbody></table>';
-                monthDiv.innerHTML = html;
-            }
-        }
-
-        // Ledger table
-        const tbody = document.getElementById('commission-center-body');
-        if (tbody) {
-            tbody.innerHTML = '';
-            if (data.ledger.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:2rem;">No commission records found.</td></tr>';
-            } else {
-                data.ledger.forEach(l => {
-                    const pDate = l.paymentDate ? new Date(l.paymentDate).toLocaleDateString() : '—';
-                    const wDate = l.withdrawalDate ? new Date(l.withdrawalDate).toLocaleDateString() : '—';
-                    const row = document.createElement('tr');
-                    const statusClass = l.status === 'available' && l.withdrawalStatus ? 'withdrawn' : l.status;
-                    row.innerHTML = `
-                        <td>${esc(l.affiliateName)}</td>
-                        <td><strong>${esc(l.orderNumber)}</strong></td>
-                        <td>${esc(l.customerName)}</td>
-                        <td>${esc(l.productName)}</td>
-                        <td>ETB ${l.productPrice.toLocaleString()}</td>
-                        <td>${l.commissionPct}%</td>
-                        <td style="font-weight:600;">ETB ${l.commissionAmount.toLocaleString()}</td>
-                        <td><span class="aff-badge ${esc(statusClass)}">${esc(l.status)}${l.withdrawalStatus ? ' (in payout)' : ''}</span></td>
-                        <td>${pDate}</td>
-                        <td>${wDate}</td>
-                        <td><button class="aff-btn" style="padding:0.3rem 0.6rem;font-size:0.75rem;background:#14231b;" onclick="viewAffiliate('${esc(l.affiliateId)}')">View</button></td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-        }
-
-        // Recent activity
-        const actDiv = document.getElementById('cc-activity');
-        if (actDiv) {
-            if (data.recentActivity.length === 0) {
-                actDiv.innerHTML = '<p style="color:var(--aff-text-muted);">No recent activity.</p>';
-            } else {
-                let html = '<div style="display:flex;flex-direction:column;gap:0.75rem;">';
-                data.recentActivity.forEach(a => {
-                    const d = a.date ? new Date(a.date).toLocaleDateString() : '—';
-                    const statusBadge = `<span class="aff-badge ${esc(a.status)}">${esc(a.status)}</span>`;
-                    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--aff-card-border);">
-                        <div><strong>${esc(a.affiliateName)}</strong> — ${esc(a.orderNumber)} / ${esc(a.productName)}</div>
-                        <div style="text-align:right;">ETB ${a.commissionAmount.toLocaleString()} ${statusBadge}<br><small style="color:var(--aff-text-muted);">${d}</small></div>
-                    </div>`;
-                });
-                html += '</div>';
-                actDiv.innerHTML = html;
-            }
-        }
-    }
-
-    window.viewAffiliate = function(affId) {
-        showToast('Affiliate ID: ' + affId + ' — detailed view coming in future update.', 'info');
     };
 
     // 7. Campaigns Challenge Creator
@@ -1313,9 +1156,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             '3': 'applications',
             '4': 'commissions',
             '5': 'withdrawals',
-            '6': 'commission-center',
-            '7': 'campaigns',
-            '8': 'announcements'
+            '6': 'campaigns',
+            '7': 'announcements'
         };
 
         if (tabRoutes[e.key]) {
@@ -1331,7 +1173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div style="display:flex; flex-direction:column; gap:0.8rem; font-family:'Outfit',sans-serif; text-align:left;">
                     <p style="margin:0 0 1rem; color:var(--aff-text-muted);">Use these quick keys to browse through admin queues rapidly:</p>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--aff-card-border); padding-bottom:6px;">
-                        <span><kbd style="background:var(--aff-bg); padding:2px 6px; border-radius:4px; border:1px solid #ccc; font-weight:600;">1</kbd> to <kbd style="background:var(--aff-bg); padding:2px 6px; border-radius:4px; border:1px solid #ccc; font-weight:600;">8</kbd></span>
+                        <span><kbd style="background:var(--aff-bg); padding:2px 6px; border-radius:4px; border:1px solid #ccc; font-weight:600;">1</kbd> to <kbd style="background:var(--aff-bg); padding:2px 6px; border-radius:4px; border:1px solid #ccc; font-weight:600;">7</kbd></span>
                         <span style="color:var(--aff-text-muted);">Navigate Admin Tabs</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; border-bottom:1px solid var(--aff-card-border); padding-bottom:6px;">

@@ -8,40 +8,6 @@
 
     const AffiliateService = {
         /**
-         * Resolve the current ETB/USD exchange rate with a safe fallback of 120.
-         */
-        async _getExchangeRate() {
-            let rate = 120;
-            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
-            if (!client) return rate;
-            try {
-                const { data, error } = await client.rpc('get_exchange_rate');
-                if (!error && data && parseFloat(data) > 0) rate = parseFloat(data);
-            } catch (e) {}
-            return rate;
-        },
-
-        /**
-         * Compute a commission amount purely from the product's own price and
-         * commission_percentage. Single source of truth: never hardcode a rate.
-         */
-        async _computeCommission(product, quantity) {
-            const qty = quantity || 1;
-            const priceUSD = product && product.price ? parseFloat(product.price) : 0;
-            const pct = product && product.commission_percentage != null
-                ? parseFloat(product.commission_percentage)
-                : 8;
-            const exchangeRate = await this._getExchangeRate();
-            const commissionETB = Math.round((priceUSD * qty * exchangeRate * pct) / 100);
-            return {
-                commissionETB,
-                priceUSD,
-                priceETB: Math.round(priceUSD * qty * exchangeRate),
-                pct
-            };
-        },
-
-        /**
          * Submit a new partnership application.
          */
         async submitApplication(userId, motivation, socialLink) {
@@ -264,109 +230,75 @@
 
             let exchangeRate = 120;
             try {
-                exchangeRate = await this._getExchangeRate();
+                const { data, error } = await client.rpc('get_exchange_rate');
+                if (!error && data) exchangeRate = parseFloat(data);
             } catch (err) {}
 
-            // ==================================================================
-            // WALLET + COMMISSION ENGINE (single source of truth = commissions)
-            // ==================================================================
-            let totalEarnings = 0;        // Total Earned (all lifecycle)
-            let pendingCommission = 0;    // Reserved, order not yet delivered
-            let availableCommission = 0;  // Delivered, withdrawable
-            let withdrawn = 0;            // Locked into a pending payout request
-            let paidCommission = 0;       // Paid out
+            // Calculate pending & approved commissions strictly from Supabase
+            let pendingCommission = 0;
+            let totalEarnings = 0;
+            let totalPaid = 0;
             let totalOrders = 0;
             let paidOrders = 0;
             let grossVolume = 0;
-            let revenueGenerated = 0;
-            let topProduct = null;
-            let avgCommission = 0;
-            let totalCommission = 0;
 
             try {
-                const { data: comms, error: commErr } = await client
-                    .from('commissions')
-                    .select('amount, status, withdrawal_id')
-                    .eq('affiliate_id', userId);
-
-                if (!commErr && comms) {
-                    comms.forEach(c => {
-                        const amt = parseFloat(c.amount || 0);
-                        totalCommission += amt;
-                        if (c.status === 'pending' || c.status === 'approved' && c.withdrawal_id) {
-                            pendingCommission += amt;
-                        } else if (c.status === 'available' && !c.withdrawal_id) {
-                            availableCommission += amt;
-                        } else if (c.status === 'available' && c.withdrawal_id) {
-                            withdrawn += amt;
-                        } else if (c.status === 'paid') {
-                            paidCommission += amt;
-                        } else if (c.status === 'approved') {
-                            availableCommission += amt;
-                        }
-                    });
-                }
-                totalEarnings = totalCommission;
-            } catch (err) {
-                console.warn('[Amiele:Affiliate] Error fetching commissions for wallet:', err);
-            }
-
-            // Order-level stats (revenue, orders, top product, conversion)
-            try {
-                const { data: allReferredOrders, error: ordErr } = await client
+                // Query ALL orders referred by affiliate_id or referral_code
+                const { data: allReferredOrders } = await client
                     .from('orders')
-                    .select('quantity, payment_status, status, fulfillment_status, product:products(name, price, commission_percentage)')
+                    .select('quantity, payment_status, status, product:products(price)')
                     .or(`affiliate_id.eq.${userId},referral_code.eq.${code}`);
 
-                if (!ordErr && allReferredOrders) {
+                if (allReferredOrders && allReferredOrders.length > 0) {
                     totalOrders = allReferredOrders.length;
-                    const productMap = {};
 
                     allReferredOrders.forEach(o => {
-                        const priceUSD = o.product ? parseFloat(o.product.price) : 100;
-                        const orderAmountETB = priceUSD * (o.quantity || 1) * exchangeRate;
+                        const itemPriceUSD = o.product ? parseFloat(o.product.price) : 100;
+                        const orderAmountETB = itemPriceUSD * (o.quantity || 1) * exchangeRate;
                         grossVolume += orderAmountETB;
 
-                        const isPaidOrder = o.payment_status === 'paid' || ['confirmed', 'shipped', 'delivered'].includes(String(o.status || '').toLowerCase());
-                        if (isPaidOrder) {
+                        if (o.payment_status === 'pending_payment') {
+                            pendingCommission += Math.round(orderAmountETB * 0.10);
+                        } else if (o.payment_status === 'paid' || o.status === 'confirmed') {
                             paidOrders++;
-                            revenueGenerated += orderAmountETB;
-                        }
-
-                        if (o.product && o.product.name) {
-                            productMap[o.product.name] = (productMap[o.product.name] || 0) + (o.quantity || 1);
                         }
                     });
-
-                    const topName = Object.keys(productMap).sort((a, b) => productMap[b] - productMap[a])[0];
-                    if (topName) {
-                        topProduct = { name: topName, unitsSold: productMap[topName] };
-                    }
                 }
             } catch (e) {
                 console.warn('[Amiele:Affiliate] Error fetching orders:', e);
             }
 
             let totalSalesCount = Math.max(aff.sales_count || 0, paidOrders);
-            avgCommission = totalCommission > 0 && totalSalesCount > 0 ? Math.round(totalCommission / totalSalesCount) : 0;
-
-            let totalPaid = paidCommission + withdrawn;
 
             try {
-                const { data: withdrawals, error: wthErr } = await client
+                // Approved Commissions from commissions table
+                const { data: comms } = await client
+                    .from('commissions')
+                    .select('amount, status')
+                    .eq('affiliate_id', userId)
+                    .eq('status', 'approved');
+
+                if (comms && comms.length > 0) {
+                    totalEarnings = comms.reduce((sum, c) => sum + parseFloat(c.amount || 0), 0);
+                    totalSalesCount = Math.max(totalSalesCount, comms.length);
+                }
+            } catch (err) {}
+
+            try {
+                // Paid Withdrawals
+                const { data: withdrawals } = await client
                     .from('affiliate_withdrawals')
                     .select('amount, status')
                     .eq('affiliate_id', userId);
 
-                if (!wthErr && withdrawals) {
+                if (withdrawals) {
                     totalPaid = withdrawals
-                        .filter(w => w.status === 'paid')
+                        .filter(w => w.status === 'approved' || w.status === 'paid')
                         .reduce((sum, w) => sum + parseFloat(w.amount || 0), 0);
                 }
             } catch (wthErr) {}
 
-            const balance = Math.max(0, availableCommission);
-            const conversionRate = totalClicks > 0 ? Math.round((paidOrders / totalClicks) * 1000) / 10 : 0;
+            const balance = Math.max(0, totalEarnings - totalPaid);
 
             const dashboardStats = {
                 userId,
@@ -376,18 +308,10 @@
                 balance,
                 totalEarnings,
                 pendingCommission,
-                availableCommission,
-                withdrawn,
-                paidCommission,
                 totalPaid,
-                totalCommission,
                 sales: totalSalesCount,
                 totalOrders: Math.max(totalOrders, totalSalesCount),
                 grossVolume,
-                revenueGenerated,
-                conversionRate,
-                topProduct,
-                averageCommission: avgCommission,
                 clicks: totalClicks,
                 uniqueClicks: uniqueClicks,
                 clicksToday: clicksToday,
@@ -401,30 +325,28 @@
         },
 
         /**
-         * Fetch the full commission history ledger with product price, commission %,
-         * customer, order status and lifecycle status. Single source of truth is the
-         * products table (price + commission_percentage) used at attribution time.
+         * Fetch commissions ledger list.
          */
         async getCommissionsLedger(userId) {
             const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             if (!client || !userId) return [];
 
+            // Fetch affiliate referral code
             let refCode = '';
             try {
                 const { data: affRec } = await client.from('affiliates').select('referral_code').eq('user_id', userId).maybeSingle();
                 if (affRec) refCode = affRec.referral_code || '';
             } catch (e) {}
 
+            // Fetch orders referred by affiliate_id or referral_code
             let ordersQuery = client.from('orders').select(`
                 id,
                 order_number,
-                customer_name,
                 quantity,
                 status,
                 payment_status,
-                fulfillment_status,
                 created_at,
-                product:products(name, price, commission_percentage)
+                product:products(name, price)
             `);
 
             if (refCode) {
@@ -434,11 +356,13 @@
             }
 
             const { data: orders, error: ordersErr } = await ordersQuery.order('created_at', { ascending: false });
+
             if (ordersErr) {
                 console.error('[Amiele:Affiliate] Error fetching orders for ledger:', ordersErr);
                 return [];
             }
 
+            // Fetch approved commissions
             const { data: comms, error: commsErr } = await client
                 .from('commissions')
                 .select('*')
@@ -451,95 +375,44 @@
                 });
             }
 
-            const { data: withdrawals, error: wthErr } = await client
-                .from('affiliate_withdrawals')
-                .select('id, status, processed_at, created_at')
-                .eq('affiliate_id', userId);
-            const wthMap = {};
-            if (!wthErr && withdrawals) {
-                withdrawals.forEach(w => {
-                    wthMap[w.id] = w;
-                });
+            // Fetch stats and exchange rate via RPC
+            let commRate = 0.10;
+            let exchangeRate = 120;
+            try {
+                const { data: stats } = await client.rpc('get_affiliate_stats', { user_id_val: userId });
+                if (stats) commRate = stats.commission_rate;
+                
+                const { data: exRate } = await client.rpc('get_exchange_rate');
+                if (exRate) exchangeRate = parseFloat(exRate);
+            } catch (err) {
+                console.error('[Amiele:Affiliate] Error fetching stats/exchange rate for ledger:', err);
             }
-
-            const exchangeRate = await this._getExchangeRate();
-
             return orders.map(o => {
-                const qty = o.quantity || 1;
-                const product = o.product || {};
-                const priceUSD = parseFloat(product.price || 0);
-                const priceETB = Math.round(priceUSD * qty * exchangeRate);
-                const pct = product.commission_percentage != null
-                    ? parseFloat(product.commission_percentage)
-                    : 8;
-
-                let commissionAmount = Math.round((priceUSD * qty * exchangeRate * pct) / 100);
-                let status = 'pending';
-                let withdrawalId = null;
+                const itemPriceUSD = o.product ? parseFloat(o.product.price) : 0;
+                const orderAmountETB = itemPriceUSD * o.quantity * exchangeRate;
+                
+                let commissionAmount = orderAmountETB * commRate;
+                let commStatus = 'pending';
 
                 if (commMap[o.id]) {
-                    const c = commMap[o.id];
-                    commissionAmount = parseFloat(c.amount);
-                    status = c.status || 'pending';
-                    withdrawalId = c.withdrawal_id || null;
-                } else if (o.payment_status === 'pending_payment') {
-                    status = 'pending';
-                } else if (o.status === 'cancelled' || o.fulfillment_status === 'Cancelled') {
-                    status = 'rejected';
+                    commissionAmount = parseFloat(commMap[o.id].amount);
+                    commStatus = commMap[o.id].status;
+                } else if (o.payment_status === 'paid') {
+                    commStatus = 'approved';
+                } else if (o.status === 'cancelled') {
+                    commStatus = 'cancelled';
                 }
-
-                // Map legacy 'approved' -> 'available' for display consistency
-                if (status === 'approved') status = 'available';
-
-                const orderStatus = o.fulfillment_status || o.status || 'pending';
-                const withdrawal = withdrawalId ? (wthMap[withdrawalId] || null) : null;
 
                 return {
                     id: 'comm_' + o.id.slice(0, 8),
                     orderId: o.order_number || ('#HA-' + o.id.slice(0, 4).toUpperCase()),
-                    customerName: o.customer_name || 'Guest Customer',
-                    productName: product.name ? `${o.product.name}${qty > 1 ? ' ×' + qty : ''}` : 'Ethiopian Instrument',
-                    productPrice: priceETB,
-                    priceUSD,
-                    quantity: qty,
-                    commissionPct: pct,
-                    commissionAmount,
-                    status,
-                    orderStatus: orderStatus || 'Pending',
-                    createdAt: o.created_at,
-                    withdrawalStatus: withdrawal ? withdrawal.status : null,
-                    withdrawalProcessedAt: withdrawal ? (withdrawal.processed_at || null) : null,
-                    withdrawalDate: withdrawal ? (withdrawal.created_at || null) : null
+                    productName: o.product ? `${o.quantity}x ${o.product.name}` : 'Instrument',
+                    orderAmount: orderAmountETB,
+                    commissionAmount: commissionAmount,
+                    status: commStatus,
+                    createdAt: o.created_at
                 };
             });
-        },
-
-        /**
-         * Wallet summary for the affiliate dashboard.
-         */
-        async getWallet(userId) {
-            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
-            if (!client || !userId) return null;
-
-            const { data: comms, error } = await client
-                .from('commissions')
-                .select('amount, status, withdrawal_id')
-                .eq('affiliate_id', userId);
-
-            const wallet = { totalEarned: 0, pending: 0, available: 0, withdrawn: 0, paid: 0 };
-            if (!error && comms) {
-                comms.forEach(c => {
-                    const amt = parseFloat(c.amount || 0);
-                    wallet.totalEarned += amt;
-                    if (c.status === 'pending') wallet.pending += amt;
-                    else if (c.status === 'available' && !c.withdrawal_id) wallet.available += amt;
-                    else if (c.status === 'available' && c.withdrawal_id) wallet.withdrawn += amt;
-                    else if (c.status === 'paid') wallet.paid += amt;
-                    else if (c.status === 'approved') wallet.available += amt;
-                });
-            }
-            wallet.balance = wallet.available;
-            return wallet;
         },
 
         /**
@@ -562,34 +435,25 @@
 
             return data.map(w => ({
                 id: 'wth_' + w.id.slice(0, 8),
-                rawId: w.id,
                 amount: parseFloat(w.amount),
                 method: w.method,
                 phone: w.phone,
-                account: w.account || '',
                 status: w.status,
-                createdAt: w.created_at,
-                processedAt: w.processed_at
+                createdAt: w.created_at
             }));
         },
 
         /**
          * Submit a withdrawal payout request.
-         * Rules: minimum 500 ETB and only 'available' commissions can be withdrawn.
-         * The requested amount is locked against available commissions so the same
-         * commission can never be withdrawn twice (single source of truth).
          */
-        async requestWithdrawal(userId, amount, method, phone, account) {
+        async requestWithdrawal(userId, amount, method, phone) {
             const client = window.AmieleSupabase.getClient();
             if (!client) throw new Error('Supabase client not initialized');
 
-            if (!amount || amount < 500) {
-                throw new Error('Minimum withdrawal is 500 ETB. / በትንሹ 500 ብር ያስፈልጋል።');
-            }
-
-            const wallet = await this.getWallet(userId);
-            if (!wallet || amount > wallet.available) {
-                throw new Error('You need at least 500 ETB available before requesting a withdrawal. / በቂ ያልሆነ ገንዘብ።');
+            // Validate balance
+            const meta = await this.getAffiliateMetadata(userId);
+            if (!meta || amount > meta.balance) {
+                throw new Error('Insufficient balance to perform withdrawal. / በቂ ሂሳብ የሎትም።');
             }
 
             const { data, error } = await client
@@ -599,7 +463,6 @@
                     amount: amount,
                     method: method,
                     phone: phone,
-                    account: account || null,
                     status: 'pending'
                 })
                 .select()
@@ -607,42 +470,11 @@
 
             if (error) throw error;
 
-            // Lock available commissions into this withdrawal (greedy, oldest first)
-            try {
-                const { data: availComms } = await client
-                    .from('commissions')
-                    .select('id, amount')
-                    .eq('affiliate_id', userId)
-                    .eq('status', 'available')
-                    .is('withdrawal_id', null)
-                    .order('created_at', { ascending: true });
-
-                if (availComms && availComms.length > 0) {
-                    let remaining = amount;
-                    const toLock = [];
-                    for (const c of availComms) {
-                        if (remaining <= 0) break;
-                        toLock.push(c.id);
-                        remaining -= parseFloat(c.amount || 0);
-                    }
-                    if (toLock.length > 0) {
-                        await client
-                            .from('commissions')
-                            .update({ withdrawal_id: data.id, updated_at: new Date().toISOString() })
-                            .in('id', toLock);
-                    }
-                }
-            } catch (lockErr) {
-                console.warn('[Amiele:Affiliate] Warning: could not lock commissions to withdrawal:', lockErr);
-            }
-
             return {
                 id: 'wth_' + data.id.slice(0, 8),
-                rawId: data.id,
                 amount: parseFloat(data.amount),
                 method: data.method,
                 phone: data.phone,
-                account: data.account || '',
                 status: data.status,
                 createdAt: data.created_at
             };
@@ -723,7 +555,7 @@
                     quantity,
                     status,
                     created_at,
-                    product:products(price, commission_percentage)
+                    product:products(price)
                 `)
                 .eq('affiliate_id', userId)
                 .neq('status', 'cancelled');
@@ -735,19 +567,21 @@
             const monthBuckets = Array(6).fill(0);
             const now = new Date();
             const exchangeRate = 120;
+            
+            const salesCount = orders.length;
+            let commRate = 0.10;
+            if (salesCount >= 30) commRate = 0.15;
+            else if (salesCount >= 10) commRate = 0.12;
 
             orders.forEach(o => {
                 const orderDate = new Date(o.created_at);
                 const monthDiff = (now.getFullYear() - orderDate.getFullYear()) * 12 + (now.getMonth() - orderDate.getMonth());
-
+                
                 if (monthDiff >= 0 && monthDiff < 6) {
                     const priceUSD = o.product ? parseFloat(o.product.price) : 0;
-                    const pct = o.product && o.product.commission_percentage != null
-                        ? parseFloat(o.product.commission_percentage)
-                        : 8;
                     const orderAmountETB = priceUSD * o.quantity * exchangeRate;
-                    const commission = Math.round((orderAmountETB * pct) / 100);
-
+                    const commission = orderAmountETB * commRate;
+                    
                     const bucketIndex = 5 - monthDiff;
                     monthBuckets[bucketIndex] += commission;
                 }

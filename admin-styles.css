@@ -197,7 +197,7 @@ body {
     margin-bottom: 24px !important;
     box-shadow: 0 10px 30px rgba(15, 36, 24, 0.05), inset 0 1px 0 rgba(255,255,255,0.8) !important;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .executive-hero::before {
@@ -1085,5 +1085,148 @@ body.sidebar-open {
     .executive-pill-btn {
         width: 100% !important;
         min-height: 48px !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   ADMIN NOTIFICATION DROPDOWN — Production-Quality Positioning
+   Anchored to bell, arrow indicator, sticky header/footer, responsive.
+   -------------------------------------------------------------------------- */
+
+/* Wrapper gets position:relative so dropdown anchors to it */
+.executive-hero .notif-bell-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Override the injected dropdown styles for the admin context */
+.executive-hero .notif-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    left: auto;
+    width: 380px;
+    max-height: 500px;
+    z-index: 9999;
+    border-radius: 16px;
+    box-shadow:
+        0 20px 60px rgba(15, 36, 24, 0.18),
+        0 8px 24px rgba(15, 36, 24, 0.1),
+        0 0 0 1px rgba(212, 175, 55, 0.12);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 200ms ease-out, transform 200ms ease-out;
+    animation: none;
+}
+
+.executive-hero .notif-dropdown.show {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+    animation: adminNotifSlideIn 200ms ease-out forwards;
+}
+
+@keyframes adminNotifSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Arrow pointing toward the bell */
+.executive-hero .notif-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -7px;
+    right: 14px;
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(135deg, #14231b, #1e3328);
+    transform: rotate(45deg);
+    border-top: 1px solid rgba(212, 175, 55, 0.15);
+    border-left: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 3px 0 0 0;
+    z-index: 1;
+}
+
+/* Sticky header */
+.executive-hero .notif-dropdown-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    flex-shrink: 0;
+    border-radius: 16px 16px 0 0;
+}
+
+/* Scrollable notification list only */
+.executive-hero .notif-dropdown-body {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 380px;
+    overscroll-behavior: contain;
+}
+
+/* Sticky footer */
+.executive-hero .notif-dropdown-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    flex-shrink: 0;
+    border-radius: 0 0 16px 16px;
+}
+
+/* Ensure the hero ::before bar doesn't bleed over rounded corners */
+.executive-hero::before {
+    border-radius: 20px 20px 0 0;
+}
+
+/* ---------- Tablet (769px – 1024px) ---------- */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .executive-hero .notif-dropdown {
+        width: 360px;
+        right: 0;
+    }
+}
+
+/* ---------- Mobile (≤ 768px) ---------- */
+@media (max-width: 768px) {
+    .executive-hero .notif-dropdown {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-height: 70vh;
+        border-radius: 20px 20px 0 0;
+        box-shadow:
+            0 -10px 40px rgba(15, 36, 24, 0.2),
+            0 0 0 1px rgba(212, 175, 55, 0.12);
+    }
+
+    .executive-hero .notif-dropdown::before {
+        display: none;
+    }
+
+    .executive-hero .notif-dropdown-header {
+        border-radius: 20px 20px 0 0;
+    }
+
+    .executive-hero .notif-dropdown-footer {
+        border-radius: 0;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    }
+
+    .executive-hero .notif-dropdown-body {
+        max-height: calc(70vh - 110px);
     }
 }

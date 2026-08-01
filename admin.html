@@ -41,7 +41,6 @@
                     <li><a class="aff-menu-item" onclick="switchAdminTab('applications')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="file-text" style="width:18px; height:18px;"></i> Applications Queue</a></li>
                     <li><a class="aff-menu-item" onclick="switchAdminTab('commissions')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="shopping-bag" style="width:18px; height:18px;"></i> Order Management</a></li>
                     <li><a class="aff-menu-item" onclick="switchAdminTab('withdrawals')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="credit-card" style="width:18px; height:18px;"></i> Payout Queue</a></li>
-                    <li><a class="aff-menu-item" onclick="switchAdminTab('commission-center')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="percent" style="width:18px; height:18px;"></i> Commission Center</a></li>
                     <li><a class="aff-menu-item" onclick="switchAdminTab('campaigns')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="target" style="width:18px; height:18px;"></i> Campaigns Creator</a></li>
                     <li><a class="aff-menu-item" onclick="switchAdminTab('announcements')" style="color:#94A3B8; font-weight:600; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:0.88rem; text-decoration:none; cursor:pointer;"><i data-lucide="megaphone" style="width:18px; height:18px;"></i> Broadcast Update</a></li>
                 </ul>
@@ -592,71 +591,6 @@
                             <tbody id="withdrawals-table-body"></tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-
-            <!-- COMMISSION CENTER -->
-            <div id="tab-commission-center" class="aff-tab-pane">
-                <div class="aff-header-row">
-                    <h1>Commission Center</h1>
-                    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
-                        <button class="aff-btn" onclick="exportCommissionCenter('csv')" style="padding:0.6rem 1.2rem;">Export CSV</button>
-                        <button class="aff-btn" onclick="exportCommissionCenter('excel')" style="padding:0.6rem 1.2rem;">Export Excel</button>
-                    </div>
-                </div>
-
-                <!-- KPIs -->
-                <div class="aff-stats-grid" id="cc-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
-                    <div class="aff-stat-card"><h3>Total Commission</h3><div class="aff-stat-value" id="cc-total">ETB 0</div></div>
-                    <div class="aff-stat-card"><h3>Pending</h3><div class="aff-stat-value" id="cc-pending" style="color:#b25e00;">ETB 0</div></div>
-                    <div class="aff-stat-card"><h3>Available</h3><div class="aff-stat-value" id="cc-available" style="color:#2e7d32;">ETB 0</div></div>
-                    <div class="aff-stat-card"><h3>Paid</h3><div class="aff-stat-value" id="cc-paid" style="color:#1565c0;">ETB 0</div></div>
-                    <div class="aff-stat-card"><h3>Withdrawn (In Payout)</h3><div class="aff-stat-value" id="cc-withdrawn">ETB 0</div></div>
-                    <div class="aff-stat-card"><h3>Active Affiliates</h3><div class="aff-stat-value" id="cc-affiliates">0</div></div>
-                    <div class="aff-stat-card"><h3>Payout Requests</h3><div class="aff-stat-value" id="cc-payout-requests">0</div></div>
-                </div>
-
-                <!-- Rankings + Monthly -->
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem; margin-bottom:2rem;">
-                    <div class="aff-card">
-                        <div class="aff-card-header"><h2>Affiliate Rankings</h2></div>
-                        <div id="cc-rankings"></div>
-                    </div>
-                    <div class="aff-card">
-                        <div class="aff-card-header"><h2>Monthly Commission (ETB)</h2></div>
-                        <div id="cc-monthly"></div>
-                    </div>
-                </div>
-
-                <!-- Full ledger table -->
-                <div class="aff-card">
-                    <div class="aff-card-header"><h2>All Commissions</h2></div>
-                    <div class="aff-table-container">
-                        <table class="aff-table">
-                            <thead>
-                                <tr>
-                                    <th>Affiliate</th>
-                                    <th>Order Number</th>
-                                    <th>Customer</th>
-                                    <th>Product</th>
-                                    <th>Product Price</th>
-                                    <th>Commission %</th>
-                                    <th>Commission Amount</th>
-                                    <th>Status</th>
-                                    <th>Payment Date</th>
-                                    <th>Withdrawal Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="commission-center-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Recent Activity -->
-                <div class="aff-card">
-                    <div class="aff-card-header"><h2>Recent Commission Activity</h2></div>
-                    <div id="cc-activity"></div>
                 </div>
             </div>
 
