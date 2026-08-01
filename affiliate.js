@@ -58,6 +58,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     syncSidebarInfo();
 
+    // Mobile Sidebar Drawer Controller
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebar = document.querySelector('.aff-sidebar');
+    let sidebarOverlay = document.querySelector('.aff-sidebar-overlay');
+    if (!sidebarOverlay) {
+        sidebarOverlay = document.createElement('div');
+        sidebarOverlay.className = 'aff-sidebar-overlay';
+        document.body.appendChild(sidebarOverlay);
+    }
+
+    function toggleMobileSidebar(open) {
+        const isOpen = open !== undefined ? open : !sidebar.classList.contains('mobile-open');
+        if (isOpen) {
+            sidebar.classList.add('mobile-open');
+            sidebarOverlay.classList.add('active');
+            document.body.classList.add('sidebar-open');
+        } else {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('sidebar-open');
+        }
+    }
+
+    if (hamburgerBtn && sidebar) {
+        hamburgerBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleMobileSidebar();
+        };
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.onclick = () => toggleMobileSidebar(false);
+    }
+
+    document.querySelectorAll('.aff-sidebar-menu .aff-menu-item, .aff-sidebar a').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 1024) {
+                toggleMobileSidebar(false);
+            }
+        });
+    });
+
     // 2. Fetch Affiliate Metadata from Supabase (with localStorage fallback)
     let metadata = null;
     if (window.AffiliateService) {

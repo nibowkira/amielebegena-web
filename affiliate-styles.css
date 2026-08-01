@@ -2688,3 +2688,200 @@ textarea:focus-visible {
     flex-shrink: 0;
 }
 
+/* ==========================================================================
+   AMIELE AFFILIATE DASHBOARD MOBILE-FIRST RESPONSIVE OVERRIDES
+   ========================================================================== */
+
+html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+.aff-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9997;
+    background: rgba(13, 26, 19, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.aff-sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+body.sidebar-open {
+    overflow: hidden !important;
+}
+
+@media (min-width: 1440px) {
+    .aff-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 1439px) and (min-width: 1024px) {
+    .aff-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 1023px) and (min-width: 768px) {
+    .aff-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767px) {
+    .aff-content {
+        padding: 1.25rem;
+    }
+    .aff-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .aff-header-row h1 {
+        font-size: 1.6rem;
+    }
+
+    .aff-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .aff-stat-card {
+        padding: 1.25rem;
+        min-height: auto;
+    }
+    .aff-stat-value {
+        font-size: 1.5rem;
+    }
+
+    .aff-card {
+        padding: 1.25rem;
+        border-radius: 16px;
+        margin-bottom: 1.5rem;
+    }
+
+    .aff-link-copy-box {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+    .aff-link-copy-box input {
+        width: 100%;
+        font-size: 0.85rem;
+        padding: 0.6rem;
+    }
+    .aff-btn-copy {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .aff-btn, .marketing-btn-download, .custom-modal-btn {
+        min-height: 48px;
+        border-radius: 12px;
+        font-size: 1rem;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .aff-form {
+        max-width: 100%;
+        gap: 1.2rem;
+    }
+    .aff-input, .aff-select, .aff-textarea {
+        width: 100%;
+        min-height: 48px;
+        font-size: 1rem;
+    }
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .aff-table-container {
+        border: none;
+        background: transparent;
+        overflow-x: hidden;
+    }
+    .aff-table, .aff-table thead, .aff-table tbody, .aff-table tr, .aff-table th, .aff-table td {
+        display: block;
+        width: 100%;
+    }
+    .aff-table thead {
+        display: none;
+    }
+    .aff-table tr {
+        background: var(--aff-card-bg);
+        border: 1px solid var(--aff-card-border);
+        border-radius: 16px;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    .aff-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.7rem 0;
+        border-bottom: 1px solid var(--aff-card-border);
+        text-align: right;
+        font-size: 0.9rem;
+    }
+    .aff-table td:last-child {
+        border-bottom: none;
+    }
+
+    .aff-table tr td:nth-child(1):before { content: "Date"; }
+    .aff-table tr td:nth-child(2):before { content: "Order Reference"; }
+    .aff-table tr td:nth-child(3):before { content: "Product"; }
+    .aff-table tr td:nth-child(4):before { content: "Order Amount"; }
+    .aff-table tr td:nth-child(5):before { content: "Commission Earned"; }
+    .aff-table tr td:nth-child(6):before { content: "Status"; }
+
+    #withdrawals-table-body tr td:nth-child(1):before { content: "Requested Date"; }
+    #withdrawals-table-body tr td:nth-child(2):before { content: "Reference ID"; }
+    #withdrawals-table-body tr td:nth-child(3):before { content: "Amount"; }
+    #withdrawals-table-body tr td:nth-child(4):before { content: "Payout Method"; }
+    #withdrawals-table-body tr td:nth-child(5):before { content: "Status"; }
+
+    .aff-table td::before {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        color: var(--aff-text-muted);
+        text-align: left;
+        margin-right: 1rem;
+    }
+
+    h1 { font-size: 28px !important; }
+    h2 { font-size: 20px !important; }
+    h3, .aff-card-header h2 { font-size: 16px !important; }
+    body, p, span, td, th { font-size: 15px; }
+
+    .aff-chart-wrapper {
+        height: 220px;
+        width: 100%;
+    }
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+}
+
+@media (max-width: 479px) {
+    .aff-hero h1 { font-size: 24px; }
+    .aff-hero p { font-size: 0.9rem; }
+    .aff-stat-value { font-size: 1.35rem; }
+}
+
