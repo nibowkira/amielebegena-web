@@ -6,6 +6,41 @@ window.exchangeRates = {
     'EUR': { rate: 0.92, symbol: '€' }
 };
 
+// Live ETB/USD exchange rate refresh with graceful fallback to the configured default.
+// Prices use the hardcoded default immediately, then update once a fresh rate is available.
+window.refreshExchangeRate = async function() {
+    try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD', { mode: 'cors' });
+        if (!res.ok) throw new Error('Rate API responded ' + res.status);
+        const json = await res.json();
+        if (json && json.result === 'success' && json.rates && json.rates.ETB) {
+            const rate = parseFloat(json.rates.ETB);
+            if (rate > 0) {
+                window.exchangeRates.ETB.rate = rate;
+                // Re-render dynamic prices so the current page reflects the live rate
+                if (typeof renderProducts === 'function' && document.getElementById('product-container')) {
+                    renderProducts(typeof activeCategory !== 'undefined' ? activeCategory : 'strings');
+                }
+                if (typeof updateCartUI === 'function') updateCartUI();
+                if (typeof renderSavedItems === 'function' && document.getElementById('saved-items')) {
+                    renderSavedItems();
+                }
+                document.querySelectorAll('.dynamic-price').forEach(el => {
+                    const usd = parseFloat(el.getAttribute('data-usd'));
+                    if (!isNaN(usd)) el.textContent = formatPrice(usd);
+                });
+            }
+        }
+    } catch (e) {
+        console.warn('[Amiele:Currency] Live rate fetch failed, using default rate.', e);
+    }
+};
+
+// Fire-and-forget refresh so it never blocks initial page render
+if (typeof window.addEventListener === 'function') {
+    window.addEventListener('DOMContentLoaded', () => { window.refreshExchangeRate(); });
+}
+
 // XSS Protection — HTML escape utility alias
 const esc = window.AmieleSanitize ? window.AmieleSanitize.escapeHtml : function(v) { return v == null ? '' : String(v); };
 
