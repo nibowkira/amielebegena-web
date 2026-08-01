@@ -11,6 +11,11 @@
     <changefreq>weekly</changefreq>
   </url>
   <url>
+    <loc>https://amielestore-web.vercel.app/blog.html</loc>
+    <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
     <loc>https://amielestore-web.vercel.app/about.html</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
@@ -69,5 +74,55 @@
     <loc>https://amielestore-web.vercel.app/auth/confirm.html</loc>
     <priority>0.1</priority>
     <changefreq>yearly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielestore-web.vercel.app/blog/what-is-the-begena.html</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielestore-web.vercel.app/blog/history-of-the-begena.html</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielestore-web.vercel.app/blog/why-begena-called-harp-of-king-david.html</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielestore-web.vercel.app/blog/how-begena-is-handmade-in-ethiopia.html</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielestore-web.vercel.app/blog/begena-vs-kirar.html</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielestore-web.vercel.app/blog/how-to-buy-authentic-begena.html</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielestore-web.vercel.app/blog/traditional-ethiopian-musical-instruments.html</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielestore-web.vercel.app/blog/how-to-care-for-your-begena.html</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielestore-web.vercel.app/blog/role-of-begena-in-ethiopian-orthodox-worship.html</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielestore-web.vercel.app/blog/worldwide-shipping-handmade-ethiopian-instruments.html</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
   </url>
 </urlset>
