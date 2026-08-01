@@ -175,38 +175,12 @@ window.AmieleDB = {
         localStorage.setItem(DB_PREFIX + 'users', JSON.stringify(users));
     },
 
-    register(name, email, password) {
-        const users = this.getUsers();
-        if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-            throw new Error('An account with this email already exists.');
-        }
-
-        const newUser = {
-            id: 'usr_' + Date.now(),
-            name: name,
-            email: email,
-            password: btoa(password), // Obfuscated for local demo fallback
-            role: 'user', // Default role
-            joinedAt: new Date().toISOString()
-        };
-
-        users.push(newUser);
-        this.saveUsers(users);
-
-        // Auto login
-        this.setSession(newUser);
-        return newUser;
+    register() {
+        throw new Error('Local registration is disabled. Use AuthService.signUp() via Supabase Auth.');
     },
 
-    login(email, password) {
-        const users = this.getUsers();
-        const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === btoa(password));
-        if (!user) {
-            throw new Error('Invalid email or password.');
-        }
-
-        this.setSession(user);
-        return user;
+    login() {
+        throw new Error('Local login is disabled. Use AuthService.signIn() via Supabase Auth.');
     },
 
     logout() {
