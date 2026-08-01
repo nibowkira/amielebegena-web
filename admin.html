@@ -58,7 +58,15 @@
         </aside>
 
         <!-- Main Workspace -->
-        <main class="aff-content">            <!-- ADMIN DASHBOARD OVERVIEW (AMIELE BEGENA EXECUTIVE REDESIGN) -->
+        <main class="aff-content">
+            <div class="admin-topbar-mobile" id="admin-topbar-mobile" style="display:none; align-items:center; justify-content:space-between; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #E7E3D8;">
+                <button class="hamburger-btn" id="admin-hamburger-btn" aria-label="Toggle admin sidebar menu" onclick="document.querySelector('.aff-sidebar').classList.toggle('mobile-open'); document.getElementById('admin-sidebar-overlay').classList.toggle('active'); document.body.classList.toggle('sidebar-open');">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span style="font-weight:800; font-size:1.1rem; color:#07150D;">Admin Console</span>
+            </div>
+            <div class="aff-sidebar-overlay" id="admin-sidebar-overlay" onclick="document.querySelector('.aff-sidebar').classList.remove('mobile-open'); this.classList.remove('active'); document.body.classList.remove('sidebar-open');"></div>
+            <!-- ADMIN DASHBOARD OVERVIEW (AMIELE BEGENA EXECUTIVE REDESIGN) -->
             <div id="tab-dashboard" class="aff-tab-pane active executive-workspace">
                 
                 <!-- Executive Hero Section Header (Floating White Card) -->
@@ -759,5 +767,18 @@
     <script src="js/notifications-bell.js"></script>
     <script src="command-palette.js"></script>
     <script src="admin.js"></script>
-</body>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.aff-sidebar-menu .aff-menu-item, .aff-sidebar a').forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 1024) {
+                        document.querySelector('.aff-sidebar').classList.remove('mobile-open');
+                        const overlay = document.getElementById('admin-sidebar-overlay');
+                        if (overlay) overlay.classList.remove('active');
+                        document.body.classList.remove('sidebar-open');
+                    }
+                });
+            });
+        });
+    </script></body>
 </html>
