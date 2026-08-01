@@ -954,7 +954,7 @@
             console.log("Before reading order");
             const { data: order, error: fetchErr } = await client
                 .from('orders')
-                .select('id, order_number, customer_name, referral_code, affiliate_id, quantity, product_id, payment_status, status, product:products(price)')
+                .select('id, order_number, customer_name, referral_code, affiliate_id, quantity, product_id, payment_status, status, fulfillment_status, product:products(price, commission_percentage)')
                 .eq('id', orderId)
                 .single();
 
@@ -1033,12 +1033,13 @@
 
             // 4. Create Commission & Increment Affiliate Sales Count (Idempotent)
             let commission = null;
-            let commAmount = 1200;
+            let commAmount = 0;
 
             if (affiliateId) {
                 const itemPriceUSD = (order.product && order.product.price) ? parseFloat(order.product.price) : 100;
+                const commissionPct = (order.product && order.product.commission_percentage != null) ? parseFloat(order.product.commission_percentage) : 8;
                 const orderAmountETB = itemPriceUSD * (order.quantity || 1) * 120;
-                commAmount = Math.max(1200, Math.round(orderAmountETB * 0.10));
+                commAmount = Math.round(orderAmountETB * (commissionPct / 100));
 
                 // Check for existing commission to prevent duplicate creation
                 const { data: existingComm, error: existingCommErr } = await client
@@ -1057,14 +1058,15 @@
                     console.log("Commission exists:", commission);
                 } else {
                     console.log("Before inserting commission");
+                    let commStatus = 'pending';
                     const { data: newComm, error: insertCommErr } = await client
                         .from('commissions')
                         .insert({
                             affiliate_id: affiliateId,
                             order_id: orderId,
                             amount: commAmount,
-                            rate: 10,
-                            status: 'approved',
+                            rate: commissionPct,
+                            status: commStatus,
                             created_at: new Date().toISOString(),
                             updated_at: new Date().toISOString()
                         })
@@ -1125,7 +1127,7 @@
             // 1. Query paid orders with affiliate_id
             const { data: paidOrders, error: orderErr } = await client
                 .from('orders')
-                .select('id, affiliate_id, quantity, product_id, created_at, product:products(price)')
+                .select('id, affiliate_id, quantity, product_id, created_at, fulfillment_status, product:products(price, commission_percentage)')
                 .eq('payment_status', 'paid')
                 .not('affiliate_id', 'is', null);
 
@@ -1154,8 +1156,10 @@
                     if (!existingComm) {
                         missingFound++;
                         const itemPriceUSD = (order.product && order.product.price) ? parseFloat(order.product.price) : 100;
+                        const commissionPct = (order.product && order.product.commission_percentage != null) ? parseFloat(order.product.commission_percentage) : 8;
                         const orderAmountETB = itemPriceUSD * (order.quantity || 1) * 120;
-                        const commAmount = Math.max(1200, Math.round(orderAmountETB * 0.10));
+                        const commAmount = Math.round(orderAmountETB * (commissionPct / 100));
+                        const commStatus = (order.fulfillment_status === 'Delivered') ? 'available' : 'pending';
 
                         const { data: newComm, error: insertErr } = await client
                             .from('commissions')
@@ -1163,8 +1167,8 @@
                                 affiliate_id: order.affiliate_id,
                                 order_id: order.id,
                                 amount: commAmount,
-                                rate: 10,
-                                status: 'approved',
+                                rate: commissionPct,
+                                status: commStatus,
                                 created_at: order.created_at || new Date().toISOString(),
                                 updated_at: new Date().toISOString()
                             })
@@ -1187,6 +1191,179 @@
                 paid_orders_checked: paidOrders ? paidOrders.length : 0,
                 missing_found: missingFound,
                 created_count: createdCount
+            };
+        },
+
+        /**
+         * Commission Center: aggregated KPI data, rankings, monthly, ledger, activity.
+         */
+        async getCommissionCenterData() {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) return null;
+
+            const { data: comms, error: commErr } = await client
+                .from('commissions')
+                .select('amount, status, withdrawal_id, created_at, affiliate_id');
+            if (commErr) { console.error(commErr); return null; }
+
+            const { data: affiliates } = await client
+                .from('affiliates')
+                .select('user_id, sales_count, referral_code');
+            const affMap = {};
+            if (affiliates) {
+                affiliates.forEach(a => { affMap[a.user_id] = a; });
+            }
+
+            const { data: profiles } = await client
+                .from('profiles')
+                .select('id, full_name');
+            const profileMap = {};
+            if (profiles) {
+                profiles.forEach(p => { profileMap[p.id] = p.full_name; });
+            }
+
+            const { data: withdrawals } = await client
+                .from('affiliate_withdrawals')
+                .select('id, amount, status');
+            let totalWithdrawn = 0;
+            let payoutRequests = 0;
+            if (withdrawals) {
+                withdrawals.forEach(w => {
+                    if (w.status === 'paid') totalWithdrawn += parseFloat(w.amount);
+                    if (w.status === 'pending') payoutRequests++;
+                });
+            }
+
+            let totalCommission = 0, pending = 0, available = 0, paid = 0, withdrawnAmt = 0;
+            const affEarnings = {};
+
+            if (comms) {
+                comms.forEach(c => {
+                    const amt = parseFloat(c.amount);
+                    totalCommission += amt;
+                    if (c.status === 'pending') pending += amt;
+                    else if (c.status === 'available' && !c.withdrawal_id) available += amt;
+                    else if (c.status === 'available' && c.withdrawal_id) withdrawnAmt += amt;
+                    else if (c.status === 'paid') paid += amt;
+                    else if (c.status === 'approved') { available += amt; }
+
+                    const aid = c.affiliate_id;
+                    if (aid) {
+                        if (!affEarnings[aid]) affEarnings[aid] = { total: 0, count: 0 };
+                        affEarnings[aid].total += amt;
+                        affEarnings[aid].count++;
+                    }
+                });
+            }
+
+            // Rankings
+            const rankings = Object.entries(affEarnings)
+                .map(([id, e]) => ({
+                    affiliateId: id,
+                    name: profileMap[id] || id,
+                    totalEarned: Math.round(e.total),
+                    salesCount: affMap[id] ? (affMap[id].sales_count || 0) : e.count,
+                    avgCommission: e.count > 0 ? Math.round(e.total / e.count) : 0
+                }))
+                .sort((a, b) => b.totalEarned - a.totalEarned);
+
+            // Monthly aggregation (last 6 months)
+            const now = new Date();
+            const monthly = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const year = d.getFullYear();
+                const month = d.getMonth() + 1;
+                const monthStr = String(year) + '-' + String(month).padStart(2, '0');
+                let sum = 0;
+                if (comms) {
+                    comms.forEach(c => {
+                        const cd = new Date(c.created_at);
+                        if (cd.getFullYear() === year && cd.getMonth() + 1 === month) {
+                            sum += parseFloat(c.amount);
+                        }
+                    });
+                }
+                monthly.push({ month: monthStr, amount: Math.round(sum) });
+            }
+
+            // Full ledger with join info
+            const { data: orders } = await client
+                .from('orders')
+                .select('id, order_number, customer_name, fulfillment_status, quantity, created_at, product:products(name, price, commission_percentage)');
+            const orderMap = {};
+            if (orders) {
+                orders.forEach(o => { orderMap[o.id] = o; });
+            }
+
+            const { data: wths } = await client
+                .from('affiliate_withdrawals')
+                .select('id, status, created_at, processed_at')
+                .order('created_at', { ascending: false });
+            const wthMap = {};
+            if (wths) {
+                wths.forEach(w => { wthMap[w.id] = w; });
+            }
+
+            const exchangeRate = 120;
+            let ledger = [];
+            if (comms && orders) {
+                ledger = comms.map(c => {
+                    const order = orderMap[c.order_id] || {};
+                    const product = order.product || {};
+                    const priceUSD = parseFloat(product.price || 0);
+                    const qty = order.quantity || 1;
+                    const pct = product.commission_percentage != null ? parseFloat(product.commission_percentage) : 8;
+                    const priceETB = Math.round(priceUSD * qty * exchangeRate);
+                    const wth = c.withdrawal_id ? wthMap[c.withdrawal_id] : null;
+                    const stat = c.status === 'approved' ? 'available' : c.status;
+                    return {
+                        rawId: c.id,
+                        affiliateId: c.affiliate_id,
+                        affiliateName: profileMap[c.affiliate_id] || c.affiliate_id,
+                        orderNumber: order.order_number || c.order_id,
+                        customerName: order.customer_name || '—',
+                        productName: product.name || 'Instrument',
+                        productPrice: priceETB,
+                        priceUSD,
+                        quantity: qty,
+                        commissionPct: pct,
+                        commissionAmount: parseFloat(c.amount),
+                        status: stat,
+                        orderStatus: order.fulfillment_status || '—',
+                        paymentDate: order.created_at,
+                        withdrawalDate: wth ? wth.created_at : null,
+                        withdrawalProcessedAt: wth ? wth.processed_at : null,
+                        withdrawalStatus: wth ? wth.status : null
+                    };
+                });
+                ledger.sort((a, b) => new Date(b.paymentDate || 0) - new Date(a.paymentDate || 0));
+            }
+
+            // Recent activity (last 15 commissions with details)
+            const recentActivity = ledger.slice(0, 15).map(l => ({
+                affiliateName: l.affiliateName,
+                orderNumber: l.orderNumber,
+                productName: l.productName,
+                commissionAmount: l.commissionAmount,
+                status: l.status,
+                date: l.paymentDate
+            }));
+
+            return {
+                kpis: {
+                    totalCommission: Math.round(totalCommission),
+                    pending: Math.round(pending),
+                    available: Math.round(available),
+                    paid: Math.round(paid),
+                    withdrawn: Math.round(withdrawnAmt),
+                    affiliateCount: affiliates ? affiliates.length : 0,
+                    payoutRequests
+                },
+                rankings,
+                monthly,
+                ledger,
+                recentActivity
             };
         },
 
@@ -1281,6 +1458,7 @@
                 amount: parseFloat(w.amount),
                 method: w.method,
                 phone: w.phone,
+                account: w.account || '',
                 status: w.status,
                 createdAt: w.created_at
             }));

@@ -111,7 +111,31 @@
 
                 </div>
 
-                <!-- Stats grid -->
+                <!-- Wallet summary cards -->
+                <div class="aff-wallet-grid">
+                    <div class="aff-wallet-card wallet-earned">
+                        <div class="aff-wallet-icon">💰</div>
+                        <div class="aff-wallet-label">Total Earned</div>
+                        <div class="aff-wallet-value" id="wallet-earned">ETB 0</div>
+                    </div>
+                    <div class="aff-wallet-card wallet-pending">
+                        <div class="aff-wallet-icon">⏳</div>
+                        <div class="aff-wallet-label">Pending</div>
+                        <div class="aff-wallet-value" id="wallet-pending">ETB 0</div>
+                    </div>
+                    <div class="aff-wallet-card wallet-available">
+                        <div class="aff-wallet-icon">✅</div>
+                        <div class="aff-wallet-label">Available</div>
+                        <div class="aff-wallet-value" id="wallet-available">ETB 0</div>
+                    </div>
+                    <div class="aff-wallet-card wallet-paid">
+                        <div class="aff-wallet-icon">💵</div>
+                        <div class="aff-wallet-label">Paid</div>
+                        <div class="aff-wallet-value" id="wallet-paid">ETB 0</div>
+                    </div>
+                </div>
+
+                <!-- Commission performance stats grid -->
                 <div class="aff-stats-grid">
                     <div class="aff-stat-card accent-card">
                         <h3>Available Balance</h3>
@@ -130,20 +154,36 @@
                         <div class="aff-stat-value" id="stat-paid">ETB 0</div>
                     </div>
                     <div class="aff-stat-card">
-                        <h3>Total Clicks</h3>
-                        <div class="aff-stat-value" id="stat-clicks">0</div>
+                        <h3>Total Sales</h3>
+                        <div class="aff-stat-value" id="stat-sales">0</div>
                     </div>
                     <div class="aff-stat-card">
-                        <h3>Total Referrals</h3>
+                        <h3>Total Orders</h3>
                         <div class="aff-stat-value" id="stat-orders">0</div>
                     </div>
                     <div class="aff-stat-card">
-                        <h3>Paid Orders</h3>
-                        <div class="aff-stat-value" id="stat-sales">0</div>
+                        <h3>Revenue Generated</h3>
+                        <div class="aff-stat-value" id="stat-revenue">ETB 0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Total Commission</h3>
+                        <div class="aff-stat-value" id="stat-total-comm">ETB 0</div>
                     </div>
                     <div class="aff-stat-card">
                         <h3>Conversion Rate</h3>
                         <div class="aff-stat-value" id="stat-conversion">0%</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Top Product</h3>
+                        <div class="aff-stat-value" id="stat-top-product" style="font-size:1rem;">—</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Average Commission</h3>
+                        <div class="aff-stat-value" id="stat-avg-comm">ETB 0</div>
+                    </div>
+                    <div class="aff-stat-card">
+                        <h3>Total Clicks</h3>
+                        <div class="aff-stat-value" id="stat-clicks">0</div>
                     </div>
                 </div>
 
@@ -217,12 +257,15 @@
                         <table class="aff-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Order Reference</th>
-                                    <th>Product Name</th>
-                                    <th>Order Amount</th>
-                                    <th>Commission Earned</th>
+                                    <th>Order Number</th>
+                                    <th>Customer</th>
+                                    <th>Product</th>
+                                    <th>Product Price</th>
+                                    <th>Commission %</th>
+                                    <th>Commission Amount</th>
                                     <th>Status</th>
+                                    <th>Order Status</th>
+                                    <th>Date</th>
                                 </tr>
                             </thead>
                             <tbody id="commissions-table-body"></tbody>
@@ -282,20 +325,63 @@
             <!-- COMMISSIONS TAB -->
             <div id="tab-commissions" class="aff-tab-pane">
                 <div class="aff-header-row">
-                    <h1>Commissions Ledger</h1>
+                    <h1>Commission History</h1>
                 </div>
-                <!-- Same table as overview, but full view, no limit -->
+
+                <!-- Filter bar -->
+                <div class="aff-filter-bar">
+                    <div class="aff-filter-group">
+                        <label>Status</label>
+                        <select id="filter-comm-status" class="aff-select" onchange="applyCommissionFilters()">
+                            <option value="all">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="available">Available</option>
+                            <option value="withdrawn">Withdrawn (In Payout)</option>
+                            <option value="paid">Paid</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="aff-filter-group">
+                        <label>Product</label>
+                        <select id="filter-comm-product" class="aff-select" onchange="applyCommissionFilters()">
+                            <option value="all">All Products</option>
+                        </select>
+                    </div>
+                    <div class="aff-filter-group">
+                        <label>Date Range</label>
+                        <select id="filter-comm-date" class="aff-select" onchange="applyCommissionFilters()">
+                            <option value="all">All Time</option>
+                            <option value="7">Last 7 Days</option>
+                            <option value="30">Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="365">This Year</option>
+                        </select>
+                    </div>
+                    <div class="aff-filter-group aff-filter-search">
+                        <label>Search Order #</label>
+                        <input type="text" id="filter-comm-order" class="aff-input" placeholder="e.g. AM-2026-001" onkeyup="applyCommissionFilters()">
+                    </div>
+                    <div class="aff-filter-group aff-filter-search">
+                        <label>Search Customer</label>
+                        <input type="text" id="filter-comm-customer" class="aff-input" placeholder="Customer name..." onkeyup="applyCommissionFilters()">
+                    </div>
+                    <button class="aff-btn aff-filter-reset" onclick="resetCommissionFilters()">Reset Filters</button>
+                </div>
+
                 <div class="aff-card">
                     <div class="aff-table-container">
                         <table class="aff-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Order Reference</th>
-                                    <th>Product Name</th>
-                                    <th>Order Amount</th>
-                                    <th>Commission Earned</th>
+                                    <th>Order Number</th>
+                                    <th>Customer</th>
+                                    <th>Product</th>
+                                    <th>Product Price</th>
+                                    <th>Commission %</th>
+                                    <th>Commission Amount</th>
                                     <th>Status</th>
+                                    <th>Order Status</th>
+                                    <th>Date</th>
                                 </tr>
                             </thead>
                             <tbody id="commissions-table-body-full"></tbody>
@@ -314,6 +400,7 @@
                     <div class="aff-stat-card accent-card">
                         <h3>Your Available Balance</h3>
                         <div class="aff-stat-value" id="wth-avail-balance">ETB 0</div>
+                        <p style="font-size:0.85rem; color:var(--aff-text-muted); margin-top:0.5rem;">Only commissions marked <strong>Available</strong> (order Delivered) can be withdrawn. Minimum withdrawal: <strong>500 ETB</strong>.</p>
                     </div>
                 </div>
 
@@ -324,7 +411,8 @@
                     <form id="withdrawal-form" class="aff-form">
                         <div class="aff-form-group">
                             <label for="wth-amount">Withdrawal Amount (ETB) *</label>
-                            <input type="number" id="wth-amount" class="aff-input" required min="500" placeholder="e.g. 1500">
+                            <input type="number" id="wth-amount" class="aff-input" required min="500" step="1" placeholder="e.g. 1500">
+                            <small style="color:var(--aff-text-muted); font-size:0.78rem;">Minimum 500 ETB. Amount must not exceed your Available balance.</small>
                         </div>
                         
                         <div class="aff-form-group">
@@ -351,7 +439,11 @@
 
                         <div id="wth-feedback" class="form-feedback hidden"></div>
 
-                        <button type="submit" class="aff-btn" style="font-family: 'Benaiah', sans-serif;">Request Withdrawal &rarr;</button>
+                        <div id="wth-min-msg" class="wth-min-message hidden">
+                            <i class="fas fa-info-circle"></i> You need at least 500 ETB available before requesting a withdrawal.
+                        </div>
+
+                        <button type="submit" id="wth-submit-btn" class="aff-btn" style="font-family: 'Benaiah', sans-serif;">Request Withdrawal &rarr;</button>
                     </form>
                 </div>
 
@@ -663,21 +755,15 @@
     <script src="command-palette.js"></script>
     <script src="affiliate.js"></script>
     <script>
-        // Sync overview commission lists to the separate commissions page as well on startup
+        // The Commissions tab now renders its own filtered ledger (see affiliate.js
+        // renderCommissionsTableFull). Initial wallet/balance sync happens there too.
         document.addEventListener('DOMContentLoaded', async () => {
-            const tbodyFull = document.getElementById('commissions-table-body-full');
-            const tbodyOverview = document.getElementById('commissions-table-body');
             const user = await window.getCurrentUser();
             if (!user) return;
             const metadata = window.AffiliateService ? await window.AffiliateService.getAffiliateMetadata(user.id) : null;
             if (metadata) {
                 const availBal = document.getElementById('wth-avail-balance');
-                if (availBal) availBal.textContent = `ETB ${metadata.balance.toLocaleString()}`;
-            }
-            if (tbodyFull && tbodyOverview) {
-                setTimeout(() => {
-                    tbodyFull.innerHTML = tbodyOverview.innerHTML;
-                }, 200);
+                if (availBal) availBal.textContent = `ETB ${metadata.availableCommission.toLocaleString()}`;
             }
         });
     </script>

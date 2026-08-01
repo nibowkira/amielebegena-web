@@ -167,10 +167,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (metadata) {
+            renderWalletCards();
             renderStatsCards();
             renderCommissionsTable();
             renderCommissionsTableFull();
             drawOverviewCharts();
+            updateWithdrawalGate();
         }
     }
 
@@ -214,9 +216,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Perform initial render of overview tab content immediately on startup
+    renderWalletCards();
     renderStatsCards();
     renderCommissionsTable();
     drawOverviewCharts();
+    updateWithdrawalGate();
 
     // Auto-refresh metrics when tab receives focus or local storage updates from admin panel
     window.addEventListener('focus', () => { refreshDashboardData(); });
@@ -419,6 +423,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Re-render contents
             if (tabName === 'overview') {
+                renderWalletCards();
                 renderStatsCards();
                 renderCommissionsTable();
                 drawOverviewCharts();
@@ -427,9 +432,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else if (tabName === 'withdrawals') {
                 renderWithdrawalHistoryTable();
                 initWithdrawalFormHandler();
+                updateWithdrawalGate();
                 // Ensure balances carry over
                 const balanceVal = document.getElementById('wth-avail-balance');
-                if (balanceVal) balanceVal.textContent = `ETB ${metadata.balance.toLocaleString()}`;
+                if (balanceVal) {
+                    const avail = metadata.availableCommission != null ? metadata.availableCommission : (metadata.balance || 0);
+                    balanceVal.textContent = `ETB ${avail.toLocaleString()}`;
+                }
             } else if (tabName === 'campaigns') {
                 renderCampaigns();
             } else if (tabName === 'announcements') {
@@ -440,48 +449,44 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 600);
     }
 
-    // 4. Render Stats Cards
+    // 4. Render Wallet Summary Cards
+    function renderWalletCards() {
+        if (!metadata) return;
+        const set = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+        };
+        const avail = metadata.availableCommission != null ? metadata.availableCommission : (metadata.balance || 0);
+        set('wallet-earned', `ETB ${(metadata.totalEarnings || 0).toLocaleString()}`);
+        set('wallet-pending', `ETB ${(metadata.pendingCommission || 0).toLocaleString()}`);
+        set('wallet-available', `ETB ${(avail || 0).toLocaleString()}`);
+        set('wallet-paid', `ETB ${(metadata.totalPaid || 0).toLocaleString()}`);
+    }
+
+    // 5. Render Stats Cards
     function renderStatsCards() {
         if (!metadata) return;
 
-        console.log("=== AFFILIATE DASHBOARD METRICS AUDIT ===");
-        console.log("1. Total Clicks:", metadata.clicks);
-        console.log("2. Total Referrals:", metadata.totalOrders || 0);
-        console.log("3. All Orders:", metadata.totalOrders || 0);
-        console.log("4. Gross Volume:", metadata.grossVolume || 0);
-        console.log("5. Paid Orders:", metadata.sales);
-        console.log("6. Clicks Today:", metadata.clicksToday || 0);
-        console.log("7. Clicks This Week:", metadata.clicksWeek || 0);
-        console.log("8. Clicks This Month:", metadata.clicksMonth || 0);
-        console.log("9. Clicks This Year:", metadata.clicksYear || 0);
-        console.log("10. Total Earnings:", metadata.totalEarnings);
-        console.log("11. Available Balance:", metadata.balance);
-        console.log("=========================================");
+        const set = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+        };
 
-        const balEl = document.getElementById('stat-balance');
-        if (balEl) balEl.textContent = `ETB ${metadata.balance.toLocaleString()}`;
+        const avail = metadata.availableCommission != null ? metadata.availableCommission : (metadata.balance || 0);
+        set('stat-balance', `ETB ${(avail || 0).toLocaleString()}`);
+        set('stat-earnings', `ETB ${(metadata.totalEarnings || 0).toLocaleString()}`);
+        set('stat-pending', `ETB ${(metadata.pendingCommission || 0).toLocaleString()}`);
+        set('stat-paid', `ETB ${(metadata.totalPaid || 0).toLocaleString()}`);
+        set('stat-sales', metadata.sales != null ? metadata.sales : 0);
+        set('stat-orders', metadata.totalOrders != null ? metadata.totalOrders : 0);
+        set('stat-revenue', `ETB ${(metadata.revenueGenerated || 0).toLocaleString()}`);
+        set('stat-total-comm', `ETB ${(metadata.totalCommission || 0).toLocaleString()}`);
+        set('stat-conversion', `${metadata.conversionRate != null ? metadata.conversionRate : 0}%`);
+        set('stat-top-product', metadata.topProduct || '—');
+        set('stat-avg-comm', `ETB ${(metadata.averageCommission || 0).toLocaleString()}`);
+        set('stat-clicks', metadata.clicks || 0);
 
-        const earnEl = document.getElementById('stat-earnings');
-        if (earnEl) earnEl.textContent = `ETB ${metadata.totalEarnings.toLocaleString()}`;
-
-        const pendEl = document.getElementById('stat-pending');
-        if (pendEl) pendEl.textContent = `ETB ${metadata.pendingCommission.toLocaleString()}`;
-
-        const paidEl = document.getElementById('stat-paid');
-        if (paidEl) paidEl.textContent = `ETB ${metadata.totalPaid.toLocaleString()}`;
-
-        const clicksEl = document.getElementById('stat-clicks');
-        if (clicksEl) clicksEl.textContent = metadata.clicks;
-
-        const ordersEl = document.getElementById('stat-orders');
-        if (ordersEl) ordersEl.textContent = metadata.totalOrders || metadata.sales || 0;
-
-        const salesEl = document.getElementById('stat-sales');
-        if (salesEl) salesEl.textContent = metadata.sales;
-        
         const rate = metadata.clicks > 0 ? ((metadata.sales / metadata.clicks) * 100).toFixed(1) : '0.0';
-        const convEl = document.getElementById('stat-conversion');
-        if (convEl) convEl.textContent = `${rate}%`;
 
         // Advanced Analytics Funnel & Stats
         const funnelClicks = document.getElementById('funnel-clicks');
@@ -702,10 +707,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // 7. Render tables (Commissions and Withdrawals)
-    async function renderCommissionsTable() {
-        const tbody = document.getElementById('commissions-table-body');
-        if (!tbody) return;
+    function commissionStatusForDisplay(c) {
+        if (c.status === 'available' && c.withdrawalStatus && c.withdrawalStatus !== 'paid' && c.withdrawalStatus !== 'rejected') {
+            return { label: 'In Payout', cls: 'withdrawn' };
+        }
+        return { label: c.status.charAt(0).toUpperCase() + c.status.slice(1), cls: c.status };
+    }
 
+    function buildCommissionRow(c) {
+        const date = new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const disp = commissionStatusForDisplay(c);
+        const orderStatus = c.orderStatus ? String(c.orderStatus).charAt(0).toUpperCase() + String(c.orderStatus).slice(1) : '—';
+        return `
+            <td><strong>${esc(c.orderId)}</strong></td>
+            <td>${esc(c.customerName)}</td>
+            <td>${esc(c.productName)}</td>
+            <td>ETB ${(c.productPrice || 0).toLocaleString()}</td>
+            <td>${c.commissionPct}%</td>
+            <td style="color:var(--aff-primary); font-weight:600;">ETB ${(c.commissionAmount || 0).toLocaleString()}</td>
+            <td><span class="aff-badge ${esc(disp.cls)}">${esc(disp.label)}</span></td>
+            <td><span class="aff-badge order-status">${esc(orderStatus)}</span></td>
+            <td>${date}</td>
+        `;
+    }
+
+    async function fetchLedger() {
         let commissions = [];
         if (window.AffiliateService) {
             try { commissions = await window.AffiliateService.getCommissionsLedger(user.id); } catch(e) { console.warn(e); }
@@ -713,25 +739,87 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (commissions.length === 0 && window.AmieleDB) {
             commissions = AmieleDB.getAffiliateCommissions(user.id);
         }
+        return commissions;
+    }
+
+    function applyCommissionFilters(commissions) {
+        const status = document.getElementById('filter-comm-status')?.value || 'all';
+        const product = document.getElementById('filter-comm-product')?.value || 'all';
+        const dateRange = parseInt(document.getElementById('filter-comm-date')?.value || 'all', 10);
+        const orderQ = (document.getElementById('filter-comm-order')?.value || '').trim().toLowerCase();
+        const custQ = (document.getElementById('filter-comm-customer')?.value || '').trim().toLowerCase();
+
+        return commissions.filter(c => {
+            if (status !== 'all') {
+                if (status === 'withdrawn') {
+                    if (!(c.status === 'available' && c.withdrawalStatus && c.withdrawalStatus !== 'paid' && c.withdrawalStatus !== 'rejected')) return false;
+                } else if (status === 'available') {
+                    if (!(c.status === 'available' && !c.withdrawalStatus)) return false;
+                } else if (c.status !== status) {
+                    return false;
+                }
+            }
+            if (product !== 'all' && c.productName.indexOf(product) === -1) return false;
+            if (orderQ && (c.orderId || '').toLowerCase().indexOf(orderQ) === -1) return false;
+            if (custQ && (c.customerName || '').toLowerCase().indexOf(custQ) === -1) return false;
+            if (!isNaN(dateRange) && dateRange > 0) {
+                const cutoff = new Date();
+                cutoff.setDate(cutoff.getDate() - dateRange);
+                if (new Date(c.createdAt) < cutoff) return false;
+            }
+            return true;
+        });
+    }
+
+    function populateProductFilter(commissions) {
+        const sel = document.getElementById('filter-comm-product');
+        if (!sel || sel.dataset.populated) return;
+        const seen = new Set();
+        commissions.forEach(c => {
+            const base = String(c.productName || '').replace(/\s*×\d+\s*$/, '').trim();
+            if (base && !seen.has(base)) {
+                seen.add(base);
+                const opt = document.createElement('option');
+                opt.value = base;
+                opt.textContent = base;
+                sel.appendChild(opt);
+            }
+        });
+        sel.dataset.populated = 'true';
+    }
+
+    window.applyCommissionFilters = function() {
+        renderCommissionsTableFull();
+    };
+
+    window.resetCommissionFilters = function() {
+        ['filter-comm-status', 'filter-comm-product', 'filter-comm-date'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = 'all';
+        });
+        ['filter-comm-order', 'filter-comm-customer'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        renderCommissionsTableFull();
+    };
+
+    async function renderCommissionsTable() {
+        const tbody = document.getElementById('commissions-table-body');
+        if (!tbody) return;
+
+        const commissions = await fetchLedger();
         tbody.innerHTML = '';
-        
+
         if (commissions.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="padding:0;"><div id="empty-overview-commissions"></div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="padding:0;"><div id="empty-overview-commissions"></div></td></tr>';
             renderEmptyState('empty-overview-commissions', 'No commissions tracked yet', 'Share your referral code to begin earning rewards.');
             return;
         }
 
         commissions.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5).forEach(c => {
-            const date = new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${date}</td>
-                <td><strong>${esc(c.orderId)}</strong></td>
-                <td>${esc(c.productName)}</td>
-                <td>ETB ${c.orderAmount.toLocaleString()}</td>
-                <td style="color:var(--aff-primary); font-weight:600;">ETB ${c.commissionAmount.toLocaleString()}</td>
-                <td><span class="aff-badge ${esc(c.status)}">${esc(c.status)}</span></td>
-            `;
+            row.innerHTML = buildCommissionRow(c);
             tbody.appendChild(row);
         });
     }
@@ -740,32 +828,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tbody = document.getElementById('commissions-table-body-full');
         if (!tbody) return;
 
-        let commissions = [];
-        if (window.AffiliateService) {
-            try { commissions = await window.AffiliateService.getCommissionsLedger(user.id); } catch(e) { console.warn(e); }
-        }
-        if (commissions.length === 0 && window.AmieleDB) {
-            commissions = AmieleDB.getAffiliateCommissions(user.id);
-        }
+        const commissions = await fetchLedger();
+        populateProductFilter(commissions);
         tbody.innerHTML = '';
-        
-        if (commissions.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="padding:0;"><div id="empty-full-commissions"></div></td></tr>';
-            renderEmptyState('empty-full-commissions', 'Ledger is currently empty', 'Your completed referral sales commissions will be logged here.');
+
+        const filtered = applyCommissionFilters(commissions);
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="padding:0;"><div id="empty-full-commissions"></div></td></tr>';
+            renderEmptyState('empty-full-commissions', 'No commissions match your filters', 'Try clearing or adjusting the filters above.');
             return;
         }
 
-        commissions.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(c => {
-            const date = new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).forEach(c => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${date}</td>
-                <td><strong>${esc(c.orderId)}</strong></td>
-                <td>${esc(c.productName)}</td>
-                <td>ETB ${c.orderAmount.toLocaleString()}</td>
-                <td style="color:var(--aff-primary); font-weight:600;">ETB ${c.commissionAmount.toLocaleString()}</td>
-                <td><span class="aff-badge ${esc(c.status)}">${esc(c.status)}</span></td>
-            `;
+            row.innerHTML = buildCommissionRow(c);
             tbody.appendChild(row);
         });
     }
@@ -805,6 +881,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 8. Submit Withdrawal Request (with Modal and WhatsApp automation)
+    function availableBalance() {
+        return metadata.availableCommission != null ? metadata.availableCommission : (metadata.balance || 0);
+    }
+
+    function updateWithdrawalGate() {
+        const btn = document.getElementById('wth-submit-btn');
+        const msg = document.getElementById('wth-min-msg');
+        if (!metadata) return;
+        const avail = availableBalance();
+        if (avail < 500) {
+            if (btn) {
+                btn.disabled = true;
+                btn.title = 'You need at least 500 ETB available before requesting a withdrawal.';
+            }
+            if (msg) {
+                msg.classList.remove('hidden');
+                msg.innerHTML = `<i class="fas fa-info-circle"></i> You need at least 500 ETB available before requesting a withdrawal. Your available balance is <strong>ETB ${(avail || 0).toLocaleString()}</strong>.`;
+            }
+        } else {
+            if (btn) {
+                btn.disabled = false;
+                btn.removeAttribute('title');
+            }
+            if (msg) msg.classList.add('hidden');
+        }
+    }
+
     function initWithdrawalFormHandler() {
         const withdrawalForm = document.getElementById('withdrawal-form');
         if (!withdrawalForm) return;
@@ -820,8 +923,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const feedback = document.getElementById('wth-feedback');
             if (feedback) feedback.classList.add('hidden');
 
-            if (amount > metadata.balance) {
-                showToast('Insufficient balance for this request. / በቂ ሂሳብ የሎትም።', 'error');
+            if (isNaN(amount) || amount < 500) {
+                showToast('Minimum withdrawal amount is 500 ETB. / ዝቅተኛ የመውጫ መጠን 500 ብር ነው።', 'error');
+                return;
+            }
+
+            if (amount > availableBalance()) {
+                showToast('Insufficient available balance for this request. / በቂ የቀረበ ሂሳብ የሎትም።', 'error');
                 return;
             }
 
@@ -846,7 +954,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             try {
                 if (window.AffiliateService) {
-                    await window.AffiliateService.requestWithdrawal(user.id, amount, method, phone);
+                    await window.AffiliateService.requestWithdrawal(user.id, amount, method, phone, account);
                 } else {
                     AmieleDB.requestWithdrawal(amount, method, phone);
                 }
@@ -880,12 +988,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (window.AffiliateService) {
                             metadata = await window.AffiliateService.getAffiliateMetadata(user.id);
                         }
+                        renderWalletCards();
                         renderStatsCards();
                         renderWithdrawalHistoryTable();
+                        updateWithdrawalGate();
                         
                         // Update header balance immediately
                         const headerBalance = document.getElementById('wth-avail-balance');
-                        if (headerBalance) headerBalance.textContent = `ETB ${metadata.balance.toLocaleString()}`;
+                        if (headerBalance) headerBalance.textContent = `ETB ${availableBalance().toLocaleString()}`;
                     }, 1000);
                 }, 1000);
 
@@ -1380,10 +1490,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Initial setup loads
+    renderWalletCards();
     renderStatsCards();
     renderCommissionsTable();
     renderWithdrawalHistoryTable();
     initWithdrawalFormHandler();
+    updateWithdrawalGate();
     renderAchievements();
     renderCampaigns();
     renderAnnouncements();

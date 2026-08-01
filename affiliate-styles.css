@@ -583,6 +583,170 @@
     color: var(--status-rejected-text);
 }
 
+.aff-badge.available, .aff-badge.approved {
+    background-color: var(--status-approved-bg);
+    color: var(--status-approved-text);
+}
+
+.aff-badge.withdrawn {
+    background-color: #fff8e1;
+    color: #b26a00;
+}
+
+.aff-badge.order-status {
+    background-color: var(--aff-bg);
+    color: var(--aff-text-muted);
+}
+
+/* Wallet Summary Cards */
+.aff-wallet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.aff-wallet-card {
+    background: var(--aff-card-bg);
+    border: 1px solid var(--aff-card-border);
+    border-radius: 20px;
+    padding: 1.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.01);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.aff-wallet-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.04);
+}
+
+.aff-wallet-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 4px;
+}
+
+.aff-wallet-card.wallet-earned::after { background-color: var(--aff-primary); }
+.aff-wallet-card.wallet-pending::after { background-color: #f59e0b; }
+.aff-wallet-card.wallet-available::after { background-color: #22c55e; }
+.aff-wallet-card.wallet-paid::after { background-color: #3b82f6; }
+
+.aff-wallet-icon {
+    font-size: 1.6rem;
+    margin-bottom: 0.4rem;
+}
+
+.aff-wallet-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--aff-text-muted);
+    font-weight: 600;
+}
+
+.aff-wallet-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--aff-primary);
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Commission Filters Bar */
+.aff-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+    background: var(--aff-card-bg);
+    border: 1px solid var(--aff-card-border);
+    border-radius: 16px;
+    padding: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.aff-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.aff-filter-group label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--aff-text-muted);
+    font-weight: 600;
+}
+
+.aff-filter-group.aff-filter-search {
+    flex: 1;
+    min-width: 180px;
+}
+
+.aff-select,
+.aff-input {
+    background: var(--aff-bg);
+    border: 1px solid var(--aff-card-border);
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+    color: var(--aff-text);
+    outline: none;
+    min-width: 160px;
+    font-family: 'Benaiah', sans-serif;
+    transition: border-color 0.2s ease;
+}
+
+.aff-select:focus,
+.aff-input:focus {
+    border-color: var(--aff-primary);
+}
+
+.aff-filter-reset {
+    background: transparent;
+    border: 1px solid var(--aff-card-border);
+    color: var(--aff-text-muted);
+    border-radius: 10px;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.aff-filter-reset:hover {
+    border-color: var(--aff-primary);
+    color: var(--aff-primary);
+}
+
+/* Withdrawal minimum-balance gate message */
+.wth-min-message {
+    background: var(--status-rejected-bg);
+    color: var(--status-rejected-text);
+    border: 1px solid var(--status-rejected-text);
+    border-radius: 12px;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.wth-min-message.hidden {
+    display: none;
+}
+
+[data-theme="dark"] .wth-min-message {
+    background: rgba(255, 235, 238, 0.08);
+    border-color: #e57373;
+}
+
 /* Forms Dashboard style */
 .aff-form {
     display: flex;
@@ -2894,12 +3058,15 @@ body.sidebar-open {
         border-bottom: none;
     }
 
-    .aff-table tr td:nth-child(1):before { content: "Date"; }
-    .aff-table tr td:nth-child(2):before { content: "Order Reference"; }
+    .aff-table tr td:nth-child(1):before { content: "Order Number"; }
+    .aff-table tr td:nth-child(2):before { content: "Customer"; }
     .aff-table tr td:nth-child(3):before { content: "Product"; }
-    .aff-table tr td:nth-child(4):before { content: "Order Amount"; }
-    .aff-table tr td:nth-child(5):before { content: "Commission Earned"; }
-    .aff-table tr td:nth-child(6):before { content: "Status"; }
+    .aff-table tr td:nth-child(4):before { content: "Product Price"; }
+    .aff-table tr td:nth-child(5):before { content: "Commission %"; }
+    .aff-table tr td:nth-child(6):before { content: "Commission Amount"; }
+    .aff-table tr td:nth-child(7):before { content: "Status"; }
+    .aff-table tr td:nth-child(8):before { content: "Order Status"; }
+    .aff-table tr td:nth-child(9):before { content: "Date"; }
 
     #withdrawals-table-body tr td:nth-child(1):before { content: "Requested Date"; }
     #withdrawals-table-body tr td:nth-child(2):before { content: "Reference ID"; }

@@ -611,7 +611,7 @@ window.AmieleDB = {
     // ----------------------------------------
     // WITHDRAWALS MODULE
     // ----------------------------------------
-    requestWithdrawal(amount, method, phone) {
+    requestWithdrawal(amount, method, phone, account) {
         const currentUser = this.getCurrentUser();
         if (!currentUser) throw new Error('Must be logged in.');
 
@@ -619,14 +619,12 @@ window.AmieleDB = {
         const aff = affiliates.find(a => a.userId === currentUser.id);
         if (!aff) throw new Error('No affiliate account found.');
 
-        if (amount <= 0) throw new Error('Withdrawal amount must be greater than zero.');
+        if (amount < 500) throw new Error('Minimum withdrawal amount is 500 ETB.');
         if (amount > aff.balance) throw new Error('Insufficient balance.');
 
-        // Deduct from balance, add to pending withdrawal (or handle it in flow)
         aff.balance -= amount;
         this.saveAffiliates(affiliates);
 
-        // Log request
         const withdrawals = JSON.parse(localStorage.getItem(DB_PREFIX + 'withdrawals')) || [];
         const newWithdrawal = {
             id: 'wth_' + Date.now(),
@@ -634,6 +632,7 @@ window.AmieleDB = {
             amount: amount,
             method: method,
             phone: phone,
+            account: account || '',
             status: 'pending',
             createdAt: new Date().toISOString(),
             processedAt: null
