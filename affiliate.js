@@ -58,6 +58,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     syncSidebarInfo();
 
+    window.handleLogout = async function(e) {
+        if (e) e.preventDefault();
+        try {
+            if (window.AuthService && typeof window.AuthService.signOut === 'function') {
+                await window.AuthService.signOut();
+            } else if (window.AmieleDB && typeof window.AmieleDB.logout === 'function') {
+                window.AmieleDB.logout();
+            } else {
+                localStorage.removeItem('amiele_current_user');
+            }
+            if (typeof showToast === 'function') {
+                showToast('Logged out successfully. / በሰላም ወጥተዋል።', 'success');
+            }
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 800);
+        } catch (err) {
+            console.error('[Amiele:Logout] Error:', err);
+            window.location.href = 'login.html';
+        }
+    };
+
     // Mobile Sidebar Drawer Controller
     const hamburgerBtn = document.getElementById('hamburger-btn');
     const sidebar = document.querySelector('.aff-sidebar');
