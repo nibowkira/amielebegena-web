@@ -1,16 +1,21 @@
-# Amiele Begena — Robots.txt
-# https://amielestore-web.vercel.app
-
 User-agent: *
 Allow: /
-
-# Admin & authenticated-only pages (no SEO value)
 Disallow: /admin
-Disallow: /affiliate-dashboard
-Disallow: /affiliate-apply
+Disallow: /admin/
 Disallow: /account
-Disallow: /login
-Disallow: /error
+Disallow: /account/
+Disallow: /affiliate-dashboard
+Disallow: /affiliate-dashboard/
+Disallow: /login.html
+Disallow: /auth/
+Disallow: /private/
+Disallow: /api/
+
+# Crawl delay for polite crawling
+Crawl-delay: 10
 
 # Sitemap
 Sitemap: https://amielestore-web.vercel.app/sitemap.xml
+
+# Host
+Host: https://amielestore-web.vercel.app
