@@ -815,6 +815,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const amount = parseFloat(document.getElementById('wth-amount').value);
             const method = document.getElementById('wth-method').value;
             const phone = document.getElementById('wth-phone').value.trim();
+            const account = document.getElementById('wth-account').value.trim();
 
             const feedback = document.getElementById('wth-feedback');
             if (feedback) feedback.classList.add('hidden');
@@ -828,7 +829,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const confirmMsg = `
                 You are submitting a payout request for:<br>
                 <strong>ETB ${amount.toLocaleString()}</strong> via <strong>${method}</strong>.<br>
-                Target phone number: <strong>${phone}</strong>.<br><br>
+                Target phone number: <strong>${phone}</strong>.<br>
+                Payout account / wallet: <strong>${account}</strong>.<br><br>
                 Would you like to proceed?
             `;
             const confirmed = await showConfirmModal('Request Withdrawal Payout', confirmMsg, false, 'Confirm Request');
@@ -864,7 +866,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showToast('Request submitted! Redirecting to WhatsApp...', 'success');
 
                 // Build WhatsApp message
-                const msg = `Hello Amiele,\n\nI would like to request my affiliate commission.\n\nAffiliate ID: ${user.id}\nRequested Amount: ETB ${amount.toLocaleString()}\nPayment Method: ${method}\nPhone Number: ${phone}\n\nThank you.`;
+                const msg = `Hello Amiele,\n\nI would like to request my affiliate commission.\n\nAffiliate ID: ${user.id}\nRequested Amount: ETB ${amount.toLocaleString()}\nPayment Method: ${method}\nPhone Number: ${phone}\nPayout Account / Wallet: ${account}\n\nThank you.`;
                 const whatsappUrl = `https://wa.me/251969189470?text=${encodeURIComponent(msg)}`;
 
                 setTimeout(() => {
