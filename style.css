@@ -5018,3 +5018,54 @@ body.dash-drawer-open {
         font-size: 1.1rem;
     }
 }
+
+/* ==========================================================================
+   GLOBAL MOBILE SAFETY GUARDS (All breakpoints up to 1024px)
+   Ensures no horizontal scrolling and natural vertical scrolling anywhere.
+   Desktop (>=1025px) is completely unaffected.
+   ========================================================================== */
+@media (max-width: 1024px) {
+    html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+
+    .dashboard-wrapper,
+    .dashboard-container,
+    .dashboard-main,
+    .dash-tab-content,
+    .dash-hero-card,
+    .dash-kpi-grid,
+    .dash-section-header,
+    .dash-tracker-card,
+    .dash-orders-table-wrapper,
+    .dash-wishlist-grid,
+    .dash-address-grid,
+    .dash-cultural-card,
+    .dash-affiliate-card,
+    .dash-modal-container {
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .dash-hero-card,
+    .dash-stat-card,
+    .dash-tracker-card,
+    .dash-section-header,
+    .dash-table tr,
+    .dash-address-card,
+    .dash-modal-container {
+        word-break: break-word;
+        overflow-wrap: break-word;
+        min-width: 0;
+    }
+
+    .dashboard-main {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .dash-modal-container {
+        height: auto;
+    }
+}
