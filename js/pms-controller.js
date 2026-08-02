@@ -700,6 +700,7 @@
       meta_description: p.meta_description || '',
       cover_path: p.cover_path || '',
       image_count: p.image_count || 0,
+      image_paths: (p.images || []).map(function (i) { return i.storage_path; }).join(' | '),
       created_at: p.created_at || '',
       updated_at: p.updated_at || '',
       deleted_at: p.deleted_at || ''
