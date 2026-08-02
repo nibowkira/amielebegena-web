@@ -923,3 +923,15 @@
     padding: 10px 12px 12px;
     margin-top: auto;
 }
+
+/* ---------------- Tablet (768-1024px) ---------------- */
+@media (max-width: 1024px) {
+    .pms-modal-lg,
+    .pms-modal-xl {
+        max-width: min(94vw, 940px);
+    }
+    .pms-modal-overlay {
+        padding: 12px;
+    }
+}
+

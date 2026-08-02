@@ -326,6 +326,7 @@
       if (!p.details_link) issues.push('No details page');
       if (!p.meta_title) issues.push('No meta title');
       if (!p.meta_description) issues.push('No meta description');
+      if (!p.audio_enabled && !p.audio_url) issues.push('No audio (optional)');
     }
     return issues;
   }
@@ -497,7 +498,9 @@
   // --------------------------------------------------------------------------
   // Public filter/sort handlers
   // --------------------------------------------------------------------------
-  function onSearch(v) { state.search = v || ''; applyFilters(); }
+  function onSearch(v) { state.search = v || ''; debouncedApplyFilters(); }
+
+  var debouncedApplyFilters = debounce(function () { applyFilters(); }, 300);
   function onFilter() {
     state.statusFilter = $('pms-status-filter') ? $('pms-status-filter').value : 'all';
     state.collectionFilter = $('pms-collection-filter') ? $('pms-collection-filter').value : 'all';
@@ -805,19 +808,70 @@
   }
 
   // --------------------------------------------------------------------------
-  // Modals: generic
+  // Modals: generic + accessibility (role=dialog, focus trap, Escape, focus return)
   // --------------------------------------------------------------------------
-  function openModal(modalId) {
-    var m = $(modalId);
-    if (m) m.classList.add('active');
-    document.body.style.overflow = 'hidden';
+  var _modalFocusReturn = null;
+
+  function setupModalA11y(overlay) {
+    if (!overlay) return;
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    var titleEl = overlay.querySelector('.pms-modal-header h3');
+    if (titleEl) {
+      if (!titleEl.id) titleEl.id = 'pms-modal-title-' + Math.random().toString(36).slice(2, 8);
+      overlay.setAttribute('aria-labelledby', titleEl.id);
+    }
+    var bodyEl = overlay.querySelector('.pms-modal-body');
+    if (bodyEl) {
+      if (!bodyEl.id) bodyEl.id = 'pms-modal-body-' + Math.random().toString(36).slice(2, 8);
+      overlay.setAttribute('aria-describedby', bodyEl.id);
+    }
+    _modalFocusReturn = document.activeElement;
+    setTimeout(function () {
+      var f = overlay.querySelector('input, select, textarea') ||
+              overlay.querySelector('button, [href], [tabindex]:not([tabindex="-1"])');
+      if (f && typeof f.focus === 'function') f.focus();
+    }, 30);
   }
+
+  function closeOverlay(overlay) {
+    if (!overlay) return;
+    overlay.remove();
+    if (document.querySelectorAll('.pms-modal-overlay.active').length === 0) {
+      document.body.style.overflow = '';
+    }
+    if (_modalFocusReturn && _modalFocusReturn.focus && document.body.contains(_modalFocusReturn)) {
+      try { _modalFocusReturn.focus(); } catch (e) { /* ignore */ }
+    }
+    _modalFocusReturn = null;
+  }
+
   function closeModal() {
     document.querySelectorAll('.pms-modal-overlay.active').forEach(function (m) {
-      m.classList.remove('active');
+      closeOverlay(m);
     });
-    document.body.style.overflow = '';
   }
+
+  // Escape closes the active modal; Tab is trapped inside it while open.
+  document.addEventListener('keydown', function (e) {
+    var overlay = document.querySelector('.pms-modal-overlay.active');
+    if (!overlay) return;
+    if (e.key === 'Escape') {
+      var confirmBackdrop = document.getElementById('custom-modal-backdrop');
+      if (confirmBackdrop && confirmBackdrop.classList.contains('show')) return;
+      e.preventDefault();
+      closeOverlay(overlay);
+      return;
+    }
+    if (e.key === 'Tab') {
+      var focusables = overlay.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (focusables.length === 0) return;
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
 
   function toast(msg, type) {
     if (typeof window.showToast === 'function') window.showToast(msg, type || 'success');
@@ -840,21 +894,22 @@
         <div class="pms-modal" style="max-width:460px;">
           <div class="pms-modal-header">
             <h3><i class="fa-solid fa-gears"></i> ${esc(title)}</h3>
-            <button type="button" class="pms-modal-close" onclick="document.getElementById('pms-prompt-overlay').remove(); document.body.style.overflow='';">&times;</button>
+            <button type="button" class="pms-modal-close" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">&times;</button>
           </div>
           <div class="pms-modal-body">
             ${desc ? `<p style="margin:0 0 14px 0; color:var(--pms-muted); font-size:0.9rem; line-height:1.5;">${desc}</p>` : ''}
             ${fieldHTML}
           </div>
           <div class="pms-modal-footer">
-            <button type="button" class="pms-btn" onclick="document.getElementById('pms-prompt-overlay').remove(); document.body.style.overflow='';">Cancel</button>
+            <button type="button" class="pms-btn" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">Cancel</button>
             <button type="button" class="pms-btn pms-btn-gold" id="pms-prompt-confirm">${esc(confirmText || 'Confirm')}</button>
           </div>
         </div>
       `;
       document.body.appendChild(overlay);
+      setupModalA11y(overlay);
       overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) { overlay.remove(); document.body.style.overflow = ''; }
+        if (e.target === overlay) closeOverlay(overlay);
       });
       $('pms-prompt-confirm').addEventListener('click', function () {
         var selEl = overlay.querySelector('#pms-coll-move-sel');
@@ -868,14 +923,9 @@
           if (el.name) collected[el.name] = el.value;
         });
         var result = { value: val, values: collected };
-        overlay.remove();
-        document.body.style.overflow = '';
+        closeOverlay(overlay);
         resolve(result);
       });
-      setTimeout(function () {
-        var inp = overlay.querySelector('input, select');
-        if (inp) inp.focus();
-      }, 50);
     });
   }
 
@@ -1059,6 +1109,7 @@
       </div>
     `;
     document.body.appendChild(modal);
+    setupModalA11y(modal);
     modal.addEventListener('click', function (e) {
       if (e.target === modal) PMSController.closeProductForm();
     });
@@ -1070,9 +1121,7 @@
   }
 
   function closeProductForm() {
-    var m = $('pms-product-modal');
-    if (m) m.remove();
-    document.body.style.overflow = '';
+    closeOverlay($('pms-product-modal'));
   }
 
   // ----- Slug auto-gen + validation -----
@@ -1080,6 +1129,16 @@
   function debounceSlug(fn) {
     if (slugDebounceTimer) clearTimeout(slugDebounceTimer);
     slugDebounceTimer = setTimeout(fn, 300);
+  }
+
+  function debounce(fn, wait) {
+    var timer = null;
+    return function () {
+      var args = arguments;
+      var self = this;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(function () { fn.apply(self, args); }, wait || 300);
+    };
   }
 
   function autoSlug() {
@@ -1391,19 +1450,20 @@
       <div class="pms-modal pms-modal-lg">
         <div class="pms-modal-header">
           <h3><i class="fa-solid fa-clock-rotate-left"></i> History — ${esc(name)}</h3>
-          <button type="button" class="pms-modal-close" onclick="document.getElementById('pms-history-modal').remove(); document.body.style.overflow='';">&times;</button>
+          <button type="button" class="pms-modal-close" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">&times;</button>
         </div>
         <div class="pms-modal-body" id="pms-history-body">
           <div style="text-align:center;padding:40px;color:var(--pms-muted);"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
         </div>
         <div class="pms-modal-footer">
-          <button type="button" class="pms-btn" onclick="document.getElementById('pms-history-modal').remove(); document.body.style.overflow='';">Close</button>
+          <button type="button" class="pms-btn" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">Close</button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
+    setupModalA11y(modal);
     modal.addEventListener('click', function (e) {
-      if (e.target === modal) modal.remove();
+      if (e.target === modal) closeOverlay(modal);
     });
     document.body.style.overflow = 'hidden';
 
@@ -1455,7 +1515,7 @@
       <div class="pms-modal pms-modal-lg">
         <div class="pms-modal-header">
           <h3><i class="fa-solid fa-clock-rotate-left"></i> Restore Points</h3>
-          <button type="button" class="pms-modal-close" onclick="document.getElementById('pms-restore-modal').remove(); document.body.style.overflow='';">&times;</button>
+          <button type="button" class="pms-modal-close" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">&times;</button>
         </div>
         <div class="pms-modal-body">
           <div class="pms-field" style="margin-bottom:20px;">
@@ -1471,13 +1531,14 @@
           <div id="rp-list" style="margin-top:14px;"><div style="text-align:center;padding:30px;color:var(--pms-muted);"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div></div>
         </div>
         <div class="pms-modal-footer">
-          <button type="button" class="pms-btn" onclick="document.getElementById('pms-restore-modal').remove(); document.body.style.overflow='';">Close</button>
+          <button type="button" class="pms-btn" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">Close</button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
+    setupModalA11y(modal);
     modal.addEventListener('click', function (e) {
-      if (e.target === modal) modal.remove();
+      if (e.target === modal) closeOverlay(modal);
     });
     document.body.style.overflow = 'hidden';
     renderRestoreList();
@@ -1549,20 +1610,21 @@
       <div class="pms-modal pms-modal-lg">
         <div class="pms-modal-header">
           <h3><i class="fa-solid fa-layer-group"></i> Collections</h3>
-          <button type="button" class="pms-modal-close" onclick="document.getElementById('pms-collections-modal').remove(); document.body.style.overflow='';">&times;</button>
+          <button type="button" class="pms-modal-close" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">&times;</button>
         </div>
         <div class="pms-modal-body">
           <button type="button" class="pms-btn pms-btn-gold" onclick="PMSController.openCollectionForm()" style="margin-bottom:18px;"><i class="fa-solid fa-plus"></i> New Collection</button>
           <div class="pms-collections-grid" id="pms-coll-grid"></div>
         </div>
         <div class="pms-modal-footer">
-          <button type="button" class="pms-btn" onclick="document.getElementById('pms-collections-modal').remove(); document.body.style.overflow='';">Close</button>
+          <button type="button" class="pms-btn" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">Close</button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
+    setupModalA11y(modal);
     modal.addEventListener('click', function (e) {
-      if (e.target === modal) modal.remove();
+      if (e.target === modal) closeOverlay(modal);
     });
     document.body.style.overflow = 'hidden';
     renderCollectionsGrid();
@@ -1799,6 +1861,7 @@
       </div>
     `;
     document.body.appendChild(modal);
+    setupModalA11y(modal);
     modal.addEventListener('click', function (e) {
       if (e.target === modal) PMSController.closeMediaLibrary();
     });
@@ -1807,14 +1870,17 @@
   }
 
   function closeMediaLibrary() {
-    var m = $('pms-media-modal');
-    if (m) m.remove();
-    document.body.style.overflow = '';
+    closeOverlay($('pms-media-modal'));
     state.mediaPick = null;
   }
 
   function mediaKind(kind) { state.mediaKind = kind || 'all'; renderMediaLibrary(); }
-  function mediaSearch(v) { state.mediaSearch = (v || '').trim(); renderMediaLibrary(); }
+  function mediaSearch(v) {
+    state.mediaSearch = (v || '').trim();
+    debouncedMediaRender();
+  }
+
+  var debouncedMediaRender = debounce(function () { renderMediaLibrary(); }, 300);
 
   function formatBytes(n) {
     if (n == null) return '';
@@ -1947,7 +2013,7 @@
       <div class="pms-modal pms-modal-lg">
         <div class="pms-modal-header">
           <h3><i class="fa-solid fa-clone"></i> Product Templates</h3>
-          <button type="button" class="pms-modal-close" onclick="document.getElementById('pms-templates-modal').remove(); document.body.style.overflow='';">&times;</button>
+          <button type="button" class="pms-modal-close" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">&times;</button>
         </div>
         <div class="pms-modal-body">
           <div class="pms-hint" style="margin-bottom:14px;">Templates store default images, audio, description, badge, category and metadata. Create a product from a template to start with a minimal edit.</div>
@@ -1955,13 +2021,14 @@
         </div>
         <div class="pms-modal-footer">
           <button type="button" class="pms-btn pms-btn-gold" onclick="PMSController.newFromTemplate()"><i class="fa-solid fa-plus"></i> New Blank Product</button>
-          <button type="button" class="pms-btn" onclick="document.getElementById('pms-templates-modal').remove(); document.body.style.overflow='';">Close</button>
+          <button type="button" class="pms-btn" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">Close</button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
+    setupModalA11y(modal);
     modal.addEventListener('click', function (e) {
-      if (e.target === modal) modal.remove();
+      if (e.target === modal) closeOverlay(modal);
     });
     document.body.style.overflow = 'hidden';
     renderTemplates();
@@ -2150,6 +2217,7 @@
     openAdd: openAdd,
     openEdit: openEdit,
     closeProductForm: closeProductForm,
+    closeOverlay: closeOverlay,
     autoSlug: autoSlug,
     checkSlug: checkSlug,
     addImageFiles: addImageFiles,
