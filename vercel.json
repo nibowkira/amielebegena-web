@@ -1,18 +1,7 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "redirects": [
-    {
-      "source": "/about",
-      "destination": "/about-us",
-      "statusCode": 301
-    },
-    {
-      "source": "/about.html",
-      "destination": "/about-us",
-      "statusCode": 301
-    }
-  ],
+  "redirects": [],
   "routes": [
     {
       "src": "/image/(.*)",
