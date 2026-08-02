@@ -20,8 +20,19 @@
     search: "",
     statusFilter: "all",
     collectionFilter: "all",
+    featuredFilter: "all",
+    audioFilter: "all",
+    detailsFilter: "all",
+    recencyFilter: "all",
     sort: "sort_order",
     selection: {},
+    health: {},
+    templates: [],
+    mediaCount: 0,
+    mediaKind: "all",
+    mediaSearch: "",
+    mediaPick: null,
+    mediaCache: [],
     form: {
       id: null,
       images: [],
@@ -83,6 +94,26 @@
             <option value="deleted">Deleted (Trash)</option>
           </select>
           <select class="pms-select" id="pms-collection-filter" onchange="PMSController.onFilter()"></select>
+          <select class="pms-select" id="pms-featured-filter" onchange="PMSController.onFilter()">
+            <option value="all">All Featured</option>
+            <option value="featured">Featured</option>
+            <option value="not">Not Featured</option>
+          </select>
+          <select class="pms-select" id="pms-audio-filter" onchange="PMSController.onFilter()">
+            <option value="all">All Audio</option>
+            <option value="with">Has Audio</option>
+            <option value="without">No Audio</option>
+          </select>
+          <select class="pms-select" id="pms-details-filter" onchange="PMSController.onFilter()">
+            <option value="all">All Details</option>
+            <option value="with">Has Details Page</option>
+            <option value="without">No Details Page</option>
+          </select>
+          <select class="pms-select" id="pms-recency-filter" onchange="PMSController.onFilter()">
+            <option value="all">Any Time</option>
+            <option value="updated7">Updated (7d)</option>
+            <option value="created7">Created (7d)</option>
+          </select>
           <select class="pms-select" id="pms-sort" onchange="PMSController.onSort(this.value)">
             <option value="sort_order">Sort: Default</option>
             <option value="name">Sort: Name</option>
@@ -92,6 +123,10 @@
           </select>
         </div>
         <div class="pms-toolbar-right">
+          <button type="button" class="pms-btn" onclick="PMSController.showMediaLibrary()"><i class="fa-solid fa-photo-film"></i> Media Library</button>
+          <button type="button" class="pms-btn" onclick="PMSController.showTemplates()"><i class="fa-solid fa-clone"></i> Templates</button>
+          <button type="button" class="pms-btn" onclick="PMSController.exportCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+          <button type="button" class="pms-btn" onclick="PMSController.exportJSON()"><i class="fa-solid fa-file-code"></i> JSON</button>
           <button type="button" class="pms-btn" onclick="PMSController.showRestorePoints()"><i class="fa-solid fa-clock-rotate-left"></i> Restore Points</button>
           <button type="button" class="pms-btn" onclick="PMSController.showCollections()"><i class="fa-solid fa-layer-group"></i> Collections</button>
           <button type="button" class="pms-btn pms-btn-gold" onclick="PMSController.openAdd()"><i class="fa-solid fa-plus"></i> Add Product</button>
@@ -106,6 +141,7 @@
             <tr>
               <th style="width:36px;"><input type="checkbox" class="pms-check" id="pms-select-all" onclick="PMSController.toggleSelectAll(this)" title="Select all"></th>
               <th>Product</th>
+              <th>Health</th>
               <th>Collection</th>
               <th>Price</th>
               <th>Status</th>
@@ -125,6 +161,13 @@
           <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkStatus('inactive')"><i class="fa-solid fa-eye-slash"></i> Hide</button>
           <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkStatus('archived')"><i class="fa-solid fa-box-archive"></i> Archive</button>
           <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkCollection()"><i class="fa-solid fa-layer-group"></i> Move to Collection</button>
+          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkRemoveCollection()"><i class="fa-solid fa-layer-minus"></i> Remove Collection</button>
+          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkBadge()"><i class="fa-solid fa-tag"></i> Set Badge</button>
+          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkRemoveBadge()"><i class="fa-solid fa-tag"></i> Remove Badge</button>
+          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkAudio(true)"><i class="fa-solid fa-music"></i> Enable Audio</button>
+          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkAudio(false)"><i class="fa-solid fa-music"></i> Disable Audio</button>
+          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkDuplicate()"><i class="fa-solid fa-copy"></i> Duplicate</button>
+          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.exportCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
           <button type="button" class="pms-btn pms-btn-sm pms-btn-danger" onclick="PMSController.bulkDelete()"><i class="fa-solid fa-trash-can"></i> Delete</button>
           <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkRestore()"><i class="fa-solid fa-rotate-left"></i> Restore</button>
         </div>
@@ -159,7 +202,7 @@
       var collSel = $('pms-collection-filter');
       if (collSel) {
         var opts = '<option value="all">All Collections</option>';
-        state.collections.forEach(function (c) {
+        state.collections.filter(function (c) { return !c.archived_at; }).forEach(function (c) {
           opts += `<option value="${esc(c.slug)}">${esc(c.name_en)}</option>`;
         });
         collSel.innerHTML = opts;
@@ -167,6 +210,15 @@
 
       applyFilters();
       renderKpis();
+
+      // Non-blocking: load templates + media count for the dashboard.
+      window.PMSService.listTemplates().then(function (t) {
+        state.templates = (t && t.templates) || [];
+      }).catch(function () { state.templates = []; });
+      window.PMSService.mediaUsageCount().then(function (m) {
+        state.mediaCount = (m && m.count) || 0;
+        renderKpis();
+      }).catch(function () { state.mediaCount = 0; });
     } catch (err) {
       console.error('[PMS] Failed to load products:', err);
       if (tbody) tbody.innerHTML = errorRow('Failed to load products. ' + (err.message || ''));
@@ -180,6 +232,7 @@
         <tr>
           <td></td>
           <td><div class="pms-skeleton" style="height:44px;width:220px;"></div></td>
+          <td><div class="pms-skeleton" style="height:18px;width:60px;"></div></td>
           <td><div class="pms-skeleton" style="height:18px;width:90px;"></div></td>
           <td><div class="pms-skeleton" style="height:18px;width:70px;"></div></td>
           <td><div class="pms-skeleton" style="height:22px;width:90px;"></div></td>
@@ -195,7 +248,7 @@
   function errorRow(msg) {
     return `
       <tr>
-        <td colspan="8">
+        <td colspan="9">
           <div class="pms-empty">
             <i class="fa-solid fa-triangle-exclamation"></i>
             <h4>We couldn't load products</h4>
@@ -212,27 +265,81 @@
     if (!grid) return;
     var live = state.products.filter(function (p) { return p.status === 'active' && !p.deleted_at; }).length;
     var draft = state.products.filter(function (p) { return p.status === 'draft' && !p.deleted_at; }).length;
+    var hidden = state.products.filter(function (p) { return p.status === 'inactive' && !p.deleted_at; }).length;
+    var outStock = state.products.filter(function (p) { return p.status === 'out_of_stock' && !p.deleted_at; }).length;
     var archived = state.products.filter(function (p) { return p.status === 'archived' && !p.deleted_at; }).length;
     var trash = state.products.filter(function (p) { return p.deleted_at; }).length;
-    var audio = state.products.filter(function (p) { return p.audio_enabled; }).length;
+    var withAudio = state.products.filter(function (p) { return p.audio_enabled && !p.deleted_at; }).length;
+    var withoutAudio = state.products.filter(function (p) { return !p.audio_enabled && !p.deleted_at; }).length;
+    var withoutDetails = state.products.filter(function (p) { return !p.details_link && !p.deleted_at; }).length;
+    var missingImages = state.products.filter(function (p) { return p.image_count === 0 && !p.deleted_at; }).length;
+    var now = Date.now();
+    var week = 7 * 24 * 60 * 60 * 1000;
+    var recentlyEdited = state.products.filter(function (p) {
+      return !p.deleted_at && p.updated_at && (now - new Date(p.updated_at).getTime()) < week;
+    }).length;
+    var newest = state.products.filter(function (p) {
+      return !p.deleted_at && p.created_at && (now - new Date(p.created_at).getTime()) < week;
+    }).length;
+    var collCount = state.collections.filter(function (c) { return !c.archived_at; }).length;
+    var mediaCount = state.mediaCount || 0;
+    var activeCount = state.products.filter(function (p) { return !p.deleted_at; }).length;
+
+    // Health check (Part 5): count live products with at least one issue.
+    var unhealthy = 0;
+    state.products.forEach(function (p) {
+      if (p.deleted_at) return;
+      if ((state.health[p.id] || []).length > 0) unhealthy++;
+    });
 
     grid.innerHTML = `
       <div class="pms-kpi-card"><div class="pms-kpi-label">Total Products</div><div class="pms-kpi-value">${state.products.length}</div></div>
       <div class="pms-kpi-card"><div class="pms-kpi-label">Live on Store</div><div class="pms-kpi-value" style="color:var(--pms-green);">${live}</div></div>
       <div class="pms-kpi-card"><div class="pms-kpi-label">Drafts</div><div class="pms-kpi-value">${draft}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">Hidden</div><div class="pms-kpi-value">${hidden}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">Out of Stock</div><div class="pms-kpi-value">${outStock}</div></div>
       <div class="pms-kpi-card"><div class="pms-kpi-label">Archived</div><div class="pms-kpi-value">${archived}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Audio Ready</div><div class="pms-kpi-value">${audio}</div></div>
       <div class="pms-kpi-card"><div class="pms-kpi-label">In Trash</div><div class="pms-kpi-value">${trash}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">Collections</div><div class="pms-kpi-value">${collCount}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">Media Assets</div><div class="pms-kpi-value">${mediaCount}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">With Audio</div><div class="pms-kpi-value">${withAudio}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">Without Audio</div><div class="pms-kpi-value">${withoutAudio}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">No Details Page</div><div class="pms-kpi-value">${withoutDetails}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">Missing Images</div><div class="pms-kpi-value">${missingImages}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">Health Issues</div><div class="pms-kpi-value" style="color:${unhealthy > 0 ? 'var(--pms-red)' : 'var(--pms-green)'};">${unhealthy} / ${activeCount}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">Edited (7d)</div><div class="pms-kpi-value">${recentlyEdited}</div></div>
+      <div class="pms-kpi-card"><div class="pms-kpi-label">New (7d)</div><div class="pms-kpi-value">${newest}</div></div>
     `;
   }
 
   // --------------------------------------------------------------------------
   // Filtering
   // --------------------------------------------------------------------------
+  function computeHealth(p) {
+    var issues = [];
+    if (!p.deleted_at) {
+      if (p.image_count === 0) issues.push('No image');
+      else if (!p.cover_path) issues.push('No cover image');
+      if (!p.category) issues.push('No collection');
+      if (p.price == null || Number(p.price) <= 0) issues.push('No price');
+      if (!p.slug) issues.push('No slug');
+      if (!p.details_link) issues.push('No details page');
+      if (!p.meta_title) issues.push('No meta title');
+      if (!p.meta_description) issues.push('No meta description');
+    }
+    return issues;
+  }
+
   function applyFilters() {
     var q = state.search.toLowerCase().trim();
     var sf = state.statusFilter;
     var cf = state.collectionFilter;
+    var ff = state.featuredFilter;
+    var af = state.audioFilter;
+    var df = state.detailsFilter;
+    var rf = state.recencyFilter;
+    var now = Date.now();
+    var week = 7 * 24 * 60 * 60 * 1000;
 
     var list = state.products.filter(function (p) {
       if (sf === 'deleted') {
@@ -242,6 +349,14 @@
         if (sf !== 'all' && p.status !== sf) return false;
       }
       if (cf !== 'all' && p.category !== cf) return false;
+      if (ff === 'featured' && !p.featured) return false;
+      if (ff === 'not' && p.featured) return false;
+      if (af === 'with' && !p.audio_enabled) return false;
+      if (af === 'without' && p.audio_enabled) return false;
+      if (df === 'with' && !p.details_link) return false;
+      if (df === 'without' && p.details_link) return false;
+      if (rf === 'updated7' && (!p.updated_at || (now - new Date(p.updated_at).getTime()) >= week)) return false;
+      if (rf === 'created7' && (!p.created_at || (now - new Date(p.created_at).getTime()) >= week)) return false;
       if (q) {
         var hay = (p.name + ' ' + (p.slug || '') + ' ' + (p.badge || '') + ' ' + (p.collectionName || '')).toLowerCase();
         if (hay.indexOf(q) === -1) return false;
@@ -249,12 +364,16 @@
       return true;
     });
 
+    // Health map used by rows + dashboard
+    state.health = {};
+    state.products.forEach(function (p) { state.health[p.id] = computeHealth(p); });
+
     var key = state.sort;
     list.sort(function (a, b) {
       if (key === 'name') return a.name.localeCompare(b.name);
       if (key === 'price_asc') return (a.price || 0) - (b.price || 0);
       if (key === 'price_desc') return (b.price || 0) - (a.price || 0);
-      if (key === 'created_at') return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+      if (key === 'created_at') return new Date(b.created_at || 0) - new Date(a.created_at || 0);
       return (a.sort_order || 0) - (b.sort_order || 0) || new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
     });
 
@@ -286,6 +405,16 @@
     return tags || '<span class="pms-tag">none</span>';
   }
 
+  function healthBadge(p) {
+    if (p.deleted_at) return '<span class="pms-tag" style="color:var(--pms-muted);">—</span>';
+    var issues = state.health[p.id] || [];
+    if (issues.length === 0) {
+      return `<span class="pms-tag" style="color:var(--pms-green);"><i class="fa-solid fa-circle-check"></i> OK</span>`;
+    }
+    var cls = issues.length <= 1 ? 'pms-tag-gold' : 'pms-badge pms-badge-out_of_stock';
+    return `<span class="${cls}" title="${esc(issues.join(' • '))}" style="cursor:help;">${issues.length} issue${issues.length > 1 ? 's' : ''}</span>`;
+  }
+
   function renderRows() {
     var tbody = $('pms-tbody');
     if (!tbody) return;
@@ -296,7 +425,7 @@
     if (state.filtered.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8">
+          <td colspan="9">
             <div class="pms-empty">
               <i class="fa-solid fa-box-open"></i>
               <h4>No products found</h4>
@@ -326,6 +455,7 @@
               </div>
             </div>
           </td>
+          <td data-label="Health">${healthBadge(p)}</td>
           <td data-label="Collection">${esc(p.collectionName || p.category || '—')}</td>
           <td data-label="Price"><span class="pms-price">$${esc(formatNum(p.price))}</span></td>
           <td data-label="Status">${statusBadge(p)}</td>
@@ -371,6 +501,10 @@
   function onFilter() {
     state.statusFilter = $('pms-status-filter') ? $('pms-status-filter').value : 'all';
     state.collectionFilter = $('pms-collection-filter') ? $('pms-collection-filter').value : 'all';
+    state.featuredFilter = $('pms-featured-filter') ? $('pms-featured-filter').value : 'all';
+    state.audioFilter = $('pms-audio-filter') ? $('pms-audio-filter').value : 'all';
+    state.detailsFilter = $('pms-details-filter') ? $('pms-details-filter').value : 'all';
+    state.recencyFilter = $('pms-recency-filter') ? $('pms-recency-filter').value : 'all';
     applyFilters();
   }
   function onSort(v) { state.sort = v || 'sort_order'; applyFilters(); }
@@ -455,6 +589,174 @@
   }
 
   function clearSelection() { state.selection = {}; }
+
+  async function bulkRemoveCollection() {
+    var ids = selectedIds();
+    if (ids.length === 0) return toast('Select at least one product first.', 'warning');
+    var ok = await confirmModal('Remove Collection', 'Remove the collection assignment from <strong>' + ids.length + '</strong> product(s)? They will become uncategorized.');
+    if (!ok) return;
+    try {
+      await window.PMSService.bulkUpdate(ids, { category: '' });
+      clearSelection();
+      toast('Collection assignment removed.', 'success');
+      await loadData();
+    } catch (e) {
+      toast(e.message || 'Failed to remove collection.', 'error');
+    }
+  }
+
+  async function bulkBadge() {
+    var ids = selectedIds();
+    if (ids.length === 0) return toast('Select at least one product first.', 'warning');
+    var res = await promptModal('Set Badge', 'Assign a badge/label to <strong>' + ids.length + '</strong> product(s).',
+      `<div class="pms-field" style="margin:0;"><label>Badge text</label><input type="text" class="pms-input" id="pms-bulk-badge" placeholder="e.g. NEW, በገና" style="width:100%;"></div>`, 'Apply');
+    if (!res || !res.values) return;
+    var badge = (res.values['pms-bulk-badge'] || '').trim();
+    if (!badge) return toast('Enter a badge text.', 'warning');
+    try {
+      await window.PMSService.bulkUpdate(ids, { badge: badge });
+      clearSelection();
+      toast('Badge applied.', 'success');
+      await loadData();
+    } catch (e) {
+      toast(e.message || 'Failed to set badge.', 'error');
+    }
+  }
+
+  async function bulkRemoveBadge() {
+    var ids = selectedIds();
+    if (ids.length === 0) return toast('Select at least one product first.', 'warning');
+    var ok = await confirmModal('Remove Badge', 'Remove the badge from <strong>' + ids.length + '</strong> product(s)?');
+    if (!ok) return;
+    try {
+      await window.PMSService.bulkUpdate(ids, { badge: '' });
+      clearSelection();
+      toast('Badges removed.', 'success');
+      await loadData();
+    } catch (e) {
+      toast(e.message || 'Failed to remove badges.', 'error');
+    }
+  }
+
+  async function bulkAudio(enable) {
+    var ids = selectedIds();
+    if (ids.length === 0) return toast('Select at least one product first.', 'warning');
+    var label = enable ? 'enable' : 'disable';
+    var ok = await confirmModal((enable ? 'Enable' : 'Disable') + ' Audio', (enable ? 'Enable' : 'Disable') + ' the audio preview on <strong>' + ids.length + '</strong> product(s)?');
+    if (!ok) return;
+    try {
+      await window.PMSService.bulkUpdate(ids, { audio_enabled: !!enable });
+      clearSelection();
+      toast('Audio ' + (enable ? 'enabled' : 'disabled') + ' for the selection.', 'success');
+      await loadData();
+    } catch (e) {
+      toast(e.message || 'Failed to update audio settings.', 'error');
+    }
+  }
+
+  async function bulkDuplicate() {
+    var ids = selectedIds();
+    if (ids.length === 0) return toast('Select at least one product first.', 'warning');
+    var ok = await confirmModal('Duplicate Products', 'Create a draft copy of <strong>' + ids.length + '</strong> product(s)? Images, pricing and settings are copied.');
+    if (!ok) return;
+    var done = 0, failed = 0;
+    for (var i = 0; i < ids.length; i++) {
+      try {
+        await window.PMSService.duplicateProduct(ids[i]);
+        done++;
+      } catch (e) {
+        failed++;
+        console.error('[PMS] Duplicate failed:', e);
+      }
+    }
+    clearSelection();
+    toast(done + ' product(s) duplicated' + (failed ? ' (' + failed + ' failed).' : '.'), done > 0 ? 'success' : 'error');
+    await loadData();
+  }
+
+  // --------------------------------------------------------------------------
+  // Export (CSV / JSON)
+  // --------------------------------------------------------------------------
+  function exportFields(p) {
+    return {
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      category: p.category,
+      collection: p.collectionName || '',
+      price: p.price,
+      currency: p.currency || 'USD',
+      stock: p.stock,
+      status: p.deleted_at ? 'deleted' : p.status,
+      featured: p.featured ? 'yes' : 'no',
+      badge: p.badge || '',
+      sort_order: p.sort_order,
+      short_description: p.short_description || '',
+      description: p.description || '',
+      details_link: p.details_link || '',
+      audio_enabled: p.audio_enabled ? 'yes' : 'no',
+      audio_url: p.audio_url || '',
+      meta_title: p.meta_title || '',
+      meta_description: p.meta_description || '',
+      cover_path: p.cover_path || '',
+      image_count: p.image_count || 0,
+      created_at: p.created_at || '',
+      updated_at: p.updated_at || '',
+      deleted_at: p.deleted_at || ''
+    };
+  }
+
+  function exportData(rows, format) {
+    if (!rows || rows.length === 0) return toast('No products to export.', 'warning');
+    var data = rows.map(exportFields);
+    var filename = 'products-export-' + new Date().toISOString().slice(0, 10);
+    var blob, mime;
+    if (format === 'csv') {
+      var headers = Object.keys(data[0]);
+      var lines = [headers.join(',')];
+      data.forEach(function (row) {
+        lines.push(headers.map(function (h) {
+          var v = row[h];
+          v = (v == null ? '' : String(v));
+          if (/[",\n]/.test(v)) v = '"' + v.replace(/"/g, '""') + '"';
+          return v;
+        }).join(','));
+      });
+      blob = new Blob(["\uFEFF" + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      filename += '.csv';
+    } else {
+      blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
+      filename += '.json';
+    }
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 400);
+    toast('Exported ' + data.length + ' product(s).', 'success');
+  }
+
+  function exportSelected() {
+    var sel = selectedIds();
+    if (sel.length === 0) return null;
+    return state.products.filter(function (p) { return sel.indexOf(p.id) !== -1; });
+  }
+
+  function exportCSV() {
+    var sel = exportSelected();
+    var rows = sel || state.filtered;
+    if (sel && sel.length === 0) return toast('No products selected; exporting filtered list.', 'info');
+    exportData(rows, 'csv');
+  }
+
+  function exportJSON() {
+    var sel = exportSelected();
+    var rows = sel || state.filtered;
+    if (sel && sel.length === 0) return toast('No products selected; exporting filtered list.', 'info');
+    exportData(rows, 'json');
+  }
 
   // Single product actions
   async function publishOne(id) {
@@ -560,6 +862,9 @@
         overlay.querySelectorAll('input, select, textarea').forEach(function (el) {
           if (el.id) collected[el.id] = el.value.trim ? el.value.trim() : el.value;
           if (el.type === 'checkbox') collected[el.id] = el.checked;
+        });
+        overlay.querySelectorAll('input[type="radio"]:checked').forEach(function (el) {
+          if (el.name) collected[el.name] = el.value;
         });
         var result = { value: val, values: collected };
         overlay.remove();
@@ -702,17 +1007,23 @@
             <div class="pms-field pms-field-full">
               <div class="pms-section-divider"><span>Images</span></div>
               <div class="pms-images-grid" id="pf-images"></div>
-              <label class="pms-image-upload" style="margin-top:12px; max-width:140px;">
-                <i class="fa-solid fa-upload"></i>
-                <span>Upload images</span>
-                <input type="file" accept="image/*" multiple style="display:none;" id="pf-image-file" onchange="PMSController.addImageFiles(this)">
-              </label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center;">
+                <label class="pms-image-upload" style="margin:0; max-width:150px;">
+                  <i class="fa-solid fa-upload"></i>
+                  <span>Upload images</span>
+                  <input type="file" accept="image/*" multiple style="display:none;" id="pf-image-file" onchange="PMSController.addImageFiles(this)">
+                </label>
+                <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.pickLibraryImages()"><i class="fa-solid fa-photo-film"></i> Browse Library</button>
+              </div>
               <span class="pms-hint">First image is the cover by default. Use ⭐ to change cover, arrows to reorder.</span>
             </div>
 
             <div class="pms-field pms-field-full">
               <div class="pms-section-divider"><span>Audio Preview</span></div>
               <div class="pms-audio-manager" id="pf-audio-manager"></div>
+              <div style="margin-top:8px;">
+                <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.pickLibraryAudio()"><i class="fa-solid fa-photo-film"></i> Browse Library Audio</button>
+              </div>
             </div>
 
             <div class="pms-field pms-field-full">
@@ -741,6 +1052,7 @@
         </div>
         <div class="pms-modal-footer">
           <button type="button" class="pms-btn" onclick="PMSController.closeProductForm()">Cancel</button>
+          <button type="button" class="pms-btn" onclick="PMSController.saveAsTemplate()"><i class="fa-solid fa-clone"></i> Save as Template</button>
           <button type="button" class="pms-btn pms-btn-gold" id="pf-save-btn" onclick="PMSController.saveProduct()"><i class="fa-solid fa-floppy-disk"></i> Save Product</button>
         </div>
       </div>
@@ -1268,6 +1580,10 @@
     }
     grid.innerHTML = state.collections.map(function (c) {
       var count = state.products.filter(function (p) { return p.category === c.slug && !p.deleted_at; }).length;
+      var swatch = c.color ? `<span class="pms-coll-swatch" style="background:${esc(c.color)};"></span>` : '';
+      var statusLine = [];
+      if (c.archived_at) statusLine.push('archived');
+      if (c.is_active === false) statusLine.push('inactive');
       return `
         <div class="pms-collection-card">
           <div style="display:flex;align-items:center;gap:10px;">
@@ -1277,14 +1593,52 @@
               <div class="pms-coll-meta">${esc(c.name_am || '')} • ${count} products</div>
             </div>
           </div>
-          <div class="pms-coll-meta">/${esc(c.slug)} ${c.is_active === false ? '• inactive' : ''}</div>
+          <div class="pms-coll-meta">/${esc(c.slug)} ${swatch} ${statusLine.length ? '• ' + statusLine.join(', ') : ''}</div>
           <div class="pms-coll-actions">
             <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.openCollectionForm('${esc(c.id)}')"><i class="fa-solid fa-pen"></i> Edit</button>
-            <button type="button" class="pms-btn pms-btn-sm pms-btn-danger" onclick="PMSController.deleteCollection('${esc(c.id)}', '${esc(c.name_en.replace(/'/g, ""))}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.toggleCollectionActive('${esc(c.id)}', ${c.is_active !== false})">${c.is_active === false ? '<i class="fa-solid fa-eye"></i> Enable' : '<i class="fa-solid fa-eye-slash"></i> Disable'}</button>
+            ${c.archived_at
+              ? `<button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.restoreCollectionAction('${esc(c.id)}')"><i class="fa-solid fa-rotate-left"></i> Restore</button>`
+              : `<button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.archiveCollectionAction('${esc(c.id)}', '${esc(c.name_en.replace(/'/g, ''))}')"><i class="fa-solid fa-box-archive"></i> Archive</button>`}
+            <button type="button" class="pms-btn pms-btn-sm pms-btn-danger" onclick="PMSController.deleteCollection('${esc(c.id)}', '${esc(c.name_en.replace(/'/g, ''))}')"><i class="fa-solid fa-trash-can"></i> Delete</button>
           </div>
         </div>
       `;
     }).join('');
+  }
+
+  async function archiveCollectionAction(id, name) {
+    var ok = await confirmModal('Archive Collection', 'Archive collection <strong>' + esc(name) + '</strong>? Its products are kept and the collection can be restored later.');
+    if (!ok) return;
+    try {
+      await window.PMSService.archiveCollection(id);
+      toast('Collection archived.', 'success');
+      await loadData();
+      renderCollectionsGrid();
+    } catch (e) {
+      toast(e.message || 'Failed to archive collection.', 'error');
+    }
+  }
+
+  async function restoreCollectionAction(id) {
+    try {
+      await window.PMSService.restoreCollection(id);
+      toast('Collection restored.', 'success');
+      await loadData();
+      renderCollectionsGrid();
+    } catch (e) {
+      toast(e.message || 'Failed to restore collection.', 'error');
+    }
+  }
+
+  async function toggleCollectionActive(id, isActive) {
+    try {
+      await window.PMSService.toggleCollectionActive(id, !isActive);
+      toast(isActive ? 'Collection disabled.' : 'Collection enabled.', 'success');
+      renderCollectionsGrid();
+    } catch (e) {
+      toast(e.message || 'Failed to update collection.', 'error');
+    }
   }
 
   async function openCollectionForm(id) {
@@ -1299,6 +1653,7 @@
           <div class="pms-field"><label>Name (Amharic)</label><input type="text" class="pms-input" id="pf-cc-name-am" value="${esc(coll ? (coll.name_am || '') : '')}" placeholder="e.g. ገመድ መሳሪያዎች"></div>
           <div class="pms-field"><label>Slug</label><input type="text" class="pms-input" id="pf-cc-slug" value="${esc(coll ? coll.slug : '')}" placeholder="e.g. strings"></div>
           <div class="pms-field"><label>Icon</label><input type="text" class="pms-input" id="pf-cc-icon" value="${esc(coll ? (coll.icon || '') : '')}" placeholder="e.g. 🪕"></div>
+          <div class="pms-field"><label>Color</label><input type="color" class="pms-input" id="pf-cc-color" value="${esc(coll ? (coll.color || '#8B5A2B') : '#8B5A2B')}" style="height:38px;padding:2px;width:80px;"></div>
           <div class="pms-field"><label>Display Order</label><input type="number" class="pms-input" id="pf-cc-order" value="${coll ? (coll.display_order || 0) : 0}"></div>
           <div class="pms-field"><label>Description</label><input type="text" class="pms-input" id="pf-cc-desc" value="${esc(coll ? (coll.description || '') : '')}"></div>
           <div class="pms-check-field">
@@ -1317,12 +1672,21 @@
     var nameAm = v['pf-cc-name-am'] || '';
     var collSlug = v['pf-cc-slug'] || '';
     var icon = v['pf-cc-icon'] || '';
+    var color = v['pf-cc-color'] || '';
     var order = Number(v['pf-cc-order']) || 0;
     var desc = v['pf-cc-desc'] || '';
     var active = v['pf-cc-active'] !== false;
 
     if (!nameEn || !collSlug) return toast('Collection name and slug are required.', 'warning');
     if (!/^[a-z0-9-]+$/.test(collSlug)) return toast('Slug may only contain lowercase letters, numbers and dashes.', 'warning');
+
+    // The storefront category tabs are hard-coded to these slugs. Changing one
+    // reassigns products to the new slug but does NOT rename the storefront tab.
+    if (coll && coll.slug !== collSlug && ['strings', 'percussion', 'accessories', 'books', 'bags'].indexOf(coll.slug) !== -1) {
+      var warnOk = await confirmModal('Storefront Impact',
+        'The storefront tab for <strong>' + esc(coll.slug) + '</strong> is hard-coded. Its products will move to the new slug <strong>' + esc(collSlug) + '</strong>, but the storefront tab keeps the old slug and may appear empty. Continue?', true, 'Continue Anyway');
+      if (!warnOk) return;
+    }
 
     try {
       await window.PMSService.upsertCollection({
@@ -1331,6 +1695,7 @@
         name_en: nameEn,
         name_am: nameAm,
         icon: icon,
+        color: color,
         description: desc,
         display_order: order,
         is_active: active
@@ -1344,18 +1709,410 @@
   }
 
   async function deleteCollection(id, name) {
-    var count = state.products.filter(function (p) { return p.category === (state.collections.find(function (c) { return c.id === id; }) || {}).slug; }).length;
-    var msg = 'Delete collection <strong>' + esc(name) + '</strong>?';
-    if (count > 0) msg += ' <strong>' + count + '</strong> product(s) currently reference it and will keep their category slug.';
-    var ok = await confirmModal('Delete Collection', msg, true, 'Delete');
+    var coll = state.collections.find(function (c) { return c.id === id; }) || {};
+    var count = state.products.filter(function (p) { return p.category === coll.slug && !p.deleted_at; }).length;
+    var otherOptions = state.collections.filter(function (c) { return c.id !== id && !c.archived_at; }).map(function (c) {
+      return `<option value="${esc(c.slug)}">${esc(c.name_en)}</option>`;
+    }).join('');
+
+    var ok = await confirmModal('Delete Collection',
+      'Delete collection <strong>' + esc(name) + '</strong>?<br><br>' +
+      (count > 0
+        ? 'There are <strong>' + count + '</strong> product(s) in this collection. <strong>No products will be deleted.</strong>'
+        : 'This collection is empty.'),
+      true, 'Continue');
+
     if (!ok) return;
+
+    var res = await promptModal('Handle its Products',
+      (count > 0 ? 'Choose what happens to the <strong>' + count + '</strong> product(s) currently in <strong>' + esc(name) + '</strong>.' : ''),
+      `
+        <div style="display:grid;gap:12px;">
+          <label class="pms-check-field" style="align-items:flex-start;">
+            <input type="radio" name="pms-coll-delete-mode" value="move" ${count > 0 && otherOptions ? 'checked' : 'disabled'}>
+            <span>Move products to another collection</span>
+          </label>
+          <select class="pms-select" id="pms-coll-move-sel" style="width:100%;" ${count > 0 && otherOptions ? '' : 'disabled'}>
+            ${otherOptions || '<option value="">No other collections</option>'}
+          </select>
+          <label class="pms-check-field" style="align-items:flex-start;">
+            <input type="radio" name="pms-coll-delete-mode" value="uncat" ${!(count > 0 && otherOptions) ? 'checked' : ''}>
+            <span>Leave products uncategorized</span>
+          </label>
+        </div>
+      `, 'Delete Collection');
+
+    if (!res) return;
+    var mode = res.values ? res.values['pms-coll-delete-mode'] : 'uncat';
+    var moveTo = (mode === 'move') ? res.value : null;
+
     try {
-      await window.PMSService.deleteCollection(id);
-      toast('Collection deleted.', 'success');
+      await window.PMSService.deleteCollectionWithProducts(id, moveTo);
+      toast('Collection deleted. ' + (count > 0 ? 'Products were ' + (moveTo ? 'moved.' : 'left uncategorized.') : ''), 'success');
       await loadData();
       renderCollectionsGrid();
     } catch (e) {
       toast(e.message || 'Failed to delete collection.', 'error');
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Media Library
+  // --------------------------------------------------------------------------
+  function showMediaLibrary(pick) {
+    state.mediaKind = 'all';
+    state.mediaSearch = '';
+    state.mediaPick = pick || null;
+    state.mediaCache = [];
+    var modal = document.createElement('div');
+    modal.className = 'pms-modal-overlay active';
+    modal.id = 'pms-media-modal';
+    modal.innerHTML = `
+      <div class="pms-modal pms-modal-xl">
+        <div class="pms-modal-header">
+          <h3><i class="fa-solid fa-photo-film"></i> Media Library</h3>
+          <button type="button" class="pms-modal-close" onclick="PMSController.closeMediaLibrary()">&times;</button>
+        </div>
+        <div class="pms-modal-body">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
+            <select class="pms-select" id="pms-media-kind" onchange="PMSController.mediaKind(this.value)">
+              <option value="all">All Types</option>
+              <option value="image">Images</option>
+              <option value="audio">Audio</option>
+            </select>
+            <input type="text" class="pms-input" id="pms-media-search" placeholder="Search media..." style="flex:1;min-width:160px;" oninput="PMSController.mediaSearch(this.value)">
+            <label class="pms-btn pms-btn-sm" style="cursor:pointer;">
+              <i class="fa-solid fa-image"></i> Upload Image
+              <input type="file" accept="image/*" style="display:none;" onchange="PMSController.uploadLibraryImage(this)">
+            </label>
+            <label class="pms-btn pms-btn-sm" style="cursor:pointer;">
+              <i class="fa-solid fa-music"></i> Upload Audio
+              <input type="file" accept="audio/mpeg,audio/mp3,audio/*" style="display:none;" onchange="PMSController.uploadLibraryAudio(this)">
+            </label>
+          </div>
+          <div id="pms-media-grid"><div style="text-align:center;padding:30px;color:var(--pms-muted);"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div></div>
+        </div>
+        <div class="pms-modal-footer">
+          <button type="button" class="pms-btn" onclick="PMSController.closeMediaLibrary()">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) PMSController.closeMediaLibrary();
+    });
+    document.body.style.overflow = 'hidden';
+    renderMediaLibrary();
+  }
+
+  function closeMediaLibrary() {
+    var m = $('pms-media-modal');
+    if (m) m.remove();
+    document.body.style.overflow = '';
+    state.mediaPick = null;
+  }
+
+  function mediaKind(kind) { state.mediaKind = kind || 'all'; renderMediaLibrary(); }
+  function mediaSearch(v) { state.mediaSearch = (v || '').trim(); renderMediaLibrary(); }
+
+  function formatBytes(n) {
+    if (n == null) return '';
+    n = Number(n);
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  async function renderMediaLibrary() {
+    var grid = $('pms-media-grid');
+    if (!grid) return;
+    try {
+      var res = await window.PMSService.listMedia(state.mediaKind, state.mediaSearch);
+      var media = (res && res.media) || [];
+      state.mediaCache = media;
+      if (media.length === 0) {
+        grid.innerHTML = `<div class="pms-empty"><i class="fa-solid fa-photo-film"></i><h4>No media found</h4><p>Upload an image or audio file to get started.</p></div>`;
+        return;
+      }
+      grid.innerHTML = media.map(function (m) {
+        var dateStr = m.created_at ? new Date(m.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+        var selectable = state.mediaPick === 'images' && m.kind === 'image' || state.mediaPick === 'audio' && m.kind === 'audio';
+        var preview = m.kind === 'image'
+          ? `<img src="${esc(m.url)}" alt="" loading="lazy">`
+          : `<div class="pms-media-audio-preview"><i class="fa-solid fa-music"></i><audio controls src="${esc(m.url)}"></audio></div>`;
+        return `
+          <div class="pms-media-card">
+            <div class="pms-media-thumb">${preview}</div>
+            <div class="pms-media-name" title="${esc(m.storage_path)}">${esc(m.file_name)}</div>
+            <div class="pms-media-meta">${dateStr} • ${formatBytes(m.size_bytes)}</div>
+            <div class="pms-media-meta">By ${esc(m.uploaded_by_name || '—')} • Used in <strong>${m.usage_count}</strong> product${m.usage_count === 1 ? '' : 's'}</div>
+            <div class="pms-media-actions">
+              ${selectable ? `<button type="button" class="pms-btn pms-btn-sm pms-btn-gold" onclick="PMSController.selectLibraryMedia('${esc(m.id)}')"><i class="fa-solid fa-check"></i> Use This</button>` : ''}
+              <button type="button" class="pms-btn pms-btn-sm pms-btn-danger" onclick="PMSController.deleteLibraryAsset('${esc(m.id)}', ${m.usage_count})"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      grid.innerHTML = `<div class="pms-empty"><i class="fa-solid fa-triangle-exclamation"></i><h4>Failed to load media</h4><p>${esc(e.message || '')}</p></div>`;
+    }
+  }
+
+  async function uploadLibraryImage(input) {
+    var file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    if (file.type && file.type.indexOf('image') === -1) return toast('Only image files are allowed.', 'warning');
+    if (file.size > 8 * 1024 * 1024) return toast('Each image must be under 8MB.', 'warning');
+    try {
+      await window.PMSService.uploadImage(file);
+      toast('Image uploaded to the library.', 'success');
+      renderMediaLibrary();
+    } catch (e) {
+      toast('Failed to upload image: ' + (e.message || ''), 'error');
+    }
+  }
+
+  async function uploadLibraryAudio(input) {
+    var file = input.files && input.files[0];
+    input.value = '';
+    if (!file) return;
+    if (file.size > 25 * 1024 * 1024) return toast('Audio file must be under 25MB.', 'warning');
+    try {
+      await window.PMSService.uploadAudio(file);
+      toast('Audio uploaded to the library.', 'success');
+      renderMediaLibrary();
+    } catch (e) {
+      toast('Failed to upload audio: ' + (e.message || ''), 'error');
+    }
+  }
+
+  async function deleteLibraryAsset(id, usage) {
+    var msg = usage > 0
+      ? 'This media file is used by <strong>' + usage + '</strong> product(s). Deleting it will break those products. Delete anyway?'
+      : 'Delete this unused media file? This removes it from storage permanently.';
+    var ok = await confirmModal('Delete Media', msg, true, 'Delete');
+    if (!ok) return;
+    try {
+      var res = await window.PMSService.deleteMediaAsset(id, usage > 0);
+      toast((res.data && res.data.deleted) ? 'Media deleted.' : 'Media removed.', 'success');
+      renderMediaLibrary();
+    } catch (e) {
+      toast(e.message || 'Failed to delete media.', 'error');
+    }
+  }
+
+  // -- Picking existing media for the product form -------------------------
+  function openMediaPicker(kind) {
+    var existing = $('pms-media-modal');
+    if (existing) existing.remove();
+    showMediaLibrary(kind);
+  }
+
+  function pickLibraryImages() { openMediaPicker('images'); }
+  function pickLibraryAudio() { openMediaPicker('audio'); }
+
+  async function selectLibraryMedia(id) {
+    var asset = (state.mediaCache || []).find(function (m) { return m.id === id; });
+    if (!asset) return toast('Media not found. Try reopening the library.', 'error');
+    if (asset.kind === 'image') {
+      var hadCover = state.form.images.some(function (i) { return i.is_cover; });
+      state.form.images.push({
+        storage_path: asset.storage_path,
+        display_order: state.form.images.length,
+        is_cover: !hadCover,
+        alt_text: asset.alt_text || ''
+      });
+      renderFormImages();
+      toast('Image added to the product.', 'success');
+    } else {
+      state.form.audioPath = asset.storage_path;
+      state.form.audioUrl = asset.url;
+      state.form.audioEnabled = true;
+      renderAudioManager();
+      toast('Audio attached to the product.', 'success');
+    }
+    closeMediaLibrary();
+  }
+
+  // --------------------------------------------------------------------------
+  // Product Templates
+  // --------------------------------------------------------------------------
+  function showTemplates() {
+    var modal = document.createElement('div');
+    modal.className = 'pms-modal-overlay active';
+    modal.id = 'pms-templates-modal';
+    modal.innerHTML = `
+      <div class="pms-modal pms-modal-lg">
+        <div class="pms-modal-header">
+          <h3><i class="fa-solid fa-clone"></i> Product Templates</h3>
+          <button type="button" class="pms-modal-close" onclick="document.getElementById('pms-templates-modal').remove(); document.body.style.overflow='';">&times;</button>
+        </div>
+        <div class="pms-modal-body">
+          <div class="pms-hint" style="margin-bottom:14px;">Templates store default images, audio, description, badge, category and metadata. Create a product from a template to start with a minimal edit.</div>
+          <div id="pms-templates-list"><div style="text-align:center;padding:30px;color:var(--pms-muted);"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div></div>
+        </div>
+        <div class="pms-modal-footer">
+          <button type="button" class="pms-btn pms-btn-gold" onclick="PMSController.newFromTemplate()"><i class="fa-solid fa-plus"></i> New Blank Product</button>
+          <button type="button" class="pms-btn" onclick="document.getElementById('pms-templates-modal').remove(); document.body.style.overflow='';">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) modal.remove();
+    });
+    document.body.style.overflow = 'hidden';
+    renderTemplates();
+  }
+
+  async function renderTemplates() {
+    var list = $('pms-templates-list');
+    if (!list) return;
+    try {
+      var res = await window.PMSService.listTemplates();
+      state.templates = (res && res.templates) || [];
+    } catch (e) { state.templates = []; }
+    if (state.templates.length === 0) {
+      list.innerHTML = `<div class="pms-empty"><i class="fa-solid fa-clone"></i><h4>No templates yet</h4><p>Open a product form and use "Save as Template" to create one.</p></div>`;
+      return;
+    }
+    list.innerHTML = state.templates.map(function (t) {
+      var data = t.template_data || {};
+      var meta = [];
+      if (t.category) meta.push(t.category);
+      if (data.price) meta.push('$' + data.price);
+      if (data.badge) meta.push(data.badge);
+      if ((data.images || []).length) meta.push((data.images).length + ' image(s)');
+      if (data.audio_url || data.audio_enabled) meta.push('audio');
+      return `
+        <div class="pms-restore-card">
+          <div class="pms-restore-name"><i class="fa-solid fa-clone"></i> ${esc(t.name)}</div>
+          <div class="pms-restore-meta">${esc(meta.join(' • ')) || '—'}</div>
+          <div class="pms-restore-actions">
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.newFromTemplate('${esc(t.id)}')"><i class="fa-solid fa-plus"></i> New Product</button>
+            <button type="button" class="pms-btn pms-btn-sm pms-btn-danger" onclick="PMSController.deleteTemplateAction('${esc(t.id)}', '${esc(t.name.replace(/'/g, ''))}')"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function deleteTemplateAction(id, name) {
+    var ok = await confirmModal('Delete Template', 'Delete template <strong>' + esc(name) + '</strong>?', true);
+    if (!ok) return;
+    try {
+      await window.PMSService.deleteTemplate(id);
+      toast('Template deleted.', 'success');
+      renderTemplates();
+    } catch (e) {
+      toast(e.message || 'Failed to delete template.', 'error');
+    }
+  }
+
+  function currentFormData() {
+    var nameEl = $('pf-name');
+    if (!nameEl) return null;
+    var audioEnabledEl = $('pf-audio-enabled');
+    return {
+      name: nameEl.value.trim(),
+      slug: $('pf-slug') ? $('pf-slug').value.trim() : '',
+      category: $('pf-category') ? $('pf-category').value : '',
+      short_description: $('pf-short') ? $('pf-short').value.trim() : '',
+      description: $('pf-desc') ? $('pf-desc').value.trim() : '',
+      price: $('pf-price') ? $('pf-price').value : '',
+      currency: $('pf-currency') ? $('pf-currency').value : 'USD',
+      stock: $('pf-stock') ? $('pf-stock').value : 0,
+      featured: $('pf-featured') ? $('pf-featured').checked : false,
+      status: $('pf-status') ? $('pf-status').value : 'draft',
+      badge: $('pf-badge') ? $('pf-badge').value.trim() : '',
+      sort_order: $('pf-sort') ? $('pf-sort').value : 0,
+      details_link: $('pf-details-link') ? $('pf-details-link').value.trim() : '',
+      audio_url: state.form.audioPath || '',
+      audio_enabled: audioEnabledEl ? audioEnabledEl.checked : state.form.audioEnabled,
+      meta_title: $('pf-meta-title') ? $('pf-meta-title').value.trim() : '',
+      meta_description: $('pf-meta-desc') ? $('pf-meta-desc').value.trim() : '',
+      images: (state.form.images || []).map(function (img, idx) {
+        return { storage_path: img.storage_path, display_order: idx, is_cover: !!img.is_cover, alt_text: img.alt_text || '' };
+      })
+    };
+  }
+
+  async function saveAsTemplate() {
+    var data = currentFormData();
+    if (!data) return toast('Open a product form first.', 'warning');
+    if (!data.name) return toast('Enter a product name before saving a template.', 'warning');
+    var res = await promptModal('Save as Template',
+      'Save the current form (images, audio, description, badge, metadata) as a reusable template.',
+      `<div class="pms-field" style="margin:0;"><label>Template name</label><input type="text" class="pms-input" id="pms-tpl-name" value="${esc(data.name + ' Template')}" style="width:100%;"></div>`,
+      'Save Template');
+    if (!res || !res.values) return;
+    var tplName = (res.values['pms-tpl-name'] || '').trim();
+    if (!tplName) return toast('Enter a template name.', 'warning');
+    try {
+      await window.PMSService.saveTemplate({
+        name: tplName,
+        category: data.category || null,
+        template_data: data,
+        is_active: true
+      });
+      toast('Template saved.', 'success');
+    } catch (e) {
+      toast(e.message || 'Failed to save template.', 'error');
+    }
+  }
+
+  async function newFromTemplate(id) {
+    // Close the templates modal if open.
+    var tplModal = $('pms-templates-modal');
+    if (tplModal) tplModal.remove();
+    if (document.body.style.overflow === 'hidden') document.body.style.overflow = '';
+
+    if (!id) {
+      // New blank product
+      PMSController.openAdd();
+      return;
+    }
+    try {
+      var res = await window.PMSService.listTemplates();
+      var tpl = ((res && res.templates) || []).find(function (t) { return t.id === id; });
+      if (!tpl) return toast('Template not found.', 'error');
+      var d = tpl.template_data || {};
+      var images = (d.images || []).map(function (img, idx) {
+        return {
+          storage_path: img.storage_path,
+          display_order: idx,
+          is_cover: !!img.is_cover,
+          alt_text: img.alt_text || ''
+        };
+      });
+      state.form = {
+        id: null,
+        images: images,
+        audioPath: d.audio_url || null,
+        audioUrl: d.audio_url ? (window.PMSService.publicAudioUrl ? window.PMSService.publicAudioUrl(d.audio_url) : d.audio_url) : "",
+        audioEnabled: !!d.audio_enabled,
+        pendingDeletions: []
+      };
+      openProductForm({
+        name: d.name || '',
+        slug: '',
+        category: d.category || tpl.category || '',
+        short_description: d.short_description || '',
+        description: d.description || '',
+        price: d.price != null ? d.price : '',
+        currency: d.currency || 'USD',
+        stock: d.stock != null ? d.stock : 0,
+        featured: !!d.featured,
+        status: 'draft',
+        badge: d.badge || '',
+        sort_order: d.sort_order != null ? d.sort_order : 0,
+        meta_title: d.meta_title || '',
+        meta_description: d.meta_description || '',
+        details_link: d.details_link || ''
+      });
+    } catch (e) {
+      toast(e.message || 'Failed to load template.', 'error');
     }
   }
 
@@ -1374,8 +2131,15 @@
     toggleSelectAll: toggleSelectAll,
     bulkStatus: bulkStatus,
     bulkCollection: bulkCollection,
+    bulkRemoveCollection: bulkRemoveCollection,
+    bulkBadge: bulkBadge,
+    bulkRemoveBadge: bulkRemoveBadge,
+    bulkAudio: bulkAudio,
+    bulkDuplicate: bulkDuplicate,
     bulkDelete: bulkDelete,
     bulkRestore: bulkRestore,
+    exportCSV: exportCSV,
+    exportJSON: exportJSON,
     publishOne: publishOne,
     hideOne: hideOne,
     deleteOne: deleteOne,
@@ -1394,13 +2158,30 @@
     addAudioFile: addAudioFile,
     removeAudioFile: removeAudioFile,
     saveProduct: saveProduct,
+    saveAsTemplate: saveAsTemplate,
+    newFromTemplate: newFromTemplate,
+    deleteTemplateAction: deleteTemplateAction,
+    showTemplates: showTemplates,
+    showMediaLibrary: showMediaLibrary,
+    closeMediaLibrary: closeMediaLibrary,
+    mediaKind: mediaKind,
+    mediaSearch: mediaSearch,
+    uploadLibraryImage: uploadLibraryImage,
+    uploadLibraryAudio: uploadLibraryAudio,
+    deleteLibraryAsset: deleteLibraryAsset,
+    pickLibraryImages: pickLibraryImages,
+    pickLibraryAudio: pickLibraryAudio,
+    selectLibraryMedia: selectLibraryMedia,
     showHistory: showHistory,
     showRestorePoints: showRestorePoints,
     createRestorePoint: createRestorePoint,
     applyRestorePoint: applyRestorePoint,
     showCollections: showCollections,
     openCollectionForm: openCollectionForm,
-    deleteCollection: deleteCollection
+    deleteCollection: deleteCollection,
+    archiveCollectionAction: archiveCollectionAction,
+    restoreCollectionAction: restoreCollectionAction,
+    toggleCollectionActive: toggleCollectionActive
   };
 
   // Auto-init after auth is ready

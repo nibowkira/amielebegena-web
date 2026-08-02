@@ -60,6 +60,7 @@
       details_link: p.details_link,
       deleted_at: p.deleted_at,
       currency: p.currency,
+      created_at: p.created_at,
       updated_at: p.updated_at,
       cover: publicUrl("product-images", cover.storage_path) || "image/photo_2025-10-01_07-26-53.jpg",
       cover_path: cover.storage_path || "",
@@ -72,6 +73,60 @@
     if (!err) return fallback;
     if (err.message) return err.message;
     return String(err) || fallback;
+  }
+
+  // Register an uploaded file in the media library (best-effort).
+  async function registerMedia(bucket, path, file, kind) {
+    var c = client();
+    if (!c) return null;
+    try {
+      var { data, error } = await c.rpc("pms_register_media_asset", {
+        p_bucket: bucket,
+        p_storage_path: path,
+        p_file_name: file ? file.name : null,
+        p_mime_type: file && file.type ? file.type : null,
+        p_size_bytes: file && file.size != null ? file.size : null,
+        p_kind: kind,
+        p_alt_text: null
+      });
+      if (error) {
+        console.warn("[PMS] Failed to register media asset:", error.message);
+        return null;
+      }
+      return data;
+    } catch (e) {
+      console.warn("[PMS] Failed to register media asset:", e.message);
+      return null;
+    }
+  }
+
+  // Usage-aware media deletion by storage path. Refuses to delete files that
+  // are still used by another product (the DB RPC enforces this), so removing
+  // a reused asset from one product never breaks another product's media.
+  async function deleteMediaByPath(bucket, path) {
+    var c = client();
+    if (!c || !path) return { success: true };
+    try {
+      var { data, error } = await c.rpc("pms_delete_media_asset", {
+        p_asset_id: null,
+        p_storage_path: path,
+        p_bucket: bucket,
+        p_force: false
+      });
+      if (error) {
+        console.warn("[PMS] Media cleanup skipped:", error.message);
+        return { success: true, skipped: true, reason: error.message };
+      }
+      if (data && data.already_gone) {
+        // No library record tracked: fall back to removing the raw storage object.
+        var r = await c.storage.from(bucket).remove([path]);
+        if (r.error) console.warn("[PMS] Failed to delete storage object:", r.error.message);
+      }
+      return { success: true };
+    } catch (e) {
+      console.warn("[PMS] Media cleanup skipped:", e.message);
+      return { success: true, skipped: true, reason: e.message };
+    }
   }
 
   var PMS = {
@@ -243,15 +298,14 @@
         upsert: true
       });
       if (error) throw error;
-      return { success: true, path: path, url: publicUrl("product-images", path) };
+      var assetId = await registerMedia("product-images", path, file, "image");
+      return { success: true, path: path, url: publicUrl("product-images", path), asset_id: assetId };
     },
 
+    // Usage-aware deletion: only removes the storage object + library record when
+    // the file is no longer referenced by any product (or was never tracked).
     deleteImageFile: async function (path) {
-      var c = client();
-      if (!c || !path) return { success: true };
-      var { error } = await c.storage.from("product-images").remove([path]);
-      if (error) console.warn("[PMS] Failed to delete image file:", error.message);
-      return { success: true };
+      return deleteMediaByPath("product-images", path);
     },
 
     setCover: async function (productId, imageId) {
@@ -297,15 +351,12 @@
         upsert: true
       });
       if (error) throw error;
-      return { success: true, path: path, url: publicUrl("product-audio", path) };
+      var assetId = await registerMedia("product-audio", path, file, "audio");
+      return { success: true, path: path, url: publicUrl("product-audio", path), asset_id: assetId };
     },
 
     deleteAudioFile: async function (path) {
-      var c = client();
-      if (!c || !path) return { success: true };
-      var { error } = await c.storage.from("product-audio").remove([path]);
-      if (error) console.warn("[PMS] Failed to delete audio file:", error.message);
-      return { success: true };
+      return deleteMediaByPath("product-audio", path);
     },
 
     setAudio: async function (productId, audioUrl, enabled) {
@@ -335,17 +386,28 @@
         name_en: coll.name_en,
         name_am: coll.name_am || "",
         icon: coll.icon || "",
+        color: coll.color || "",
         description: coll.description || "",
         display_order: Number(coll.display_order) || 0,
         is_active: !!coll.is_active
       };
+      var oldSlug = null;
       var result;
       if (coll.id) {
+        var { data: oldData, error: oldErr } = await c.from("collections").select("slug").eq("id", coll.id).maybeSingle();
+        if (oldErr) throw oldErr;
+        if (oldData && oldData.slug) oldSlug = oldData.slug;
         result = await c.from("collections").update(payload).eq("id", coll.id);
       } else {
         result = await c.from("collections").insert(payload);
       }
       if (result.error) throw result.error;
+      // When a collection slug changes, keep its products assigned to the new
+      // slug so nothing is orphaned. Products are never deleted or duplicated.
+      if (oldSlug && oldSlug !== coll.slug) {
+        var { error: reErr } = await c.from("products").update({ category: coll.slug }).eq("category", oldSlug);
+        if (reErr) console.warn("[PMS] Failed to reassign products to renamed collection:", reErr.message);
+      }
       return { success: true };
     },
 
@@ -353,6 +415,139 @@
       var c = client();
       if (!c) throw new Error("Database connection unavailable.");
       var { error } = await c.from("collections").delete().eq("id", id);
+      if (error) throw error;
+      return { success: true };
+    },
+
+    // Delete a collection and reassign its products (never deletes products).
+    deleteCollectionWithProducts: async function (id, moveToSlug) {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      var { data, error } = await c.rpc("pms_collection_delete", {
+        p_collection_id: id,
+        p_move_to_slug: moveToSlug || null
+      });
+      if (error) throw error;
+      return { success: true, data: data };
+    },
+
+    archiveCollection: async function (id) {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      var { error } = await c.from("collections").update({ archived_at: new Date().toISOString() }).eq("id", id);
+      if (error) throw error;
+      return { success: true };
+    },
+
+    restoreCollection: async function (id) {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      var { error } = await c.from("collections").update({ archived_at: null }).eq("id", id);
+      if (error) throw error;
+      return { success: true };
+    },
+
+    toggleCollectionActive: async function (id, isActive) {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      var { error } = await c.from("collections").update({ is_active: !!isActive }).eq("id", id);
+      if (error) throw error;
+      return { success: true };
+    },
+
+    // ------------------------------------------------------------------
+    // MEDIA LIBRARY
+    // ------------------------------------------------------------------
+    listMedia: async function (kind, search) {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      var q = c.from("media_assets").select("*, media_usages(count), profiles(full_name)");
+      if (kind && kind !== "all") q = q.eq("kind", kind);
+      q = q.order("created_at", { ascending: false }).limit(200);
+      var { data, error } = await q;
+      if (error) throw error;
+      var list = (data || []).map(function (m) {
+        var usage = (m.media_usages && m.media_usages[0]) ? m.media_usages[0].count : 0;
+        return {
+          id: m.id,
+          bucket: m.bucket,
+          storage_path: m.storage_path,
+          file_name: m.file_name || m.storage_path,
+          mime_type: m.mime_type,
+          size_bytes: m.size_bytes,
+          kind: m.kind,
+          alt_text: m.alt_text || "",
+          uploaded_by: m.uploaded_by,
+          uploaded_by_name: (m.profiles && m.profiles[0] && m.profiles[0].full_name) || "",
+          created_at: m.created_at,
+          usage_count: usage,
+          url: publicUrl(m.bucket, m.storage_path)
+        };
+      });
+      if (search) {
+        var s = search.toLowerCase();
+        list = list.filter(function (m) {
+          return m.file_name.toLowerCase().indexOf(s) !== -1 || m.storage_path.toLowerCase().indexOf(s) !== -1;
+        });
+      }
+      return { success: true, media: list };
+    },
+
+    deleteMediaAsset: async function (id, force) {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      var { data, error } = await c.rpc("pms_delete_media_asset", {
+        p_asset_id: id,
+        p_storage_path: null,
+        p_bucket: null,
+        p_force: !!force
+      });
+      if (error) throw error;
+      return { success: true, data: data };
+    },
+
+    mediaUsageCount: async function () {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      var { count, error } = await c.from("media_assets").select("id", { count: "exact", head: true });
+      if (error) throw error;
+      return { success: true, count: count || 0 };
+    },
+
+    // ------------------------------------------------------------------
+    // PRODUCT TEMPLATES
+    // ------------------------------------------------------------------
+    listTemplates: async function () {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      var { data, error } = await c.from("product_templates").select("*").order("updated_at", { ascending: false });
+      if (error) throw error;
+      return { success: true, templates: data || [] };
+    },
+
+    saveTemplate: async function (tpl) {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      var payload = {
+        name: tpl.name,
+        category: tpl.category || null,
+        template_data: tpl.template_data || {},
+        is_active: tpl.is_active !== false
+      };
+      var result;
+      if (tpl.id) {
+        result = await c.from("product_templates").update(payload).eq("id", tpl.id);
+      } else {
+        result = await c.from("product_templates").insert(payload);
+      }
+      if (result.error) throw result.error;
+      return { success: true };
+    },
+
+    deleteTemplate: async function (id) {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      var { error } = await c.from("product_templates").delete().eq("id", id);
       if (error) throw error;
       return { success: true };
     },
