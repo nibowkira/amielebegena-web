@@ -415,7 +415,7 @@
       `<select class="pms-select" style="width:100%;" id="pms-coll-move-sel">${options}</select>`, 'Move');
     if (!slug || !slug.value) return;
     try {
-      await window.PMSService.bulkChangeCollection(ids, slug);
+      await window.PMSService.bulkChangeCollection(ids, slug.value);
       clearSelection();
       toast('Products moved to the selected collection.', 'success');
       await loadData();
@@ -577,7 +577,7 @@
   // Product form (add / edit)
   // --------------------------------------------------------------------------
   async function openAdd() {
-    state.form = { id: null, images: [], audioPath: null, audioUrl: "", audioEnabled: false };
+    state.form = { id: null, images: [], audioPath: null, audioUrl: "", audioEnabled: false, pendingDeletions: [] };
     openProductForm({ name: '', slug: '', category: '', short_description: '', description: '', price: '', currency: 'USD', stock: '', featured: false, status: 'draft', badge: '', sort_order: 0, meta_title: '', meta_description: '', details_link: '' });
   }
 
@@ -599,7 +599,8 @@
         images: images,
         audioPath: p.audio_url || null,
         audioUrl: p.audio_url ? window.PMSService.publicAudioUrl ? window.PMSService.publicAudioUrl(p.audio_url) : p.audio_url : "",
-        audioEnabled: !!p.audio_enabled
+        audioEnabled: !!p.audio_enabled,
+        pendingDeletions: []
       };
       openProductForm(p);
     } catch (e) {
@@ -762,6 +763,12 @@
   }
 
   // ----- Slug auto-gen + validation -----
+  var slugDebounceTimer = null;
+  function debounceSlug(fn) {
+    if (slugDebounceTimer) clearTimeout(slugDebounceTimer);
+    slugDebounceTimer = setTimeout(fn, 300);
+  }
+
   function autoSlug() {
     var nameEl = $('pf-name');
     var slugEl = $('pf-slug');
@@ -771,14 +778,20 @@
     // Only auto-fill if slug is empty or was previously auto-generated
     var current = slugEl.value.trim();
     if (current) return;
-    window.PMSService.slugify(name).then(function (slug) {
-      if (slugEl.value.trim()) return;
-      slugEl.value = slug || '';
-      checkSlug();
-    }).catch(function () { /* ignore */ });
+    debounceSlug(function () {
+      window.PMSService.slugify(nameEl.value.trim()).then(function (slug) {
+        if (slugEl.value.trim()) return;
+        slugEl.value = slug || '';
+        checkSlug();
+      }).catch(function () { /* ignore */ });
+    });
   }
 
-  async function checkSlug() {
+  function checkSlug() {
+    debounceSlug(runSlugCheck);
+  }
+
+  async function runSlugCheck() {
     var slugEl = $('pf-slug');
     var statusEl = $('pf-slug-status');
     if (!slugEl || !statusEl) return;
@@ -889,7 +902,7 @@
   function removeFormImage(idx) {
     var img = state.form.images[idx];
     if (img && img.storage_path) {
-      window.PMSService.deleteImageFile(img.storage_path).then(function () {});
+      state.form.pendingDeletions.push({ kind: 'image', path: img.storage_path });
     }
     state.form.images.splice(idx, 1);
     renderFormImages();
@@ -943,9 +956,9 @@
     }
     try {
       var res = await window.PMSService.uploadAudio(file);
-      // remove old file if replacing
+      // queue the old file for deletion only after a successful save (replacing)
       if (state.form.audioPath) {
-        window.PMSService.deleteAudioFile(state.form.audioPath).then(function () {});
+        state.form.pendingDeletions.push({ kind: 'audio', path: state.form.audioPath });
       }
       state.form.audioPath = res.path;
       state.form.audioUrl = res.url;
@@ -960,7 +973,7 @@
 
   function removeAudioFile() {
     if (state.form.audioPath) {
-      window.PMSService.deleteAudioFile(state.form.audioPath).then(function () {});
+      state.form.pendingDeletions.push({ kind: 'audio', path: state.form.audioPath });
     }
     state.form.audioPath = null;
     state.form.audioUrl = "";
@@ -1025,14 +1038,30 @@
 
     try {
       await window.PMSService.upsertProduct(product, images);
+      var deletions = (state.form.pendingDeletions || []).slice();
       closeProductForm();
       toast(state.form.id ? 'Product updated successfully.' : 'Product created successfully.', 'success');
+      flushPendingDeletions(deletions);
       await loadData();
     } catch (e) {
       console.error('[PMS] Save failed:', e);
       toast(e.message || 'Failed to save product.', 'error');
       if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Product'; }
     }
+  }
+
+  // Delete storage files that were removed in the form, but ONLY after the
+  // save has succeeded. If the user cancels the form, nothing is deleted.
+  function flushPendingDeletions(deletions) {
+    if (!deletions || deletions.length === 0) return;
+    deletions.forEach(function (d) {
+      if (!d || !d.path) return;
+      if (d.kind === 'audio') {
+        window.PMSService.deleteAudioFile(d.path);
+      } else {
+        window.PMSService.deleteImageFile(d.path);
+      }
+    });
   }
 
   // --------------------------------------------------------------------------
@@ -1123,7 +1152,7 @@
               <input type="text" class="pms-input" id="rp-desc" placeholder="Optional description" style="flex:1; min-width:180px;">
               <button type="button" class="pms-btn pms-btn-gold" onclick="PMSController.createRestorePoint()"><i class="fa-solid fa-camera-retro"></i> Snapshot Now</button>
             </div>
-            <span class="pms-hint">Creates a snapshot of all active products. You can roll back to it later.</span>
+            <span class="pms-hint">Creates a snapshot of all active products (including images). You can roll back to it later. Restoring does not recreate products that were permanently deleted, and does not touch products created after the snapshot.</span>
           </div>
           <div class="pms-section-divider"><span>Saved Snapshots</span></div>
           <div id="rp-list" style="margin-top:14px;"><div style="text-align:center;padding:30px;color:var(--pms-muted);"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div></div>
@@ -1184,7 +1213,7 @@
   }
 
   async function applyRestorePoint(id, name) {
-    var ok = await confirmModal('Apply Restore Point', 'Roll back ALL products to the snapshot <strong>' + esc(name) + '</strong>? Current state will be overwritten.', true, 'Apply Snapshot');
+    var ok = await confirmModal('Apply Restore Point', 'Roll back ALL products to the snapshot <strong>' + esc(name) + '</strong>? Current state will be overwritten.<br><br><small style="color:var(--pms-muted);">Note: products permanently deleted after this snapshot are not recreated, and products added after the snapshot are left as-is.</small>', true, 'Apply Snapshot');
     if (!ok) return;
     try {
       var res = await window.PMSService.applyRestorePoint(id);

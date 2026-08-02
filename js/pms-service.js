@@ -50,6 +50,11 @@
       badge: p.badge,
       sort_order: p.sort_order,
       featured: p.featured,
+      short_description: p.short_description || "",
+      description: p.description || "",
+      stock: p.stock != null ? p.stock : 0,
+      meta_title: p.meta_title || "",
+      meta_description: p.meta_description || "",
       audio_enabled: p.audio_enabled,
       audio_url: p.audio_url,
       details_link: p.details_link,
@@ -108,6 +113,7 @@
         slug: product.slug,
         category: product.category,
         short_description: product.short_description || "",
+        description: product.description || "",
         price: Number(product.price) || 0,
         stock: Number(product.stock) || 0,
         featured: !!product.featured,
@@ -181,10 +187,16 @@
     // Composite bulk update (status + deleted_at in one write).
     // Guarantees storefront correctness: a hidden/deleted product must also
     // leave the active storefront set, which only reads status='active'.
+    // A status-only change must never resurrect a soft-deleted product:
+    // deleted rows stay deleted until explicitly restored (deleted_at=null).
     bulkUpdate: async function (ids, payload) {
       var c = client();
       if (!c) throw new Error("Database connection unavailable.");
-      var { error } = await c.from("products").update(payload).in("id", ids);
+      var q = c.from("products").update(payload);
+      if (payload && !("deleted_at" in payload)) {
+        q = q.is("deleted_at", null);
+      }
+      var { error } = await q.in("id", ids);
       if (error) throw error;
       return { success: true };
     },
