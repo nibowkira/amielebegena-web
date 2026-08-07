@@ -651,7 +651,6 @@
         });
 
         // Global User State
-        let currentUser = null;
         let userApp = null;
 
         // Smart Portal Navigator (Admin / Affiliate / Apply / Pending)
@@ -682,7 +681,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            currentUser = await window.getCurrentUser();
+            currentUser = await window.getCurrentUser(true);
             if (!currentUser) {
                 window.location.href = 'login.html';
                 return;
