@@ -129,6 +129,7 @@
           <button type="button" class="pms-btn" onclick="PMSController.exportJSON()"><i class="fa-solid fa-file-code"></i> JSON</button>
           <button type="button" class="pms-btn" onclick="PMSController.showRestorePoints()"><i class="fa-solid fa-clock-rotate-left"></i> Restore Points</button>
           <button type="button" class="pms-btn" onclick="PMSController.showCollections()"><i class="fa-solid fa-layer-group"></i> Collections</button>
+          <button type="button" class="pms-btn" onclick="PMSController.openReorderFeatured()"><i class="fa-solid fa-arrow-up-1-9"></i> Reorder Featured</button>
           <button type="button" class="pms-btn pms-btn-gold" onclick="PMSController.openAdd()"><i class="fa-solid fa-plus"></i> Add Product</button>
         </div>
       </div>
@@ -1704,6 +1705,168 @@
     }
   }
 
+  // --------------------------------------------------------------------------
+  // Reorder Featured (Phase 5.1)
+  // Manual drag-and-drop ordering of the homepage featured products.
+  // Only featured products' sort_order is written (via the RLS-protected
+  // client update pathway in PMSService.reorderFeatured). Non-featured
+  // products are never touched.
+  // --------------------------------------------------------------------------
+  function openReorderFeatured() {
+    var featured = state.products
+      .filter(function (p) { return p.featured && !p.deleted_at; })
+      .sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
+
+    var modal = document.createElement('div');
+    modal.className = 'pms-modal-overlay active';
+    modal.id = 'pms-reorder-modal';
+    modal.innerHTML = `
+      <div class="pms-modal" style="max-width:620px;">
+        <div class="pms-modal-header">
+          <h3><i class="fa-solid fa-arrow-up-1-9"></i> Reorder Featured</h3>
+          <button type="button" class="pms-modal-close" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))" aria-label="Close">&times;</button>
+        </div>
+        <div class="pms-modal-body">
+          <p style="margin:0 0 16px 0; color:var(--pms-muted); font-size:0.9rem; line-height:1.5;">Drag rows to set the order featured products appear on the homepage. Changes are applied only when you click <strong>Save Order</strong>.</p>
+          <div class="pms-reorder-list" id="pms-reorder-list" role="list" aria-label="Featured products"></div>
+        </div>
+        <div class="pms-modal-footer">
+          <button type="button" class="pms-btn" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">Cancel</button>
+          <button type="button" class="pms-btn pms-btn-gold" id="pms-reorder-save"><i class="fa-solid fa-floppy-disk"></i> Save Order</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    setupModalA11y(modal);
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) closeOverlay(modal);
+    });
+    document.body.style.overflow = 'hidden';
+
+    var list = $('pms-reorder-list');
+    var saveBtn = $('pms-reorder-save');
+    if (!list || !saveBtn) return;
+
+    if (featured.length < 2) {
+      list.innerHTML = `
+        <div class="pms-empty" style="padding:40px 24px;">
+          <i class="fa-solid fa-star"></i>
+          <h4>Not enough featured products</h4>
+          <p>At least two featured products are required.</p>
+        </div>
+      `;
+      saveBtn.disabled = true;
+      saveBtn.title = 'At least two featured products are required.';
+      return;
+    }
+
+    list.innerHTML = featured.map(function (p, i) {
+      return `
+        <div class="pms-reorder-row" draggable="true" data-id="${esc(p.id)}" role="listitem" aria-label="${esc(p.name)}">
+          <button type="button" class="pms-reorder-handle" aria-label="Reorder ${esc(p.name)}. Use Arrow Up or Arrow Down to move." title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></button>
+          <img src="${esc(p.cover)}" alt="" class="pms-reorder-thumb" onerror="this.style.visibility='hidden'">
+          <div class="pms-reorder-info">
+            <div class="pms-reorder-name">${esc(p.name)}</div>
+            <div class="pms-reorder-slug">${esc(p.slug || '')}${p.status !== 'active' ? ' • ' + esc(p.status) : ''}</div>
+          </div>
+          <span class="pms-reorder-order" aria-label="Order ${i + 1}">${i + 1}</span>
+        </div>
+      `;
+    }).join('');
+
+    var rows = list.querySelectorAll('.pms-reorder-row');
+    var draggedId = null;
+    var draggedEl = null;
+
+    rows.forEach(function (row) {
+      row.addEventListener('dragstart', function (e) {
+        draggedEl = row;
+        draggedId = row.getAttribute('data-id');
+        row.classList.add('pms-reorder-dragging');
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+          try { e.dataTransfer.setData('text/plain', draggedId); } catch (err) { /* ignore */ }
+        }
+      });
+      row.addEventListener('dragend', function () {
+        rows.forEach(function (r) { r.classList.remove('pms-reorder-dragging', 'pms-reorder-over'); });
+        draggedEl = null;
+        draggedId = null;
+      });
+      row.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+        row.classList.add('pms-reorder-over');
+      });
+      row.addEventListener('dragleave', function () {
+        row.classList.remove('pms-reorder-over');
+      });
+      row.addEventListener('drop', function (e) {
+        e.preventDefault();
+        row.classList.remove('pms-reorder-over');
+        if (!draggedEl || draggedEl === row) return;
+        var rect = row.getBoundingClientRect();
+        var before = e.clientY < rect.top + rect.height / 2;
+        if (before) row.parentNode.insertBefore(draggedEl, row);
+        else row.parentNode.insertBefore(draggedEl, row.nextElementSibling);
+        refreshReorderOrder(list);
+      });
+
+      var handle = row.querySelector('.pms-reorder-handle');
+      if (handle) {
+        handle.addEventListener('keydown', function (e) {
+          var idx = Array.prototype.indexOf.call(list.querySelectorAll('.pms-reorder-row'), row);
+          if (e.key === 'ArrowUp' && idx > 0) {
+            e.preventDefault();
+            list.insertBefore(row, row.previousElementSibling);
+            refreshReorderOrder(list);
+            handle.focus();
+          } else if (e.key === 'ArrowDown' && idx < list.querySelectorAll('.pms-reorder-row').length - 1) {
+            e.preventDefault();
+            list.insertBefore(row.nextElementSibling, row);
+            refreshReorderOrder(list);
+            handle.focus();
+          }
+        });
+      }
+    });
+
+    saveBtn.addEventListener('click', function () { saveReorderOrder(list, saveBtn); });
+  }
+
+  function refreshReorderOrder(list) {
+    var rows = list.querySelectorAll('.pms-reorder-row');
+    rows.forEach(function (row, i) {
+      var num = row.querySelector('.pms-reorder-order');
+      if (num) {
+        num.textContent = i + 1;
+        num.setAttribute('aria-label', 'Order ' + (i + 1));
+      }
+    });
+  }
+
+  async function saveReorderOrder(list, saveBtn) {
+    var rows = Array.prototype.slice.call(list.querySelectorAll('.pms-reorder-row'));
+    var orderedIds = rows.map(function (row) { return row.getAttribute('data-id'); });
+    if (orderedIds.length < 2) {
+      toast('At least two featured products are required.', 'warning');
+      return;
+    }
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+    try {
+      await window.PMSService.reorderFeatured(orderedIds);
+      closeOverlay($('pms-reorder-modal'));
+      toast('Featured order saved. The homepage reflects the new order.', 'success');
+      await loadData();
+    } catch (e) {
+      console.error('[PMS] Reorder featured failed:', e);
+      toast(e.message || 'Failed to save order.', 'error');
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Order';
+    }
+  }
+
   async function openCollectionForm(id) {
     var coll = id ? state.collections.find(function (c) { return c.id === id; }) : null;
     var isNew = !coll;
@@ -2247,6 +2410,7 @@
     applyRestorePoint: applyRestorePoint,
     showCollections: showCollections,
     openCollectionForm: openCollectionForm,
+    openReorderFeatured: openReorderFeatured,
     deleteCollection: deleteCollection,
     archiveCollectionAction: archiveCollectionAction,
     restoreCollectionAction: restoreCollectionAction,

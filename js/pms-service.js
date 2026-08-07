@@ -268,6 +268,27 @@
       return { success: true };
     },
 
+    // Reorder featured products. Only the featured product IDs passed in are
+    // touched (sort_order only); non-featured products are never modified.
+    // Writes go through the RLS-protected client update (admin-only policy),
+    // the same pathway used by reorderImages / bulkChangeCollection.
+    reorderFeatured: async function (orderedIds) {
+      var c = client();
+      if (!c) throw new Error("Database connection unavailable.");
+      if (!orderedIds || orderedIds.length < 2) throw new Error("At least two featured products are required.");
+      var updates = orderedIds.map(function (id, idx) {
+        return c.from("products")
+          .update({ sort_order: idx })
+          .eq("id", id)
+          .is("featured", true)
+          .is("deleted_at", null);
+      });
+      var results = await Promise.all(updates);
+      var err = results.find(function (r) { return r.error; });
+      if (err) throw err.error;
+      return { success: true };
+    },
+
     slugify: async function (name) {
       var c = client();
       if (!c) throw new Error("Database connection unavailable.");

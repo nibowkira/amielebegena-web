@@ -935,3 +935,122 @@
     }
 }
 
+/* ---------------- Reorder Featured (Phase 5.1) ---------------- */
+.pms-reorder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pms-reorder-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    background: var(--pms-ivory);
+    border: 1px solid var(--pms-border);
+    border-radius: 12px;
+    cursor: grab;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.pms-reorder-row:hover {
+    border-color: rgba(212, 175, 55, 0.5);
+}
+
+.pms-reorder-row:active {
+    cursor: grabbing;
+}
+
+.pms-reorder-row.pms-reorder-dragging {
+    opacity: 0.45;
+    transform: scale(0.98);
+    border-style: dashed;
+    border-color: var(--pms-gold);
+}
+
+.pms-reorder-row.pms-reorder-over {
+    border-color: var(--pms-gold);
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
+}
+
+.pms-reorder-handle {
+    color: var(--pms-muted);
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: grab;
+    background: none;
+    border: none;
+    padding: 6px;
+    border-radius: 8px;
+}
+
+.pms-reorder-handle:hover,
+.pms-reorder-handle:focus-visible {
+    background: rgba(212, 175, 55, 0.12);
+    color: var(--pms-forest);
+    outline: none;
+}
+
+.pms-reorder-thumb {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid var(--pms-border);
+    background: #FFFFFF;
+    flex-shrink: 0;
+}
+
+.pms-reorder-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pms-reorder-name {
+    font-weight: 600;
+    color: var(--pms-forest);
+    font-size: 0.92rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pms-reorder-slug {
+    font-size: 0.74rem;
+    color: var(--pms-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pms-reorder-order {
+    flex-shrink: 0;
+    min-width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--pms-gold);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 720px) {
+    .pms-reorder-row {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .pms-reorder-order {
+        margin-left: auto;
+    }
+}
+
