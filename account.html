@@ -650,13 +650,21 @@
             if (overlay) overlay.addEventListener('click', closeDashSidebar);
         });
 
-        // Smart Portal Navigator (Admin / Affiliate / Apply)
+        // Global User State
+        let currentUser = null;
+        let userApp = null;
+
+        // Smart Portal Navigator (Admin / Affiliate / Apply / Pending)
         function handleAffiliateClick(e) {
             if (e) e.preventDefault();
             if (currentUser && currentUser.role === 'admin') {
                 window.location.href = 'admin.html';
             } else if (currentUser && currentUser.role === 'affiliate') {
                 window.location.href = 'affiliate-dashboard.html';
+            } else if (userApp && userApp.status === 'pending') {
+                window.location.href = 'affiliate-apply.html';
+            } else if (userApp && userApp.status === 'rejected') {
+                window.location.href = 'affiliate-apply.html';
             } else {
                 window.location.href = 'affiliate.html';
             }
@@ -678,6 +686,15 @@
             if (!currentUser) {
                 window.location.href = 'login.html';
                 return;
+            }
+
+            // Fetch actual database affiliate application status
+            if (window.AffiliateService) {
+                try {
+                    userApp = await window.AffiliateService.getUserApplication(currentUser.id);
+                } catch (err) {
+                    console.warn('[Amiele:Account] Could not fetch affiliate application state:', err);
+                }
             }
 
             // Time-based Greeting & User Details
@@ -770,11 +787,13 @@
                 else window.location.href = 'login.html';
             });
 
-            // Portal Tab & Pill Setup (Admin vs Affiliate vs Customer)
+            // Portal Tab & Pill Setup (Admin vs Approved Affiliate vs Pending vs Rejected vs Customer)
             const affiliateNavTab = document.getElementById('nav-affiliate-tab');
             const affiliatePill = document.getElementById('pill-affiliate');
             if (affiliateNavTab) affiliateNavTab.style.display = 'flex';
             if (affiliatePill) affiliatePill.style.display = 'inline-flex';
+
+            const appStatus = userApp ? userApp.status : null;
 
             if (currentUser.role === 'admin') {
                 if (affiliateNavTab) {
@@ -803,7 +822,49 @@
                     affiliatePill.innerHTML = `<i class="fa-solid fa-chart-line"></i> Affiliate Portal`;
                 }
                 loadAffiliateSummary();
+            } else if (appStatus === 'pending') {
+                if (affiliateNavTab) {
+                    affiliateNavTab.innerHTML = `
+                        <i class="fa-solid fa-clock" style="color: #D69E2E;"></i>
+                        <span>
+                            Pending Affiliate
+                            <span class="dash-nav-affiliate-badge" style="background: #D69E2E; color: #FFFFFF; font-weight: 700;">PENDING</span>
+                        </span>
+                    `;
+                }
+                if (affiliatePill) {
+                    affiliatePill.innerHTML = `<i class="fa-solid fa-clock" style="color: #D69E2E;"></i> Pending Affiliate`;
+                }
+                const affiliateSection = document.getElementById('sec-affiliate');
+                if (affiliateSection) affiliateSection.style.display = 'none';
+            } else if (appStatus === 'rejected') {
+                if (affiliateNavTab) {
+                    affiliateNavTab.innerHTML = `
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>
+                            Become an Affiliate
+                            <span class="dash-nav-affiliate-badge" style="background: #718096; color: #FFFFFF;">REAPPLY</span>
+                        </span>
+                    `;
+                }
+                if (affiliatePill) {
+                    affiliatePill.innerHTML = `<i class="fa-solid fa-rotate-right"></i> Become an Affiliate`;
+                }
+                const affiliateSection = document.getElementById('sec-affiliate');
+                if (affiliateSection) affiliateSection.style.display = 'none';
             } else {
+                if (affiliateNavTab) {
+                    affiliateNavTab.innerHTML = `
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>
+                            Become an Affiliate
+                            <span class="dash-nav-affiliate-badge">EARN</span>
+                        </span>
+                    `;
+                }
+                if (affiliatePill) {
+                    affiliatePill.innerHTML = `<i class="fa-solid fa-chart-line"></i> Become an Affiliate`;
+                }
                 const affiliateSection = document.getElementById('sec-affiliate');
                 if (affiliateSection) affiliateSection.style.display = 'none';
             }
