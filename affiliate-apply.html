@@ -381,6 +381,22 @@
                 }
             }
 
+            // Helper to render submitted / pending confirmation state
+            function showSubmittedState(shouldScroll = true) {
+                applyFormSection.classList.add('hidden');
+                statusSection.classList.remove('hidden');
+                
+                document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-check-circle" style="color: var(--status-approved-text); animation: scaleUp 0.4s ease;"></i>';
+                document.getElementById('status-title').textContent = 'Application Submitted!';
+                document.getElementById('status-desc').textContent = 'Your application has been received successfully and sent to our admin panel for review. We will notify you here once it is updated.';
+                document.getElementById('status-actions').innerHTML = '<a href="account.html" class="aff-btn" style="text-decoration:none; display:inline-block;">Go to User Dashboard</a>';
+                
+                if (shouldScroll) {
+                    const target = document.querySelector('.auth-card') || statusSection;
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
             loadingState.classList.add('hidden');
 
             if (!app) {
@@ -391,17 +407,7 @@
                 statusSection.classList.remove('hidden');
 
                 if (app.status === 'pending') {
-                    document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-clock" style="color: var(--status-pending-text);"></i>';
-                    document.getElementById('status-title').textContent = 'Application Pending';
-                    document.getElementById('status-desc').textContent = 'Thank you for applying! Your affiliate application is currently undergoing manual review by our curation team. Typically, reviews take 24-48 hours. We appreciate your patience.';
-                    
-                    const actionsContainer = document.getElementById('status-actions');
-                    actionsContainer.innerHTML = `
-                        <a href="account.html" class="aff-btn" style="text-decoration:none; display:inline-block; margin-right:1rem;">Back to Account</a>
-                        <button id="edit-app-btn" class="aff-btn" style="background:transparent; border:1px solid var(--aff-primary); color:var(--aff-primary); cursor:pointer;">Edit Application</button>
-                    `;
-                    document.getElementById('edit-app-btn').addEventListener('click', () => showFormWithExistingData(app));
-
+                    showSubmittedState(false);
                 } else if (app.status === 'rejected') {
                     document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-times-circle" style="color: var(--status-rejected-text);"></i>';
                     document.getElementById('status-title').textContent = 'Application Declined';
@@ -411,6 +417,7 @@
                     actionsContainer.innerHTML = `
                         <button id="reapply-btn" class="aff-btn" style="cursor:pointer;">Re-Apply / Submit New Info</button>
                     `;
+                    document.getElementById('edit-app-btn')?.remove();
                     document.getElementById('reapply-btn').addEventListener('click', () => showFormWithExistingData(app));
                 }
             }
@@ -490,13 +497,7 @@
                     // Show success toast
                     showToast('Partnership application submitted successfully!', 'success');
                     
-                    applyFormSection.classList.add('hidden');
-                    statusSection.classList.remove('hidden');
-                    
-                    document.getElementById('status-icon-container').innerHTML = '<i class="fas fa-check-circle" style="color: var(--status-approved-text); animation: scaleUp 0.4s ease;"></i>';
-                    document.getElementById('status-title').textContent = 'Application Submitted!';
-                    document.getElementById('status-desc').textContent = 'Your application has been received successfully and sent to our admin panel for review. We will notify you here once it is updated.';
-                    document.getElementById('status-actions').innerHTML = '<a href="account.html" class="aff-btn" style="text-decoration:none; display:inline-block;">Go to User Dashboard</a>';
+                    showSubmittedState(true);
                 } catch (err) {
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;

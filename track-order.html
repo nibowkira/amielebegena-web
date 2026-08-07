@@ -32,6 +32,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="scroll-animations.css">
     <link rel="icon" type="image/png" href="/favicon.png">
     <style>
         /* ============================================================
@@ -932,14 +933,14 @@
 
         <!-- ── Hero Banner ─────────────────────────────────────── -->
         <section class="track-hero">
-            <span class="track-hero-subtitle">ORDER TRACKING</span>
-            <h1>Track Your Handcrafted Instrument</h1>
-            <p>Follow the journey of your Ethiopian instrument from our artisan workshop in Addis Ababa to your doorstep.</p>
+            <span class="track-hero-subtitle animate-fade">ORDER TRACKING</span>
+            <h1 class="animate-bottom">Track Your Handcrafted Instrument</h1>
+            <p class="animate-bottom">Follow the journey of your Ethiopian instrument from our artisan workshop in Addis Ababa to your doorstep.</p>
         </section>
 
         <!-- ── Search Form ─────────────────────────────────────── -->
         <section class="track-search-section">
-            <div class="track-search-card">
+            <div class="track-search-card animate-scale">
                 <h2>Find Your Order</h2>
                 <p class="search-subtitle">Enter your order number and the phone or email you used during checkout for verification.</p>
 
@@ -1083,6 +1084,7 @@
     <script src="js/utils/sanitize.js"></script>
     <script src="shared-ui.js"></script>
     <script src="db.js"></script>
+    <script src="scroll-animations.js" defer></script>
     <script src="script.js"></script>
 
     <script>
