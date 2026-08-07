@@ -616,6 +616,9 @@
                 targetSection.style.display = 'block';
             }
 
+            // PMS becomes a full standalone page (no customer dashboard chrome)
+            document.body.classList.toggle('pms-full', tabId === 'pms');
+
             // Close mobile sidebar drawer after tab selection
             closeDashSidebar();
         }

@@ -22,6 +22,7 @@
     collectionFilter: "all",
     featuredFilter: "all",
     audioFilter: "all",
+    healthFilter: "all",
     detailsFilter: "all",
     recencyFilter: "all",
     sort: "sort_order",
@@ -78,102 +79,143 @@
     container.dataset.rendered = "1";
 
     container.innerHTML = `
-      <div class="pms-toolbar">
-        <div class="pms-toolbar-left">
-          <div class="pms-search-wrap">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" class="pms-input pms-search-input" id="pms-search" placeholder="Search products..." oninput="PMSController.onSearch(this.value)">
+      <div class="pms-shell">
+
+        <div class="pms-page-head">
+          <div class="pms-page-head-top">
+            <div class="pms-page-head-text">
+              <h1 class="pms-page-title">Product Management</h1>
+              <p class="pms-page-sub">Manage your entire catalog from one workspace.</p>
+            </div>
+            <div class="pms-page-head-actions">
+              <button type="button" class="pms-btn" onclick="PMSController.importJSON()"><i class="fa-solid fa-file-import"></i> Import</button>
+              <button type="button" class="pms-btn" onclick="PMSController.exportCSV()"><i class="fa-solid fa-file-arrow-down"></i> Export</button>
+              <button type="button" class="pms-btn pms-btn-primary" onclick="PMSController.openAdd()"><i class="fa-solid fa-plus"></i> New Product</button>
+            </div>
           </div>
-          <select class="pms-select" id="pms-status-filter" onchange="PMSController.onFilter()">
-            <option value="all">All Statuses</option>
-            <option value="draft">Draft</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="out_of_stock">Out of Stock</option>
-            <option value="archived">Archived</option>
-            <option value="deleted">Deleted (Trash)</option>
-          </select>
-          <select class="pms-select" id="pms-collection-filter" onchange="PMSController.onFilter()"></select>
-          <select class="pms-select" id="pms-featured-filter" onchange="PMSController.onFilter()">
-            <option value="all">All Featured</option>
-            <option value="featured">Featured</option>
-            <option value="not">Not Featured</option>
-          </select>
-          <select class="pms-select" id="pms-audio-filter" onchange="PMSController.onFilter()">
-            <option value="all">All Audio</option>
-            <option value="with">Has Audio</option>
-            <option value="without">No Audio</option>
-          </select>
-          <select class="pms-select" id="pms-details-filter" onchange="PMSController.onFilter()">
-            <option value="all">All Details</option>
-            <option value="with">Has Details Page</option>
-            <option value="without">No Details Page</option>
-          </select>
-          <select class="pms-select" id="pms-recency-filter" onchange="PMSController.onFilter()">
-            <option value="all">Any Time</option>
-            <option value="updated7">Updated (7d)</option>
-            <option value="created7">Created (7d)</option>
-          </select>
-          <select class="pms-select" id="pms-sort" onchange="PMSController.onSort(this.value)">
-            <option value="sort_order">Sort: Default</option>
-            <option value="name">Sort: Name</option>
-            <option value="price_asc">Sort: Price Low-High</option>
-            <option value="price_desc">Sort: Price High-Low</option>
-            <option value="created_at">Sort: Newest</option>
-          </select>
+          <div class="pms-chips" id="pms-chips"></div>
         </div>
-        <div class="pms-toolbar-right">
-          <button type="button" class="pms-btn" onclick="PMSController.showMediaLibrary()"><i class="fa-solid fa-photo-film"></i> Media Library</button>
-          <button type="button" class="pms-btn" onclick="PMSController.showTemplates()"><i class="fa-solid fa-clone"></i> Templates</button>
-          <button type="button" class="pms-btn" onclick="PMSController.exportCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
-          <button type="button" class="pms-btn" onclick="PMSController.exportJSON()"><i class="fa-solid fa-file-code"></i> JSON</button>
-          <button type="button" class="pms-btn" onclick="PMSController.showRestorePoints()"><i class="fa-solid fa-clock-rotate-left"></i> Restore Points</button>
-          <button type="button" class="pms-btn" onclick="PMSController.showCollections()"><i class="fa-solid fa-layer-group"></i> Collections</button>
-          <button type="button" class="pms-btn" onclick="PMSController.openReorderFeatured()"><i class="fa-solid fa-arrow-up-1-9"></i> Reorder Featured</button>
-          <button type="button" class="pms-btn pms-btn-gold" onclick="PMSController.openAdd()"><i class="fa-solid fa-plus"></i> Add Product</button>
+
+        <div class="pms-search-wrap pms-search-lg">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" class="pms-input pms-search-input" id="pms-search" placeholder="Search by name, collection, slug or badge…" oninput="PMSController.onSearch(this.value)">
+          <span class="pms-search-kbd" title="Focus search">/</span>
+        </div>
+
+        <div class="pms-toolbar">
+          <div class="pms-filterbar">
+            <select class="pms-select" id="pms-status-filter" onchange="PMSController.onFilter()">
+              <option value="all">All Statuses</option>
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="out_of_stock">Out of Stock</option>
+              <option value="archived">Archived</option>
+              <option value="deleted">Deleted (Trash)</option>
+            </select>
+            <select class="pms-select" id="pms-collection-filter" onchange="PMSController.onFilter()"></select>
+            <select class="pms-select" id="pms-featured-filter" onchange="PMSController.onFilter()">
+              <option value="all">All Featured</option>
+              <option value="featured">Featured</option>
+              <option value="not">Not Featured</option>
+            </select>
+            <select class="pms-select" id="pms-audio-filter" onchange="PMSController.onFilter()">
+              <option value="all">All Audio</option>
+              <option value="with">Has Audio</option>
+              <option value="without">No Audio</option>
+            </select>
+            <select class="pms-select" id="pms-health-filter" onchange="PMSController.onFilter()">
+              <option value="all">All Health</option>
+              <option value="good">Good (100%)</option>
+              <option value="warn">Needs Attention</option>
+            </select>
+            <select class="pms-select" id="pms-recency-filter" onchange="PMSController.onFilter()">
+              <option value="all">Any Time</option>
+              <option value="updated7">Updated (7d)</option>
+              <option value="created7">Created (7d)</option>
+            </select>
+            <select class="pms-select" id="pms-sort" onchange="PMSController.onSort(this.value)">
+              <option value="sort_order">Sort: Default</option>
+              <option value="name">Sort: Name</option>
+              <option value="price_asc">Sort: Price Low-High</option>
+              <option value="price_desc">Sort: Price High-Low</option>
+              <option value="created_at">Sort: Newest</option>
+            </select>
+            <button type="button" class="pms-btn pms-btn-filter-toggle" id="pms-advanced-toggle" onclick="PMSController.toggleAdvancedFilters()" aria-expanded="false" aria-controls="pms-advanced">
+              <i class="fa-solid fa-sliders"></i> Advanced <i class="fa-solid fa-chevron-down pms-toggle-caret"></i>
+            </button>
+          </div>
+
+          <div class="pms-advanced" id="pms-advanced" hidden>
+            <span class="pms-advanced-label">More filters</span>
+            <select class="pms-select" id="pms-details-filter" onchange="PMSController.onFilter()">
+              <option value="all">All Details</option>
+              <option value="with">Has Details Page</option>
+              <option value="without">No Details Page</option>
+            </select>
+          </div>
+
+          <div class="pms-actionbar">
+            <button type="button" class="pms-btn" onclick="PMSController.showMediaLibrary()"><i class="fa-solid fa-photo-film"></i> Media Library</button>
+            <button type="button" class="pms-btn" onclick="PMSController.showCollections()"><i class="fa-solid fa-layer-group"></i> Collections</button>
+            <button type="button" class="pms-btn" onclick="PMSController.showTemplates()"><i class="fa-solid fa-clone"></i> Templates</button>
+            <button type="button" class="pms-btn" onclick="PMSController.showRestorePoints()"><i class="fa-solid fa-clock-rotate-left"></i> Restore</button>
+            <button type="button" class="pms-btn" onclick="PMSController.openReorderFeatured()"><i class="fa-solid fa-arrow-up-1-9"></i> Reorder</button>
+            <button type="button" class="pms-btn" onclick="PMSController.exportJSON()"><i class="fa-solid fa-file-code"></i> JSON</button>
+            <button type="button" class="pms-btn" onclick="PMSController.openSettings()"><i class="fa-solid fa-gear"></i> Settings</button>
+          </div>
+        </div>
+
+        <div class="pms-table-wrap">
+          <table class="pms-table">
+            <thead>
+              <tr>
+                <th class="pms-th-drag"></th>
+                <th class="pms-th-check"><input type="checkbox" class="pms-check" id="pms-select-all" onclick="PMSController.toggleSelectAll(this)" title="Select all" aria-label="Select all products"></th>
+                <th>Product</th>
+                <th>Collection</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Featured</th>
+                <th>Health</th>
+                <th>Updated</th>
+                <th class="pms-th-actions"></th>
+              </tr>
+            </thead>
+            <tbody id="pms-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="pms-footer">
+          <div class="pms-bulkbar" id="pms-bulk-actions">
+            <span class="pms-tag pms-tag-primary" id="pms-selected-count">0 selected</span>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkStatus('active')"><i class="fa-solid fa-eye"></i> Publish</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkStatus('inactive')"><i class="fa-solid fa-eye-slash"></i> Hide</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkStatus('archived')"><i class="fa-solid fa-box-archive"></i> Archive</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkCollection()"><i class="fa-solid fa-layer-group"></i> Move to Collection</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkRemoveCollection()"><i class="fa-solid fa-layer-minus"></i> Remove Collection</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkBadge()"><i class="fa-solid fa-tag"></i> Set Badge</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkRemoveBadge()"><i class="fa-solid fa-tag"></i> Remove Badge</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkAudio(true)"><i class="fa-solid fa-music"></i> Enable Audio</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkAudio(false)"><i class="fa-solid fa-music"></i> Disable Audio</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkDuplicate()"><i class="fa-solid fa-copy"></i> Duplicate</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.exportCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+            <button type="button" class="pms-btn pms-btn-sm pms-btn-danger" onclick="PMSController.bulkDelete()"><i class="fa-solid fa-trash-can"></i> Delete</button>
+            <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkRestore()"><i class="fa-solid fa-rotate-left"></i> Restore</button>
+          </div>
+          <span class="pms-tag" id="pms-total-count"></span>
         </div>
       </div>
 
-      <div class="pms-kpi-grid" id="pms-kpi-grid"></div>
-
-      <div class="pms-table-wrap">
-        <table class="pms-table">
-          <thead>
-            <tr>
-              <th style="width:36px;"><input type="checkbox" class="pms-check" id="pms-select-all" onclick="PMSController.toggleSelectAll(this)" title="Select all"></th>
-              <th>Product</th>
-              <th>Health</th>
-              <th>Collection</th>
-              <th>Price</th>
-              <th>Status</th>
-              <th>Media</th>
-              <th>Updated</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="pms-tbody"></tbody>
-        </table>
-      </div>
-
-      <div class="pms-footer">
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;" id="pms-bulk-actions">
-          <span class="pms-tag" id="pms-selected-count">0 selected</span>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkStatus('active')"><i class="fa-solid fa-eye"></i> Publish</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkStatus('inactive')"><i class="fa-solid fa-eye-slash"></i> Hide</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkStatus('archived')"><i class="fa-solid fa-box-archive"></i> Archive</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkCollection()"><i class="fa-solid fa-layer-group"></i> Move to Collection</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkRemoveCollection()"><i class="fa-solid fa-layer-minus"></i> Remove Collection</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkBadge()"><i class="fa-solid fa-tag"></i> Set Badge</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkRemoveBadge()"><i class="fa-solid fa-tag"></i> Remove Badge</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkAudio(true)"><i class="fa-solid fa-music"></i> Enable Audio</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkAudio(false)"><i class="fa-solid fa-music"></i> Disable Audio</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkDuplicate()"><i class="fa-solid fa-copy"></i> Duplicate</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.exportCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
-          <button type="button" class="pms-btn pms-btn-sm pms-btn-danger" onclick="PMSController.bulkDelete()"><i class="fa-solid fa-trash-can"></i> Delete</button>
-          <button type="button" class="pms-btn pms-btn-sm" onclick="PMSController.bulkRestore()"><i class="fa-solid fa-rotate-left"></i> Restore</button>
+      <div class="pms-preview-overlay" id="pms-preview-overlay"></div>
+      <aside class="pms-preview" id="pms-preview" aria-label="Product quick preview" aria-hidden="true">
+        <div class="pms-preview-head">
+          <span class="pms-preview-title"><i class="fa-solid fa-eye"></i> Quick View</span>
+          <button type="button" class="pms-icon-btn" onclick="PMSController.closePreview()" aria-label="Close preview"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <span class="pms-tag" id="pms-total-count"></span>
-      </div>
+        <div class="pms-preview-body" id="pms-preview-body"></div>
+      </aside>
     `;
 
     // collection filter options
@@ -193,7 +235,7 @@
   async function loadData() {
     var tbody = $('pms-tbody');
     if (tbody) tbody.innerHTML = skeletonRows(6);
-    if ($('pms-kpi-grid')) $('pms-kpi-grid').innerHTML = '<div class="pms-skeleton" style="height:90px;"></div>';
+    if ($('pms-chips')) $('pms-chips').innerHTML = '<span class="pms-skeleton" style="height:38px;width:140px;display:inline-block;"></span><span class="pms-skeleton" style="height:38px;width:120px;display:inline-block;"></span><span class="pms-skeleton" style="height:38px;width:120px;display:inline-block;"></span>';
 
     try {
       var res = await window.PMSService.listProducts();
@@ -232,12 +274,14 @@
       rows += `
         <tr>
           <td></td>
+          <td></td>
           <td><div class="pms-skeleton" style="height:44px;width:220px;"></div></td>
           <td><div class="pms-skeleton" style="height:18px;width:60px;"></div></td>
           <td><div class="pms-skeleton" style="height:18px;width:90px;"></div></td>
           <td><div class="pms-skeleton" style="height:18px;width:70px;"></div></td>
           <td><div class="pms-skeleton" style="height:22px;width:90px;"></div></td>
-          <td><div class="pms-skeleton" style="height:18px;width:80px;"></div></td>
+          <td><div class="pms-skeleton" style="height:18px;width:40px;"></div></td>
+          <td><div class="pms-skeleton" style="height:18px;width:110px;"></div></td>
           <td><div class="pms-skeleton" style="height:18px;width:80px;"></div></td>
           <td></td>
         </tr>
@@ -249,7 +293,7 @@
   function errorRow(msg) {
     return `
       <tr>
-        <td colspan="9">
+        <td colspan="11">
           <div class="pms-empty">
             <i class="fa-solid fa-triangle-exclamation"></i>
             <h4>We couldn't load products</h4>
@@ -262,55 +306,54 @@
   }
 
   function renderKpis() {
-    var grid = $('pms-kpi-grid');
-    if (!grid) return;
-    var live = state.products.filter(function (p) { return p.status === 'active' && !p.deleted_at; }).length;
-    var draft = state.products.filter(function (p) { return p.status === 'draft' && !p.deleted_at; }).length;
-    var hidden = state.products.filter(function (p) { return p.status === 'inactive' && !p.deleted_at; }).length;
-    var outStock = state.products.filter(function (p) { return p.status === 'out_of_stock' && !p.deleted_at; }).length;
-    var archived = state.products.filter(function (p) { return p.status === 'archived' && !p.deleted_at; }).length;
-    var trash = state.products.filter(function (p) { return p.deleted_at; }).length;
-    var withAudio = state.products.filter(function (p) { return p.audio_enabled && !p.deleted_at; }).length;
-    var withoutAudio = state.products.filter(function (p) { return !p.audio_enabled && !p.deleted_at; }).length;
-    var withoutDetails = state.products.filter(function (p) { return !p.details_link && !p.deleted_at; }).length;
-    var missingImages = state.products.filter(function (p) { return p.image_count === 0 && !p.deleted_at; }).length;
-    var now = Date.now();
-    var week = 7 * 24 * 60 * 60 * 1000;
-    var recentlyEdited = state.products.filter(function (p) {
-      return !p.deleted_at && p.updated_at && (now - new Date(p.updated_at).getTime()) < week;
-    }).length;
-    var newest = state.products.filter(function (p) {
-      return !p.deleted_at && p.created_at && (now - new Date(p.created_at).getTime()) < week;
-    }).length;
+    var chips = $('pms-chips');
+    if (!chips) return;
+    var all = state.products;
+    var live = all.filter(function (p) { return p.status === 'active' && !p.deleted_at; }).length;
+    var draft = all.filter(function (p) { return p.status === 'draft' && !p.deleted_at; }).length;
+    var featured = all.filter(function (p) { return p.featured && !p.deleted_at; }).length;
     var collCount = state.collections.filter(function (c) { return !c.archived_at; }).length;
-    var mediaCount = state.mediaCount || 0;
-    var activeCount = state.products.filter(function (p) { return !p.deleted_at; }).length;
-
-    // Health check (Part 5): count live products with at least one issue.
+    var withAudio = all.filter(function (p) { return p.audio_enabled && !p.deleted_at; }).length;
+    var activeCount = all.filter(function (p) { return !p.deleted_at; }).length;
     var unhealthy = 0;
-    state.products.forEach(function (p) {
+    all.forEach(function (p) {
       if (p.deleted_at) return;
       if ((state.health[p.id] || []).length > 0) unhealthy++;
     });
+    var healthPct = activeCount > 0 ? Math.max(0, Math.round(((activeCount - unhealthy) / activeCount) * 100)) : 100;
+    var healthCls = healthPct >= 95 ? 'pms-chip-live' : (healthPct >= 75 ? 'pms-chip-warn' : 'pms-chip-danger');
 
-    grid.innerHTML = `
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Total Products</div><div class="pms-kpi-value">${state.products.length}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Live on Store</div><div class="pms-kpi-value" style="color:var(--pms-green);">${live}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Drafts</div><div class="pms-kpi-value">${draft}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Hidden</div><div class="pms-kpi-value">${hidden}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Out of Stock</div><div class="pms-kpi-value">${outStock}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Archived</div><div class="pms-kpi-value">${archived}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">In Trash</div><div class="pms-kpi-value">${trash}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Collections</div><div class="pms-kpi-value">${collCount}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Media Assets</div><div class="pms-kpi-value">${mediaCount}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">With Audio</div><div class="pms-kpi-value">${withAudio}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Without Audio</div><div class="pms-kpi-value">${withoutAudio}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">No Details Page</div><div class="pms-kpi-value">${withoutDetails}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Missing Images</div><div class="pms-kpi-value">${missingImages}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Health Issues</div><div class="pms-kpi-value" style="color:${unhealthy > 0 ? 'var(--pms-red)' : 'var(--pms-green)'};">${unhealthy} / ${activeCount}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">Edited (7d)</div><div class="pms-kpi-value">${recentlyEdited}</div></div>
-      <div class="pms-kpi-card"><div class="pms-kpi-label">New (7d)</div><div class="pms-kpi-value">${newest}</div></div>
-    `;
+    var items = [
+      { icon: 'fa-boxes-stacked', value: all.length, label: 'Products', cls: '' },
+      { icon: 'fa-eye', value: live, label: 'Live', cls: 'pms-chip-live' },
+      { icon: 'fa-pen', value: draft, label: 'Drafts', cls: '' },
+      { icon: 'fa-star', value: featured, label: 'Featured', cls: 'pms-chip-gold' },
+      { icon: 'fa-layer-group', value: collCount, label: 'Collections', cls: 'pms-chip-accent' },
+      { icon: 'fa-music', value: withAudio, label: 'With Audio', cls: 'pms-chip-accent' },
+      { icon: 'fa-heart-pulse', value: healthPct, label: 'Health', suffix: '%', cls: healthCls }
+    ];
+
+    chips.innerHTML = items.map(function (it) {
+      return `<span class="pms-chip ${it.cls}">
+        <i class="fa-solid ${it.icon}"></i>
+        <span class="pms-chip-value" data-count="${it.value}">0</span>
+        <span class="pms-chip-label">${it.label}${it.suffix || ''}</span>
+      </span>`;
+    }).join('');
+
+    chips.querySelectorAll('.pms-chip-value[data-count]').forEach(function (el) {
+      var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+      var start = null;
+      var dur = 650;
+      function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min(1, (ts - start) / dur);
+        el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = target;
+      }
+      requestAnimationFrame(step);
+    });
   }
 
   // --------------------------------------------------------------------------
@@ -338,10 +381,16 @@
     var cf = state.collectionFilter;
     var ff = state.featuredFilter;
     var af = state.audioFilter;
+    var hf = state.healthFilter;
     var df = state.detailsFilter;
     var rf = state.recencyFilter;
     var now = Date.now();
     var week = 7 * 24 * 60 * 60 * 1000;
+
+    // Health map used by rows + dashboard (computed before filtering so the
+    // health filter can rely on it).
+    state.health = {};
+    state.products.forEach(function (p) { state.health[p.id] = computeHealth(p); });
 
     var list = state.products.filter(function (p) {
       if (sf === 'deleted') {
@@ -357,6 +406,8 @@
       if (af === 'without' && p.audio_enabled) return false;
       if (df === 'with' && !p.details_link) return false;
       if (df === 'without' && p.details_link) return false;
+      if (hf === 'good' && (state.health[p.id] || []).length > 0) return false;
+      if (hf === 'warn' && (state.health[p.id] || []).length === 0) return false;
       if (rf === 'updated7' && (!p.updated_at || (now - new Date(p.updated_at).getTime()) >= week)) return false;
       if (rf === 'created7' && (!p.created_at || (now - new Date(p.created_at).getTime()) >= week)) return false;
       if (q) {
@@ -365,10 +416,6 @@
       }
       return true;
     });
-
-    // Health map used by rows + dashboard
-    state.health = {};
-    state.products.forEach(function (p) { state.health[p.id] = computeHealth(p); });
 
     var key = state.sort;
     list.sort(function (a, b) {
@@ -398,25 +445,6 @@
     return `<span class="pms-badge ${m.cls}"><i class="fa-solid ${m.icon}"></i> ${esc(p.status || 'draft')}</span>`;
   }
 
-  function mediaTags(p) {
-    var tags = '';
-    tags += `<span class="pms-tag">${p.image_count || 0} img</span>`;
-    if (p.audio_enabled) tags += `<span class="pms-tag pms-tag-gold"><i class="fa-solid fa-music"></i> audio</span>`;
-    if (p.details_link) tags += `<span class="pms-tag pms-tag-gold"><i class="fa-solid fa-link"></i></span>`;
-    if (p.featured) tags += `<span class="pms-tag pms-tag-gold"><i class="fa-solid fa-star"></i></span>`;
-    return tags || '<span class="pms-tag">none</span>';
-  }
-
-  function healthBadge(p) {
-    if (p.deleted_at) return '<span class="pms-tag" style="color:var(--pms-muted);">—</span>';
-    var issues = state.health[p.id] || [];
-    if (issues.length === 0) {
-      return `<span class="pms-tag" style="color:var(--pms-green);"><i class="fa-solid fa-circle-check"></i> OK</span>`;
-    }
-    var cls = issues.length <= 1 ? 'pms-tag-gold' : 'pms-badge pms-badge-out_of_stock';
-    return `<span class="${cls}" title="${esc(issues.join(' • '))}" style="cursor:help;">${issues.length} issue${issues.length > 1 ? 's' : ''}</span>`;
-  }
-
   function renderRows() {
     var tbody = $('pms-tbody');
     if (!tbody) return;
@@ -427,7 +455,7 @@
     if (state.filtered.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9">
+          <td colspan="11">
             <div class="pms-empty">
               <i class="fa-solid fa-box-open"></i>
               <h4>No products found</h4>
@@ -446,10 +474,11 @@
       var checked = state.selection[p.id] ? 'checked' : '';
 
       return `
-        <tr data-id="${esc(p.id)}">
-          <td data-label="Select"><input type="checkbox" class="pms-check" ${checked} onclick="PMSController.toggleSelect('${esc(p.id)}', this)"></td>
+        <tr data-id="${esc(p.id)}" class="${checked ? 'pms-row-selected' : ''}">
+          <td><button type="button" class="pms-drag-handle" onclick="PMSController.openReorderFeatured()" title="Reorder featured products" aria-label="Reorder featured products"><i class="fa-solid fa-grip-vertical"></i></button></td>
+          <td><input type="checkbox" class="pms-check" ${checked} onclick="PMSController.toggleSelect('${esc(p.id)}', this)"></td>
           <td data-label="Product">
-            <div class="pms-prod-cell">
+            <div class="pms-prod-cell" onclick="PMSController.openPreview('${esc(p.id)}')" title="Quick view">
               <img src="${esc(p.cover)}" alt="" class="pms-prod-thumb" onerror="this.style.display='none'">
               <div>
                 <div class="pms-prod-name">${esc(p.name)}</div>
@@ -457,11 +486,12 @@
               </div>
             </div>
           </td>
-          <td data-label="Health">${healthBadge(p)}</td>
           <td data-label="Collection">${esc(p.collectionName || p.category || '—')}</td>
-          <td data-label="Price"><span class="pms-price">$${esc(formatNum(p.price))}</span></td>
+          <td data-label="Price"><span class="pms-price">${esc(formatPrice(p))}</span></td>
+          <td data-label="Stock">${stockCell(p)}</td>
           <td data-label="Status">${statusBadge(p)}</td>
-          <td data-label="Media">${mediaTags(p)}</td>
+          <td data-label="Featured">${featuredCell(p)}</td>
+          <td data-label="Health">${healthCell(p)}</td>
           <td data-label="Updated">${dateStr}</td>
           <td data-label="Actions">
             <div class="pms-row-actions">
@@ -485,9 +515,40 @@
     updateSelectedCount();
   }
 
+  function stockCell(p) {
+    if (p.deleted_at) return '<span class="pms-stock pms-stock-none">—</span>';
+    var s = Number(p.stock) || 0;
+    var cls = s <= 0 ? 'none' : (s <= 5 ? 'low' : 'ok');
+    var label = s <= 0 ? 'Out' : (s <= 5 ? 'Low' : 'In stock');
+    return `<span class="pms-stock-bar"><span class="pms-stock-dot ${cls}"></span><span class="pms-stock ${cls}">${label} · ${s}</span></span>`;
+  }
+
+  function featuredCell(p) {
+    return `<span class="pms-featured-star${p.featured ? ' on' : ''}" title="${p.featured ? 'Featured' : 'Not featured'}"><i class="fa-solid fa-star"></i></span>`;
+  }
+
+  function healthCell(p) {
+    if (p.deleted_at) return '<span class="pms-tag">—</span>';
+    var issues = state.health[p.id] || [];
+    var pct = Math.max(8, 100 - issues.length * 15);
+    var cls = issues.length === 0 ? 'pms-hp-good' : (issues.length <= 2 ? 'pms-hp-warn' : 'pms-hp-bad');
+    var tip = issues.length === 0 ? 'All good' : esc(issues.join(' • '));
+    return `<div class="pms-health-cell" title="${tip}">
+      <div class="pms-health-bar"><span class="${cls}" style="width:${pct}%"></span></div>
+      <span class="pms-health-num ${cls}">${pct}%</span>
+    </div>`;
+  }
+
   function formatNum(n) {
     n = Number(n) || 0;
     return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  var PMS_CURRENCY_SYMBOLS = { USD: '$', ETB: 'ETB ', EUR: '\u20ac' };
+
+  function formatPrice(p) {
+    var sym = PMS_CURRENCY_SYMBOLS[String(p.currency || 'USD').toUpperCase()] || (p.currency ? p.currency + ' ' : '$');
+    return sym + formatNum(p.price);
   }
 
   function updateSelectedCount() {
@@ -507,11 +568,69 @@
     state.collectionFilter = $('pms-collection-filter') ? $('pms-collection-filter').value : 'all';
     state.featuredFilter = $('pms-featured-filter') ? $('pms-featured-filter').value : 'all';
     state.audioFilter = $('pms-audio-filter') ? $('pms-audio-filter').value : 'all';
+    state.healthFilter = $('pms-health-filter') ? $('pms-health-filter').value : 'all';
     state.detailsFilter = $('pms-details-filter') ? $('pms-details-filter').value : 'all';
     state.recencyFilter = $('pms-recency-filter') ? $('pms-recency-filter').value : 'all';
     applyFilters();
   }
   function onSort(v) { state.sort = v || 'sort_order'; applyFilters(); }
+
+  function toggleAdvancedFilters() {
+    var panel = $('pms-advanced');
+    var btn = $('pms-advanced-toggle');
+    if (!panel) return;
+    var open = panel.hidden;
+    panel.hidden = !open;
+    if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  // --------------------------------------------------------------------------
+  // Quick preview panel (right-hand drawer)
+  // --------------------------------------------------------------------------
+  function openPreview(id) {
+    var p = null;
+    state.products.forEach(function (x) { if (x.id === id) p = x; });
+    var body = $('pms-preview-body');
+    if (!p || !body) return;
+    var issues = state.health[p.id] || [];
+    var dateStr = p.updated_at ? new Date(p.updated_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
+    body.innerHTML = `
+      <div class="pms-pv-hero">
+        <img class="pms-pv-img" src="${esc(p.cover)}" alt="" onerror="this.style.display='none'">
+        <div>
+          <h3 class="pms-pv-name">${esc(p.name)}</h3>
+          <div class="pms-pv-slug">/${esc(p.slug || '')}</div>
+        </div>
+      </div>
+      <div class="pms-pv-grid">
+        <div class="pms-pv-field"><label>Collection</label><span>${esc(p.collectionName || p.category || '—')}</span></div>
+        <div class="pms-pv-field"><label>Price</label><span>${esc(formatPrice(p))}</span></div>
+        <div class="pms-pv-field"><label>Stock</label><span>${esc(String(p.stock != null ? p.stock : 0))}</span></div>
+        <div class="pms-pv-field"><label>Status</label><span>${statusBadge(p)}</span></div>
+        <div class="pms-pv-field"><label>Featured</label><span>${p.featured ? 'Yes' : 'No'}</span></div>
+        <div class="pms-pv-field"><label>Updated</label><span>${dateStr}</span></div>
+        <div class="pms-pv-field"><label>Health</label><span>${issues.length === 0 ? 'OK' : issues.length + ' issue' + (issues.length > 1 ? 's' : '')}</span></div>
+        <div class="pms-pv-field"><label>Slug</label><span>/${esc(p.slug || '—')}</span></div>
+      </div>
+      <div class="pms-pv-actions">
+        <button type="button" class="pms-btn pms-btn-primary" onclick="PMSController.closePreview(); PMSController.openEdit('${esc(p.id)}')"><i class="fa-solid fa-pen"></i> Edit Product</button>
+        <button type="button" class="pms-btn" onclick="PMSController.closePreview()"><i class="fa-solid fa-xmark"></i> Close</button>
+      </div>
+    `;
+
+    var panel = $('pms-preview');
+    var overlay = $('pms-preview-overlay');
+    if (panel) { panel.classList.add('open'); panel.setAttribute('aria-hidden', 'false'); }
+    if (overlay) { overlay.onclick = closePreview; overlay.classList.add('open'); }
+  }
+
+  function closePreview() {
+    var panel = $('pms-preview');
+    var overlay = $('pms-preview-overlay');
+    if (panel) { panel.classList.remove('open'); panel.setAttribute('aria-hidden', 'true'); }
+    if (overlay) overlay.classList.remove('open');
+  }
 
   // --------------------------------------------------------------------------
   // Selection + bulk
@@ -763,6 +882,114 @@
     exportData(rows, 'json');
   }
 
+  function importJSON() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.style.display = 'none';
+    input.addEventListener('change', function () {
+      var f = input.files && input.files[0];
+      if (!f) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try {
+          var data = JSON.parse(reader.result);
+          var list = Array.isArray(data) ? data : (data.products || []);
+          if (!list.length) { toast('No products found in that file.', 'warning'); return; }
+          importProducts(list);
+        } catch (e) {
+          toast('Could not parse that JSON file.', 'error');
+        }
+      };
+      reader.readAsText(f);
+      input.remove();
+    });
+    document.body.appendChild(input);
+    input.click();
+  }
+
+  async function importProducts(list) {
+    var ok = await confirmModal('Import Products', 'Import <strong>' + list.length + '</strong> product(s)? Existing slugs are updated; new ones are created as <strong>draft</strong>.');
+    if (!ok) return;
+    var done = 0, failed = 0;
+    for (var i = 0; i < list.length; i++) {
+      var src = list[i];
+      var product = {
+        name: src.name || '',
+        slug: src.slug || '',
+        category: src.category || src.collectionName || '',
+        short_description: src.short_description || '',
+        description: src.description || '',
+        price: src.price != null ? Number(src.price) : 0,
+        currency: src.currency || 'USD',
+        stock: src.stock != null ? Number(src.stock) : 0,
+        featured: !!src.featured,
+        status: 'draft',
+        badge: src.badge || '',
+        sort_order: src.sort_order != null ? Number(src.sort_order) : 0,
+        meta_title: src.meta_title || '',
+        meta_description: src.meta_description || '',
+        details_link: src.details_link || '',
+        audio_enabled: !!src.audio_enabled
+      };
+      try {
+        await window.PMSService.upsertProduct(product, []);
+        done++;
+      } catch (e) {
+        failed++;
+        console.error('[PMS] Import row failed:', src.name, e);
+      }
+    }
+    toast(done + ' product(s) imported' + (failed ? ', ' + failed + ' failed' : '') + '.', failed ? 'warning' : 'success');
+    await loadData();
+  }
+
+  function openSettings() {
+    var live = state.products.filter(function (p) { return p.status === 'active' && !p.deleted_at; }).length;
+    var drafts = state.products.filter(function (p) { return p.status === 'draft' && !p.deleted_at; }).length;
+    var colls = state.collections.filter(function (c) { return !c.archived_at; }).length;
+    var unhealthy = 0;
+    var activeCount = 0;
+    state.products.forEach(function (p) {
+      if (p.deleted_at) return;
+      activeCount++;
+      if ((state.health[p.id] || []).length > 0) unhealthy++;
+    });
+    var healthPct = activeCount > 0 ? Math.max(0, Math.round(((activeCount - unhealthy) / activeCount) * 100)) : 100;
+
+    var overlay = document.createElement('div');
+    overlay.className = 'pms-modal-overlay active';
+    overlay.id = 'pms-settings-modal';
+    overlay.innerHTML = `
+      <div class="pms-modal" style="max-width:520px;">
+        <div class="pms-modal-header">
+          <h3><i class="fa-solid fa-gear"></i> Workspace Settings</h3>
+          <button type="button" class="pms-modal-close" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))" aria-label="Close">&times;</button>
+        </div>
+        <div class="pms-modal-body">
+          <div class="pms-pv-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+            <div class="pms-pv-field"><label>Products</label><span>${state.products.length}</span></div>
+            <div class="pms-pv-field"><label>Live</label><span>${live}</span></div>
+            <div class="pms-pv-field"><label>Drafts</label><span>${drafts}</span></div>
+            <div class="pms-pv-field"><label>Collections</label><span>${colls}</span></div>
+            <div class="pms-pv-field"><label>Media Assets</label><span>${state.mediaCount || 0}</span></div>
+            <div class="pms-pv-field"><label>Catalog Health</label><span>${healthPct}%</span></div>
+          </div>
+          <p style="margin:16px 0 0 0; color:var(--pms-muted); font-size:0.85rem; line-height:1.55;">The product management workspace manages the storefront catalog, collections, audio previews, media library and restore points. All data lives in your Supabase project.</p>
+        </div>
+        <div class="pms-modal-footer">
+          <button type="button" class="pms-btn" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">Close</button>
+          <button type="button" class="pms-btn pms-btn-primary" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay')); PMSController.showRestorePoints()"><i class="fa-solid fa-clock-rotate-left"></i> Restore Points</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    setupModalA11y(overlay);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeOverlay(overlay);
+    });
+  }
+
   // Single product actions
   async function publishOne(id) {
     try { await window.PMSService.bulkUpdate([id], { status: 'active' }); toast('Product published.', 'success'); await loadData(); }
@@ -855,6 +1082,14 @@
 
   // Escape closes the active modal; Tab is trapped inside it while open.
   document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var preview = $('pms-preview');
+      if (preview && preview.classList.contains('open')) {
+        e.preventDefault();
+        closePreview();
+        return;
+      }
+    }
     var overlay = document.querySelector('.pms-modal-overlay.active');
     if (!overlay) return;
     if (e.key === 'Escape') {
@@ -1021,8 +1256,9 @@
             </div>
 
             <div class="pms-field">
-              <label>Price (USD base) <span class="pms-required">*</span></label>
+              <label>Price <span class="pms-required">*</span></label>
               <input type="number" min="0" step="0.01" class="pms-input" id="pf-price" value="${p.price != null ? p.price : ''}" placeholder="0.00">
+              <p class="pms-field-hint">Enter the price in the selected currency (no conversion is applied).</p>
             </div>
 
             <div class="pms-field">
@@ -2358,6 +2594,11 @@
     onSearch: onSearch,
     onFilter: onFilter,
     onSort: onSort,
+    toggleAdvancedFilters: toggleAdvancedFilters,
+    openPreview: openPreview,
+    closePreview: closePreview,
+    importJSON: importJSON,
+    openSettings: openSettings,
     toggleSelect: toggleSelect,
     toggleSelectAll: toggleSelectAll,
     bulkStatus: bulkStatus,
