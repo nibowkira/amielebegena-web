@@ -987,7 +987,7 @@
                     const totalVal = unitPrice > 0 ? (unitPrice * qty) : 0;
                     
                     const formattedTotal = typeof formatPrice === 'function' && totalVal > 0
-                        ? formatPrice(totalVal) 
+                        ? formatPrice(totalVal, (p.currency || 'USD')) 
                         : (totalVal > 0 ? 'ETB ' + totalVal.toLocaleString() : 'ETB 42,000');
 
                     const dateStr = new Date(order.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -1410,7 +1410,7 @@
                 });
 
                 container.innerHTML = savedProducts.map(p => {
-                    const priceFormatted = typeof formatPrice === 'function' ? formatPrice(p.price) : 'ETB ' + (p.price || 15000).toLocaleString();
+                    const priceFormatted = typeof formatPrice === 'function' ? formatPrice(p.price, (p.currency || 'USD')) : 'ETB ' + (p.price || 15000).toLocaleString();
                     const img = p.image || 'image/photo_2025-10-01_07-26-53.jpg';
 
                     return `

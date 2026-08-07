@@ -50,8 +50,8 @@
                 '<div class="stars" style="color: #d4af37; font-size: 1.2rem; margin-bottom: 0.5rem; letter-spacing: 2px;">★★★★★</div>' +
                 '<h3 class="animate-bottom" style="font-family: \'Benaiah\', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem;">' + name + "</h3>" +
                 '<p style="color: #6a6e6b; font-size: 0.95rem; margin-bottom: 1rem;">' + desc + "</p>" +
-                '<span class="dynamic-price" data-usd="' + price + '" style="font-weight: 700; font-size: 1.2rem; color: var(--dark-green);">' + (window.formatPrice ? window.formatPrice(price) : price) + "</span>" +
-                '<a href="#" class="whatsapp-btn animate-scale" data-product-name="' + name + '" data-product-price="' + price + '">' +
+                '<span class="dynamic-price" data-amount="' + price + '" data-currency="' + (product.currency || "USD") + '" data-usd="' + price + '" style="font-weight: 700; font-size: 1.2rem; color: var(--dark-green);">' + (window.formatPrice ? window.formatPrice(price, product.currency) : price) + "</span>" +
+                '<a href="#" class="whatsapp-btn animate-scale" data-product-name="' + name + '" data-product-price="' + price + '" data-product-currency="' + (product.currency || "USD") + '">' +
                     "Order via WhatsApp" +
                 "</a>";
 
