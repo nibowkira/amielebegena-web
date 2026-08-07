@@ -275,10 +275,42 @@
     <script src="whatsapp-widget.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            const user = await window.getCurrentUser();
             const loadingState = document.getElementById('loading-state');
             const applyFormSection = document.getElementById('apply-form-section');
             const statusSection = document.getElementById('status-section');
+
+            // Resolve the authenticated user from Supabase Auth (same source as account.html).
+            async function resolveAuthUser() {
+                if (!window.AmieleSupabase) {
+                    console.warn('[Amiele:Apply] Supabase client module is not loaded.');
+                    return null;
+                }
+                const client = window.AmieleSupabase.getClient();
+                if (!client) {
+                    console.warn('[Amiele:Apply] Supabase client is not initialized.');
+                    return null;
+                }
+                const { data: sessionData, error: sessionErr } = await client.auth.getSession();
+                if (sessionErr) console.error('[Amiele:Apply] getSession error:', sessionErr);
+                console.log('[Amiele:Apply] session:', sessionData && sessionData.session ? sessionData.session : null);
+
+                const { data: userData, error: userErr } = await client.auth.getUser();
+                if (userErr) console.error('[Amiele:Apply] getUser error:', userErr);
+                const authUser = userData && userData.user ? userData.user : (sessionData && sessionData.session ? sessionData.session.user : null);
+                if (authUser) {
+                    console.log('[Amiele:Apply] user.id:', authUser.id);
+                    console.log('[Amiele:Apply] user.email:', authUser.email);
+                } else {
+                    console.warn('[Amiele:Apply] No authenticated user found.');
+                }
+                return authUser;
+            }
+
+            const user = await window.getCurrentUser();
+            if (user) {
+                console.log('[Amiele:Apply] currentUser.id:', user.id);
+                console.log('[Amiele:Apply] currentUser.email:', user.email);
+            }
 
             if (!user) {
                 window.location.href = 'login.html?redirect=affiliate-apply.html';
@@ -433,27 +465,28 @@
                 feedback.classList.add('hidden');
 
                 try {
-                    let submittedToSupabase = false;
-                    if (window.AffiliateService) {
-                        try {
-                            await window.AffiliateService.submitApplication(user.id, motivation, socialLinks || 'N/A');
-                            submittedToSupabase = true;
-                        } catch (supabaseErr) {
-                            showToast('Supabase submit failed. Saving to local database instead.', 'warning');
-                        }
+                    // Wait until authentication is fully resolved before submitting.
+                    const authUser = await resolveAuthUser();
+                    if (!authUser) {
+                        window.location.href = 'login.html?redirect=affiliate-apply.html';
+                        return;
                     }
-                    
-                    if (!submittedToSupabase) {
-                        const data = {
-                            name: document.getElementById('app-fullname').value.trim(),
-                            phone: document.getElementById('app-phone').value.trim(),
-                            country: document.getElementById('app-country').value,
-                            socials: { instagram: document.getElementById('app-insta').value.trim(), tiktok: document.getElementById('app-tiktok').value.trim(), youtube: document.getElementById('app-youtube').value.trim() },
-                            whyApply: motivation
-                        };
-                        AmieleDB.submitApplication(data);
+
+                    const payload = {
+                        user_id: authUser.id,
+                        motivation: motivation,
+                        social_link: socialLinks || 'N/A',
+                        status: 'pending'
+                    };
+                    console.log('[Amiele:Apply] application payload:', payload);
+
+                    if (!window.AffiliateService) {
+                        throw new Error('Affiliate service is not loaded. Please refresh and try again.');
                     }
-                    
+
+                    await window.AffiliateService.submitApplication(authUser.id, motivation, socialLinks || 'N/A');
+                    console.log('[Amiele:Apply] Application submitted to Supabase with status=pending.');
+
                     // Show success toast
                     showToast('Partnership application submitted successfully!', 'success');
                     
@@ -468,6 +501,7 @@
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalText;
                     
+                    console.error('[Amiele:Apply] Submission error:', err);
                     const errMsg = err.message || 'Submission failed. Please try again.';
                     feedback.textContent = errMsg;
                     feedback.className = 'form-feedback error';

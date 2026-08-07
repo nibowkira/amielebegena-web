@@ -100,7 +100,7 @@
                     <li class="dash-nav-item dash-nav-affiliate-promo" id="nav-affiliate-tab" data-tab="affiliate" onclick="handleAffiliateClick(event)">
                         <i class="fa-solid fa-chart-line"></i>
                         <span>
-                            Affiliate Portal
+                            Become an Affiliate
                             <span class="dash-nav-affiliate-badge">EARN</span>
                         </span>
                     </li>
@@ -166,7 +166,7 @@
 
                     <!-- Quick Actions Pills Row -->
                     <div class="dash-quick-actions-bar">
-                        <a href="#" id="pill-affiliate" onclick="handleAffiliateClick(event)" class="dash-action-pill"><i class="fa-solid fa-chart-line"></i> Affiliate Portal</a>
+                        <a href="#" id="pill-affiliate" onclick="handleAffiliateClick(event)" class="dash-action-pill"><i class="fa-solid fa-chart-line"></i> Become an Affiliate</a>
                         <a href="products.html" class="dash-action-pill"><i class="fa-solid fa-store"></i> Browse Products</a>
                         <a href="#" onclick="switchDashTab('tracker')" class="dash-action-pill"><i class="fa-solid fa-truck-fast"></i> Track Order</a>
                         <a href="#" onclick="switchDashTab('wishlist')" class="dash-action-pill"><i class="fa-solid fa-heart"></i> Saved Wishlist</a>
@@ -658,7 +658,7 @@
             } else if (currentUser && currentUser.role === 'affiliate') {
                 window.location.href = 'affiliate-dashboard.html';
             } else {
-                window.location.href = 'affiliate-apply.html';
+                window.location.href = 'affiliate.html';
             }
         }
 
@@ -790,7 +790,22 @@
                     affiliatePill.innerHTML = `<i class="fa-solid fa-user-shield"></i> Admin Portal`;
                 }
             } else if (currentUser.role === 'affiliate') {
+                if (affiliateNavTab) {
+                    affiliateNavTab.innerHTML = `
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>
+                            Affiliate Portal
+                            <span class="dash-nav-affiliate-badge">EARN</span>
+                        </span>
+                    `;
+                }
+                if (affiliatePill) {
+                    affiliatePill.innerHTML = `<i class="fa-solid fa-chart-line"></i> Affiliate Portal`;
+                }
                 loadAffiliateSummary();
+            } else {
+                const affiliateSection = document.getElementById('sec-affiliate');
+                if (affiliateSection) affiliateSection.style.display = 'none';
             }
 
             // Load Data Services
