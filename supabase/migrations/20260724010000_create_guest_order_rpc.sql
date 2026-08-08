@@ -62,7 +62,8 @@ BEGIN
 
     RETURN json_build_object(
         'success', true,
-        'order_id', v_new_order.id
+        'order_id', v_new_order.id,
+        'order_number', v_new_order.order_number
     );
 EXCEPTION WHEN OTHERS THEN
     RETURN json_build_object(

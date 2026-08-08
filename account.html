@@ -499,7 +499,7 @@
                     <span>Total</span>
                     <span id="cart-total-display">$0.00</span>
                 </div>
-                <button class="btn-primary w-full">Checkout</button>
+                <button id="cart-checkout-btn" class="btn-primary w-full checkout-btn" onclick="handleCartCheckout()">Checkout</button>
             </div>
         </div>
     </main>
@@ -572,6 +572,7 @@
     <script src="js/notifications-service.js"></script>
     <script src="js/notifications-bell.js"></script>
     <script src="script.js"></script>
+    <script src="checkout.js"></script>
 
     <!-- Customer Dashboard Controller -->
     <script>
