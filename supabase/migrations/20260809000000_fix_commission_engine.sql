@@ -59,18 +59,27 @@ ALTER TABLE public.commissions DROP CONSTRAINT IF EXISTS check_comm_status;
 ALTER TABLE public.commissions ADD CONSTRAINT check_comm_status CHECK (status IN ('pending', 'approved', 'available', 'paid', 'rejected'));
 
 -- ---------------------------------------------------------------------------
--- 3. SEED / UPDATE TEST PRODUCTS WITH ETB PRICING
+-- 3. UPDATE TEST PRODUCTS WITH ETB PRICING (SAFE SLUG RESOLUTION)
 -- ---------------------------------------------------------------------------
+-- Begena -> 8,500 ETB
+UPDATE public.products 
+SET price = 8500.00, currency = 'ETB', status = 'active', updated_at = now()
+WHERE slug = 'begena' OR id = 'a0000000-0000-0000-0000-000000000001';
+
+-- Mesenko Wood -> 4,500 ETB
+UPDATE public.products 
+SET name = 'Mesenko — Wood', slug = 'mesenko-wood', price = 4500.00, currency = 'ETB', status = 'active', updated_at = now()
+WHERE slug IN ('masinko', 'mesenko-wood') OR id = 'a0000000-0000-0000-0000-000000000003';
+
+-- Mesenko Steel -> 5,500 ETB
 INSERT INTO public.products (id, name, slug, category, short_description, price, currency, stock, featured, status)
-VALUES
-    ('a0000000-0000-0000-0000-000000000001', 'በገና (Begena)', 'begena', 'strings', 'Ten-Stringed Harp of David', 8500.00, 'ETB', 50, true, 'active'),
-    ('a0000000-0000-0000-0000-000000000002', 'Mesenko — Wood', 'mesenko-wood', 'strings', 'Traditional Handcrafted Wood Fiddle', 4500.00, 'ETB', 40, true, 'active'),
-    ('a0000000-0000-0000-0000-000000000003', 'Mesenko — Steel', 'mesenko-steel', 'strings', 'Handcrafted Steel Resonance Fiddle', 5500.00, 'ETB', 40, true, 'active')
-ON CONFLICT (id) DO UPDATE SET
+VALUES ('a0000000-0000-0000-0000-000000000020', 'Mesenko — Steel', 'mesenko-steel', 'strings', 'Handcrafted Steel Resonance Fiddle', 5500.00, 'ETB', 40, true, 'active')
+ON CONFLICT (slug) DO UPDATE SET
     name = EXCLUDED.name,
     price = EXCLUDED.price,
     currency = EXCLUDED.currency,
     status = EXCLUDED.status;
+
 
 -- ---------------------------------------------------------------------------
 -- 4. AUTHORITATIVE SERVER-SIDE PAYMENT APPROVAL RPC
