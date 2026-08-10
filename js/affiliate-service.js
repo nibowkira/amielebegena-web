@@ -1,1 +1,699 @@
-!function(){"use strict";const e={async submitApplication(e,t,a){const r=window.AmieleSupabase.getClient();if(!r)throw new Error("Supabase client not initialized");const{data:i,error:n}=await r.from("affiliate_applications").insert({user_id:e,motivation:t,social_link:a,status:"pending"}).select().single();if(n&&"23505"===n.code){const{data:i,error:n}=await r.from("affiliate_applications").update({motivation:t,social_link:a,status:"pending",reviewed_by:null,reviewed_at:null}).eq("user_id",e).select().single();if(n)throw n;return i}if(n)throw n;return i},async getUserApplication(e){const t=window.AmieleSupabase.getClient();if(!t)return null;const{data:a,error:r}=await t.from("affiliate_applications").select("*").eq("user_id",e).maybeSingle();return r?(console.error("[Amiele:Affiliate] Error fetching application:",r),null):a},async trackAffiliateClick(e){if(console.log("trackAffiliateClick() called"),!e||"string"!=typeof e)return;const t=e.trim();if(!t)return;localStorage.setItem("amiele_referral_code",t),localStorage.setItem("amiele_ref_code",t);const a="amiele_click_time_"+t.toLowerCase(),r=localStorage.getItem(a),i=Date.now();if(r&&i-parseInt(r,10)<864e5)return void console.log("Duplicate click skipped");const n=window.AmieleSupabase?window.AmieleSupabase.getClient():null;if(n)try{console.log("Affiliate lookup started");const{data:e,error:r}=await n.from("affiliates").select("user_id, referral_code").ilike("referral_code",t).maybeSingle();if(r)return void console.error("Supabase Affiliate Query Error:",r);if(!e)return void console.log("Affiliate not found");console.log("Affiliate found:",e),console.log("Inserting affiliate_clicks row");let o={affiliate_id:e.user_id,referral_code:e.referral_code,user_agent:navigator.userAgent,ip_address:null},{data:s,error:l}=await n.from("affiliate_clicks").insert(o).select().single();if(l){console.warn("Full payload insert warning, retrying minimal payload:",l);const{data:t,error:a}=await n.from("affiliate_clicks").insert({affiliate_id:e.user_id,referral_code:e.referral_code}).select().single();if(a)return void console.error("Insert failed:",a);s=t,l=null}localStorage.setItem(a,String(i)),console.log("Insert successful",s)}catch(e){console.error("Exception in trackAffiliateClick:",e)}else console.error("Supabase client unavailable for click tracking")},async getAffiliateMetadata(e){const t=window.AmieleSupabase?window.AmieleSupabase.getClient():null;if(!t||!e)return null;let a=null;try{const{data:r,error:i}=await t.from("affiliates").select("*").eq("user_id",e).maybeSingle();!i&&r&&(a=r)}catch(e){console.warn("[Amiele:Affiliate] Supabase fetch affiliate error:",e)}if(!a)return null;const r=a.referral_code||"";let i=0,n=0,o=0,s=0,l=0,c=0;try{const{data:a,error:d}=await t.from("affiliate_clicks").select("created_at, user_agent").or(`affiliate_id.eq.${e},referral_code.eq.${r}`);if(!d&&a){i=a.length;const e=new Date,t=new Date(e.getFullYear(),e.getMonth(),e.getDate()).getTime(),r=e.getDay(),d=new Date(e.getFullYear(),e.getMonth(),e.getDate()-r).getTime(),f=new Date(e.getFullYear(),e.getMonth(),1).getTime(),u=new Date(e.getFullYear(),0,1).getTime(),p=new Set;a.forEach(e=>{const a=new Date(e.created_at).getTime();e.user_agent&&p.add(e.user_agent),a>=t&&n++,a>=d&&o++,a>=f&&s++,a>=u&&l++}),c=p.size>0?p.size:i}}catch(e){console.warn("[Amiele:Affiliate] Error querying affiliate_clicks:",e)}let d=1;let f=0,u=0,p=0,m=0,g=0,w=0;try{const{data:a}=await t.from("orders").select("quantity, payment_status, status, product:products(price)").or(`affiliate_id.eq.${e},referral_code.eq.${r}`);a&&a.length>0&&(m=a.length,a.forEach(e=>{const t=(e.product?parseFloat(e.product.price):0)*(e.quantity||1);w+=t,"pending_payment"===e.payment_status?f+=Math.round(.08*t):"paid"!==e.payment_status&&"confirmed"!==e.status||g++}))}catch(e){console.warn("[Amiele:Affiliate] Error fetching orders:",e)}let _=Math.max(a.sales_count||0,g);try{const{data:a}=await t.from("commissions").select("amount, status").eq("affiliate_id",e).eq("status","approved");a&&a.length>0&&(u=a.reduce((e,t)=>e+parseFloat(t.amount||0),0),_=Math.max(_,a.length))}catch(e){}try{const{data:a}=await t.from("affiliate_withdrawals").select("amount, status").eq("affiliate_id",e);a&&(p=a.filter(e=>"approved"===e.status||"paid"===e.status).reduce((e,t)=>e+parseFloat(t.amount||0),0))}catch(e){}const h=Math.max(0,u-p),A={userId:e,code:r,couponCode:r.toUpperCase()+"5",tier:"standard",balance:h,totalEarnings:u,pendingCommission:f,totalPaid:p,sales:_,totalOrders:Math.max(m,_),grossVolume:w,clicks:i,uniqueClicks:c,clicksToday:n,clicksWeek:o,clicksMonth:s,clicksYear:l};return console.log("Dashboard Stats:",A),A},async getCommissionsLedger(e){const t=window.AmieleSupabase?window.AmieleSupabase.getClient():null;if(!t||!e)return[];let a="";try{const{data:r}=await t.from("affiliates").select("referral_code").eq("user_id",e).maybeSingle();r&&(a=r.referral_code||"")}catch(e){}let r=t.from("orders").select("\n                id,\n                order_number,\n                quantity,\n                status,\n                payment_status,\n                created_at,\n                product:products(name, price)\n            ");r=a?r.or(`affiliate_id.eq.${e},referral_code.eq.${a}`):r.eq("affiliate_id",e);const{data:i,error:n}=await r.order("created_at",{ascending:!1});if(n)return console.error("[Amiele:Affiliate] Error fetching orders for ledger:",n),[];const{data:o,error:s}=await t.from("commissions").select("*").eq("affiliate_id",e),l={};!s&&o&&o.forEach(e=>{l[e.order_id]=e});let c=.08,d=1;return i.map(e=>{const t=(e.product?parseFloat(e.product.price):0)*e.quantity*d;let a=t*c,r="pending";return l[e.id]?(a=parseFloat(l[e.id].amount),r=l[e.id].status):"paid"===e.payment_status?r="approved":"cancelled"===e.status&&(r="cancelled"),{id:"comm_"+e.id.slice(0,8),orderId:e.order_number||"#HA-"+e.id.slice(0,4).toUpperCase(),productName:e.product?`${e.quantity}x ${e.product.name}`:"Instrument",orderAmount:t,commissionAmount:a,status:r,createdAt:e.created_at}})},async getWithdrawals(e){const t=window.AmieleSupabase.getClient();if(!t)return[];const{data:a,error:r}=await t.from("affiliate_withdrawals").select("*").eq("affiliate_id",e).order("created_at",{ascending:!1});return r?(console.error("[Amiele:Affiliate] Error fetching withdrawals:",r),[]):a.map(e=>({id:"wth_"+e.id.slice(0,8),amount:parseFloat(e.amount),method:e.method,phone:e.phone,status:e.status,createdAt:e.created_at}))},async requestWithdrawal(e,t,a,r){const i=window.AmieleSupabase.getClient();if(!i)throw new Error("Supabase client not initialized");const n=await this.getAffiliateMetadata(e);if(!n||t>n.balance)throw new Error("Insufficient balance to perform withdrawal. / በቂ ሂሳብ የሎትም።");const{data:o,error:s}=await i.from("affiliate_withdrawals").insert({affiliate_id:e,amount:t,method:a,phone:r,status:"pending"}).select().single();if(s)throw s;return{id:"wth_"+o.id.slice(0,8),amount:parseFloat(o.amount),method:o.method,phone:o.phone,status:o.status,createdAt:o.created_at}},async getCampaigns(){const e=window.AmieleSupabase.getClient();if(!e)return[];const{data:t,error:a}=await e.from("affiliate_campaigns").select("*").eq("status","active").order("created_at",{ascending:!1});return a?(console.error("[Amiele:Affiliate] Error fetching campaigns:",a),[]):t.map(e=>{const t=new Date(e.ends_at),a=Math.max(0,t-new Date),r=Math.ceil(a/864e5);return{id:e.id,title:e.title,description:e.description,targetSales:e.target_sales,reward:parseFloat(e.reward),daysRemaining:r,status:e.status}})},async getAnnouncements(){const e=window.AmieleSupabase.getClient();if(!e)return[];const{data:t,error:a}=await e.from("affiliate_announcements").select("*").order("created_at",{ascending:!1});return a?(console.error("[Amiele:Affiliate] Error fetching announcements:",a),[]):t.map(e=>({id:e.id,title:e.title,content:e.content,type:e.type,urgency:e.urgency,createdAt:e.created_at}))},async getEarningsChartData(e,t){const a=window.AmieleSupabase.getClient();if(!a)return[0,0,0,0,0,t];const{data:r,error:i}=await a.from("orders").select("\n                    quantity,\n                    status,\n                    created_at,\n                    product:products(price)\n                ").eq("affiliate_id",e).neq("status","cancelled");if(i||!r)return[0,0,0,0,0,t];const n=Array(6).fill(0),o=new Date,s=r.length;let l=.08;return r.forEach(e=>{const t=new Date(e.created_at),a=12*(o.getFullYear()-t.getFullYear())+(o.getMonth()-t.getMonth());if(a>=0&&a<6){const t=(e.product?parseFloat(e.product.price):0)*e.quantity*l;n[5-a]+=t}}),n},async updateProfile(e,t){const a=window.AmieleSupabase.getClient();if(!a)throw new Error("Supabase client not initialized");const{error:r}=await a.from("profiles").update({full_name:t.name,phone:t.phone,avatar_url:t.photoUrl}).eq("id",e);if(r)throw r;if(t.password){const{error:e}=await a.auth.updateUser({password:t.password});if(e)throw e}return!0}};window.AffiliateService=e}();
+/**
+ * Amiele Begena - Affiliate Service
+ * Handles affiliate applications, click tracking, metadata computation,
+ * ledger queries, withdrawals, campaigns, announcements, and real-time dashboard updates.
+ */
+
+(function () {
+    "use strict";
+
+    let activeRealtimeChannel = null;
+
+    const AffiliateService = {
+        /**
+         * Submit a new affiliate application or update a pending application
+         */
+        async submitApplication(userId, motivation, socialLink) {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) throw new Error("Supabase client not initialized");
+
+            const { data, error } = await client
+                .from("affiliate_applications")
+                .insert({
+                    user_id: userId,
+                    motivation: motivation,
+                    social_link: socialLink,
+                    status: "pending"
+                })
+                .select()
+                .single();
+
+            if (error && error.code === "23505") {
+                // Unique constraint violation -> update existing application
+                const { data: updatedData, error: updateError } = await client
+                    .from("affiliate_applications")
+                    .update({
+                        motivation: motivation,
+                        social_link: socialLink,
+                        status: "pending",
+                        reviewed_by: null,
+                        reviewed_at: null
+                    })
+                    .eq("user_id", userId)
+                    .select()
+                    .single();
+
+                if (updateError) throw updateError;
+                return updatedData;
+            }
+
+            if (error) throw error;
+            return data;
+        },
+
+        /**
+         * Fetch current user's application status
+         */
+        async getUserApplication(userId) {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client || !userId) return null;
+
+            const { data, error } = await client
+                .from("affiliate_applications")
+                .select("*")
+                .eq("user_id", userId)
+                .maybeSingle();
+
+            if (error) {
+                console.error("[Amiele:Affiliate] Error fetching application:", error);
+                return null;
+            }
+            return data;
+        },
+
+        /**
+         * Track an affiliate link click
+         */
+        async trackAffiliateClick(referralCode) {
+            if (!referralCode || typeof referralCode !== "string") return;
+            const code = referralCode.trim();
+            if (!code) return;
+
+            localStorage.setItem("amiele_referral_code", code);
+            localStorage.setItem("amiele_ref_code", code);
+
+            const storageKey = "amiele_click_time_" + code.toLowerCase();
+            const lastClick = localStorage.getItem(storageKey);
+            const now = Date.now();
+
+            // Throttle clicks within 24 hours per referral code locally
+            if (lastClick && now - parseInt(lastClick, 10) < 86400000) {
+                console.log("[Amiele:Affiliate] Duplicate click skipped within 24h window");
+                return;
+            }
+
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) {
+                console.error("[Amiele:Affiliate] Supabase client unavailable for click tracking");
+                return;
+            }
+
+            try {
+                const { data: aff, error: lookupErr } = await client
+                    .from("affiliates")
+                    .select("user_id, referral_code")
+                    .ilike("referral_code", code)
+                    .maybeSingle();
+
+                if (lookupErr) {
+                    console.error("[Amiele:Affiliate] Supabase Affiliate Query Error:", lookupErr);
+                    return;
+                }
+                if (!aff) {
+                    console.log("[Amiele:Affiliate] Affiliate not found for code:", code);
+                    return;
+                }
+
+                let payload = {
+                    affiliate_id: aff.user_id,
+                    referral_code: aff.referral_code,
+                    user_agent: navigator.userAgent,
+                    ip_address: null
+                };
+
+                let { data: inserted, error: insertErr } = await client
+                    .from("affiliate_clicks")
+                    .insert(payload)
+                    .select()
+                    .single();
+
+                if (insertErr) {
+                    console.warn("[Amiele:Affiliate] Full payload insert warning, retrying minimal payload:", insertErr);
+                    const { data: retryData, error: retryErr } = await client
+                        .from("affiliate_clicks")
+                        .insert({
+                            affiliate_id: aff.user_id,
+                            referral_code: aff.referral_code
+                        })
+                        .select()
+                        .single();
+
+                    if (retryErr) {
+                        console.error("[Amiele:Affiliate] Click insert failed:", retryErr);
+                        return;
+                    }
+                    inserted = retryData;
+                }
+
+                localStorage.setItem(storageKey, String(now));
+                console.log("[Amiele:Affiliate] Click tracked successfully:", inserted);
+            } catch (err) {
+                console.error("[Amiele:Affiliate] Exception in trackAffiliateClick:", err);
+            }
+        },
+
+        /**
+         * Retrieve comprehensive metadata & metrics for an affiliate
+         */
+        async getAffiliateMetadata(userId) {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client || !userId) return null;
+
+            let affiliate = null;
+            try {
+                const { data, error } = await client
+                    .from("affiliates")
+                    .select("*")
+                    .eq("user_id", userId)
+                    .maybeSingle();
+
+                if (!error && data) {
+                    affiliate = data;
+                }
+            } catch (err) {
+                console.warn("[Amiele:Affiliate] Supabase fetch affiliate error:", err);
+            }
+
+            if (!affiliate) return null;
+
+            const code = affiliate.referral_code || "";
+
+            // 1. Query clicks statistics
+            let clicksTotal = 0;
+            let clicksToday = 0;
+            let clicksWeek = 0;
+            let clicksMonth = 0;
+            let clicksYear = 0;
+            let uniqueClicks = 0;
+
+            try {
+                const { data: clicksData, error: clicksErr } = await client
+                    .from("affiliate_clicks")
+                    .select("created_at, user_agent")
+                    .or(`affiliate_id.eq.${userId},referral_code.eq.${code}`);
+
+                if (!clicksErr && clicksData) {
+                    clicksTotal = clicksData.length;
+                    const now = new Date();
+                    const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                    const dayOfWeek = now.getDay();
+                    const startWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).getTime();
+                    const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                    const startYear = new Date(now.getFullYear(), 0, 1).getTime();
+                    const userAgents = new Set();
+
+                    clicksData.forEach((row) => {
+                        const clickTime = new Date(row.created_at).getTime();
+                        if (row.user_agent) userAgents.add(row.user_agent);
+                        if (clickTime >= startToday) clicksToday++;
+                        if (clickTime >= startWeek) clicksWeek++;
+                        if (clickTime >= startMonth) clicksMonth++;
+                        if (clickTime >= startYear) clicksYear++;
+                    });
+
+                    uniqueClicks = userAgents.size > 0 ? userAgents.size : clicksTotal;
+                }
+            } catch (err) {
+                console.warn("[Amiele:Affiliate] Error querying affiliate_clicks:", err);
+            }
+
+            // 2. Query orders statistics
+            let pendingCommission = 0;
+            let totalOrders = 0;
+            let grossVolume = 0;
+
+            try {
+                const { data: ordersData } = await client
+                    .from("orders")
+                    .select("quantity, payment_status, status, product:products(price, currency)")
+                    .or(`affiliate_id.eq.${userId},referral_code.eq.${code}`);
+
+                if (ordersData && ordersData.length > 0) {
+                    totalOrders = ordersData.length;
+                    ordersData.forEach((ord) => {
+                        let unitPrice = ord.product ? parseFloat(ord.product.price || 0) : 0;
+                        if (ord.product && ord.product.currency === "USD") {
+                            unitPrice *= 120; // ETB conversion for gross volume calculation
+                        }
+                        const orderTotal = unitPrice * (ord.quantity || 1);
+                        grossVolume += orderTotal;
+
+                        if (ord.payment_status === "pending_payment") {
+                            pendingCommission += Math.round(0.08 * orderTotal);
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn("[Amiele:Affiliate] Error fetching orders:", err);
+            }
+
+            // 3. Query authoritative commissions table for total approved earnings
+            let totalEarnings = 0;
+            let approvedCommissionCount = 0;
+
+            try {
+                const { data: commsData } = await client
+                    .from("commissions")
+                    .select("amount, status")
+                    .eq("affiliate_id", userId)
+                    .eq("status", "approved");
+
+                if (commsData && commsData.length > 0) {
+                    totalEarnings = commsData.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+                    approvedCommissionCount = commsData.length;
+                }
+            } catch (err) {
+                console.warn("[Amiele:Affiliate] Error querying commissions:", err);
+            }
+
+            // Determine authoritative sales count (maximum of profile sales_count and approved commissions count)
+            const salesCount = Math.max(affiliate.sales_count || 0, approvedCommissionCount);
+
+            // 4. Query withdrawals
+            let totalPaid = 0;
+            try {
+                const { data: wthData } = await client
+                    .from("affiliate_withdrawals")
+                    .select("amount, status")
+                    .eq("affiliate_id", userId);
+
+                if (wthData) {
+                    totalPaid = wthData
+                        .filter((w) => w.status === "approved" || w.status === "paid")
+                        .reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+                }
+            } catch (err) {
+                console.warn("[Amiele:Affiliate] Error fetching withdrawals:", err);
+            }
+
+            const availableBalance = Math.max(0, totalEarnings - totalPaid);
+
+            const metadata = {
+                userId: userId,
+                code: code,
+                couponCode: code.toUpperCase() + "5",
+                tier: affiliate.tier || "standard",
+                balance: availableBalance,
+                totalEarnings: totalEarnings,
+                pendingCommission: pendingCommission,
+                totalPaid: totalPaid,
+                sales: salesCount,
+                totalOrders: Math.max(totalOrders, salesCount),
+                grossVolume: grossVolume,
+                clicks: clicksTotal,
+                uniqueClicks: uniqueClicks,
+                clicksToday: clicksToday,
+                clicksWeek: clicksWeek,
+                clicksMonth: clicksMonth,
+                clicksYear: clicksYear
+            };
+
+            return metadata;
+        },
+
+        /**
+         * Fetch the full commissions ledger using `public.commissions` as primary truth,
+         * enriched with order details and pending order fallback.
+         */
+        async getCommissionsLedger(userId) {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client || !userId) return [];
+
+            let referralCode = "";
+            try {
+                const { data: aff } = await client
+                    .from("affiliates")
+                    .select("referral_code")
+                    .eq("user_id", userId)
+                    .maybeSingle();
+
+                if (aff) referralCode = aff.referral_code || "";
+            } catch (err) {}
+
+            // 1. Query public.commissions table directly for all approved/paid/rejected commission rows
+            const { data: commissionsData, error: commsErr } = await client
+                .from("commissions")
+                .select(`
+                    id,
+                    order_id,
+                    affiliate_id,
+                    amount,
+                    rate,
+                    status,
+                    created_at,
+                    order:orders(
+                        order_number,
+                        quantity,
+                        status,
+                        payment_status,
+                        created_at,
+                        product:products(name, price, currency)
+                    )
+                `)
+                .eq("affiliate_id", userId)
+                .order("created_at", { ascending: false });
+
+            if (commsErr) {
+                console.error("[Amiele:Affiliate] Error fetching commissions ledger from commissions table:", commsErr);
+            }
+
+            const ledgerItems = [];
+            const processedOrderIds = new Set();
+
+            if (commissionsData && commissionsData.length > 0) {
+                commissionsData.forEach((comm) => {
+                    processedOrderIds.add(comm.order_id);
+
+                    const ord = comm.order || {};
+                    const prod = ord.product || {};
+
+                    let unitPrice = prod.price ? parseFloat(prod.price) : 0;
+                    if (prod.currency === "USD") unitPrice *= 120;
+                    const orderAmount = unitPrice * (ord.quantity || 1);
+
+                    ledgerItems.push({
+                        id: "comm_" + comm.id.slice(0, 8),
+                        orderId: ord.order_number || "#HA-" + comm.order_id.slice(0, 4).toUpperCase(),
+                        productName: prod.name ? `${ord.quantity || 1}x ${prod.name}` : "Instrument",
+                        orderAmount: orderAmount,
+                        commissionAmount: parseFloat(comm.amount || 0),
+                        status: comm.status,
+                        createdAt: comm.created_at
+                    });
+                });
+            }
+
+            // 2. Query orders for pending orders that do not yet have a commission record
+            try {
+                let ordersQuery = client.from("orders").select(`
+                    id,
+                    order_number,
+                    quantity,
+                    status,
+                    payment_status,
+                    created_at,
+                    product:products(name, price, currency)
+                `);
+
+                ordersQuery = referralCode
+                    ? ordersQuery.or(`affiliate_id.eq.${userId},referral_code.eq.${referralCode}`)
+                    : ordersQuery.eq("affiliate_id", userId);
+
+                const { data: ordersData } = await ordersQuery.order("created_at", { ascending: false });
+
+                if (ordersData && ordersData.length > 0) {
+                    ordersData.forEach((ord) => {
+                        if (!processedOrderIds.has(ord.id) && ord.payment_status === "pending_payment") {
+                            const prod = ord.product || {};
+                            let unitPrice = prod.price ? parseFloat(prod.price) : 0;
+                            if (prod.currency === "USD") unitPrice *= 120;
+                            const orderAmount = unitPrice * (ord.quantity || 1);
+                            const estimatedComm = Math.round(orderAmount * 0.08);
+
+                            ledgerItems.push({
+                                id: "comm_" + ord.id.slice(0, 8),
+                                orderId: ord.order_number || "#HA-" + ord.id.slice(0, 4).toUpperCase(),
+                                productName: prod.name ? `${ord.quantity || 1}x ${prod.name}` : "Instrument",
+                                orderAmount: orderAmount,
+                                commissionAmount: estimatedComm,
+                                status: "pending",
+                                createdAt: ord.created_at
+                            });
+                        }
+                    });
+                }
+            } catch (err) {
+                console.warn("[Amiele:Affiliate] Error fetching pending orders for ledger:", err);
+            }
+
+            // Sort all ledger items descending by creation date
+            ledgerItems.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            return ledgerItems;
+        },
+
+        /**
+         * Subscribe to real-time database changes on commissions, affiliates, and orders for an affiliate
+         */
+        subscribeToAffiliateUpdates(userId, onUpdateCallback) {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client || !userId) {
+                console.warn("[Amiele:Affiliate] Cannot subscribe to Realtime: Supabase client or userId missing.");
+                return () => {};
+            }
+
+            if (activeRealtimeChannel) {
+                try {
+                    client.removeChannel(activeRealtimeChannel);
+                } catch (e) {}
+                activeRealtimeChannel = null;
+            }
+
+            try {
+                const channelName = `affiliate-realtime:${userId}`;
+                activeRealtimeChannel = client
+                    .channel(channelName)
+                    .on(
+                        "postgres_changes",
+                        {
+                            event: "*",
+                            schema: "public",
+                            table: "commissions",
+                            filter: `affiliate_id=eq.${userId}`
+                        },
+                        (payload) => {
+                            console.log("[Amiele:Realtime] Commission change detected:", payload.eventType, payload);
+                            window.dispatchEvent(new CustomEvent("amiele-commission-updated", { detail: payload }));
+                            if (typeof onUpdateCallback === "function") onUpdateCallback(payload);
+                        }
+                    )
+                    .on(
+                        "postgres_changes",
+                        {
+                            event: "*",
+                            schema: "public",
+                            table: "affiliates",
+                            filter: `user_id=eq.${userId}`
+                        },
+                        (payload) => {
+                            console.log("[Amiele:Realtime] Affiliate profile change detected:", payload.eventType, payload);
+                            window.dispatchEvent(new CustomEvent("amiele-commission-updated", { detail: payload }));
+                            if (typeof onUpdateCallback === "function") onUpdateCallback(payload);
+                        }
+                    )
+                    .on(
+                        "postgres_changes",
+                        {
+                            event: "*",
+                            schema: "public",
+                            table: "orders",
+                            filter: `affiliate_id=eq.${userId}`
+                        },
+                        (payload) => {
+                            console.log("[Amiele:Realtime] Order change detected for affiliate:", payload.eventType, payload);
+                            window.dispatchEvent(new CustomEvent("amiele-commission-updated", { detail: payload }));
+                            if (typeof onUpdateCallback === "function") onUpdateCallback(payload);
+                        }
+                    )
+                    .subscribe((status) => {
+                        console.log(`[Amiele:Realtime] Subscription status for channel ${channelName}:`, status);
+                    });
+
+                return () => {
+                    if (activeRealtimeChannel) {
+                        client.removeChannel(activeRealtimeChannel);
+                        activeRealtimeChannel = null;
+                    }
+                };
+            } catch (err) {
+                console.error("[Amiele:Affiliate] Exception establishing Realtime channel:", err);
+                return () => {};
+            }
+        },
+
+        /**
+         * Fetch withdrawal history for affiliate
+         */
+        async getWithdrawals(userId) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client || !userId) return [];
+
+            const { data, error } = await client
+                .from("affiliate_withdrawals")
+                .select("*")
+                .eq("affiliate_id", userId)
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error("[Amiele:Affiliate] Error fetching withdrawals:", error);
+                return [];
+            }
+            return data.map((item) => ({
+                id: "wth_" + item.id.slice(0, 8),
+                amount: parseFloat(item.amount),
+                method: item.method,
+                phone: item.phone,
+                status: item.status,
+                createdAt: item.created_at
+            }));
+        },
+
+        /**
+         * Request payout withdrawal
+         */
+        async requestWithdrawal(userId, amount, method, phone) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error("Supabase client not initialized");
+
+            const metadata = await this.getAffiliateMetadata(userId);
+            if (!metadata || amount > metadata.balance) {
+                throw new Error("Insufficient balance to perform withdrawal. / በቂ ሂሳብ የሎትም።");
+            }
+
+            const { data, error } = await client
+                .from("affiliate_withdrawals")
+                .insert({
+                    affiliate_id: userId,
+                    amount: amount,
+                    method: method,
+                    phone: phone,
+                    status: "pending"
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            return {
+                id: "wth_" + data.id.slice(0, 8),
+                amount: parseFloat(data.amount),
+                method: data.method,
+                phone: data.phone,
+                status: data.status,
+                createdAt: data.createdAt || data.created_at
+            };
+        },
+
+        /**
+         * Fetch active bonus campaigns
+         */
+        async getCampaigns() {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) return [];
+
+            const { data, error } = await client
+                .from("affiliate_campaigns")
+                .select("*")
+                .eq("status", "active")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error("[Amiele:Affiliate] Error fetching campaigns:", error);
+                return [];
+            }
+            return data.map((item) => {
+                const endsDate = new Date(item.ends_at);
+                const diffMs = Math.max(0, endsDate - new Date());
+                const daysRemaining = Math.ceil(diffMs / 86400000);
+                return {
+                    id: item.id,
+                    title: item.title,
+                    description: item.description,
+                    targetSales: item.target_sales,
+                    reward: parseFloat(item.reward),
+                    daysRemaining: daysRemaining,
+                    status: item.status
+                };
+            });
+        },
+
+        /**
+         * Fetch announcements bulletin
+         */
+        async getAnnouncements() {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) return [];
+
+            const { data, error } = await client
+                .from("affiliate_announcements")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) {
+                console.error("[Amiele:Affiliate] Error fetching announcements:", error);
+                return [];
+            }
+            return data.map((item) => ({
+                id: item.id,
+                title: item.title,
+                content: item.content,
+                type: item.type,
+                urgency: item.urgency,
+                createdAt: item.created_at
+            }));
+        },
+
+        /**
+         * Fetch monthly earnings chart dataset
+         */
+        async getEarningsChartData(userId, currentTotalEarnings) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client || !userId) return [0, 0, 0, 0, 0, currentTotalEarnings];
+
+            const { data, error } = await client
+                .from("orders")
+                .select(`
+                    quantity,
+                    status,
+                    created_at,
+                    product:products(price, currency)
+                `)
+                .eq("affiliate_id", userId)
+                .neq("status", "cancelled");
+
+            if (error || !data) return [0, 0, 0, 0, 0, currentTotalEarnings];
+
+            const dataset = Array(6).fill(0);
+            const now = new Date();
+            const commissionRate = 0.08;
+
+            data.forEach((ord) => {
+                const ordDate = new Date(ord.created_at);
+                const monthDiff = (now.getFullYear() - ordDate.getFullYear()) * 12 + (now.getMonth() - ordDate.getMonth());
+                if (monthDiff >= 0 && monthDiff < 6) {
+                    let unitPrice = ord.product ? parseFloat(ord.product.price || 0) : 0;
+                    if (ord.product && ord.product.currency === "USD") unitPrice *= 120;
+                    const orderTotal = unitPrice * (ord.quantity || 1);
+                    dataset[5 - monthDiff] += orderTotal * commissionRate;
+                }
+            });
+
+            return dataset;
+        },
+
+        /**
+         * Update user profile settings
+         */
+        async updateProfile(userId, settings) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error("Supabase client not initialized");
+
+            const { error } = await client
+                .from("profiles")
+                .update({
+                    full_name: settings.name,
+                    phone: settings.phone,
+                    avatar_url: settings.photoUrl
+                })
+                .eq("id", userId);
+
+            if (error) throw error;
+
+            if (settings.password) {
+                const { error: passErr } = await client.auth.updateUser({ password: settings.password });
+                if (passErr) throw passErr;
+            }
+            return true;
+        }
+    };
+
+    window.AffiliateService = AffiliateService;
+})();

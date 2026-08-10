@@ -81,7 +81,7 @@ BEGIN
             WHERE user_id = resolved_affiliate_id;
 
             -- Fetch product price & currency authoritatively from products
-            SELECT price, COALESCE(currency, 'ETB') INTO prod_record FROM public.products WHERE id = order_record.product_id;
+            SELECT price, COALESCE(currency, 'ETB') AS currency INTO prod_record FROM public.products WHERE id = order_record.product_id;
             
             IF prod_record.price IS NULL THEN
                 prod_record.price := 8500.0;
