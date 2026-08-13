@@ -1413,6 +1413,11 @@
       statusEl.textContent = 'Slug is required.';
       return;
     }
+    if (!/^[a-z0-9-_]+$/.test(slug)) {
+      statusEl.className = 'pms-slug-status bad';
+      statusEl.textContent = 'Invalid slug format: Use lowercase letters, numbers, and dashes (e.g. "kirar-bag"). No spaces.';
+      return;
+    }
     var exclude = state.form.id || null;
     try {
       var avail = await window.PMSService.slugAvailable(slug, exclude);
@@ -1596,14 +1601,20 @@
   // ----- Save -----
   async function saveProduct() {
     var name = $('pf-name').value.trim();
-    var slug = $('pf-slug').value.trim();
+    var rawSlug = $('pf-slug').value.trim();
+    var slug = rawSlug.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-_]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
     var category = $('pf-category').value;
     var price = $('pf-price').value;
 
     if (!name) return toast('Product name is required.', 'warning');
-    if (!slug) return toast('Slug is required.', 'warning');
+    if (!slug) return toast('Valid URL slug is required (e.g. kirar-bag).', 'warning');
+    if (!/^[a-z0-9-_]+$/.test(slug)) return toast('Slug may only contain lowercase letters, numbers, and dashes (no spaces).', 'warning');
     if (!category) return toast('Please select a collection.', 'warning');
     if (price === '' || isNaN(Number(price)) || Number(price) < 0) return toast('Enter a valid price (0 or more).', 'warning');
+
+    // Update the input field with the clean slug
+    var slugInput = $('pf-slug');
+    if (slugInput) slugInput.value = slug;
 
     // slug availability final check
     var exclude = state.form.id || null;
