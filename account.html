@@ -769,7 +769,8 @@
             // Settings Sync
             document.getElementById('settings-name').value = currentUser.name || '';
             document.getElementById('settings-email').value = currentUser.email || '';
-            if (currentUser.bio) document.getElementById('settings-bio').value = currentUser.bio;
+            const savedBio = currentUser.bio || localStorage.getItem(`amiele_bio_${currentUser.id}`) || '';
+            document.getElementById('settings-bio').value = savedBio;
 
             document.getElementById('save-settings-btn').addEventListener('click', async () => {
                 const newName = document.getElementById('settings-name').value.trim();
@@ -778,14 +779,29 @@
                     showToast('Name cannot be empty.', 'warning');
                     return;
                 }
+                const saveBtn = document.getElementById('save-settings-btn');
+                const origText = saveBtn.textContent;
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
                 try {
                     const client = window.AmieleSupabase.getClient();
-                    const { error } = await client.from('profiles').update({ full_name: newName, bio: newBio }).eq('id', currentUser.id);
-                    if (error) throw error;
+                    // Attempt updating with bio, fallback to full_name only if schema doesn't have bio column yet
+                    let updateRes = await client.from('profiles').update({ full_name: newName, bio: newBio }).eq('id', currentUser.id);
+                    if (updateRes.error && updateRes.error.message && updateRes.error.message.includes('bio')) {
+                        updateRes = await client.from('profiles').update({ full_name: newName }).eq('id', currentUser.id);
+                    }
+                    if (updateRes.error) throw updateRes.error;
+
+                    localStorage.setItem(`amiele_bio_${currentUser.id}`, newBio);
+                    currentUser.name = newName;
+                    currentUser.bio = newBio;
                     showToast('Profile settings saved successfully!', 'success');
                     document.getElementById('dash-greeting-title').textContent = getGreeting(newName);
                 } catch (err) {
                     showToast(err.message || 'Failed to update settings.', 'error');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = origText;
                 }
             });
 
