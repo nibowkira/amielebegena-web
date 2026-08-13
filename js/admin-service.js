@@ -95,13 +95,13 @@
                     else if (mainStatus === "cancelled") cancelledOrdersCount++;
                     else pendingOrdersCount++;
 
-                    const fulStage = ord.fulfillment_status || (mainStatus === "delivered" ? "Delivered" : mainStatus === "shipped" ? "Shipped" : mainStatus === "confirmed" ? "Payment Verified" : "Pending");
-                    if (fulStage === "Preparing") countPreparing++;
-                    else if (fulStage === "Crafting") countCrafting++;
-                    else if (fulStage === "Packed") countPacked++;
-                    else if (fulStage === "Shipped") countShipped++;
-                    else if (fulStage === "Delivered") countDelivered++;
-                    else if (fulStage === "Cancelled") countCancelled++;
+                    const rawStage = (ord.fulfillment_status || "").trim().toLowerCase();
+                    if (rawStage === "preparing") countPreparing++;
+                    else if (rawStage === "crafting") countCrafting++;
+                    else if (rawStage === "packed") countPacked++;
+                    else if (rawStage === "shipped" || (!rawStage && mainStatus === "shipped")) countShipped++;
+                    else if (rawStage === "delivered" || (!rawStage && mainStatus === "delivered")) countDelivered++;
+                    else if (rawStage === "cancelled" || (!rawStage && mainStatus === "cancelled")) countCancelled++;
 
                     if (ord.packed_at && ord.created_at) {
                         const hrs = (new Date(ord.packed_at) - new Date(ord.created_at)) / 3600000;
@@ -242,6 +242,29 @@
                 });
                 activityFeed.sort((a, b) => new Date(b.time) - new Date(a.time));
 
+                // Calculate performance summary metrics
+                const thisMonthRev = monthlyRevenueData[monthlyRevenueData.length - 1]?.revenue || 0;
+                const lastMonthRev = monthlyRevenueData[monthlyRevenueData.length - 2]?.revenue || 0;
+                let revGrowthPct = 0;
+                if (lastMonthRev > 0) {
+                    revGrowthPct = Math.round(((thisMonthRev - lastMonthRev) / lastMonthRev) * 100);
+                } else if (thisMonthRev > 0) {
+                    revGrowthPct = 100;
+                }
+
+                const totalClicksCount = clicks.length;
+                const totalPaidOrders = orders.filter(o => o.payment_status === "paid" || ["confirmed", "shipped", "delivered"].includes((o.status || "").toLowerCase())).length;
+                const affConvRate = totalClicksCount > 0 ? Math.round((totalPaidOrders / totalClicksCount) * 100) : 0;
+                const orderConvRate = totalOrdersCount > 0 ? Math.round((totalPaidOrders / totalOrdersCount) * 100) : 0;
+                const retRate = customerAnalytics.repeatRate || 0;
+
+                const performanceSummary = {
+                    revenueGrowth: (revGrowthPct >= 0 ? "+" : "") + revGrowthPct + "%",
+                    affiliateConversion: affConvRate + "%",
+                    orderConversion: orderConvRate + "%",
+                    customerRetention: retRate + "%"
+                };
+
                 return {
                     summaryCards: {
                         totalRevenue: Math.round(totalRevenue),
@@ -257,27 +280,28 @@
                         ordersShipped: countShipped || shippedOrdersCount,
                         ordersDelivered: countDelivered || deliveredOrdersCount,
                         ordersCancelled: countCancelled || cancelledOrdersCount,
-                        avgFulfillmentTime: packCount > 0 ? (totalPackHours / packCount < 24 ? Math.round(totalPackHours / packCount) + " hrs" : (totalPackHours / packCount / 24).toFixed(1) + " days") : "1.5 days",
-                        avgShippingTime: shipCount > 0 ? (totalShipHours / shipCount < 24 ? Math.round(totalShipHours / shipCount) + " hrs" : (totalShipHours / shipCount / 24).toFixed(1) + " days") : "3.2 days",
+                        avgFulfillmentTime: packCount > 0 ? (totalPackHours / packCount < 24 ? Math.round(totalPackHours / packCount) + " hrs" : (totalPackHours / packCount / 24).toFixed(1) + " days") : "--",
+                        avgShippingTime: shipCount > 0 ? (totalShipHours / shipCount < 24 ? Math.round(totalShipHours / shipCount) + " hrs" : (totalShipHours / shipCount / 24).toFixed(1) + " days") : "--",
                         totalCustomers: totalCustomersCount,
                         totalAffiliates: totalAffiliatesCount,
                         topAffiliate,
                         bestSellingProduct,
                         avgOrderValue
                     },
+                    performanceSummary,
                     monthlyRevenueData,
                     countryList,
                     affiliateLeaderboard,
                     topProductsList,
+                    customerAnalytics,
+                    activityFeed: activityFeed.slice(0, 15),
                     orderStatusBreakdown: {
                         pending: pendingOrdersCount,
                         confirmed: confirmedOrdersCount,
                         shipped: shippedOrdersCount,
                         delivered: deliveredOrdersCount,
                         cancelled: cancelledOrdersCount
-                    },
-                    customerAnalytics,
-                    activityFeed: activityFeed.slice(0, 15)
+                    }
                 };
             } catch (err) {
                 console.error("[Amiele:Admin] Error in getComprehensiveAdminAnalytics:", err);
