@@ -1,1 +1,891 @@
-!function(){"use strict";const e={async getAdminAnalytics(){return await this.getComprehensiveAdminAnalytics()},async getComprehensiveAdminAnalytics(){const e=window.AmieleSupabase?window.AmieleSupabase.getClient():null;if(!e)return null;try{const[{data:t},{data:a},{data:r},{data:i},{data:o},{data:n},{data:s}]=await Promise.all([e.from("orders").select("id, order_number, quantity, status, payment_status, country, customer_name, customer_email, phone, created_at, product_id, referral_code, affiliate_id, product:products(name, price)").order("created_at",{ascending:!1}),e.from("products").select("id, name, price, category"),e.from("affiliates").select("user_id, referral_code, sales_count, created_at, profile:profiles(full_name, email)"),e.from("commissions").select("id, amount, status, created_at, order_id, affiliate_id"),e.from("affiliate_clicks").select("id, created_at, referral_code, affiliate_id, user_agent").order("created_at",{ascending:!1}).limit(100),e.from("affiliate_withdrawals").select("id, amount, status, created_at, affiliate_id").order("created_at",{ascending:!1}),e.from("profiles").select("id, full_name, email, role, created_at")]),l=t||[],d=r||[],c=i||[],u=o||[],m=n||[],p=s||[];let f=1;let _=0,w=0,g=0,h=0,y=0,A=0,S=0,b=0,v=0,C=0,E=0,D=0,k=0,B=0,I=0,O=0,q=0;const F=new Date,M=new Date(F.getFullYear(),F.getMonth(),1).getTime(),N={},P={},U=new Set,T={};l.forEach(e=>{const t=(e.product&&e.product.price?parseFloat(e.product.price):0)*(e.quantity||1),a=new Date(e.created_at).getTime(),r="paid"===e.payment_status||"confirmed"===e.status||"shipped"===e.status||"delivered"===e.status;r&&(_+=t,a>=M&&(w+=t));const i=(e.status||"pending").toLowerCase();(e.payment_status||"").toLowerCase();"confirmed"===i?h++:"shipped"===i?y++:"delivered"===i?A++:"cancelled"===i?S++:g++;const o=e.fulfillment_status||("delivered"===i?"Delivered":"shipped"===i?"Shipped":"confirmed"===i?"Payment Verified":"Pending");if("Preparing"===o?b++:"Crafting"===o?v++:"Packed"===o?C++:"Shipped"===o?E++:"Delivered"===o?D++:"Cancelled"===o&&k++,e.packed_at&&e.created_at){const t=(new Date(e.packed_at)-new Date(e.created_at))/36e5;t>=0&&(B+=t,I++)}if(e.delivered_at&&e.shipped_at){const t=(new Date(e.delivered_at)-new Date(e.shipped_at))/36e5;t>=0&&(O+=t,q++)}const n=e.country&&"N/A"!==e.country?e.country.trim():"Ethiopia";P[n]=(P[n]||0)+1;const s=e.product?e.product.name:e.product_name||"Ethiopian Begena";N[s]||(N[s]={unitsSold:0,revenueETB:0}),N[s].unitsSold+=e.quantity||1,r&&(N[s].revenueETB+=t);const l=e.customer_email&&"N/A"!==e.customer_email?e.customer_email.toLowerCase():e.phone||e.customer_name||"guest";U.add(l),T[l]=(T[l]||0)+1});const L=l.length,x=L>0?Math.round(_/L):0,$=Math.max(U.size,p.filter(e=>"customer"===e.role).length),j=Math.max(d.length,p.filter(e=>"affiliate"===e.role).length),R={};c.forEach(e=>{"approved"===e.status&&e.affiliate_id&&(R[e.affiliate_id]=(R[e.affiliate_id]||0)+parseFloat(e.amount||0))});let z={name:"N/A",referralCode:"N/A",salesCount:0,totalEarnings:0},V=-1;d.forEach(e=>{const t=R[e.user_id]||0,a=Math.max(e.sales_count||0,l.filter(t=>t.affiliate_id===e.user_id&&("paid"===t.payment_status||"confirmed"===t.status)).length);if(a>V){V=a;const r=e.profile?e.profile.full_name:e.referral_code||"Partner";z={name:r,referralCode:e.referral_code||"N/A",salesCount:a,totalEarnings:t}}});let W={name:"N/A",unitsSold:0,revenueETB:0},Y=-1;Object.keys(N).forEach(e=>{N[e].unitsSold>Y&&(Y=N[e].unitsSold,W={name:e,unitsSold:N[e].unitsSold,revenueETB:N[e].revenueETB})});const G=[];for(let e=5;e>=0;e--){const t=new Date(F.getFullYear(),F.getMonth()-e,1),a=t.toLocaleString("en-US",{month:"short",year:"2-digit"}),r=t.getTime(),i=new Date(t.getFullYear(),t.getMonth()+1,1).getTime();let o=0,n=0;l.forEach(e=>{const t=new Date(e.created_at).getTime();if(t>=r&&t<i&&(n++,"paid"===e.payment_status||"confirmed"===e.status)){const t=e.product&&e.product.price?parseFloat(e.product.price):0;o+=t*(e.quantity||1)}}),G.push({month:a,revenue:Math.round(o),ordersCount:n})}const H=Object.keys(P).map(e=>({country:e,count:P[e],percentage:L>0?Math.round(P[e]/L*100):0})).sort((e,t)=>t.count-e.count),J=d.map(e=>{const t=e.profile?e.profile.full_name:e.referral_code||"Affiliate Partner",a=R[e.user_id]||0,r=Math.max(e.sales_count||0,l.filter(t=>t.affiliate_id===e.user_id&&("paid"===t.payment_status||"confirmed"===t.status)).length);return{userId:e.user_id,name:t,code:e.referral_code,salesCount:r,totalEarnings:a}}).sort((e,t)=>t.salesCount-e.salesCount).slice(0,10),Z=Object.keys(N).map(e=>({name:e,unitsSold:N[e].unitsSold,revenueETB:N[e].revenueETB})).sort((e,t)=>t.unitsSold-e.unitsSold).slice(0,10);let K=0;Object.values(T).forEach(e=>{e>1&&K++});const Q={totalCustomers:$,repeatCustomers:K,repeatRate:U.size>0?Math.round(K/U.size*100):0,avgCustomerSpend:$>0?Math.round(_/$):0},X=[];return l.slice(0,5).forEach(e=>{X.push({type:"order",icon:"fa-shopping-cart",color:"#2e7d32",title:`New Order (${e.order_number||"#"+e.id.slice(0,4)})`,subtitle:`${e.customer_name||"Customer"} placed order for ${e.product?e.product.name:"Begena"}`,time:e.created_at})}),u.slice(0,5).forEach(e=>{X.push({type:"click",icon:"fa-mouse-pointer",color:"#0288d1",title:"Referral Link Clicked",subtitle:`Code: ${e.referral_code||"General"}`,time:e.created_at})}),m.slice(0,5).forEach(e=>{X.push({type:"payout",icon:"fa-hand-holding-usd",color:"#ed6c02",title:`Payout Request (${e.status.toUpperCase()})`,subtitle:`ETB ${parseFloat(e.amount).toLocaleString()} via ${e.method}`,time:e.created_at})}),X.sort((e,t)=>new Date(t.time)-new Date(e.time)),{summaryCards:{totalRevenue:Math.round(_),revenueThisMonth:Math.round(w),totalOrders:L,pendingOrders:g,confirmedOrders:h,shippedOrders:y,deliveredOrders:A,ordersPreparing:b,ordersCrafting:v,ordersPacked:C,ordersShipped:E||y,ordersDelivered:D||A,ordersCancelled:k||S,avgFulfillmentTime:I>0?B/I<24?Math.round(B/I)+" hrs":(B/I/24).toFixed(1)+" days":"1.5 days",avgShippingTime:q>0?O/q<24?Math.round(O/q)+" hrs":(O/q/24).toFixed(1)+" days":"3.2 days",totalCustomers:$,totalAffiliates:j,topAffiliate:z,bestSellingProduct:W,avgOrderValue:x},monthlyRevenueData:G,countryList:H,affiliateLeaderboard:J,topProductsList:Z,orderStatusBreakdown:{pending:g,confirmed:h,shipped:y,delivered:A,cancelled:S},customerAnalytics:Q,activityFeed:X.slice(0,15)}}catch(e){return console.error("[Amiele:Admin] Error in getComprehensiveAdminAnalytics:",e),null}},async getUsers(){let e=[];const t=window.AmieleSupabase.getClient();if(t)try{const{data:a,error:r}=await t.from("profiles").select("*").order("created_at",{ascending:!1});!r&&a&&(e=a)}catch(e){console.error("[Amiele:Admin] Supabase fetch users error:",e)}let a=[];if(window.AmieleDB)try{a=window.AmieleDB.getUsers()}catch(e){console.error("[Amiele:Admin] Local users fetch error:",e)}const r=a.map(e=>({id:e.id,full_name:e.name,email:e.email,role:e.role,created_at:e.joinedAt||(new Date).toISOString()})),i=new Map;return r.forEach(e=>{i.set(e.id,e)}),e.forEach(e=>{i.set(e.id,e)}),Array.from(i.values()).map(e=>({id:e.id,name:e.full_name||e.name||"User",email:e.email,role:e.role,created_at:e.created_at}))},async changeUserRole(e,t){const a=window.AmieleSupabase.getClient();let r=!1;if(a)try{const{data:i,error:o}=await a.from("profiles").update({role:t}).eq("id",e).select().single();o||(r=!0)}catch(e){console.warn("[Amiele:Admin] Supabase role update failed:",e)}if(window.AmieleDB)try{const a=window.AmieleDB.getUsers(),r=a.findIndex(t=>t.id===e);-1!==r&&(a[r].role=t,window.AmieleDB.saveUsers(a))}catch(e){console.error("[Amiele:Admin] Local role update failed:",e)}if(a&&!r&&!window.AmieleDB)throw new Error("Could not update user role.")},async getApplications(){let e=[];const t=window.AmieleSupabase.getClient();if(t){try{const{data:{user:e}}=await t.auth.getUser();e||console.warn("[Amiele:Admin] No active auth session. RLS will block application reads!")}catch(e){console.warn("[Amiele:Admin] Could not verify auth session status:",e)}let a=[];try{const{data:e,error:r}=await t.from("affiliate_applications").select("*").order("created_at",{ascending:!1});r?console.error("[Amiele:Admin] Supabase applications query error:",r.message,r):e&&(a=e)}catch(e){console.error("[Amiele:Admin] Supabase applications fetch exception:",e)}let r={};if(a.length>0)try{const e=a.map(e=>e.user_id),{data:i,error:o}=await t.from("profiles").select("id, full_name, email").in("id",e);!o&&i?i.forEach(e=>{r[e.id]=e}):o&&console.error("[Amiele:Admin] Supabase profiles lookup error:",o.message)}catch(e){console.error("[Amiele:Admin] Supabase profiles fetch exception:",e)}e=a.map(e=>{const t=r[e.user_id];return{id:"app_"+e.user_id.slice(0,8),userId:e.user_id,name:t?t.full_name:"Unknown User",phone:"N/A",country:"ET",socials:{instagram:e.social_link&&e.social_link.includes("instagram")?e.social_link:"",tiktok:e.social_link&&e.social_link.includes("tiktok")?e.social_link:"",youtube:e.social_link&&e.social_link.includes("youtube")?e.social_link:""},whyApply:e.motivation,status:e.status,submittedAt:e.created_at}})}let a=[];if(window.AmieleDB)try{a=window.AmieleDB.getApplications().map(e=>({id:e.id,userId:e.userId,name:e.name||"Unknown User",phone:e.phone||"N/A",country:e.country||"ET",socials:{instagram:e.socials&&e.socials.instagram?e.socials.instagram:"",tiktok:e.socials&&e.socials.tiktok?e.socials.tiktok:"",youtube:e.socials&&e.socials.youtube?e.socials.youtube:""},whyApply:e.whyApply||"",status:e.status||"pending",submittedAt:e.submittedAt||(new Date).toISOString()}))}catch(e){console.error("[Amiele:Admin] Local applications fetch error:",e)}const r=new Map;a.forEach(e=>{r.set(e.userId,e)}),e.forEach(e=>{r.set(e.userId,e)});return Array.from(r.values())},async approveApplication(e,t){const a=window.AmieleSupabase.getClient();let r=!1;if(a)try{const{data:i,error:o}=await a.from("affiliate_applications").update({status:"approved",reviewed_by:t,reviewed_at:(new Date).toISOString()}).eq("user_id",e).select().single();o||(r=!0)}catch(e){console.error("[Amiele:Admin] Supabase approve application failed:",e)}if(window.AmieleDB)try{const t=window.AmieleDB.getApplications(),a=t.find(t=>t.userId===e||t.id===e);if(a){a.status="approved",a.reviewedAt=(new Date).toISOString(),window.AmieleDB.saveApplications(t);const e=window.AmieleDB.getUsers(),r=e.find(e=>e.id===a.userId);r&&(r.role="affiliate",window.AmieleDB.saveUsers(e));const i=window.AmieleDB.getAffiliates();if(!i.find(e=>e.userId===a.userId)){const e=a.name?a.name.toUpperCase().replace(/[^A-Z]/g,"").slice(0,6):"AFF",t=Math.floor(10+90*Math.random());i.push({userId:a.userId,code:e+t,couponCode:e+"5",balance:0,totalEarnings:0,pendingCommission:0,totalPaid:0,clicks:0,sales:0,tier:"standard"}),window.AmieleDB.saveAffiliates(i)}}}catch(e){console.error("[Amiele:Admin] Local approve application failed:",e)}if(a&&!r&&!window.AmieleDB)throw new Error("Could not approve application.")},async rejectApplication(e,t){const a=window.AmieleSupabase.getClient();let r=!1;if(a)try{const{data:i,error:o}=await a.from("affiliate_applications").update({status:"rejected",reviewed_by:t,reviewed_at:(new Date).toISOString()}).eq("user_id",e).select().single();o||(r=!0)}catch(e){console.error("[Amiele:Admin] Supabase reject application failed:",e)}if(window.AmieleDB)try{const t=window.AmieleDB.getApplications(),a=t.find(t=>t.userId===e||t.id===e);a&&(a.status="rejected",a.reviewedAt=(new Date).toISOString(),window.AmieleDB.saveApplications(t))}catch(e){console.error("[Amiele:Admin] Local reject application failed:",e)}if(a&&!r&&!window.AmieleDB)throw new Error("Could not reject application.")},async getReferredSales(){const e=window.AmieleSupabase.getClient();if(!e)return[];const{data:t,error:a}=await e.from("orders").select("\n                    id,\n                    quantity,\n                    status,\n                    created_at,\n                    affiliate_id,\n                    product:products(name, price)\n                ").not("affiliate_id","is",null).order("created_at",{ascending:!1});if(a)throw a;const{data:r,error:i}=await e.from("affiliates").select("user_id, referral_code"),o={};!i&&r&&r.forEach(e=>{o[e.user_id]=e.referral_code});return t.map(e=>{const t=(e.product?parseFloat(e.product.price):0)*e.quantity,a=Math.round(t*.08);return{id:e.id,affiliateId:o[e.affiliate_id]||e.affiliate_id,orderId:"#HA-"+e.id.slice(0,4).toUpperCase(),productName:e.product?`${e.quantity}x ${e.product.name}`:"Instrument",orderAmount:t,commissionAmount:a,status:e.status,createdAt:e.created_at}})},async getOrders(){let e=[];const t=window.AmieleSupabase?window.AmieleSupabase.getClient():null;if(t)try{const{data:a,error:r}=await t.from("orders").select("\n                            id,\n                            order_number,\n                            customer_name,\n                            customer_email,\n                            phone,\n                            country,\n                            referral_code,\n                            quantity,\n                            status,\n                            payment_status,\n                            fulfillment_status,\n                            tracking_number,\n                            shipping_company,\n                            shipping_notes,\n                            estimated_delivery,\n                            packed_at,\n                            shipped_at,\n                            delivered_at,\n                            last_status_update,\n                            created_at,\n                            affiliate_id,\n                            product:products(name, price)\n                        ").order("created_at",{ascending:!1});if(!r&&a){const{data:r}=await t.from("affiliates").select("user_id, referral_code"),i={};r&&r.forEach(e=>{i[e.user_id]=e.referral_code});let o={};try{const{data:e}=await t.from("order_fulfillment_history").select("*").order("created_at",{ascending:!0});e&&e.forEach(e=>{o[e.order_id]||(o[e.order_id]=[]),o[e.order_id].push(e)})}catch(e){console.warn("[Amiele:Admin] Could not load fulfillment history:",e)}e=a.map(e=>{const t=(e.product?parseFloat(e.product.price):0)*e.quantity;let a=e.fulfillment_status;if(!a){const t=(e.status||"pending").toLowerCase(),r=(e.payment_status||"pending_payment").toLowerCase();a="delivered"===t?"Delivered":"shipped"===t?"Shipped":"confirmed"===t||"paid"===r?"Payment Verified":"cancelled"===t?"Cancelled":"Pending"}return{id:e.id,orderNumber:e.order_number||"AM-ORD-"+String(e.id).slice(0,4).toUpperCase(),customerName:e.customer_name||"Guest Customer",customerEmail:e.customer_email||"N/A",phone:e.phone||"N/A",country:e.country||"N/A",referralCode:e.referral_code||(e.affiliate_id?i[e.affiliate_id]:"Direct / None"),affiliateId:e.affiliate_id,affiliateCode:i[e.affiliate_id]||e.referral_code||"None",productName:e.product?`${e.quantity}x ${e.product.name}`:`${e.quantity||1}x Instrument`,quantity:e.quantity||1,orderAmount:t>0?t:15e3,paymentStatus:e.payment_status||"pending_payment",orderStatus:e.status||"pending",fulfillmentStatus:a,trackingNumber:e.tracking_number||"",shippingCompany:e.shipping_company||"",shippingNotes:e.shipping_notes||"",estimatedDelivery:e.estimated_delivery||"",packedAt:e.packed_at,shippedAt:e.shipped_at,deliveredAt:e.delivered_at,lastStatusUpdate:e.last_status_update||e.created_at,history:o[e.id]||[],createdAt:e.created_at}})}else r&&console.warn("[Amiele:Admin] Error querying Supabase orders:",r)}catch(e){console.warn("[Amiele:Admin] Exception fetching Supabase orders:",e)}return e},async updateFulfillmentStatus(e,t,a={},r="",i=null){console.log("[Amiele:Fulfillment] Updating fulfillment status for order:",e,"->",t);const o=window.AmieleSupabase?window.AmieleSupabase.getClient():null;if(!o)throw new Error("Supabase database client is unavailable.");const n=(new Date).toISOString(),s={fulfillment_status:t,last_status_update:n};if(void 0!==a.tracking_number&&(s.tracking_number=a.tracking_number),void 0!==a.shipping_company&&(s.shipping_company=a.shipping_company),void 0!==a.shipping_notes&&(s.shipping_notes=a.shipping_notes),void 0!==a.estimated_delivery&&(s.estimated_delivery=a.estimated_delivery),"Payment Verified"===t){s.payment_status="paid",s.status="confirmed";try{await this.approvePayment(e)}catch(e){console.warn("[Amiele:Fulfillment] approvePayment trigger warning:",e)}}else"Packed"===t?s.packed_at=n:"Shipped"===t?(s.shipped_at=n,s.status="shipped"):"Delivered"===t?(s.delivered_at=n,s.status="delivered"):"Cancelled"===t&&(s.status="cancelled");const{data:l,error:d}=await o.from("orders").update(s).eq("id",e).select("*").single();if(d)throw console.error("[Amiele:Fulfillment] Update Error:",d),new Error("Failed to update order fulfillment status: "+d.message);try{const a={order_id:e,status:t,updated_by:i?i.id:null,admin_name:i&&(i.full_name||i.name||i.email)||"Admin",notes:r||`Fulfillment status changed to ${t}`,created_at:n};await o.from("order_fulfillment_history").insert(a)}catch(e){console.warn("[Amiele:Fulfillment] History log insert error:",e)}return l},async clearAllOrders(){const e=window.AmieleSupabase?window.AmieleSupabase.getClient():null;if(e){const{data:{user:t},error:a}=await e.auth.getUser();if(a||!t)throw new Error("Authentication required to perform this action.");const{data:r}=await e.from("profiles").select("role").eq("id",t.id).single();if(!r||"admin"!==r.role)throw new Error("Access Denied: Only administrators can clear order history.");const{error:i}=await e.from("orders").delete().neq("id","00000000-0000-0000-0000-000000000000");if(i)throw console.error("[Amiele:Admin] Remote orders delete failed:",i),new Error("Failed to clear remote orders: "+i.message)}else{const e=window.getCurrentUser?await window.getCurrentUser():null;if(!e||"admin"!==e.role)throw new Error("Access Denied: Admin privileges required.")}return localStorage.setItem("amiele_orders_cleared","true"),window.AmieleDB&&"function"==typeof window.AmieleDB.resetOrdersData&&window.AmieleDB.resetOrdersData(),!0},async approvePayment(e){console.log("[Amiele:Admin] Approving order payment server-side via RPC for order:",e);const t=window.AmieleSupabase?window.AmieleSupabase.getClient():null;if(!t)throw new Error("Supabase database client is unavailable.");const{data:a,error:r}=await t.rpc("approve_order_payment",{target_order_id:e});if(r)throw console.error("[Amiele:Admin] approve_order_payment RPC error:",r),new Error("Failed to approve payment: "+r.message);return a},async repairMissingCommissions(){console.log("[Amiele:Admin] Running repairMissingCommissions server-side via RPC...");const e=window.AmieleSupabase?window.AmieleSupabase.getClient():null;if(!e)throw new Error("Supabase database client is unavailable.");const{data:t,error:a}=await e.rpc("repair_missing_commissions");if(a)throw console.error("[Amiele:Admin] repair_missing_commissions RPC error:",a),new Error("Failed to repair missing commissions: "+a.message);return t},async rejectPayment(e){const t=window.AmieleSupabase?window.AmieleSupabase.getClient():null;if(t&&!String(e).startsWith("loc_ord_"))try{await t.from("orders").update({payment_status:"failed",status:"cancelled",updated_at:(new Date).toISOString()}).eq("id",e)}catch(e){console.warn("[Amiele:Admin] Supabase rejectPayment error:",e)}if(window.AmieleDB)try{const t=window.AmieleDB.getOrders(),a=t.find(t=>t.id===e);a&&(a.payment_status="failed",a.status="cancelled",localStorage.setItem("amiele_local_orders",JSON.stringify(t)))}catch(e){console.warn("[Amiele:Admin] Local rejectPayment error:",e)}return{success:!0}},async updateOrderStatus(e,t){const a=window.AmieleSupabase.getClient();if(!a)throw new Error("Supabase client not initialized");const{data:r,error:i}=await a.from("orders").update({status:t}).eq("id",e).select().single();if(i)throw i;return r},async getWithdrawals(){const e=window.AmieleSupabase.getClient();if(!e)return[];const{data:t,error:a}=await e.from("affiliate_withdrawals").select("*").order("created_at",{ascending:!1});if(a)return console.error("[Amiele:Admin] Error fetching withdrawals:",a),[];const r=t.map(e=>e.affiliate_id),{data:i,error:o}=await e.from("profiles").select("id, full_name").in("id",r),n={};return!o&&i&&i.forEach(e=>{n[e.id]=e.full_name}),t.map(e=>({id:"wth_"+e.id.slice(0,8),rawId:e.id,affiliateId:n[e.affiliate_id]||e.affiliate_id,affiliateUuid:e.affiliate_id,amount:parseFloat(e.amount),method:e.method,phone:e.phone,status:e.status,createdAt:e.created_at}))},async updateWithdrawalStatus(e,t,a){const r=window.AmieleSupabase.getClient();if(!r)throw new Error("Supabase client not initialized");const{data:i,error:o}=await r.from("affiliate_withdrawals").update({status:t,processed_by:a,processed_at:(new Date).toISOString()}).eq("id",e).select().single();if(o)throw o;return i},async createCampaign(e,t,a,r,i,o){const n=window.AmieleSupabase.getClient();if(!n)throw new Error("Supabase client not initialized");const{data:s,error:l}=await n.from("affiliate_campaigns").insert({title:e,description:t,target_sales:a,reward:r,ends_at:i,status:"active",created_by:o}).select().single();if(l)throw l;return s},async createAnnouncement(e,t,a,r,i){const o=window.AmieleSupabase.getClient();if(!o)throw new Error("Supabase client not initialized");const{data:n,error:s}=await o.from("affiliate_announcements").insert({title:e,content:t,type:a,urgency:r,created_by:i}).select().single();if(s)throw s;return n}};window.AdminService=e}();
+!(function () {
+    "use strict";
+
+    function getETBPrice(product, quantity = 1) {
+        if (!product) return 0;
+        let price = parseFloat(product.price || 0);
+        if (price <= 0) return 0;
+        
+        let currency = product.currency || (price < 500 ? "USD" : "ETB");
+        let etbRate = (window.exchangeRates && window.exchangeRates.ETB && window.exchangeRates.ETB.rate)
+            ? window.exchangeRates.ETB.rate
+            : 105.8871;
+        
+        let unitPriceInETB = (currency === "USD") ? Math.round(price * etbRate) : price;
+        return unitPriceInETB * (quantity || 1);
+    }
+
+    const AdminService = {
+        async getAdminAnalytics() {
+            return await this.getComprehensiveAdminAnalytics();
+        },
+
+        async getComprehensiveAdminAnalytics() {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) return null;
+
+            try {
+                const [
+                    { data: ordersData },
+                    { data: productsData },
+                    { data: affiliatesData },
+                    { data: commissionsData },
+                    { data: clicksData },
+                    { data: withdrawalsData },
+                    { data: profilesData }
+                ] = await Promise.all([
+                    supabase.from("orders").select("id, order_number, quantity, status, payment_status, country, customer_name, customer_email, phone, created_at, product_id, referral_code, affiliate_id, product:products(name, price, currency)").order("created_at", { ascending: false }),
+                    supabase.from("products").select("id, name, price, currency, category"),
+                    supabase.from("affiliates").select("user_id, referral_code, sales_count, created_at, profile:profiles(full_name, email)"),
+                    supabase.from("commissions").select("id, amount, status, created_at, order_id, affiliate_id"),
+                    supabase.from("affiliate_clicks").select("id, created_at, referral_code, affiliate_id, user_agent").order("created_at", { ascending: false }).limit(100),
+                    supabase.from("affiliate_withdrawals").select("id, amount, status, created_at, affiliate_id").order("created_at", { ascending: false }),
+                    supabase.from("profiles").select("id, full_name, email, role, created_at")
+                ]);
+
+                const orders = ordersData || [];
+                const affiliates = affiliatesData || [];
+                const commissions = commissionsData || [];
+                const clicks = clicksData || [];
+                const withdrawals = withdrawalsData || [];
+                const profiles = profilesData || [];
+
+                let totalRevenue = 0;
+                let revenueThisMonth = 0;
+                let pendingOrdersCount = 0;
+                let confirmedOrdersCount = 0;
+                let shippedOrdersCount = 0;
+                let deliveredOrdersCount = 0;
+                let cancelledOrdersCount = 0;
+                let countPreparing = 0;
+                let countCrafting = 0;
+                let countPacked = 0;
+                let countShipped = 0;
+                let countDelivered = 0;
+                let countCancelled = 0;
+
+                let totalPackHours = 0;
+                let packCount = 0;
+                let totalShipHours = 0;
+                let shipCount = 0;
+
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+                const productStats = {};
+                const countryCounts = {};
+                const uniqueCustomerKeys = new Set();
+                const customerOrderCounts = {};
+
+                orders.forEach(ord => {
+                    const orderETB = getETBPrice(ord.product, ord.quantity || 1);
+                    const createdAtTime = new Date(ord.created_at).getTime();
+                    const isRevenueOrder = ord.payment_status === "paid" || ["confirmed", "shipped", "delivered"].includes((ord.status || "").toLowerCase());
+                    
+                    if (isRevenueOrder) {
+                        totalRevenue += orderETB;
+                        if (createdAtTime >= startOfMonth) {
+                            revenueThisMonth += orderETB;
+                        }
+                    }
+
+                    const mainStatus = (ord.status || "pending").toLowerCase();
+                    if (mainStatus === "confirmed") confirmedOrdersCount++;
+                    else if (mainStatus === "shipped") shippedOrdersCount++;
+                    else if (mainStatus === "delivered") deliveredOrdersCount++;
+                    else if (mainStatus === "cancelled") cancelledOrdersCount++;
+                    else pendingOrdersCount++;
+
+                    const fulStage = ord.fulfillment_status || (mainStatus === "delivered" ? "Delivered" : mainStatus === "shipped" ? "Shipped" : mainStatus === "confirmed" ? "Payment Verified" : "Pending");
+                    if (fulStage === "Preparing") countPreparing++;
+                    else if (fulStage === "Crafting") countCrafting++;
+                    else if (fulStage === "Packed") countPacked++;
+                    else if (fulStage === "Shipped") countShipped++;
+                    else if (fulStage === "Delivered") countDelivered++;
+                    else if (fulStage === "Cancelled") countCancelled++;
+
+                    if (ord.packed_at && ord.created_at) {
+                        const hrs = (new Date(ord.packed_at) - new Date(ord.created_at)) / 3600000;
+                        if (hrs >= 0) { totalPackHours += hrs; packCount++; }
+                    }
+                    if (ord.delivered_at && ord.shipped_at) {
+                        const hrs = (new Date(ord.delivered_at) - new Date(ord.shipped_at)) / 3600000;
+                        if (hrs >= 0) { totalShipHours += hrs; shipCount++; }
+                    }
+
+                    const countryName = (ord.country && ord.country !== "N/A") ? ord.country.trim() : "Ethiopia";
+                    countryCounts[countryName] = (countryCounts[countryName] || 0) + 1;
+
+                    const prodName = ord.product ? ord.product.name : (ord.product_name || "Ethiopian Begena");
+                    if (!productStats[prodName]) productStats[prodName] = { unitsSold: 0, revenueETB: 0 };
+                    productStats[prodName].unitsSold += (ord.quantity || 1);
+                    if (isRevenueOrder) { productStats[prodName].revenueETB += orderETB; }
+
+                    const custKey = (ord.customer_email && ord.customer_email !== "N/A")
+                        ? ord.customer_email.toLowerCase()
+                        : (ord.phone || ord.customer_name || "guest");
+                    uniqueCustomerKeys.add(custKey);
+                    customerOrderCounts[custKey] = (customerOrderCounts[custKey] || 0) + 1;
+                });
+
+                const totalOrdersCount = orders.length;
+                const avgOrderValue = totalOrdersCount > 0 ? Math.round(totalRevenue / totalOrdersCount) : 0;
+                const totalCustomersCount = Math.max(uniqueCustomerKeys.size, profiles.filter(p => p.role === "customer").length);
+                const totalAffiliatesCount = Math.max(affiliates.length, profiles.filter(p => p.role === "affiliate").length);
+
+                const affiliateEarningsMap = {};
+                commissions.forEach(c => {
+                    if (c.status === "approved" && c.affiliate_id) {
+                        affiliateEarningsMap[c.affiliate_id] = (affiliateEarningsMap[c.affiliate_id] || 0) + parseFloat(c.amount || 0);
+                    }
+                });
+
+                let topAffiliate = { name: "N/A", referralCode: "N/A", salesCount: 0, totalEarnings: 0 };
+                let maxSales = -1;
+                affiliates.forEach(aff => {
+                    const earnings = affiliateEarningsMap[aff.user_id] || 0;
+                    const sales = Math.max(aff.sales_count || 0, orders.filter(o => o.affiliate_id === aff.user_id && ["paid", "confirmed"].includes((o.payment_status || o.status || "").toLowerCase())).length);
+                    if (sales > maxSales) {
+                        maxSales = sales;
+                        const name = aff.profile ? aff.profile.full_name : (aff.referral_code || "Partner");
+                        topAffiliate = { name, referralCode: aff.referral_code || "N/A", salesCount: sales, totalEarnings: earnings };
+                    }
+                });
+
+                let bestSellingProduct = { name: "N/A", unitsSold: 0, revenueETB: 0 };
+                let maxUnits = -1;
+                Object.keys(productStats).forEach(pName => {
+                    if (productStats[pName].unitsSold > maxUnits) {
+                        maxUnits = productStats[pName].unitsSold;
+                        bestSellingProduct = { name: pName, unitsSold: productStats[pName].unitsSold, revenueETB: productStats[pName].revenueETB };
+                    }
+                });
+
+                const monthlyRevenueData = [];
+                for (let i = 5; i >= 0; i--) {
+                    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const monthLabel = d.toLocaleString("en-US", { month: "short", year: "2-digit" });
+                    const monthStart = d.getTime();
+                    const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime();
+
+                    let monthRev = 0;
+                    let monthOrders = 0;
+                    orders.forEach(ord => {
+                        const tTime = new Date(ord.created_at).getTime();
+                        if (tTime >= monthStart && tTime < monthEnd) {
+                            monthOrders++;
+                            if (ord.payment_status === "paid" || ["confirmed", "shipped", "delivered"].includes((ord.status || "").toLowerCase())) {
+                                monthRev += getETBPrice(ord.product, ord.quantity || 1);
+                            }
+                        }
+                    });
+                    monthlyRevenueData.push({ month: monthLabel, revenue: Math.round(monthRev), ordersCount: monthOrders });
+                }
+
+                const countryList = Object.keys(countryCounts).map(c => ({
+                    country: c,
+                    count: countryCounts[c],
+                    percentage: totalOrdersCount > 0 ? Math.round((countryCounts[c] / totalOrdersCount) * 100) : 0
+                })).sort((a, b) => b.count - a.count);
+
+                const affiliateLeaderboard = affiliates.map(aff => {
+                    const name = aff.profile ? aff.profile.full_name : (aff.referral_code || "Affiliate Partner");
+                    const totalEarnings = affiliateEarningsMap[aff.user_id] || 0;
+                    const salesCount = Math.max(aff.sales_count || 0, orders.filter(o => o.affiliate_id === aff.user_id && ["paid", "confirmed"].includes((o.payment_status || o.status || "").toLowerCase())).length);
+                    return { userId: aff.user_id, name, code: aff.referral_code, salesCount, totalEarnings };
+                }).sort((a, b) => b.salesCount - a.salesCount).slice(0, 10);
+
+                const topProductsList = Object.keys(productStats).map(pName => ({
+                    name: pName,
+                    unitsSold: productStats[pName].unitsSold,
+                    revenueETB: productStats[pName].revenueETB
+                })).sort((a, b) => b.unitsSold - a.unitsSold).slice(0, 10);
+
+                let repeatCount = 0;
+                Object.values(customerOrderCounts).forEach(cnt => { if (cnt > 1) repeatCount++; });
+                const customerAnalytics = {
+                    totalCustomers: totalCustomersCount,
+                    repeatCustomers: repeatCount,
+                    repeatRate: uniqueCustomerKeys.size > 0 ? Math.round((repeatCount / uniqueCustomerKeys.size) * 100) : 0,
+                    avgCustomerSpend: totalCustomersCount > 0 ? Math.round(totalRevenue / totalCustomersCount) : 0
+                };
+
+                const activityFeed = [];
+                orders.slice(0, 5).forEach(ord => {
+                    activityFeed.push({
+                        type: "order",
+                        icon: "fa-shopping-cart",
+                        color: "#2e7d32",
+                        title: `New Order (${ord.order_number || "#" + ord.id.slice(0, 4)})`,
+                        subtitle: `${ord.customer_name || "Customer"} placed order for ${ord.product ? ord.product.name : "Begena"}`,
+                        time: ord.created_at
+                    });
+                });
+                clicks.slice(0, 5).forEach(clk => {
+                    activityFeed.push({
+                        type: "click",
+                        icon: "fa-mouse-pointer",
+                        color: "#0288d1",
+                        title: "Referral Link Clicked",
+                        subtitle: `Code: ${clk.referral_code || "General"}`,
+                        time: clk.created_at
+                    });
+                });
+                withdrawals.slice(0, 5).forEach(wth => {
+                    activityFeed.push({
+                        type: "payout",
+                        icon: "fa-hand-holding-usd",
+                        color: "#ed6c02",
+                        title: `Payout Request (${(wth.status || "").toUpperCase()})`,
+                        subtitle: `ETB ${parseFloat(wth.amount).toLocaleString()} via ${wth.method}`,
+                        time: wth.created_at
+                    });
+                });
+                activityFeed.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+                return {
+                    summaryCards: {
+                        totalRevenue: Math.round(totalRevenue),
+                        revenueThisMonth: Math.round(revenueThisMonth),
+                        totalOrders: totalOrdersCount,
+                        pendingOrders: pendingOrdersCount,
+                        confirmedOrders: confirmedOrdersCount,
+                        shippedOrders: shippedOrdersCount,
+                        deliveredOrders: deliveredOrdersCount,
+                        ordersPreparing: countPreparing,
+                        ordersCrafting: countCrafting,
+                        ordersPacked: countPacked,
+                        ordersShipped: countShipped || shippedOrdersCount,
+                        ordersDelivered: countDelivered || deliveredOrdersCount,
+                        ordersCancelled: countCancelled || cancelledOrdersCount,
+                        avgFulfillmentTime: packCount > 0 ? (totalPackHours / packCount < 24 ? Math.round(totalPackHours / packCount) + " hrs" : (totalPackHours / packCount / 24).toFixed(1) + " days") : "1.5 days",
+                        avgShippingTime: shipCount > 0 ? (totalShipHours / shipCount < 24 ? Math.round(totalShipHours / shipCount) + " hrs" : (totalShipHours / shipCount / 24).toFixed(1) + " days") : "3.2 days",
+                        totalCustomers: totalCustomersCount,
+                        totalAffiliates: totalAffiliatesCount,
+                        topAffiliate,
+                        bestSellingProduct,
+                        avgOrderValue
+                    },
+                    monthlyRevenueData,
+                    countryList,
+                    affiliateLeaderboard,
+                    topProductsList,
+                    orderStatusBreakdown: {
+                        pending: pendingOrdersCount,
+                        confirmed: confirmedOrdersCount,
+                        shipped: shippedOrdersCount,
+                        delivered: deliveredOrdersCount,
+                        cancelled: cancelledOrdersCount
+                    },
+                    customerAnalytics,
+                    activityFeed: activityFeed.slice(0, 15)
+                };
+            } catch (err) {
+                console.error("[Amiele:Admin] Error in getComprehensiveAdminAnalytics:", err);
+                return null;
+            }
+        },
+
+        async getUsers() {
+            let remoteUsers = [];
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (supabase) {
+                try {
+                    const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+                    if (!error && data) remoteUsers = data;
+                } catch (e) {
+                    console.error("[Amiele:Admin] Supabase fetch users error:", e);
+                }
+            }
+            let localUsers = [];
+            if (window.AmieleDB) {
+                try { localUsers = window.AmieleDB.getUsers(); } catch (e) { console.error("[Amiele:Admin] Local users fetch error:", e); }
+            }
+
+            const mappedLocal = localUsers.map(u => ({
+                id: u.id,
+                full_name: u.name,
+                email: u.email,
+                role: u.role,
+                created_at: u.joinedAt || new Date().toISOString()
+            }));
+
+            const userMap = new Map();
+            mappedLocal.forEach(u => userMap.set(u.id, u));
+            remoteUsers.forEach(u => userMap.set(u.id, u));
+
+            return Array.from(userMap.values()).map(u => ({
+                id: u.id,
+                name: u.full_name || u.name || "User",
+                email: u.email,
+                role: u.role,
+                created_at: u.created_at
+            }));
+        },
+
+        async changeUserRole(userId, newRole) {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            let success = false;
+            if (supabase) {
+                try {
+                    const { data, error } = await supabase.from("profiles").update({ role: newRole }).eq("id", userId).select().single();
+                    if (!error) success = true;
+                } catch (e) {
+                    console.warn("[Amiele:Admin] Supabase role update failed:", e);
+                }
+            }
+            if (window.AmieleDB) {
+                try {
+                    const users = window.AmieleDB.getUsers();
+                    const idx = users.findIndex(u => u.id === userId);
+                    if (idx !== -1) {
+                        users[idx].role = newRole;
+                        window.AmieleDB.saveUsers(users);
+                    }
+                } catch (e) {
+                    console.error("[Amiele:Admin] Local role update failed:", e);
+                }
+            }
+            if (supabase && !success && !window.AmieleDB) {
+                throw new Error("Could not update user role.");
+            }
+        },
+
+        async getApplications() {
+            let mappedApps = [];
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (supabase) {
+                try {
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) console.warn("[Amiele:Admin] No active auth session. RLS will block application reads!");
+                } catch (e) {
+                    console.warn("[Amiele:Admin] Could not verify auth session status:", e);
+                }
+
+                let appsData = [];
+                try {
+                    const { data, error } = await supabase.from("affiliate_applications").select("*").order("created_at", { ascending: false });
+                    if (error) console.error("[Amiele:Admin] Supabase applications query error:", error.message, error);
+                    else if (data) appsData = data;
+                } catch (e) {
+                    console.error("[Amiele:Admin] Supabase applications fetch exception:", e);
+                }
+
+                let profileMap = {};
+                if (appsData.length > 0) {
+                    try {
+                        const userIds = appsData.map(a => a.user_id);
+                        const { data: profiles, error } = await supabase.from("profiles").select("id, full_name, email").in("id", userIds);
+                        if (!error && profiles) {
+                            profiles.forEach(p => { profileMap[p.id] = p; });
+                        }
+                    } catch (e) {
+                        console.error("[Amiele:Admin] Supabase profiles fetch exception:", e);
+                    }
+                }
+
+                mappedApps = appsData.map(a => {
+                    const p = profileMap[a.user_id];
+                    return {
+                        id: "app_" + a.user_id.slice(0, 8),
+                        userId: a.user_id,
+                        name: p ? p.full_name : "Unknown User",
+                        phone: "N/A",
+                        country: "ET",
+                        socials: {
+                            instagram: a.social_link && a.social_link.includes("instagram") ? a.social_link : "",
+                            tiktok: a.social_link && a.social_link.includes("tiktok") ? a.social_link : "",
+                            youtube: a.social_link && a.social_link.includes("youtube") ? a.social_link : ""
+                        },
+                        whyApply: a.motivation,
+                        status: a.status,
+                        submittedAt: a.created_at
+                    };
+                });
+            }
+
+            let localApps = [];
+            if (window.AmieleDB) {
+                try {
+                    localApps = window.AmieleDB.getApplications().map(a => ({
+                        id: a.id,
+                        userId: a.userId,
+                        name: a.name || "Unknown User",
+                        phone: a.phone || "N/A",
+                        country: a.country || "ET",
+                        socials: {
+                            instagram: a.socials && a.socials.instagram ? a.socials.instagram : "",
+                            tiktok: a.socials && a.socials.tiktok ? a.socials.tiktok : "",
+                            youtube: a.socials && a.socials.youtube ? a.socials.youtube : ""
+                        },
+                        whyApply: a.whyApply || "",
+                        status: a.status || "pending",
+                        submittedAt: a.submittedAt || new Date().toISOString()
+                    }));
+                } catch (e) {
+                    console.error("[Amiele:Admin] Local applications fetch error:", e);
+                }
+            }
+
+            const merged = new Map();
+            localApps.forEach(a => merged.set(a.userId, a));
+            mappedApps.forEach(a => merged.set(a.userId, a));
+            return Array.from(merged.values());
+        },
+
+        async approveApplication(userId, reviewerId) {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            let success = false;
+            if (supabase) {
+                try {
+                    const { data, error } = await supabase
+                        .from("affiliate_applications")
+                        .update({ status: "approved", reviewed_by: reviewerId, reviewed_at: new Date().toISOString() })
+                        .eq("user_id", userId)
+                        .select()
+                        .single();
+                    if (!error) success = true;
+                } catch (e) {
+                    console.error("[Amiele:Admin] Supabase approve application failed:", e);
+                }
+            }
+
+            if (window.AmieleDB) {
+                try {
+                    const apps = window.AmieleDB.getApplications();
+                    const app = apps.find(a => a.userId === userId || a.id === userId);
+                    if (app) {
+                        app.status = "approved";
+                        app.reviewedAt = new Date().toISOString();
+                        window.AmieleDB.saveApplications(apps);
+
+                        const users = window.AmieleDB.getUsers();
+                        const u = users.find(x => x.id === app.userId);
+                        if (u) {
+                            u.role = "affiliate";
+                            window.AmieleDB.saveUsers(users);
+                        }
+
+                        const affs = window.AmieleDB.getAffiliates();
+                        if (!affs.find(x => x.userId === app.userId)) {
+                            const codePrefix = app.name ? app.name.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 6) : "AFF";
+                            const codeRand = Math.floor(10 + 90 * Math.random());
+                            affs.push({
+                                userId: app.userId,
+                                code: codePrefix + codeRand,
+                                couponCode: codePrefix + "5",
+                                balance: 0,
+                                totalEarnings: 0,
+                                pendingCommission: 0,
+                                totalPaid: 0,
+                                clicks: 0,
+                                sales: 0,
+                                tier: "standard"
+                            });
+                            window.AmieleDB.saveAffiliates(affs);
+                        }
+                    }
+                } catch (e) {
+                    console.error("[Amiele:Admin] Local approve application failed:", e);
+                }
+            }
+
+            if (supabase && !success && !window.AmieleDB) {
+                throw new Error("Could not approve application.");
+            }
+        },
+
+        async rejectApplication(userId, reviewerId) {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            let success = false;
+            if (supabase) {
+                try {
+                    const { data, error } = await supabase
+                        .from("affiliate_applications")
+                        .update({ status: "rejected", reviewed_by: reviewerId, reviewed_at: new Date().toISOString() })
+                        .eq("user_id", userId)
+                        .select()
+                        .single();
+                    if (!error) success = true;
+                } catch (e) {
+                    console.error("[Amiele:Admin] Supabase reject application failed:", e);
+                }
+            }
+
+            if (window.AmieleDB) {
+                try {
+                    const apps = window.AmieleDB.getApplications();
+                    const app = apps.find(a => a.userId === userId || a.id === userId);
+                    if (app) {
+                        app.status = "rejected";
+                        app.reviewedAt = new Date().toISOString();
+                        window.AmieleDB.saveApplications(apps);
+                    }
+                } catch (e) {
+                    console.error("[Amiele:Admin] Local reject application failed:", e);
+                }
+            }
+
+            if (supabase && !success && !window.AmieleDB) {
+                throw new Error("Could not reject application.");
+            }
+        },
+
+        async getReferredSales() {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) return [];
+
+            const { data, error } = await supabase
+                .from("orders")
+                .select("id, quantity, status, created_at, affiliate_id, product:products(name, price, currency)")
+                .not("affiliate_id", "is", null)
+                .order("created_at", { ascending: false });
+            if (error) throw error;
+
+            const { data: affs, error: affErr } = await supabase.from("affiliates").select("user_id, referral_code");
+            const codeMap = {};
+            if (!affErr && affs) {
+                affs.forEach(a => { codeMap[a.user_id] = a.referral_code; });
+            }
+
+            return data.map(ord => {
+                const totalETB = getETBPrice(ord.product, ord.quantity || 1);
+                const commETB = Math.round(totalETB * 0.08);
+                return {
+                    id: ord.id,
+                    affiliateId: codeMap[ord.affiliate_id] || ord.affiliate_id,
+                    orderId: "#HA-" + ord.id.slice(0, 4).toUpperCase(),
+                    productName: ord.product ? `${ord.quantity}x ${ord.product.name}` : "Instrument",
+                    orderAmount: totalETB,
+                    commissionAmount: commETB,
+                    status: ord.status,
+                    createdAt: ord.created_at
+                };
+            });
+        },
+
+        async getOrders() {
+            let orderList = [];
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (supabase) {
+                try {
+                    const { data, error } = await supabase.from("orders").select(`
+                        id,
+                        order_number,
+                        customer_name,
+                        customer_email,
+                        phone,
+                        country,
+                        referral_code,
+                        quantity,
+                        status,
+                        payment_status,
+                        fulfillment_status,
+                        tracking_number,
+                        shipping_company,
+                        shipping_notes,
+                        estimated_delivery,
+                        packed_at,
+                        shipped_at,
+                        delivered_at,
+                        last_status_update,
+                        created_at,
+                        affiliate_id,
+                        product:products(name, price, currency)
+                    `).order("created_at", { ascending: false });
+
+                    if (!error && data) {
+                        const { data: affs } = await supabase.from("affiliates").select("user_id, referral_code");
+                        const affCodeMap = {};
+                        if (affs) affs.forEach(a => { affCodeMap[a.user_id] = a.referral_code; });
+
+                        let historyMap = {};
+                        try {
+                            const { data: hist } = await supabase.from("order_fulfillment_history").select("*").order("created_at", { ascending: true });
+                            if (hist) {
+                                hist.forEach(h => {
+                                    if (!historyMap[h.order_id]) historyMap[h.order_id] = [];
+                                    historyMap[h.order_id].push(h);
+                                });
+                            }
+                        } catch (e) {
+                            console.warn("[Amiele:Admin] Could not load fulfillment history:", e);
+                        }
+
+                        orderList = data.map(ord => {
+                            const calculatedETB = getETBPrice(ord.product, ord.quantity || 1);
+                            const finalETB = calculatedETB > 0 ? calculatedETB : 7500;
+
+                            let fulStage = ord.fulfillment_status;
+                            if (!fulStage) {
+                                const st = (ord.status || "pending").toLowerCase();
+                                const pst = (ord.payment_status || "pending_payment").toLowerCase();
+                                fulStage = (st === "delivered") ? "Delivered"
+                                    : (st === "shipped") ? "Shipped"
+                                    : (st === "confirmed" || pst === "paid") ? "Payment Verified"
+                                    : (st === "cancelled") ? "Cancelled" : "Pending";
+                            }
+
+                            return {
+                                id: ord.id,
+                                orderNumber: ord.order_number || ("AM-ORD-" + String(ord.id).slice(0, 4).toUpperCase()),
+                                customerName: ord.customer_name || "Guest Customer",
+                                customerEmail: ord.customer_email || "N/A",
+                                phone: ord.phone || "N/A",
+                                country: ord.country || "N/A",
+                                referralCode: ord.referral_code || (ord.affiliate_id ? affCodeMap[ord.affiliate_id] : "Direct / None"),
+                                affiliateId: ord.affiliate_id,
+                                affiliateCode: affCodeMap[ord.affiliate_id] || ord.referral_code || "None",
+                                productName: ord.product ? `${ord.quantity}x ${ord.product.name}` : `${ord.quantity || 1}x Instrument`,
+                                quantity: ord.quantity || 1,
+                                orderAmount: finalETB,
+                                paymentStatus: ord.payment_status || "pending_payment",
+                                orderStatus: ord.status || "pending",
+                                fulfillmentStatus: fulStage,
+                                trackingNumber: ord.tracking_number || "",
+                                shippingCompany: ord.shipping_company || "",
+                                shippingNotes: ord.shipping_notes || "",
+                                estimatedDelivery: ord.estimated_delivery || "",
+                                packedAt: ord.packed_at,
+                                shippedAt: ord.shipped_at,
+                                deliveredAt: ord.delivered_at,
+                                lastStatusUpdate: ord.last_status_update || ord.created_at,
+                                history: historyMap[ord.id] || [],
+                                createdAt: ord.created_at
+                            };
+                        });
+                    } else if (error) {
+                        console.warn("[Amiele:Admin] Error querying Supabase orders:", error);
+                    }
+                } catch (e) {
+                    console.warn("[Amiele:Admin] Exception fetching Supabase orders:", e);
+                }
+            }
+            return orderList;
+        },
+
+        async updateFulfillmentStatus(orderId, newFulfillmentStatus, shippingDetails = {}, notes = "", adminUser = null) {
+            console.log("[Amiele:Fulfillment] Updating fulfillment status for order:", orderId, "->", newFulfillmentStatus);
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) throw new Error("Supabase database client is unavailable.");
+
+            const now = new Date().toISOString();
+            const updatePayload = {
+                fulfillment_status: newFulfillmentStatus,
+                last_status_update: now
+            };
+
+            if (shippingDetails.tracking_number !== undefined) updatePayload.tracking_number = shippingDetails.tracking_number;
+            if (shippingDetails.shipping_company !== undefined) updatePayload.shipping_company = shippingDetails.shipping_company;
+            if (shippingDetails.shipping_notes !== undefined) updatePayload.shipping_notes = shippingDetails.shipping_notes;
+            if (shippingDetails.estimated_delivery !== undefined) updatePayload.estimated_delivery = shippingDetails.estimated_delivery;
+
+            if (newFulfillmentStatus === "Payment Verified") {
+                updatePayload.payment_status = "paid";
+                updatePayload.status = "confirmed";
+                try { await this.approvePayment(orderId); } catch (e) { console.warn("[Amiele:Fulfillment] approvePayment trigger warning:", e); }
+            } else if (newFulfillmentStatus === "Packed") {
+                updatePayload.packed_at = now;
+            } else if (newFulfillmentStatus === "Shipped") {
+                updatePayload.shipped_at = now;
+                updatePayload.status = "shipped";
+            } else if (newFulfillmentStatus === "Delivered") {
+                updatePayload.delivered_at = now;
+                updatePayload.status = "delivered";
+            } else if (newFulfillmentStatus === "Cancelled") {
+                updatePayload.status = "cancelled";
+            }
+
+            const { data, error } = await supabase.from("orders").update(updatePayload).eq("id", orderId).select("*").single();
+            if (error) {
+                console.error("[Amiele:Fulfillment] Update Error:", error);
+                throw new Error("Failed to update order fulfillment status: " + error.message);
+            }
+
+            try {
+                const histPayload = {
+                    order_id: orderId,
+                    status: newFulfillmentStatus,
+                    updated_by: adminUser ? adminUser.id : null,
+                    admin_name: adminUser && (adminUser.full_name || adminUser.name || adminUser.email) ? (adminUser.full_name || adminUser.name || adminUser.email) : "Admin",
+                    notes: notes || `Fulfillment status changed to ${newFulfillmentStatus}`,
+                    created_at: now
+                };
+                await supabase.from("order_fulfillment_history").insert(histPayload);
+            } catch (e) {
+                console.warn("[Amiele:Fulfillment] History log insert error:", e);
+            }
+
+            return data;
+        },
+
+        async clearAllOrders() {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (supabase) {
+                const { data: { user }, error: authErr } = await supabase.auth.getUser();
+                if (authErr || !user) throw new Error("Authentication required to perform this action.");
+
+                const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+                if (!profile || profile.role !== "admin") throw new Error("Access Denied: Only administrators can clear order history.");
+
+                const { error: delErr } = await supabase.from("orders").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+                if (delErr) {
+                    console.error("[Amiele:Admin] Remote orders delete failed:", delErr);
+                    throw new Error("Failed to clear remote orders: " + delErr.message);
+                }
+            } else {
+                const curUser = window.getCurrentUser ? await window.getCurrentUser() : null;
+                if (!curUser || curUser.role !== "admin") throw new Error("Access Denied: Admin privileges required.");
+            }
+
+            localStorage.setItem("amiele_orders_cleared", "true");
+            if (window.AmieleDB && typeof window.AmieleDB.resetOrdersData === "function") {
+                window.AmieleDB.resetOrdersData();
+            }
+            return true;
+        },
+
+        async approvePayment(orderId) {
+            console.log("[Amiele:Admin] Approving order payment server-side via RPC for order:", orderId);
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) throw new Error("Supabase database client is unavailable.");
+
+            const { data, error } = await supabase.rpc("approve_order_payment", { target_order_id: orderId });
+            if (error) {
+                console.error("[Amiele:Admin] approve_order_payment RPC error:", error);
+                throw new Error("Failed to approve payment: " + error.message);
+            }
+            return data;
+        },
+
+        async repairMissingCommissions() {
+            console.log("[Amiele:Admin] Running repairMissingCommissions server-side via RPC...");
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) throw new Error("Supabase database client is unavailable.");
+
+            const { data, error } = await supabase.rpc("repair_missing_commissions");
+            if (error) {
+                console.error("[Amiele:Admin] repair_missing_commissions RPC error:", error);
+                throw new Error("Failed to repair missing commissions: " + error.message);
+            }
+            return data;
+        },
+
+        async rejectPayment(orderId) {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (supabase && !String(orderId).startsWith("loc_ord_")) {
+                try {
+                    await supabase.from("orders").update({
+                        payment_status: "failed",
+                        status: "cancelled",
+                        updated_at: new Date().toISOString()
+                    }).eq("id", orderId);
+                } catch (e) {
+                    console.warn("[Amiele:Admin] Supabase rejectPayment error:", e);
+                }
+            }
+            if (window.AmieleDB) {
+                try {
+                    const orders = window.AmieleDB.getOrders();
+                    const ord = orders.find(o => o.id === orderId);
+                    if (ord) {
+                        ord.payment_status = "failed";
+                        ord.status = "cancelled";
+                        localStorage.setItem("amiele_local_orders", JSON.stringify(orders));
+                    }
+                } catch (e) {
+                    console.warn("[Amiele:Admin] Local rejectPayment error:", e);
+                }
+            }
+            return { success: true };
+        },
+
+        async updateOrderStatus(orderId, newStatus) {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) throw new Error("Supabase client not initialized");
+
+            const { data, error } = await supabase.from("orders").update({ status: newStatus }).eq("id", orderId).select().single();
+            if (error) throw error;
+            return data;
+        },
+
+        async getWithdrawals() {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) return [];
+
+            const { data, error } = await supabase.from("affiliate_withdrawals").select("*").order("created_at", { ascending: false });
+            if (error) {
+                console.error("[Amiele:Admin] Error fetching withdrawals:", error);
+                return [];
+            }
+
+            const affIds = data.map(w => w.affiliate_id);
+            const { data: profiles, error: profErr } = await supabase.from("profiles").select("id, full_name").in("id", affIds);
+            const profileMap = {};
+            if (!profErr && profiles) {
+                profiles.forEach(p => { profileMap[p.id] = p.full_name; });
+            }
+
+            return data.map(w => ({
+                id: "wth_" + w.id.slice(0, 8),
+                rawId: w.id,
+                affiliateId: profileMap[w.affiliate_id] || w.affiliate_id,
+                affiliateUuid: w.affiliate_id,
+                amount: parseFloat(w.amount),
+                method: w.method,
+                phone: w.phone,
+                status: w.status,
+                createdAt: w.created_at
+            }));
+        },
+
+        async updateWithdrawalStatus(withdrawalId, newStatus, adminId) {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) throw new Error("Supabase client not initialized");
+
+            const { data, error } = await supabase.from("affiliate_withdrawals").update({
+                status: newStatus,
+                processed_by: adminId,
+                processed_at: new Date().toISOString()
+            }).eq("id", withdrawalId).select().single();
+
+            if (error) throw error;
+            return data;
+        },
+
+        async createCampaign(title, description, targetSales, reward, endsAt, adminId) {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) throw new Error("Supabase client not initialized");
+
+            const { data, error } = await supabase.from("affiliate_campaigns").insert({
+                title,
+                description,
+                target_sales: targetSales,
+                reward,
+                ends_at: endsAt,
+                status: "active",
+                created_by: adminId
+            }).select().single();
+
+            if (error) throw error;
+            return data;
+        },
+
+        async createAnnouncement(title, content, type, urgency, adminId) {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) throw new Error("Supabase client not initialized");
+
+            const { data, error } = await supabase.from("affiliate_announcements").insert({
+                title,
+                content,
+                type,
+                urgency,
+                created_by: adminId
+            }).select().single();
+
+            if (error) throw error;
+            return data;
+        }
+    };
+
+    window.AdminService = AdminService;
+})();
