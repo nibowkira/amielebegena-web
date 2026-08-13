@@ -44,7 +44,6 @@
                 <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('referral')"><i class="fas fa-link"></i> Referral Center</a></li>
                 <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('commissions')"><i class="fas fa-wallet"></i> Commissions</a></li>
                 <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('withdrawals')"><i class="fas fa-hand-holding-usd"></i> Payouts</a></li>
-                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('performance')"><i class="fas fa-file-invoice-dollar"></i> Performance Report</a></li>
                 <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('marketing')"><i class="fas fa-photo-video"></i> Marketing Center</a></li>
                 <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('campaigns')"><i class="fas fa-trophy"></i> Bonus Campaigns</a></li>
                 <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('achievements')"><i class="fas fa-award"></i> Achievements</a></li>
@@ -403,42 +402,6 @@
                 </div>
             </div>
 
-            <!-- PERFORMANCE REPORT TAB -->
-            <div id="tab-performance" class="aff-tab-pane">
-                <div class="aff-header-row">
-                    <h1>Monthly Performance Report</h1>
-                    <button class="aff-btn" onclick="downloadPerformancePDF()"><i class="fas fa-file-pdf"></i> Download PDF Report</button>
-                </div>
-
-                <div class="aff-stats-grid">
-                    <div class="aff-stat-card">
-                        <h3>Monthly Link Clicks</h3>
-                        <div class="aff-stat-value" id="perf-clicks">0</div>
-                    </div>
-                    <div class="aff-stat-card">
-                        <h3>Referral Sales</h3>
-                        <div class="aff-stat-value" id="perf-sales">0</div>
-                    </div>
-                    <div class="aff-stat-card">
-                        <h3>Average Conversion</h3>
-                        <div class="aff-stat-value" id="perf-conversions">0%</div>
-                    </div>
-                    <div class="aff-stat-card accent-card">
-                        <h3>Net Commission Revenue</h3>
-                        <div class="aff-stat-value" id="perf-commission">ETB 0</div>
-                    </div>
-                    <div class="aff-stat-card">
-                        <h3>Total Store Revenue Generated</h3>
-                        <div class="aff-stat-value" id="perf-revenue">ETB 0</div>
-                    </div>
-                </div>
-
-                <div class="aff-card" style="text-align: center; padding: 4rem 2rem;">
-                    <i class="fas fa-print" style="font-size: 3.5rem; color: var(--aff-primary); opacity:0.8; margin-bottom:1.5rem;"></i>
-                    <h2>Official Heritage Partner Summary</h2>
-                    <p style="color:var(--aff-text-muted); max-width:600px; margin: 1rem auto 2.5rem; line-height:1.6;">Click the button above to render your monthly statement in PDF format, validated with the official Amiele cultural preservation team stamps.</p>
-                </div>
-            </div>
 
             <!-- MARKETING CENTER TAB -->
             <div id="tab-marketing" class="aff-tab-pane">
@@ -635,6 +598,54 @@
                                     <i class="fas fa-key" style="margin-right: 6px;"></i> Update Password
                                 </button>
                             </form>
+                        </div>
+
+                        <!-- Performance & Official PDF Statement Card -->
+                        <div class="settings-card">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--aff-card-border); padding-bottom: 0.8rem;">
+                                <div>
+                                    <h3 style="font-size: 1.15rem; color: var(--aff-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-file-invoice-dollar" style="color: #D4AF37;"></i> Performance & Official Statement
+                                    </h3>
+                                    <p style="font-size: 0.82rem; color: var(--aff-text-muted); margin: 4px 0 0 0;">
+                                        Monthly performance overview & certified partner records
+                                    </p>
+                                </div>
+                                <button type="button" class="aff-btn" onclick="downloadPerformancePDF()" style="padding: 0.55rem 1.1rem; font-size: 0.85rem;">
+                                    <i class="fas fa-file-pdf" style="margin-right: 6px;"></i> Download PDF Report
+                                </button>
+                            </div>
+
+                            <!-- Mini stats grid -->
+                            <div class="aff-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.85rem; margin-bottom: 1.25rem;">
+                                <div class="aff-stat-card" style="padding: 1rem;">
+                                    <h3 style="font-size: 0.72rem;">Monthly Clicks</h3>
+                                    <div class="aff-stat-value" id="perf-clicks" style="font-size: 1.35rem;">0</div>
+                                </div>
+                                <div class="aff-stat-card" style="padding: 1rem;">
+                                    <h3 style="font-size: 0.72rem;">Referral Sales</h3>
+                                    <div class="aff-stat-value" id="perf-sales" style="font-size: 1.35rem;">0</div>
+                                </div>
+                                <div class="aff-stat-card" style="padding: 1rem;">
+                                    <h3 style="font-size: 0.72rem;">Conversion Rate</h3>
+                                    <div class="aff-stat-value" id="perf-conversions" style="font-size: 1.35rem;">0.0%</div>
+                                </div>
+                                <div class="aff-stat-card accent-card" style="padding: 1rem;">
+                                    <h3 style="font-size: 0.72rem;">Commission</h3>
+                                    <div class="aff-stat-value" id="perf-commission" style="font-size: 1.35rem;">ETB 0</div>
+                                </div>
+                                <div class="aff-stat-card" style="padding: 1rem;">
+                                    <h3 style="font-size: 0.72rem;">Store Revenue</h3>
+                                    <div class="aff-stat-value" id="perf-revenue" style="font-size: 1.35rem;">ETB 0</div>
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(20,35,27,0.03); border: 1px dashed var(--aff-card-border); border-radius: 10px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-stamp" style="font-size: 1.4rem; color: #D4AF37; flex-shrink: 0;"></i>
+                                <div style="font-size: 0.8rem; color: var(--aff-text-muted); line-height: 1.4;">
+                                    Your statement is generated dynamically with official Amiele cultural committee digital signatures and can be presented as proof of partnership.
+                                </div>
+                            </div>
                         </div>
                     </div>
 
