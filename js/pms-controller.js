@@ -1149,10 +1149,55 @@
   }
 
   function confirmModal(title, html, danger, confirmText, cancelText) {
-    if (typeof window.showConfirmModal === 'function') {
-      return window.showConfirmModal(title, html, !!danger, confirmText || 'Confirm', cancelText || 'Cancel');
-    }
-    return Promise.resolve(window.confirm(html));
+    return new Promise(function (resolve) {
+      var overlay = document.createElement('div');
+      overlay.className = 'pms-modal-overlay active';
+      overlay.id = 'pms-confirm-overlay';
+      overlay.innerHTML = `
+        <div class="pms-modal" style="max-width:440px; border-radius: 20px; border: 1px solid ${danger ? 'rgba(220, 38, 38, 0.4)' : 'rgba(212, 175, 55, 0.3)'}; border-top: 4px solid ${danger ? '#DC2626' : '#D4AF37'}; box-shadow: var(--pms-shadow-lg); animation: pms-modal-pop 0.24s cubic-bezier(0.16, 1, 0.3, 1);">
+          <div class="pms-modal-header" style="${danger ? 'background: linear-gradient(135deg, #1C0A0A 0%, #2D0F0F 100%);' : 'background: #0F2418;'}">
+            <h3 style="color:#FFF; font-family: 'Benaiah', serif; font-size:1.25rem;">
+              <i class="fa-solid ${danger ? 'fa-trash-can' : 'fa-circle-question'}" style="color:${danger ? '#F87171' : 'var(--pms-gold)'}"></i>
+              ${esc(title)}
+            </h3>
+            <button type="button" class="pms-modal-close" style="color:#FFF;" onclick="PMSController.closeOverlay(this.closest('.pms-modal-overlay'))">&times;</button>
+          </div>
+          <div class="pms-modal-body" style="padding: 24px;">
+            <p style="margin:0; color:var(--pms-charcoal); font-size:0.95rem; line-height:1.6;">${html}</p>
+          </div>
+          <div class="pms-modal-footer" style="padding: 16px 24px; gap: 10px; background: var(--pms-surface); display:flex; justify-content: flex-end;">
+            <button type="button" class="pms-btn" id="pms-confirm-cancel">${esc(cancelText || 'Cancel')}</button>
+            <button type="button" class="pms-btn ${danger ? 'pms-btn-danger' : 'pms-btn-gold'}" id="pms-confirm-ok" style="${danger ? 'background: #DC2626 !important; color:#FFF !important; border:none; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.3);' : ''}">
+              ${esc(confirmText || 'Confirm')}
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      setupModalA11y(overlay);
+
+      var okBtn = overlay.querySelector('#pms-confirm-ok');
+      var cancelBtn = overlay.querySelector('#pms-confirm-cancel');
+
+      function cleanup(res) {
+        closeOverlay(overlay);
+        resolve(res);
+      }
+
+      okBtn.addEventListener('click', function () {
+        okBtn.disabled = true;
+        okBtn.innerHTML = '<span class="pms-dots-loader"><span></span><span></span><span></span></span>';
+        cleanup(true);
+      });
+
+      cancelBtn.addEventListener('click', function () {
+        cleanup(false);
+      });
+
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) cleanup(false);
+      });
+    });
   }
 
   function promptModal(title, desc, fieldHTML, confirmText) {
