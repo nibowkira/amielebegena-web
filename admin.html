@@ -723,7 +723,7 @@
     <div id="toast-container"></div>
 
     <!-- Custom Modal Confirmation Backdrop -->
-    <div class="custom-modal-backdrop" id="custom-modal-backdrop">
+    <div class="custom-modal-backdrop" id="custom-modal-backdrop" onclick="if(event.target === this) closeConfirmModal(false)">
         <div class="custom-modal">
             <div class="custom-modal-header" id="modal-header">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -740,7 +740,7 @@
     </div>
 
     <!-- Order Details & Fulfillment Workflow Modal -->
-    <div class="fulfillment-modal-backdrop" id="order-details-modal-backdrop">
+    <div class="fulfillment-modal-backdrop" id="order-details-modal-backdrop" onclick="if(event.target === this) closeOrderFulfillmentModal()">
         <div class="fulfillment-modal">
             <div class="fulfillment-modal-header">
                 <h3>
