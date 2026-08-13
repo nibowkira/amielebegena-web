@@ -783,12 +783,7 @@
                     if (window.NotificationsService) {
                         await window.NotificationsService.markAsRead(id);
                     }
-
-                    if (target) {
-                        window.location.href = target;
-                    } else {
-                        loadNotifications();
-                    }
+                    loadNotifications();
                 });
             });
 
