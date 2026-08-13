@@ -792,10 +792,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (window.AdminService && typeof window.AdminService.deleteCampaign === 'function') {
                 await window.AdminService.deleteCampaign(id);
             } else {
-                const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
-                if (client) {
-                    const { error } = await client.from("affiliate_campaigns").delete().eq("id", id);
-                    if (error) throw error;
+                try {
+                    const local = JSON.parse(localStorage.getItem("amiele_campaigns")) || [];
+                    const filtered = local.filter(c => String(c.id) !== String(id));
+                    localStorage.setItem("amiele_campaigns", JSON.stringify(filtered));
+                } catch(e) {}
+
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+                if (isUuid) {
+                    const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+                    if (client) {
+                        const { error } = await client.from("affiliate_campaigns").delete().eq("id", id);
+                        if (error) throw error;
+                    }
                 }
             }
             if (typeof showToast === 'function') showToast(`Campaign "${title}" deleted successfully!`, "success");

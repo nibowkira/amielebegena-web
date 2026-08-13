@@ -895,6 +895,20 @@
         },
 
         async updateCampaign(campaignId, updates) {
+            try {
+                const local = JSON.parse(localStorage.getItem("amiele_campaigns")) || [];
+                const idx = local.findIndex(c => String(c.id) === String(campaignId));
+                if (idx !== -1) {
+                    local[idx] = { ...local[idx], ...updates };
+                    localStorage.setItem("amiele_campaigns", JSON.stringify(local));
+                }
+            } catch (e) {}
+
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(campaignId);
+            if (!isUuid) {
+                return { id: campaignId, ...updates };
+            }
+
             const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             if (!supabase) throw new Error("Supabase client not initialized");
 
@@ -904,8 +918,19 @@
         },
 
         async deleteCampaign(campaignId) {
+            try {
+                const local = JSON.parse(localStorage.getItem("amiele_campaigns")) || [];
+                const filtered = local.filter(c => String(c.id) !== String(campaignId));
+                localStorage.setItem("amiele_campaigns", JSON.stringify(filtered));
+            } catch (e) {}
+
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(campaignId);
+            if (!isUuid) {
+                return true;
+            }
+
             const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
-            if (!supabase) throw new Error("Supabase client not initialized");
+            if (!supabase) return true;
 
             const { error } = await supabase.from("affiliate_campaigns").delete().eq("id", campaignId);
             if (error) throw error;
