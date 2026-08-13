@@ -560,6 +560,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-client.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/auth-guard.js"></script>
     <script src="js/products-service.js"></script>
     <script src="js/pms-service.js"></script>
     <script src="js/pms-controller.js"></script>
@@ -599,7 +600,7 @@
         }
 
         // Tab Switcher Logic
-        function switchDashTab(tabId) {
+        function switchDashTab(tabId, updateUrl = true) {
             document.querySelectorAll('.dash-nav-item').forEach(item => {
                 if (item.dataset.tab === tabId) {
                     item.classList.add('active');
@@ -615,6 +616,10 @@
             const targetSection = document.getElementById(`sec-${tabId}`);
             if (targetSection) {
                 targetSection.style.display = 'block';
+            }
+
+            if (updateUrl && window.AuthGuard) {
+                window.AuthGuard.syncTabToUrl(tabId, 'tab');
             }
 
             // PMS becomes a full standalone page (no customer dashboard chrome)
@@ -682,11 +687,16 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            currentUser = await window.getCurrentUser(true);
-            if (!currentUser) {
-                window.location.href = 'login.html';
-                return;
-            }
+            currentUser = await (window.AuthGuard ? window.AuthGuard.protectPage() : window.getCurrentUser(true));
+            if (!currentUser) return;
+
+            const initialTab = window.AuthGuard ? window.AuthGuard.getInitialTab('dashboard') : 'dashboard';
+            switchDashTab(initialTab, false);
+
+            window.addEventListener('popstate', () => {
+                const popTab = window.AuthGuard ? window.AuthGuard.getInitialTab('dashboard') : 'dashboard';
+                switchDashTab(popTab, false);
+            });
 
             // Fetch actual database affiliate application status
             if (window.AffiliateService) {
