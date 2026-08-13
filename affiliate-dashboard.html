@@ -35,39 +35,35 @@
     <div class="aff-dashboard-container">
         <!-- Sidebar Navigation -->
         <aside class="aff-sidebar" role="navigation" aria-label="Dashboard navigation">
-            <a href="index.html" class="aff-sidebar-brand">
-                <span class="logo" style="color: white; font-size: 1.5rem;">ዓሚኤል በገና</span>
-            </a>
-            
-            <ul class="aff-sidebar-menu" role="tablist">
-                <li><a class="aff-menu-item active" role="tab" aria-selected="true" onclick="switchTab('overview')"><i class="fas fa-chart-line"></i> Overview</a></li>
-                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('referral')"><i class="fas fa-link"></i> Referral Center</a></li>
-                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('commissions')"><i class="fas fa-wallet"></i> Commissions</a></li>
-                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('withdrawals')"><i class="fas fa-hand-holding-usd"></i> Payouts</a></li>
-                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('marketing')"><i class="fas fa-photo-video"></i> Marketing Center</a></li>
-                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('campaigns')"><i class="fas fa-trophy"></i> Bonus Campaigns</a></li>
-                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('achievements')"><i class="fas fa-award"></i> Achievements</a></li>
-                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('announcements')"><i class="fas fa-bullhorn"></i> Announcements</a></li>
-            </ul>
+            <div class="aff-sidebar-top-section">
+                <a href="index.html" class="aff-sidebar-brand">
+                    <span class="logo">ዓሚኤል በገና</span>
+                </a>
+                <span class="aff-sidebar-subtitle">AFFILIATE PORTAL</span>
+                
+                <ul class="aff-sidebar-menu" role="tablist">
+                    <li><a class="aff-menu-item active" role="tab" aria-selected="true" onclick="switchTab('overview')"><i class="fas fa-table-cells-large"></i> Dashboard</a></li>
+                    <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('referral')"><i class="fas fa-link"></i> Referral Center</a></li>
+                    <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('commissions')"><i class="fas fa-file-lines"></i> Commissions</a></li>
+                    <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('withdrawals')"><i class="fas fa-credit-card"></i> Payout Queue</a></li>
+                    <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('marketing')"><i class="fas fa-bag-shopping"></i> Marketing Center</a></li>
+                    <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('campaigns')"><i class="fas fa-bullseye"></i> Campaigns Creator</a></li>
+                    <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('achievements')"><i class="fas fa-award"></i> Achievements</a></li>
+                    <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('announcements')"><i class="fas fa-bullhorn"></i> Broadcast Updates</a></li>
+                </ul>
+            </div>
 
             <div class="aff-sidebar-footer">
                 <div class="aff-sidebar-user" id="sidebar-user-card" onclick="switchTab('settings')" onkeydown="if(event.key==='Enter'||event.key===' ')switchTab('settings')" role="button" tabindex="0" title="Click to view & edit Profile Settings">
-                    <div class="aff-user-avatar-wrap">
-                        <div class="aff-user-avatar" id="avatar-letter">D</div>
-                        <div class="aff-avatar-edit-badge" title="Edit Profile">
-                            <i class="fas fa-pen"></i>
-                        </div>
-                    </div>
+                    <div class="aff-user-avatar" id="avatar-letter">D</div>
                     <div class="aff-user-info">
                         <h4 id="sidebar-user-name">Dawit Yohannes</h4>
-                        <span id="sidebar-user-email">dawit@music.et</span>
+                        <span id="sidebar-user-email">Affiliate Partner</span>
                     </div>
-                    <div class="aff-user-setting-indicator" title="Profile Settings">
-                        <i class="fas fa-cog"></i>
-                    </div>
+                    <i class="fas fa-chevron-down aff-user-chevron"></i>
                 </div>
                 <div class="aff-sidebar-bottom-actions">
-                    <a href="account.html" class="aff-menu-item aff-menu-item-secondary"><i class="fas fa-arrow-left"></i> Main Profile</a>
+                    <a href="account.html" class="aff-menu-item aff-menu-item-secondary"><i class="fas fa-arrow-left"></i> Exit to Account</a>
                 </div>
             </div>
         </aside>
