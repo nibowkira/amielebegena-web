@@ -689,12 +689,24 @@
     if (ids.length === 0) return toast('Select at least one product first.', 'warning');
     var ok = await confirmModal('Move to Trash', 'Move <strong>' + ids.length + '</strong> product(s) to the trash? They can be restored later.', true, 'Move to Trash');
     if (!ok) return;
+
+    ids.forEach(function (id) {
+      var row = document.querySelector(`tr[data-id="${id}"]`);
+      if (row) row.classList.add('pms-row-deleting');
+    });
+
     try {
       await window.PMSService.bulkUpdate(ids, { deleted_at: new Date().toISOString(), status: 'inactive' });
       clearSelection();
       toast('Products moved to trash.', 'success');
-      await loadData();
+      setTimeout(async function () {
+        await loadData();
+      }, 350);
     } catch (e) {
+      ids.forEach(function (id) {
+        var row = document.querySelector(`tr[data-id="${id}"]`);
+        if (row) row.classList.remove('pms-row-deleting');
+      });
       toast(e.message || 'Failed to delete products.', 'error');
     }
   }
@@ -1005,8 +1017,20 @@
   async function deleteOne(id) {
     var ok = await confirmModal('Move to Trash', 'Move this product to the trash? It can be restored later.', true, 'Move to Trash');
     if (!ok) return;
-    try { await window.PMSService.bulkUpdate([id], { deleted_at: new Date().toISOString(), status: 'inactive' }); toast('Product moved to trash.', 'success'); await loadData(); }
-    catch (e) { toast(e.message || 'Failed.', 'error'); }
+
+    var row = document.querySelector(`tr[data-id="${id}"]`);
+    if (row) row.classList.add('pms-row-deleting');
+
+    try {
+      await window.PMSService.bulkUpdate([id], { deleted_at: new Date().toISOString(), status: 'inactive' });
+      toast('Product moved to trash.', 'success');
+      setTimeout(async function () {
+        await loadData();
+      }, 350);
+    } catch (e) {
+      if (row) row.classList.remove('pms-row-deleting');
+      toast(e.message || 'Failed.', 'error');
+    }
   }
   async function restoreOne(id) {
     var ok = await confirmModal('Restore Product', 'Restore this product from trash? It will return to <strong>draft</strong> status.');
@@ -1017,11 +1041,18 @@
   async function permaDelete(id) {
     var ok = await confirmModal('Delete Forever', 'This permanently deletes the product and its image records. <strong>This cannot be undone.</strong>', true, 'Delete Forever');
     if (!ok) return;
+
+    var row = document.querySelector(`tr[data-id="${id}"]`);
+    if (row) row.classList.add('pms-row-deleting');
+
     try {
       await window.PMSService.deleteProduct(id);
       toast('Product permanently deleted.', 'success');
-      await loadData();
+      setTimeout(async function () {
+        await loadData();
+      }, 350);
     } catch (e) {
+      if (row) row.classList.remove('pms-row-deleting');
       toast(e.message || 'Failed to delete.', 'error');
     }
   }

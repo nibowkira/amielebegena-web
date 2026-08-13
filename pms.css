@@ -560,6 +560,67 @@ body.pms-full #sec-pms .dash-section-header {
     box-shadow: inset 4px 0 0 0 #0F2418;
 }
 
+/* ---------------- Delete animation ---------------- */
+.pms-row-deleting {
+    animation: pmsRowDeleteAnim 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    pointer-events: none !important;
+}
+
+@keyframes pmsRowDeleteAnim {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+        background-color: rgba(220, 38, 38, 0.08) !important;
+    }
+    40% {
+        opacity: 0.6;
+        transform: scale(0.98);
+        background-color: rgba(220, 38, 38, 0.16) !important;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.9) translateX(-24px);
+        max-height: 0;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin: 0 !important;
+        border-color: transparent !important;
+    }
+}
+
+/* ---------------- Loading Dots Loader ---------------- */
+.pms-dots-loader {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.pms-dots-loader span {
+    width: 6px;
+    height: 6px;
+    background-color: currentColor;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pmsDotBounce 1.2s infinite ease-in-out both;
+}
+
+.pms-dots-loader span:nth-child(1) { animation-delay: -0.32s; }
+.pms-dots-loader span:nth-child(2) { animation-delay: -0.16s; }
+.pms-dots-loader span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes pmsDotBounce {
+    0%, 80%, 100% {
+        transform: scale(0.35);
+        opacity: 0.35;
+    }
+    40% {
+        transform: scale(1.15);
+        opacity: 1;
+    }
+}
+
 /* ---------------- Drag handle ---------------- */
 .pms-drag-handle {
     display: inline-flex;
