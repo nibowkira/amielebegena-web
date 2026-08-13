@@ -439,7 +439,7 @@
         left: 0 !important;
         background-color: #0F2418 !important;
         color: rgba(255, 255, 255, 0.8) !important;
-        padding: 18px 14px 14px 14px !important;
+        padding: 24px 16px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
@@ -461,7 +461,7 @@
         flex-shrink: 0 !important;
         display: block !important;
         text-decoration: none !important;
-        margin-bottom: 2px !important;
+        margin-bottom: 4px !important;
         padding: 0 !important;
     }
 
@@ -469,7 +469,7 @@
         color: #FFFFFF !important;
         font-size: 1.4rem !important;
         font-weight: 800 !important;
-        letter-spacing: 0.04em !important;
+        letter-spacing: 0.05em !important;
         display: block !important;
         line-height: 1.2 !important;
         font-family: inherit !important;
@@ -481,15 +481,15 @@
         letter-spacing: 0.18em !important;
         font-weight: 800 !important;
         display: block !important;
-        margin-bottom: 14px !important;
-        margin-left: 2px !important;
+        margin-bottom: 24px !important;
+        margin-left: 4px !important;
     }
 
     .aff-sidebar-menu {
         list-style: none !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 4px !important;
+        gap: 6px !important;
         padding: 0 !important;
         margin: 0 !important;
         flex-shrink: 0 !important;
@@ -500,17 +500,17 @@
         display: flex !important;
         align-items: center !important;
         gap: 12px !important;
-        padding: 8.5px 14px !important;
+        padding: 10px 16px !important;
         color: #94A3B8 !important;
         font-weight: 600 !important;
-        font-size: 0.86rem !important;
+        font-size: 0.88rem !important;
         border-radius: 12px !important;
         text-decoration: none !important;
         cursor: pointer !important;
-        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
         white-space: nowrap !important;
         box-sizing: border-box !important;
-        line-height: 1.25 !important;
+        line-height: 1.2 !important;
         user-select: none !important;
     }
 
@@ -521,7 +521,7 @@
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        font-size: 0.92rem !important;
+        font-size: 0.95rem !important;
         flex-shrink: 0 !important;
     }
 
@@ -534,9 +534,10 @@
         color: #0F2418 !important;
         background: #FFD700 !important;
         font-weight: 800 !important;
+        font-size: 0.9rem !important;
         border-radius: 14px !important;
         box-shadow: 0 4px 16px rgba(255, 215, 0, 0.35) !important;
-        padding: 9px 14px !important;
+        padding: 12px 16px !important;
     }
 
     .aff-menu-item.active i {
@@ -546,18 +547,16 @@
     .aff-sidebar-footer {
         flex-shrink: 0 !important;
         margin-top: auto !important;
-        padding-top: 12px !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 6px !important;
+        gap: 8px !important;
     }
 
     .aff-sidebar-user {
         display: flex !important;
         align-items: center !important;
         gap: 12px !important;
-        padding: 10px 12px !important;
+        padding: 12px 14px !important;
         background: rgba(255, 255, 255, 0.05) !important;
         border-radius: 14px !important;
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -565,6 +564,7 @@
         transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
         position: relative !important;
         box-sizing: border-box !important;
+        margin-bottom: 4px !important;
         user-select: none !important;
     }
 
@@ -638,7 +638,7 @@
 
     .aff-user-info h4 {
         margin: 0 !important;
-        font-size: 0.86rem !important;
+        font-size: 0.84rem !important;
         font-weight: 700 !important;
         color: #FFFFFF !important;
         line-height: 1.2 !important;
@@ -693,8 +693,8 @@
         align-items: center !important;
         gap: 8px !important;
         opacity: 0.85 !important;
-        padding: 6px 10px !important;
-        border-radius: 10px !important;
+        padding: 6px 4px !important;
+        border-radius: 8px !important;
         transition: all 0.2s ease !important;
     }
 
