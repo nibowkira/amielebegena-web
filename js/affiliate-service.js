@@ -11,6 +11,37 @@
 
     const AffiliateService = {
         /**
+         * Update user profile settings
+         */
+        async updateProfile(userId, profileData) {
+            if (window.AuthService && typeof window.AuthService.updateProfile === "function") {
+                return await window.AuthService.updateProfile(userId, profileData);
+            }
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) {
+                if (window.AmieleDB && typeof window.AmieleDB.updateUserSettings === 'function') {
+                    window.AmieleDB.updateUserSettings(userId, profileData);
+                }
+                return;
+            }
+            const updates = {};
+            if (profileData.name !== undefined) updates.full_name = profileData.name;
+            if (profileData.phone !== undefined) updates.phone = profileData.phone;
+            if (profileData.photoUrl !== undefined) updates.avatar_url = profileData.photoUrl;
+            if (profileData.bio !== undefined) updates.bio = profileData.bio;
+
+            const { data, error } = await client
+                .from("profiles")
+                .update(updates)
+                .eq("id", userId)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        },
+
+        /**
          * Submit a new affiliate application or update a pending application
          */
         async submitApplication(userId, motivation, socialLink) {

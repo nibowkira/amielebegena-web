@@ -9,6 +9,8 @@
             id: profile.id,
             name: profile.full_name || "User",
             email: profile.email,
+            phone: profile.phone || "",
+            country: profile.country || "Ethiopia",
             role: profile.role || "user",
             joinedAt: profile.created_at,
             bio: profile.bio || "",
@@ -49,6 +51,45 @@
             if (error) throw error;
         },
 
+        async updateProfile(userId, profileData) {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) {
+                if (window.AmieleDB && typeof window.AmieleDB.updateUserSettings === 'function') {
+                    window.AmieleDB.updateUserSettings(userId, profileData);
+                }
+                return;
+            }
+
+            const updates = {};
+            if (profileData.name !== undefined) updates.full_name = profileData.name;
+            if (profileData.phone !== undefined) updates.phone = profileData.phone;
+            if (profileData.photoUrl !== undefined) updates.avatar_url = profileData.photoUrl;
+            if (profileData.bio !== undefined) updates.bio = profileData.bio;
+
+            const { error } = await client
+                .from("profiles")
+                .update(updates)
+                .eq("id", userId);
+
+            if (error) {
+                console.error("[Amiele:Auth] Error updating profile in Supabase:", error);
+                throw error;
+            }
+
+            if (profileData.name) {
+                try {
+                    await client.auth.updateUser({
+                        data: { full_name: profileData.name }
+                    });
+                } catch (e) {
+                    console.warn("[Amiele:Auth] updateUser metadata sync warning:", e);
+                }
+            }
+
+            cachedUser = null;
+            return await this.getCurrentUser(true);
+        },
+
         async getCurrentUser(forceRefresh = false) {
             if (cachedUser && !forceRefresh) return cachedUser;
             const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
@@ -82,6 +123,8 @@
                         id: authUser.id,
                         name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || "User",
                         email: authUser.email,
+                        phone: "",
+                        country: "Ethiopia",
                         role: "user",
                         joinedAt: authUser.created_at,
                         bio: "",
