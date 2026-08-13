@@ -60,6 +60,48 @@
             padding: 0 20px;
         }
 
+        /* ── Back Navigation Button ──────────────────────────────── */
+        .nc-back-bar {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .nc-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 18px;
+            background: #FFFFFF;
+            border: 1px solid #E7E3D8;
+            border-radius: 30px;
+            color: #0F2418;
+            text-decoration: none;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 6px rgba(15, 36, 24, 0.04);
+            cursor: pointer;
+        }
+
+        .nc-back-btn i {
+            font-size: 0.85rem;
+            transition: transform 0.2s ease;
+        }
+
+        .nc-back-btn:hover {
+            background: #0F2418;
+            color: #FFFFFF;
+            border-color: #0F2418;
+            transform: translateX(-3px);
+            box-shadow: 0 4px 12px rgba(15, 36, 24, 0.12);
+        }
+
+        .nc-back-btn:hover i {
+            transform: translateX(-3px);
+        }
+
         /* ── Page Header ─────────────────────────────────────────── */
         .nc-header {
             display: flex;
@@ -546,10 +588,19 @@
         <a href="products.html">Products</a>
         <a href="about-us.html">About Us</a>
         <a href="track-order.html">Track Order</a>
+        <a href="account.html">Account / መለያ</a>
     </nav>
 
     <main class="notif-center-page">
         <div class="notif-center-container">
+
+            <!-- ── Back Navigation Bar ────────────────────────────── -->
+            <div class="nc-back-bar">
+                <button type="button" class="nc-back-btn" id="nc-back-btn" onclick="handleNotificationBack()" aria-label="Go Back">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back</span>
+                </button>
+            </div>
 
             <!-- ── Page Header ────────────────────────────────────── -->
             <div class="nc-header">
@@ -855,6 +906,18 @@
             });
         }
     })();
+
+    // Global Back Button Handler with Smart Referrer Navigation
+    function handleNotificationBack() {
+        if (document.referrer && document.referrer.includes(window.location.host) && !document.referrer.includes('notifications.html')) {
+            window.location.href = document.referrer;
+        } else if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = 'index.html';
+        }
+    }
+    window.handleNotificationBack = handleNotificationBack;
     </script>
 </body>
 </html>
