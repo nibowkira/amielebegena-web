@@ -894,6 +894,24 @@
             return data;
         },
 
+        async updateCampaign(campaignId, updates) {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) throw new Error("Supabase client not initialized");
+
+            const { data, error } = await supabase.from("affiliate_campaigns").update(updates).eq("id", campaignId).select().single();
+            if (error) throw error;
+            return data;
+        },
+
+        async deleteCampaign(campaignId) {
+            const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!supabase) throw new Error("Supabase client not initialized");
+
+            const { error } = await supabase.from("affiliate_campaigns").delete().eq("id", campaignId);
+            if (error) throw error;
+            return true;
+        },
+
         async createAnnouncement(title, content, type, urgency, adminId) {
             const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             if (!supabase) throw new Error("Supabase client not initialized");

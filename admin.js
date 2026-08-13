@@ -683,6 +683,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    let cachedCampaigns = [];
+
     // Campaigns
     async function renderCampaigns() {
         const tbody = document.getElementById("campaigns-table-body");
@@ -698,25 +700,94 @@ document.addEventListener("DOMContentLoaded", async () => {
                 console.error("[Amiele:Admin] Error querying campaigns:", err);
             }
         }
+        if (camps.length === 0 && window.AmieleDB && typeof window.AmieleDB.getCampaigns === 'function') {
+            camps = window.AmieleDB.getCampaigns();
+        }
 
+        cachedCampaigns = camps;
         tbody.innerHTML = "";
+        if (camps.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--aff-text-muted); padding: 2rem;">No live campaign challenges created yet.</td></tr>`;
+            return;
+        }
+
         camps.forEach(c => {
-            const end = new Date(c.ends_at);
+            const end = new Date(c.ends_at || c.endDate || Date.now());
             const diff = Math.max(0, end - new Date());
             const daysLeft = Math.ceil(diff / 86400000);
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td><strong>${escapeHtml(c.id.slice(0, 8))}</strong></td>
-                <td>${escapeHtml(c.title)}</td>
-                <td>${escapeHtml(c.description)}</td>
-                <td>${escapeHtml(c.target_sales)} sales</td>
-                <td>ETB ${parseFloat(c.reward).toLocaleString()}</td>
+                <td><strong>${escapeHtml((c.id || "").slice(0, 8))}</strong></td>
+                <td><strong>${escapeHtml(c.title || "")}</strong></td>
+                <td style="max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(c.description || '')}">${escapeHtml(c.description || "")}</td>
+                <td>${escapeHtml(c.target_sales || c.targetSales || 0)} sales</td>
+                <td style="color: var(--aff-primary); font-weight: 600;">ETB ${parseFloat(c.reward || 0).toLocaleString()}</td>
                 <td>${daysLeft} days</td>
-                <td><span class="aff-badge active">${escapeHtml(c.status)}</span></td>
+                <td><span class="aff-badge ${c.status === 'active' ? 'active' : 'pending'}">${escapeHtml(c.status || 'active')}</span></td>
+                <td>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button type="button" class="aff-btn-sm" style="background: rgba(212, 175, 55, 0.15); color: #B8860B; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onclick="openEditCampaignModal('${c.id}')" title="Edit Campaign">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="aff-btn-sm" style="background: rgba(239, 68, 68, 0.1); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onclick="deleteCampaignAction('${c.id}', '${escapeHtml(c.title || '')}')" title="Delete Campaign">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </td>
             `;
             tbody.appendChild(tr);
         });
     }
+
+    window.openEditCampaignModal = function(id) {
+        const camp = cachedCampaigns.find(c => String(c.id) === String(id));
+        if (!camp) return;
+
+        const modal = document.getElementById("edit-campaign-modal");
+        if (!modal) return;
+
+        document.getElementById("edit-cmp-id").value = camp.id;
+        document.getElementById("edit-cmp-title").value = camp.title || "";
+        document.getElementById("edit-cmp-desc").value = camp.description || "";
+        document.getElementById("edit-cmp-target").value = camp.target_sales || camp.targetSales || 1;
+        document.getElementById("edit-cmp-reward").value = camp.reward || 0;
+        document.getElementById("edit-cmp-status").value = camp.status || "active";
+        document.getElementById("edit-cmp-days").value = "";
+
+        modal.style.display = "flex";
+    };
+
+    window.closeEditCampaignModal = function() {
+        const modal = document.getElementById("edit-campaign-modal");
+        if (modal) modal.style.display = "none";
+    };
+
+    window.deleteCampaignAction = async function(id, title) {
+        const confirmMsg = `Are you sure you want to delete the campaign challenge "${title}"? This action cannot be undone.`;
+        if (typeof showConfirmModal === "function") {
+            const confirmed = await showConfirmModal("Delete Campaign Challenge", confirmMsg, false, "Delete Campaign");
+            if (!confirmed) return;
+        } else {
+            if (!confirm(confirmMsg)) return;
+        }
+
+        try {
+            if (window.AdminService && typeof window.AdminService.deleteCampaign === 'function') {
+                await window.AdminService.deleteCampaign(id);
+            } else {
+                const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+                if (client) {
+                    const { error } = await client.from("affiliate_campaigns").delete().eq("id", id);
+                    if (error) throw error;
+                }
+            }
+            if (typeof showToast === 'function') showToast(`Campaign "${title}" deleted successfully!`, "success");
+            renderCampaigns();
+        } catch (err) {
+            console.error("[Amiele:Campaign] Delete error:", err);
+            if (typeof showToast === 'function') showToast(err.message || "Failed to delete campaign.", "error");
+        }
+    };
 
     // Filter and Search Orders
     window.filterFulfillmentOrders = function (status, btnElem) {
@@ -1139,6 +1210,60 @@ document.addEventListener("DOMContentLoaded", async () => {
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.textContent = origText;
+            }
+        });
+    }
+
+    const editCampForm = document.getElementById("edit-campaign-form");
+    if (editCampForm) {
+        editCampForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("edit-cmp-id").value;
+            const title = document.getElementById("edit-cmp-title").value.trim();
+            const desc = document.getElementById("edit-cmp-desc").value.trim();
+            const target = parseInt(document.getElementById("edit-cmp-target").value, 10);
+            const reward = parseFloat(document.getElementById("edit-cmp-reward").value);
+            const status = document.getElementById("edit-cmp-status").value;
+            const extraDays = document.getElementById("edit-cmp-days").value ? parseInt(document.getElementById("edit-cmp-days").value, 10) : null;
+
+            const updates = {
+                title,
+                description: desc,
+                target_sales: target,
+                reward,
+                status
+            };
+
+            if (extraDays && extraDays > 0) {
+                const newEnd = new Date();
+                newEnd.setDate(newEnd.getDate() + extraDays);
+                updates.ends_at = newEnd.toISOString();
+            }
+
+            const submitBtn = editCampForm.querySelector('button[type="submit"]');
+            const origText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                if (window.AdminService && typeof window.AdminService.updateCampaign === "function") {
+                    await window.AdminService.updateCampaign(id, updates);
+                } else {
+                    const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+                    if (client) {
+                        const { error } = await client.from("affiliate_campaigns").update(updates).eq("id", id);
+                        if (error) throw error;
+                    }
+                }
+                if (typeof showToast === "function") showToast("Campaign challenge updated successfully!", "success");
+                window.closeEditCampaignModal();
+                renderCampaigns();
+            } catch (err) {
+                console.error("[Amiele:Campaign] Update error:", err);
+                if (typeof showToast === "function") showToast(err.message || "Failed to update campaign.", "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origText;
             }
         });
     }

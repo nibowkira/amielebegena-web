@@ -646,6 +646,7 @@
                                     <th>Reward</th>
                                     <th>Days Remaining</th>
                                     <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="campaigns-table-body"></tbody>
@@ -747,10 +748,53 @@
                     <i data-lucide="package" style="width:22px; height:22px; color:#D4AF37;"></i>
                     <span id="modal-order-number">Order #AM-ORD-0001</span>
                 </h3>
-                <button class="fulfillment-modal-close" onclick="closeOrderFulfillmentModal()">&times;</button>
+    <!-- EDIT CAMPAIGN MODAL -->
+    <div class="fulfillment-modal-backdrop" id="edit-campaign-modal" style="display:none;">
+        <div class="fulfillment-modal" style="max-width: 540px;">
+            <div class="fulfillment-modal-header">
+                <h3><i class="fas fa-edit" style="color: #D4AF37; margin-right: 8px;"></i> Edit Live Campaign Challenge</h3>
+                <button class="fulfillment-modal-close" onclick="closeEditCampaignModal()">&times;</button>
             </div>
-            <div class="fulfillment-modal-body" id="order-details-modal-body">
-                <!-- Content dynamically populated by admin.js -->
+            <div class="fulfillment-modal-body" style="padding: 1.5rem;">
+                <form id="edit-campaign-form" class="aff-form">
+                    <input type="hidden" id="edit-cmp-id">
+                    <div class="aff-form-group">
+                        <label for="edit-cmp-title">Campaign Title *</label>
+                        <input type="text" id="edit-cmp-title" class="aff-input" required placeholder="e.g. Sell 5 Kirars">
+                    </div>
+                    <div class="aff-form-group" style="margin-top: 1rem;">
+                        <label for="edit-cmp-desc">Campaign Description *</label>
+                        <textarea id="edit-cmp-desc" class="aff-textarea" rows="3" required placeholder="Explain target details clearly..."></textarea>
+                    </div>
+                    <div class="form-row" style="margin-top: 1rem;">
+                        <div class="aff-form-group">
+                            <label for="edit-cmp-target">Target Sales *</label>
+                            <input type="number" id="edit-cmp-target" class="aff-input" required min="1">
+                        </div>
+                        <div class="aff-form-group">
+                            <label for="edit-cmp-reward">Bonus Reward (ETB) *</label>
+                            <input type="number" id="edit-cmp-reward" class="aff-input" required min="1">
+                        </div>
+                    </div>
+                    <div class="form-row" style="margin-top: 1rem;">
+                        <div class="aff-form-group">
+                            <label for="edit-cmp-status">Campaign Status *</label>
+                            <select id="edit-cmp-status" class="aff-select" required>
+                                <option value="active">Active</option>
+                                <option value="paused">Paused</option>
+                                <option value="ended">Ended</option>
+                            </select>
+                        </div>
+                        <div class="aff-form-group">
+                            <label for="edit-cmp-days">Extend Days from Now</label>
+                            <input type="number" id="edit-cmp-days" class="aff-input" min="1" placeholder="e.g. 30">
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.75rem;">
+                        <button type="button" class="aff-btn-secondary" style="padding: 10px 18px; border-radius: 10px; cursor: pointer;" onclick="closeEditCampaignModal()">Cancel</button>
+                        <button type="submit" class="aff-btn" style="padding: 10px 20px; font-family: 'Benaiah', sans-serif;"><i class="fas fa-save" style="margin-right: 6px;"></i> Save Changes</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
