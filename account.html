@@ -424,7 +424,7 @@
                     <div class="dash-tracker-card">
                         <div class="dash-section-header" style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                <button type="button" onclick="switchAccountTab('details')" title="Back to Main Profile" aria-label="Back to Main Profile" style="background: #FFFFFF; border: 1px solid #E7E3D8; border-radius: 10px; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #0F2418; font-size: 0.95rem; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                                <button type="button" onclick="switchDashTab('dashboard')" title="Back to Main Profile" aria-label="Back to Main Profile" style="background: #FFFFFF; border: 1px solid #E7E3D8; border-radius: 10px; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #0F2418; font-size: 0.95rem; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
                                     <i class="fa-solid fa-arrow-left"></i>
                                 </button>
                                 <div>
@@ -606,6 +606,7 @@
 
         // Tab Switcher Logic
         function switchDashTab(tabId, updateUrl = true) {
+            if (tabId === 'details') tabId = 'dashboard';
             document.querySelectorAll('.dash-nav-item').forEach(item => {
                 if (item.dataset.tab === tabId) {
                     item.classList.add('active');
@@ -633,6 +634,8 @@
             // Close mobile sidebar drawer after tab selection
             closeDashSidebar();
         }
+        window.switchDashTab = switchDashTab;
+        window.switchAccountTab = switchDashTab;
 
         // ── MOBILE SIDEBAR DRAWER CONTROLLER ─────────────────────────────────
         function openDashSidebar() {

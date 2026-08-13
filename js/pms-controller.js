@@ -83,7 +83,7 @@
 
         <div class="pms-page-head">
           <div class="pms-page-head-top" style="display:flex; align-items:center; gap:14px;">
-            <button type="button" class="pms-btn" onclick="typeof switchAccountTab==='function'?switchAccountTab('details'):(window.location.href='account.html#details')" title="Back to Main Profile" aria-label="Back to Main Profile" style="padding:10px 14px; font-size:1rem; border-radius:10px; flex-shrink:0;">
+            <button type="button" class="pms-btn" onclick="typeof window.switchDashTab==='function'?window.switchDashTab('dashboard'):(typeof window.switchAccountTab==='function'?window.switchAccountTab('dashboard'):(window.location.href='account.html?tab=dashboard'))" title="Back to Main Profile" aria-label="Back to Main Profile" style="padding:10px 14px; font-size:1rem; border-radius:10px; flex-shrink:0;">
               <i class="fa-solid fa-arrow-left"></i>
             </button>
             <div class="pms-page-head-text">
