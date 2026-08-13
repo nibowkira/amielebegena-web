@@ -52,15 +52,19 @@
                 <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
 
-            <div class="aff-sidebar-user">
-                <div class="aff-user-avatar" id="avatar-letter">D</div>
-                <div class="aff-user-info">
-                    <h4 id="sidebar-user-name">Dawit Yohannes</h4>
-                    <span id="sidebar-user-email">dawit@music.et</span>
+            <div class="aff-sidebar-footer">
+                <div class="aff-sidebar-user">
+                    <div class="aff-user-avatar" id="avatar-letter">D</div>
+                    <div class="aff-user-info">
+                        <h4 id="sidebar-user-name">Dawit Yohannes</h4>
+                        <span id="sidebar-user-email">dawit@music.et</span>
+                    </div>
+                </div>
+                <div class="aff-sidebar-bottom-actions">
+                    <a href="account.html" class="aff-menu-item aff-menu-item-secondary"><i class="fas fa-arrow-left"></i> Main Profile</a>
+                    <a href="#" onclick="handleLogout(event)" class="aff-menu-item aff-menu-item-logout"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
                 </div>
             </div>
-            <a href="account.html" class="aff-menu-item" style="margin-top: -1.5rem; opacity: 0.8; font-size: 0.85rem;"><i class="fas fa-arrow-left"></i> Main Profile</a>
-            <a href="#" onclick="handleLogout(event)" class="aff-menu-item" style="margin-top: -0.5rem; color: #ff6b6b; font-size: 0.85rem;"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
         </aside>
 
         <!-- Main Workspace -->
