@@ -719,6 +719,21 @@
             }
 
             return true;
+        },
+
+        /**
+         * Update user authentication password securely
+         */
+        async updatePassword(newPassword) {
+            const client = window.AmieleSupabase.getClient();
+            if (!client) throw new Error("Supabase client not initialized");
+            if (!newPassword || newPassword.trim().length < 6) {
+                throw new Error("Password must be at least 6 characters long.");
+            }
+
+            const { error } = await client.auth.updateUser({ password: newPassword.trim() });
+            if (error) throw error;
+            return true;
         }
     };
 

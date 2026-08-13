@@ -528,68 +528,107 @@
                 
                 <div class="settings-grid">
                     <!-- Left: Forms -->
-                    <div class="settings-card">
-                        <form id="settings-form" class="aff-form" style="max-width: 100%;">
-                            <h3 style="font-size: 1.1rem; color: var(--aff-primary); margin-bottom: 1.5rem; border-bottom: 1px solid var(--aff-card-border); padding-bottom: 0.5rem;"><i class="fas fa-user-edit"></i> Edit Public Profile</h3>
-                            
-                            <div class="form-row">
-                                <div class="aff-form-group">
-                                    <label for="set-name">Full Name *</label>
-                                    <input type="text" id="set-name" class="aff-input" required placeholder="Your full name">
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        <!-- Profile & Details Form -->
+                        <div class="settings-card">
+                            <form id="settings-form" class="aff-form" style="max-width: 100%;">
+                                <h3 style="font-size: 1.15rem; color: var(--aff-primary); margin-bottom: 1.25rem; border-bottom: 1px solid var(--aff-card-border); padding-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-user-edit" style="color: #D4AF37;"></i> Edit Public Profile
+                                </h3>
+                                
+                                <div class="form-row">
+                                    <div class="aff-form-group">
+                                        <label for="set-name">Full Name *</label>
+                                        <input type="text" id="set-name" class="aff-input" required placeholder="Your full name">
+                                    </div>
+                                    <div class="aff-form-group">
+                                        <label for="set-phone">Phone Number</label>
+                                        <input type="tel" id="set-phone" class="aff-input" placeholder="e.g. +251911223344">
+                                    </div>
                                 </div>
-                                <div class="aff-form-group">
-                                    <label for="set-phone">Phone Number</label>
-                                    <input type="tel" id="set-phone" class="aff-input" placeholder="e.g. +251911223344">
+                                
+                                <div class="form-row" style="margin-top: 1rem;">
+                                    <div class="aff-form-group">
+                                        <label for="set-email">Email Address *</label>
+                                        <input type="email" id="set-email" class="aff-input" required placeholder="your.email@example.com">
+                                    </div>
+                                    <div class="aff-form-group">
+                                        <label for="set-country">Country</label>
+                                        <select id="set-country" class="aff-select">
+                                            <option value="Ethiopia">Ethiopia</option>
+                                            <option value="United States">United States</option>
+                                            <option value="United Kingdom">United Kingdom</option>
+                                            <option value="Germany">Germany</option>
+                                            <option value="Canada">Canada</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="form-row" style="margin-top: 1rem;">
-                                <div class="aff-form-group">
-                                    <label for="set-email">Email Address *</label>
-                                    <input type="email" id="set-email" class="aff-input" required placeholder="your.email@example.com">
-                                </div>
-                                <div class="aff-form-group">
-                                    <label for="set-country">Country</label>
-                                    <select id="set-country" class="aff-select">
-                                        <option value="Ethiopia">Ethiopia</option>
-                                        <option value="United States">United States</option>
-                                        <option value="United Kingdom">United Kingdom</option>
-                                        <option value="Germany">Germany</option>
-                                        <option value="Canada">Canada</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                            </div>
 
-                            <div class="aff-form-group" style="margin-top: 1rem;">
-                                <label for="set-avatar-url">Avatar Image URL (Optional)</label>
-                                <input type="url" id="set-avatar-url" class="aff-input" placeholder="https://example.com/avatar.jpg">
-                            </div>
-
-                            <h3 style="font-size: 1.1rem; color: var(--aff-primary); margin-top: 2.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--aff-card-border); padding-bottom: 0.5rem;"><i class="fas fa-lock"></i> Change Account Password</h3>
-                            <div class="form-row">
-                                <div class="aff-form-group">
-                                    <label for="set-password">New Password</label>
-                                    <input type="password" id="set-password" class="aff-input" placeholder="Leave blank to keep current">
+                                <div class="aff-form-group" style="margin-top: 1rem;">
+                                    <label for="set-avatar-url">Avatar Image URL (Optional)</label>
+                                    <input type="url" id="set-avatar-url" class="aff-input" placeholder="https://example.com/avatar.jpg">
                                 </div>
-                                <div class="aff-form-group">
-                                    <label for="set-password-confirm">Confirm Password</label>
-                                    <input type="password" id="set-password-confirm" class="aff-input" placeholder="Confirm new password">
+
+                                <h3 style="font-size: 1.15rem; color: var(--aff-primary); margin-top: 2rem; margin-bottom: 1rem; border-bottom: 1px solid var(--aff-card-border); padding-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-bell" style="color: #D4AF37;"></i> Notification Preferences
+                                </h3>
+                                <div class="aff-form-group" style="flex-direction: row; align-items: center; gap: 0.8rem; cursor: pointer;">
+                                    <input type="checkbox" id="set-pref-email" style="cursor: pointer;" checked>
+                                    <label for="set-pref-email" style="text-transform: none; font-weight: normal; cursor: pointer; margin: 0;">Receive monthly performance reports via Email</label>
                                 </div>
-                            </div>
+                                <div class="aff-form-group" style="flex-direction: row; align-items: center; gap: 0.8rem; cursor: pointer; margin-top: 0.5rem;">
+                                    <input type="checkbox" id="set-pref-push" style="cursor: pointer;">
+                                    <label for="set-pref-push" style="text-transform: none; font-weight: normal; cursor: pointer; margin: 0;">Simulate push notifications for real-time sale credits</label>
+                                </div>
 
-                            <h3 style="font-size: 1.1rem; color: var(--aff-primary); margin-top: 2.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--aff-card-border); padding-bottom: 0.5rem;"><i class="fas fa-bell"></i> Notification Preferences</h3>
-                            <div class="aff-form-group" style="flex-direction: row; align-items: center; gap: 0.8rem; cursor: pointer;">
-                                <input type="checkbox" id="set-pref-email" style="cursor: pointer;" checked>
-                                <label for="set-pref-email" style="text-transform: none; font-weight: normal; cursor: pointer; margin: 0;">Receive monthly performance reports via Email</label>
-                            </div>
-                            <div class="aff-form-group" style="flex-direction: row; align-items: center; gap: 0.8rem; cursor: pointer; margin-top: 0.5rem;">
-                                <input type="checkbox" id="set-pref-push" style="cursor: pointer;">
-                                <label for="set-pref-push" style="text-transform: none; font-weight: normal; cursor: pointer; margin: 0;">Simulate push notifications for real-time sale credits</label>
-                            </div>
+                                <button type="submit" class="aff-btn" style="margin-top: 1.75rem; font-family: 'Benaiah', sans-serif;">
+                                    <i class="fas fa-check-circle" style="margin-right: 6px;"></i> Save Profile Changes
+                                </button>
+                            </form>
+                        </div>
 
-                            <button type="submit" class="aff-btn" style="margin-top: 2rem; font-family: 'Benaiah', sans-serif;">Save Configurations</button>
-                        </form>
+                        <!-- Dedicated Password Security Form -->
+                        <div class="settings-card">
+                            <form id="password-form" class="aff-form" style="max-width: 100%;" autocomplete="off">
+                                <h3 style="font-size: 1.15rem; color: var(--aff-primary); margin-bottom: 1.25rem; border-bottom: 1px solid var(--aff-card-border); padding-bottom: 0.6rem; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-shield-alt" style="color: #D4AF37;"></i> Security & Password
+                                </h3>
+                                <p style="font-size: 0.85rem; color: var(--aff-text-muted); margin-top: -0.5rem; margin-bottom: 1.2rem; line-height: 1.45;">
+                                    Ensure your affiliate account is protected with a secure password containing at least 6 characters.
+                                </p>
+                                
+                                <div class="form-row">
+                                    <div class="aff-form-group">
+                                        <label for="set-password">New Password *</label>
+                                        <div class="pwd-input-wrap">
+                                            <input type="password" id="set-password" class="aff-input" required minlength="6" autocomplete="new-password" placeholder="Enter new password">
+                                            <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('set-password', this)" title="Show/Hide Password" aria-label="Toggle password visibility">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="pwd-strength-bar">
+                                            <div class="pwd-strength-fill" id="pwd-strength-fill"></div>
+                                        </div>
+                                        <span class="pwd-feedback-text" id="pwd-strength-text"></span>
+                                    </div>
+                                    <div class="aff-form-group">
+                                        <label for="set-password-confirm">Confirm New Password *</label>
+                                        <div class="pwd-input-wrap">
+                                            <input type="password" id="set-password-confirm" class="aff-input" required minlength="6" autocomplete="new-password" placeholder="Re-enter new password">
+                                            <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('set-password-confirm', this)" title="Show/Hide Password" aria-label="Toggle password visibility">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <span class="pwd-match-badge" id="pwd-match-badge"></span>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="aff-btn" style="margin-top: 1.75rem; background: #0F2418; color: #D4AF37; border: 1.5px solid rgba(212,175,55,0.4); font-family: 'Benaiah', sans-serif;">
+                                    <i class="fas fa-key" style="margin-right: 6px;"></i> Update Password
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     <!-- Right: Profile Card -->
