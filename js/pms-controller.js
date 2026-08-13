@@ -82,12 +82,15 @@
       <div class="pms-shell">
 
         <div class="pms-page-head">
-          <div class="pms-page-head-top">
+          <div class="pms-page-head-top" style="display:flex; align-items:center; gap:14px;">
+            <button type="button" class="pms-btn" onclick="typeof switchAccountTab==='function'?switchAccountTab('details'):(window.location.href='account.html#details')" title="Back to Main Profile" aria-label="Back to Main Profile" style="padding:10px 14px; font-size:1rem; border-radius:10px; flex-shrink:0;">
+              <i class="fa-solid fa-arrow-left"></i>
+            </button>
             <div class="pms-page-head-text">
               <h1 class="pms-page-title">Product Management</h1>
               <p class="pms-page-sub">Manage your entire catalog from one workspace.</p>
             </div>
-            <div class="pms-page-head-actions">
+            <div class="pms-page-head-actions" style="margin-left:auto;">
               <button type="button" class="pms-btn" onclick="PMSController.importJSON()"><i class="fa-solid fa-file-import"></i> Import</button>
               <button type="button" class="pms-btn" onclick="PMSController.exportCSV()"><i class="fa-solid fa-file-arrow-down"></i> Export</button>
               <button type="button" class="pms-btn pms-btn-primary" onclick="PMSController.openAdd()"><i class="fa-solid fa-plus"></i> New Product</button>

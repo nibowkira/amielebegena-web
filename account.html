@@ -422,10 +422,15 @@
                 <!-- SECTION 8b: PMS PRODUCT MANAGEMENT -->
                 <div id="sec-pms" class="dash-tab-content" style="display: none;">
                     <div class="dash-tracker-card">
-                        <div class="dash-section-header" style="margin-bottom: 16px;">
-                            <div>
-                                <h3 class="dash-section-title"><i class="fa-solid fa-boxes-stacked"></i> Product Management</h3>
-                                <p style="color: var(--dash-muted); font-size: 0.85rem; margin: 4px 0 0 0;">Manage the storefront catalog, audio previews, detail page links and collections.</p>
+                        <div class="dash-section-header" style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <button type="button" onclick="switchAccountTab('details')" title="Back to Main Profile" aria-label="Back to Main Profile" style="background: #FFFFFF; border: 1px solid #E7E3D8; border-radius: 10px; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #0F2418; font-size: 0.95rem; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </button>
+                                <div>
+                                    <h3 class="dash-section-title" style="margin: 0;"><i class="fa-solid fa-boxes-stacked"></i> Product Management</h3>
+                                    <p style="color: var(--dash-muted); font-size: 0.85rem; margin: 4px 0 0 0;">Manage the storefront catalog, audio previews, detail page links and collections.</p>
+                                </div>
                             </div>
                         </div>
                         <div id="pms-container"></div>
