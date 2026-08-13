@@ -535,15 +535,88 @@
         display: flex !important;
         align-items: center !important;
         gap: 10px !important;
-        padding: 0.3rem 0.5rem !important;
+        padding: 0.45rem 0.65rem !important;
+        border-radius: 12px !important;
+        cursor: pointer !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        position: relative !important;
+        border: 1px solid transparent !important;
+    }
+
+    .aff-sidebar-user:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 215, 0, 0.2) !important;
+    }
+
+    .aff-sidebar-user.active {
+        background: rgba(255, 215, 0, 0.12) !important;
+        border-color: rgba(255, 215, 0, 0.4) !important;
+    }
+
+    .aff-sidebar-user.active .aff-user-setting-indicator {
+        color: #ffd700 !important;
+    }
+
+    .aff-user-avatar-wrap {
+        position: relative !important;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     .aff-user-avatar {
-        width: 32px !important;
-        height: 32px !important;
+        width: 34px !important;
+        height: 34px !important;
         font-size: 0.9rem !important;
         border-radius: 50% !important;
         flex-shrink: 0 !important;
+        transition: transform 0.2s ease !important;
+    }
+
+    .aff-sidebar-user:hover .aff-user-avatar {
+        transform: scale(1.04) !important;
+    }
+
+    .aff-avatar-edit-badge {
+        position: absolute !important;
+        bottom: -2px !important;
+        right: -2px !important;
+        width: 15px !important;
+        height: 15px !important;
+        border-radius: 50% !important;
+        background: #ffd700 !important;
+        color: #14231b !important;
+        font-size: 0.52rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+        border: 1.5px solid #14231b !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .aff-sidebar-user:hover .aff-avatar-edit-badge {
+        background: #ffffff !important;
+        color: #14231b !important;
+        transform: scale(1.15) !important;
+    }
+
+    .aff-user-setting-indicator {
+        margin-left: auto !important;
+        color: rgba(255, 255, 255, 0.35) !important;
+        font-size: 0.85rem !important;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        padding: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+    }
+
+    .aff-sidebar-user:hover .aff-user-setting-indicator {
+        color: #ffd700 !important;
+        transform: rotate(60deg) scale(1.1) !important;
     }
 
     .aff-user-info h4 {
@@ -553,7 +626,7 @@
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
-        max-width: 140px !important;
+        max-width: 125px !important;
     }
 
     .aff-user-info span {
@@ -563,7 +636,7 @@
         white-space: nowrap !important;
         overflow: hidden !important;
         text-overflow: ellipsis !important;
-        max-width: 140px !important;
+        max-width: 125px !important;
         display: block !important;
     }
 

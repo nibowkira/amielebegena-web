@@ -49,15 +49,22 @@
                 <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('campaigns')"><i class="fas fa-trophy"></i> Bonus Campaigns</a></li>
                 <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('achievements')"><i class="fas fa-award"></i> Achievements</a></li>
                 <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('announcements')"><i class="fas fa-bullhorn"></i> Announcements</a></li>
-                <li><a class="aff-menu-item" role="tab" aria-selected="false" onclick="switchTab('settings')"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
 
             <div class="aff-sidebar-footer">
-                <div class="aff-sidebar-user">
-                    <div class="aff-user-avatar" id="avatar-letter">D</div>
+                <div class="aff-sidebar-user" id="sidebar-user-card" onclick="switchTab('settings')" onkeydown="if(event.key==='Enter'||event.key===' ')switchTab('settings')" role="button" tabindex="0" title="Click to view & edit Profile Settings">
+                    <div class="aff-user-avatar-wrap">
+                        <div class="aff-user-avatar" id="avatar-letter">D</div>
+                        <div class="aff-avatar-edit-badge" title="Edit Profile">
+                            <i class="fas fa-pen"></i>
+                        </div>
+                    </div>
                     <div class="aff-user-info">
                         <h4 id="sidebar-user-name">Dawit Yohannes</h4>
                         <span id="sidebar-user-email">dawit@music.et</span>
+                    </div>
+                    <div class="aff-user-setting-indicator" title="Profile Settings">
+                        <i class="fas fa-cog"></i>
                     </div>
                 </div>
                 <div class="aff-sidebar-bottom-actions">
