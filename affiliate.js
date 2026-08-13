@@ -153,6 +153,121 @@ function renderReferralQR() {
     n.src = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(refUrl);
 }
 
+function renderAchievements() {
+    const container = document.getElementById('achievements-container');
+    if (!container) return;
+    const count = (typeof r !== 'undefined' && r && r.sales) ? r.sales : 0;
+    const list = [
+        { id: 'first_sale', title: 'First Sale', desc: 'Refer 1 successful instrument sale', threshold: 1, icon: '🌟' },
+        { id: '10_sales', title: 'Craftsman Rank', desc: 'Refer 10 successful sales', threshold: 10, icon: '🎻' },
+        { id: '50_sales', title: 'Maestro Rank', desc: 'Refer 50 successful sales', threshold: 50, icon: '🎼' },
+        { id: '100_sales', title: 'Guardian Elite', desc: 'Refer 100 successful sales', threshold: 100, icon: '👑' },
+        { id: '250_sales', title: 'Top Ambassador', desc: 'Refer 250+ sales & join elite ambassadors', threshold: 250, icon: '🎭' }
+    ];
+
+    container.innerHTML = '';
+    list.forEach(badge => {
+        const unlocked = count >= badge.threshold;
+        const card = document.createElement('div');
+        card.className = `achievement-badge-card ${unlocked ? 'unlocked' : ''}`;
+        
+        const certBtn = unlocked 
+            ? `<button class="aff-btn" style="margin-top: 0.75rem; width:100%; font-size:0.8rem; padding:8px 12px; background:var(--aff-primary);" onclick="downloadCertificate('${badge.title}')"><i class="fas fa-award" style="margin-right:6px; color:#ffd700;"></i> Get Certificate</button>` 
+            : `<button class="aff-btn secondary" style="margin-top: 0.75rem; width:100%; font-size:0.8rem; padding:8px 12px; opacity:0.6;" disabled><i class="fas fa-lock" style="margin-right:6px;"></i> Locked</button>`;
+
+        card.innerHTML = `
+            <span class="achievement-icon">${badge.icon}</span>
+            <h3>${badge.title}</h3>
+            <p>${badge.desc}</p>
+            <div class="achievement-progress-tag">${unlocked ? '✓ Unlocked (' + count + '/' + badge.threshold + ')' : count + '/' + badge.threshold + ' Sales'}</div>
+            ${certBtn}
+        `;
+        container.appendChild(card);
+    });
+}
+
+window.downloadCertificate = function(milestoneTitle) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1100;
+    canvas.height = 800;
+    const ctx = canvas.getContext('2d');
+
+    // Background parchment styling
+    ctx.fillStyle = '#fdfbf7';
+    ctx.fillRect(0, 0, 1100, 800);
+
+    // Double borders
+    ctx.strokeStyle = '#14231b';
+    ctx.lineWidth = 12;
+    ctx.strokeRect(30, 30, 1040, 740);
+
+    ctx.strokeStyle = '#D4AF37';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(52, 52, 996, 696);
+
+    // Watermark
+    ctx.fillStyle = 'rgba(20, 35, 27, 0.03)';
+    ctx.font = 'bold 120px Georgia';
+    ctx.textAlign = 'center';
+    ctx.fillText('AMIELE BEGENA', 550, 440);
+
+    // Header
+    ctx.fillStyle = '#14231b';
+    ctx.font = 'bold 36px Georgia';
+    ctx.fillText('CERTIFICATE OF RECOGNITION', 550, 160);
+
+    ctx.font = 'italic 18px Georgia';
+    ctx.fillStyle = '#555';
+    ctx.fillText('This prestigious milestone certificate is proudly presented to', 550, 230);
+
+    // Recipient Name
+    ctx.font = 'bold 40px Georgia';
+    ctx.fillStyle = '#14231b';
+    const partnerName = (typeof t !== 'undefined' && t && t.name) ? t.name : 'Official Partner';
+    ctx.fillText(partnerName, 550, 310);
+
+    ctx.font = 'italic 18px Georgia';
+    ctx.fillStyle = '#555';
+    ctx.fillText('for successfully reaching the official milestone of', 550, 380);
+
+    // Milestone title in gold
+    ctx.font = 'bold 32px Georgia';
+    ctx.fillStyle = '#b8860b';
+    ctx.fillText(`"${milestoneTitle}"`, 550, 440);
+
+    // Description text
+    ctx.font = '15px Outfit, sans-serif';
+    ctx.fillStyle = '#444';
+    ctx.fillText('In recognition of your exceptional dedication and cultural partnership in sharing Ethiopian musical heritage.', 550, 500);
+    ctx.fillText('Your commitment helps sustain traditional artisans and master craftsmanship of Amiele Begena.', 550, 528);
+
+    // Signature lines
+    ctx.strokeStyle = '#D4AF37';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(200, 670);
+    ctx.lineTo(440, 670);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(660, 670);
+    ctx.lineTo(900, 670);
+    ctx.stroke();
+
+    ctx.font = 'bold 14px Outfit, sans-serif';
+    ctx.fillStyle = '#14231b';
+    ctx.fillText('Cultural Curation Committee', 320, 700);
+    ctx.fillText('Date: ' + new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }), 780, 700);
+
+    const link = document.createElement('a');
+    link.download = `Amiele_Certificate_${milestoneTitle.replace(/\\s+/g, '_')}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    if (typeof showToast === 'function') {
+        showToast(`Certificate for "${milestoneTitle}" downloaded! / የምስክር ወረቀት ተጭኗል!`, 'success');
+    }
+};
+
 function initSettingsForm() {
     const profileForm = document.getElementById("settings-form");
     const pwdForm = document.getElementById("password-form");
