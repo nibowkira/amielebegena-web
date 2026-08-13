@@ -61,32 +61,59 @@
         }
 
         /* ── Back Navigation Button ──────────────────────────────── */
+        .nav-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 14px;
+        }
+
+        .nav-back-link:hover {
+            background: #D4AF37;
+            color: #0F2418;
+            border-color: #D4AF37;
+            transform: translateX(-2px);
+        }
+
         .nc-back-bar {
-            margin-bottom: 20px;
+            margin-bottom: 22px;
             display: flex;
             align-items: center;
+            gap: 12px;
         }
 
         .nc-back-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 18px;
+            padding: 10px 22px;
             background: #FFFFFF;
-            border: 1px solid #E7E3D8;
+            border: 1.5px solid #E7E3D8;
             border-radius: 30px;
             color: #0F2418;
             text-decoration: none;
             font-family: 'Outfit', sans-serif;
-            font-size: 0.88rem;
+            font-size: 0.92rem;
             font-weight: 600;
             transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 2px 6px rgba(15, 36, 24, 0.04);
+            box-shadow: 0 2px 8px rgba(15, 36, 24, 0.06);
             cursor: pointer;
         }
 
         .nc-back-btn i {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            color: #D4AF37;
             transition: transform 0.2s ease;
         }
 
@@ -94,11 +121,12 @@
             background: #0F2418;
             color: #FFFFFF;
             border-color: #0F2418;
-            transform: translateX(-3px);
-            box-shadow: 0 4px 12px rgba(15, 36, 24, 0.12);
+            transform: translateX(-4px);
+            box-shadow: 0 6px 16px rgba(15, 36, 24, 0.15);
         }
 
         .nc-back-btn:hover i {
+            color: #FFFFFF;
             transform: translateX(-3px);
         }
 
@@ -554,7 +582,11 @@
 </head>
 <body>
     <header class="navbar">
-        <div class="nav-left">
+        <div class="nav-left" style="display: flex; align-items: center;">
+            <button type="button" class="nav-back-link" onclick="handleNotificationBack()" aria-label="Go Back" title="Go Back">
+                <i class="fas fa-arrow-left"></i>
+                <span>Back</span>
+            </button>
             <a href="index.html" style="text-decoration:none;"><span class="logo">ዓሚኤል በገና</span></a>
         </div>
         <nav class="nav-center" id="main-nav">
@@ -584,6 +616,7 @@
     <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
     <nav class="mobile-nav" id="mobile-nav">
         <button class="mobile-nav-close" id="mobile-nav-close" aria-label="Close menu">&times;</button>
+        <a href="javascript:handleNotificationBack()" style="font-weight: 700; color: #D4AF37;">&larr; Back / ተመለስ</a>
         <a href="index.html">Home</a>
         <a href="products.html">Products</a>
         <a href="about-us.html">About Us</a>
@@ -598,7 +631,7 @@
             <div class="nc-back-bar">
                 <button type="button" class="nc-back-btn" id="nc-back-btn" onclick="handleNotificationBack()" aria-label="Go Back">
                     <i class="fas fa-arrow-left"></i>
-                    <span>Back</span>
+                    <span>&larr; Back</span>
                 </button>
             </div>
 
