@@ -439,7 +439,7 @@
         left: 0 !important;
         background-color: #0F2418 !important;
         color: rgba(255, 255, 255, 0.8) !important;
-        padding: 20px 16px 52px 16px !important;
+        padding: 24px 16px 20px 16px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
@@ -550,7 +550,7 @@
         display: flex !important;
         flex-direction: column !important;
         gap: 12px !important;
-        padding-bottom: 24px !important;
+        padding-bottom: 8px !important;
         border: none !important;
         border-top: none !important;
     }
@@ -561,13 +561,14 @@
         gap: 12px !important;
         padding: 12px 14px !important;
         background: rgba(255, 255, 255, 0.05) !important;
-        border-radius: 14px !important;
+        border-radius: 16px !important;
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
         cursor: pointer !important;
         transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
         position: relative !important;
         box-sizing: border-box !important;
         user-select: none !important;
+        margin: 0 !important;
     }
 
     .aff-sidebar-user:hover {
@@ -693,14 +694,14 @@
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
-        gap: 10px !important;
-        padding: 10px 14px !important;
+        gap: 12px !important;
+        padding: 11px 16px !important;
         color: #FFFFFF !important;
-        font-weight: 600 !important;
-        font-size: 0.86rem !important;
-        border-radius: 14px !important;
-        border: 1px solid rgba(255, 255, 255, 0.18) !important;
-        background: rgba(255, 255, 255, 0.02) !important;
+        font-weight: 700 !important;
+        font-size: 0.88rem !important;
+        border-radius: 16px !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+        background: transparent !important;
         text-decoration: none !important;
         cursor: pointer !important;
         transition: all 0.2s ease !important;
@@ -711,7 +712,7 @@
     }
 
     .aff-menu-item-secondary i {
-        font-size: 0.92rem !important;
+        font-size: 0.95rem !important;
         color: #FFFFFF !important;
         display: flex !important;
         align-items: center !important;
@@ -721,7 +722,7 @@
 
     .aff-menu-item-secondary:hover {
         background: rgba(255, 255, 255, 0.08) !important;
-        border-color: rgba(255, 255, 255, 0.35) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
         color: #FFFFFF !important;
         transform: translateY(-1px) !important;
     }
