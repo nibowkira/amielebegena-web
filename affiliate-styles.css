@@ -573,7 +573,7 @@
         border-radius: 14px !important;
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
         cursor: pointer !important;
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
         position: relative !important;
         box-sizing: border-box !important;
     }
@@ -587,6 +587,15 @@
     .aff-sidebar-user.active {
         background: rgba(255, 215, 0, 0.12) !important;
         border-color: rgba(255, 215, 0, 0.5) !important;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.15) !important;
+    }
+
+    .aff-user-avatar-wrap {
+        position: relative !important;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     .aff-user-avatar {
@@ -602,6 +611,34 @@
         font-size: 0.85rem !important;
         flex-shrink: 0 !important;
         transition: transform 0.2s ease !important;
+    }
+
+    .aff-sidebar-user:hover .aff-user-avatar {
+        transform: scale(1.05) !important;
+    }
+
+    .aff-avatar-edit-badge {
+        position: absolute !important;
+        bottom: -2px !important;
+        right: -2px !important;
+        width: 16px !important;
+        height: 16px !important;
+        border-radius: 50% !important;
+        background: #FFD700 !important;
+        color: #0F2418 !important;
+        font-size: 0.55rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+        border: 1.5px solid #0F2418 !important;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .aff-sidebar-user:hover .aff-avatar-edit-badge {
+        background: #FFFFFF !important;
+        color: #0F2418 !important;
+        transform: scale(1.15) !important;
     }
 
     .aff-user-info {
@@ -631,15 +668,24 @@
         margin-top: 2px !important;
     }
 
-    .aff-user-chevron {
-        font-size: 0.75rem !important;
-        color: #94A3B8 !important;
+    .aff-user-setting-indicator {
         margin-left: auto !important;
-        transition: transform 0.2s ease !important;
+        color: #94A3B8 !important;
+        font-size: 0.9rem !important;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        padding: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         flex-shrink: 0 !important;
     }
 
-    .aff-sidebar-user:hover .aff-user-chevron {
+    .aff-sidebar-user:hover .aff-user-setting-indicator {
+        color: #FFD700 !important;
+        transform: rotate(60deg) scale(1.15) !important;
+    }
+
+    .aff-sidebar-user.active .aff-user-setting-indicator {
         color: #FFD700 !important;
     }
 
