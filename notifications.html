@@ -688,8 +688,12 @@
             if (refType === 'commission' || type.includes('commission')) {
                 return 'affiliate-dashboard.html#commissions';
             }
+            if (type === 'affiliate_approved') {
+                return 'affiliate-dashboard.html';
+            }
             if (refType === 'application' || type.includes('affiliate')) {
-                return 'admin.html#affiliates';
+                if (role === 'admin' || window.location.pathname.includes('admin')) return 'admin.html#affiliates';
+                return 'affiliate-dashboard.html';
             }
             return null;
         }
