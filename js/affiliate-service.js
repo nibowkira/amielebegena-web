@@ -676,21 +676,48 @@
             const client = window.AmieleSupabase.getClient();
             if (!client) throw new Error("Supabase client not initialized");
 
-            const { error } = await client
-                .from("profiles")
-                .update({
-                    full_name: settings.name,
-                    phone: settings.phone,
-                    avatar_url: settings.photoUrl
-                })
-                .eq("id", userId);
+            const updates = {};
+            if (settings.name !== undefined) updates.full_name = settings.name;
+            if (settings.phone !== undefined) updates.phone = settings.phone;
+            if (settings.photoUrl !== undefined) updates.avatar_url = settings.photoUrl;
 
-            if (error) throw error;
+            if (Object.keys(updates).length > 0) {
+                const { error } = await client
+                    .from("profiles")
+                    .update(updates)
+                    .eq("id", userId);
 
-            if (settings.password) {
-                const { error: passErr } = await client.auth.updateUser({ password: settings.password });
+                if (error) {
+                    console.warn("[Amiele:AffiliateService] Profile update warning:", error);
+                    if (updates.full_name) {
+                        await client.from("profiles").update({ full_name: updates.full_name }).eq("id", userId);
+                    }
+                }
+            }
+
+            if (settings.password && settings.password.trim().length >= 6) {
+                const { error: passErr } = await client.auth.updateUser({ password: settings.password.trim() });
                 if (passErr) throw passErr;
             }
+
+            try {
+                const stored = JSON.parse(localStorage.getItem("amiele_current_user") || "null");
+                if (stored && stored.id === userId) {
+                    if (settings.name !== undefined) stored.name = settings.name;
+                    if (settings.phone !== undefined) stored.phone = settings.phone;
+                    if (settings.country !== undefined) stored.country = settings.country;
+                    if (settings.photoUrl !== undefined) {
+                        stored.photoUrl = settings.photoUrl;
+                        stored.avatar_url = settings.photoUrl;
+                    }
+                    if (settings.notifPreferences !== undefined) stored.notifPreferences = settings.notifPreferences;
+                    localStorage.setItem("amiele_current_user", JSON.stringify(stored));
+                    localStorage.setItem("amiele_current_session", JSON.stringify(stored));
+                }
+            } catch (err) {
+                console.warn("[Amiele:AffiliateService] Cache sync warning:", err);
+            }
+
             return true;
         }
     };
