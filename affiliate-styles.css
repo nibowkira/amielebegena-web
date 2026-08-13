@@ -439,7 +439,7 @@
         left: 0 !important;
         background-color: #0F2418 !important;
         color: rgba(255, 255, 255, 0.8) !important;
-        padding: 24px 16px !important;
+        padding: 24px 16px 30px 16px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
@@ -549,7 +549,8 @@
         margin-top: auto !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 8px !important;
+        gap: 10px !important;
+        padding-bottom: 6px !important;
     }
 
     .aff-sidebar-user {
@@ -564,7 +565,6 @@
         transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
         position: relative !important;
         box-sizing: border-box !important;
-        margin-bottom: 4px !important;
         user-select: none !important;
     }
 
@@ -683,6 +683,7 @@
         display: flex !important;
         flex-direction: column !important;
         gap: 0.15rem !important;
+        padding-top: 2px !important;
     }
 
     .aff-menu-item-secondary {
