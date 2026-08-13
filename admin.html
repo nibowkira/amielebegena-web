@@ -748,9 +748,17 @@
                     <i data-lucide="package" style="width:22px; height:22px; color:#D4AF37;"></i>
                     <span id="modal-order-number">Order #AM-ORD-0001</span>
                 </h3>
+                <button class="fulfillment-modal-close" onclick="closeOrderFulfillmentModal()">&times;</button>
+            </div>
+            <div class="fulfillment-modal-body" id="order-details-modal-body">
+                <!-- Content dynamically populated by admin.js -->
+            </div>
+        </div>
+    </div>
+
     <!-- EDIT CAMPAIGN MODAL -->
-    <div class="fulfillment-modal-backdrop" id="edit-campaign-modal" style="display:none;">
-        <div class="fulfillment-modal" style="max-width: 540px;">
+    <div class="fulfillment-modal-backdrop" id="edit-campaign-modal" onclick="if(event.target === this) closeEditCampaignModal()">
+        <div class="fulfillment-modal" style="max-width: 560px;">
             <div class="fulfillment-modal-header">
                 <h3><i class="fas fa-edit" style="color: #D4AF37; margin-right: 8px;"></i> Edit Live Campaign Challenge</h3>
                 <button class="fulfillment-modal-close" onclick="closeEditCampaignModal()">&times;</button>

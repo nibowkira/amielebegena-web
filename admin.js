@@ -741,25 +741,42 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     window.openEditCampaignModal = function(id) {
         const camp = cachedCampaigns.find(c => String(c.id) === String(id));
-        if (!camp) return;
+        if (!camp) {
+            console.warn('[Amiele:Campaign] Campaign ID not found:', id);
+            return;
+        }
 
         const modal = document.getElementById("edit-campaign-modal");
         if (!modal) return;
 
-        document.getElementById("edit-cmp-id").value = camp.id;
-        document.getElementById("edit-cmp-title").value = camp.title || "";
-        document.getElementById("edit-cmp-desc").value = camp.description || "";
-        document.getElementById("edit-cmp-target").value = camp.target_sales || camp.targetSales || 1;
-        document.getElementById("edit-cmp-reward").value = camp.reward || 0;
-        document.getElementById("edit-cmp-status").value = camp.status || "active";
-        document.getElementById("edit-cmp-days").value = "";
+        const idEl = document.getElementById("edit-cmp-id");
+        const titleEl = document.getElementById("edit-cmp-title");
+        const descEl = document.getElementById("edit-cmp-desc");
+        const targetEl = document.getElementById("edit-cmp-target");
+        const rewardEl = document.getElementById("edit-cmp-reward");
+        const statusEl = document.getElementById("edit-cmp-status");
+        const daysEl = document.getElementById("edit-cmp-days");
 
+        if (idEl) idEl.value = camp.id;
+        if (titleEl) titleEl.value = camp.title || "";
+        if (descEl) descEl.value = camp.description || "";
+        if (targetEl) targetEl.value = camp.target_sales || camp.targetSales || 1;
+        if (rewardEl) rewardEl.value = camp.reward || 0;
+        if (statusEl) statusEl.value = camp.status || "active";
+        if (daysEl) daysEl.value = "";
+
+        modal.classList.add("show");
+        modal.classList.add("active");
         modal.style.display = "flex";
     };
 
     window.closeEditCampaignModal = function() {
         const modal = document.getElementById("edit-campaign-modal");
-        if (modal) modal.style.display = "none";
+        if (modal) {
+            modal.classList.remove("show");
+            modal.classList.remove("active");
+            modal.style.display = "none";
+        }
     };
 
     window.deleteCampaignAction = async function(id, title) {
