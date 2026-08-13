@@ -439,7 +439,7 @@
         left: 0 !important;
         background-color: #0F2418 !important;
         color: rgba(255, 255, 255, 0.8) !important;
-        padding: 20px 16px !important;
+        padding: 20px 16px 52px 16px !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;
