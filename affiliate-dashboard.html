@@ -317,9 +317,9 @@
                     </div>
                 </div>
 
-                <div class="aff-card" style="max-width: 600px;">
+                <div class="aff-card" style="max-width: 640px;">
                     <div class="aff-card-header">
-                        <h2>Withdrawal Payout Form</h2>
+                        <h2><i class="fas fa-wallet" style="color: #D4AF37; margin-right: 8px;"></i> Withdrawal Payout Form</h2>
                     </div>
                     <form id="withdrawal-form" class="aff-form">
                         <div class="aff-form-group">
@@ -331,16 +331,37 @@
                             <label for="wth-method">Payment Payout Method *</label>
                             <select id="wth-method" class="aff-select" required>
                                 <option value="" disabled selected>Select payment bank / wallet</option>
-                                <option value="Telebirr">Telebirr Wallet</option>
+                                <option value="Telebirr">Telebirr Mobile Wallet</option>
                                 <option value="CBE (Commercial Bank of Ethiopia)">Commercial Bank of Ethiopia (CBE)</option>
+                                <option value="Bank of Abyssinia">Bank of Abyssinia (BoA)</option>
                                 <option value="Awash Bank">Awash International Bank</option>
                                 <option value="Dashen Bank">Dashen Bank</option>
                                 <option value="PayPal / International Transfer">PayPal (International Diasporas)</option>
                             </select>
                         </div>
 
+                        <!-- Dynamic Account Details Box (Appears after choosing method) -->
+                        <div id="wth-dynamic-details" class="wth-dynamic-box" style="display: none;">
+                            <div class="wth-method-badge" id="wth-method-badge">
+                                <i class="fas fa-university" id="wth-badge-icon"></i>
+                                <span id="wth-badge-text">Account Details</span>
+                            </div>
+
+                            <div class="aff-form-group" style="margin-top: 1.1rem;">
+                                <label for="wth-account-number" id="wth-acc-label">Account Number / Wallet ID *</label>
+                                <input type="text" id="wth-account-number" class="aff-input" placeholder="Enter account number">
+                                <small class="wth-field-hint" id="wth-acc-hint">Please ensure accuracy to prevent transfer delays.</small>
+                            </div>
+
+                            <div class="aff-form-group" style="margin-top: 1.1rem;">
+                                <label for="wth-account-name" id="wth-name-label">Account Holder Full Name *</label>
+                                <input type="text" id="wth-account-name" class="aff-input" placeholder="e.g. Abebe Balcha">
+                                <small class="wth-field-hint" id="wth-name-hint">Must match the registered legal name on the bank account or mobile wallet.</small>
+                            </div>
+                        </div>
+
                         <div class="aff-form-group">
-                            <label for="wth-phone">Payout Target Phone Number *</label>
+                            <label for="wth-phone">Contact Phone for Confirmation *</label>
                             <input type="tel" id="wth-phone" class="aff-input" required placeholder="e.g. +251911223344">
                         </div>
 
@@ -660,8 +681,93 @@
     <script src="affiliate.js"></script>
     <script src="affiliate-tour.js"></script>
     <script>
-        // Sync overview commission lists to the separate commissions page as well on startup
+        // Sync overview commission lists & setup dynamic withdrawal fields
         document.addEventListener('DOMContentLoaded', async () => {
+            const methodSelect = document.getElementById('wth-method');
+            if (methodSelect && !methodSelect.dataset.listenerAttached) {
+                methodSelect.dataset.listenerAttached = 'true';
+                methodSelect.addEventListener('change', () => {
+                    const dynBox = document.getElementById('wth-dynamic-details');
+                    const badgeIcon = document.getElementById('wth-badge-icon');
+                    const badgeText = document.getElementById('wth-badge-text');
+                    const accLabel = document.getElementById('wth-acc-label');
+                    const accInput = document.getElementById('wth-account-number');
+                    const accHint = document.getElementById('wth-acc-hint');
+                    const nameLabel = document.getElementById('wth-name-label');
+                    const nameInput = document.getElementById('wth-account-name');
+                    const nameHint = document.getElementById('wth-name-hint');
+
+                    if (!dynBox) return;
+                    const val = methodSelect.value;
+                    if (!val) {
+                        dynBox.style.display = 'none';
+                        if (accInput) accInput.required = false;
+                        if (nameInput) nameInput.required = false;
+                        return;
+                    }
+
+                    dynBox.style.display = 'block';
+                    if (accInput) accInput.required = true;
+                    if (nameInput) nameInput.required = true;
+
+                    if (val.includes('Telebirr')) {
+                        if (badgeIcon) badgeIcon.className = 'fas fa-mobile-alt';
+                        if (badgeText) badgeText.textContent = 'Telebirr Mobile Wallet';
+                        if (accLabel) accLabel.textContent = 'Telebirr Phone / Account Number *';
+                        if (accInput) { accInput.placeholder = 'e.g. 0911223344 or +251911223344'; accInput.type = 'tel'; }
+                        if (accHint) accHint.textContent = 'Direct automated transfer to your Telebirr wallet.';
+                        if (nameLabel) nameLabel.textContent = 'Telebirr Account Holder Name *';
+                        if (nameInput) nameInput.placeholder = 'e.g. Abebe Balcha';
+                        if (nameHint) nameHint.textContent = 'Must match your verified Telebirr registered name.';
+                    } else if (val.includes('CBE')) {
+                        if (badgeIcon) badgeIcon.className = 'fas fa-building-columns';
+                        if (badgeText) badgeText.textContent = 'Commercial Bank of Ethiopia (CBE)';
+                        if (accLabel) accLabel.textContent = 'CBE Account Number (13 Digits) *';
+                        if (accInput) { accInput.placeholder = 'e.g. 1000123456789'; accInput.type = 'text'; }
+                        if (accHint) accHint.textContent = 'Standard 13-digit CBE savings or checking account number.';
+                        if (nameLabel) nameLabel.textContent = 'CBE Account Holder Full Name *';
+                        if (nameInput) nameInput.placeholder = 'e.g. Abebe Balcha';
+                        if (nameHint) nameHint.textContent = 'Must exactly match the name on your CBE passbook or CBE Birr.';
+                    } else if (val.includes('Abyssinia')) {
+                        if (badgeIcon) badgeIcon.className = 'fas fa-university';
+                        if (badgeText) badgeText.textContent = 'Bank of Abyssinia (BoA)';
+                        if (accLabel) accLabel.textContent = 'Bank of Abyssinia Account Number *';
+                        if (accInput) { accInput.placeholder = 'e.g. 12345678'; accInput.type = 'text'; }
+                        if (accHint) accHint.textContent = 'Direct deposit into your Bank of Abyssinia account.';
+                        if (nameLabel) nameLabel.textContent = 'BoA Account Holder Full Name *';
+                        if (nameInput) nameInput.placeholder = 'e.g. Abebe Balcha';
+                        if (nameHint) nameHint.textContent = 'Must match your registered name at Bank of Abyssinia.';
+                    } else if (val.includes('Awash')) {
+                        if (badgeIcon) badgeIcon.className = 'fas fa-university';
+                        if (badgeText) badgeText.textContent = 'Awash International Bank';
+                        if (accLabel) accLabel.textContent = 'Awash Bank Account Number *';
+                        if (accInput) { accInput.placeholder = 'e.g. 01320123456700'; accInput.type = 'text'; }
+                        if (accHint) accHint.textContent = 'Direct transfer to your Awash Bank account.';
+                        if (nameLabel) nameLabel.textContent = 'Awash Bank Account Holder Full Name *';
+                        if (nameInput) nameInput.placeholder = 'e.g. Abebe Balcha';
+                        if (nameHint) nameHint.textContent = 'Must match your registered Awash Bank account holder name.';
+                    } else if (val.includes('Dashen')) {
+                        if (badgeIcon) badgeIcon.className = 'fas fa-university';
+                        if (badgeText) badgeText.textContent = 'Dashen Bank / Amole';
+                        if (accLabel) accLabel.textContent = 'Dashen Bank Account Number *';
+                        if (accInput) { accInput.placeholder = 'e.g. 5123456789012'; accInput.type = 'text'; }
+                        if (accHint) accHint.textContent = 'Direct transfer to your Dashen Bank account.';
+                        if (nameLabel) nameLabel.textContent = 'Dashen Bank Account Holder Full Name *';
+                        if (nameInput) nameInput.placeholder = 'e.g. Abebe Balcha';
+                        if (nameHint) nameHint.textContent = 'Must match your registered Dashen Bank name.';
+                    } else if (val.includes('PayPal')) {
+                        if (badgeIcon) badgeIcon.className = 'fab fa-paypal';
+                        if (badgeText) badgeText.textContent = 'PayPal (Diaspora Transfer)';
+                        if (accLabel) accLabel.textContent = 'PayPal Email Address / ID *';
+                        if (accInput) { accInput.placeholder = 'e.g. yourname@gmail.com'; accInput.type = 'email'; }
+                        if (accHint) accHint.textContent = 'International payout via PayPal transfer.';
+                        if (nameLabel) nameLabel.textContent = 'Legal Name on PayPal Account *';
+                        if (nameInput) nameInput.placeholder = 'e.g. Abebe Balcha';
+                        if (nameHint) nameHint.textContent = 'Verified legal name registered with PayPal.';
+                    }
+                });
+            }
+
             const tbodyFull = document.getElementById('commissions-table-body-full');
             const tbodyOverview = document.getElementById('commissions-table-body');
             const user = await window.getCurrentUser();

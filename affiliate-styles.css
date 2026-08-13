@@ -235,3 +235,65 @@
         display: none;
     }
 }
+
+/* ============================================================================
+   DYNAMIC WITHDRAWAL PAYOUT METHOD DETAILS
+   ============================================================================ */
+.wth-dynamic-box {
+    background: linear-gradient(135deg, rgba(20, 35, 27, 0.03), rgba(212, 175, 55, 0.07));
+    border: 1.5px solid rgba(212, 175, 55, 0.35);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    margin: 0.5rem 0 1rem 0;
+    animation: wthSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 20px rgba(20, 35, 27, 0.04);
+}
+
+@keyframes wthSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.wth-method-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #0F2418;
+    color: #D4AF37;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+    box-shadow: 0 2px 8px rgba(15, 36, 24, 0.15);
+}
+
+.wth-field-hint {
+    display: block;
+    font-size: 0.76rem;
+    color: #6A6E6B;
+    margin-top: 4px;
+    line-height: 1.35;
+}
+
+[data-theme="dark"] .wth-dynamic-box {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(212, 175, 55, 0.1));
+    border-color: rgba(212, 175, 55, 0.4);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .wth-method-badge {
+    background: rgba(212, 175, 55, 0.18);
+    color: #FFD700;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+[data-theme="dark"] .wth-field-hint {
+    color: #AEBDB4;
+}
