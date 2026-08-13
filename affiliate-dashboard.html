@@ -652,6 +652,36 @@
                             </div>
                         </div>
 
+                        <!-- Profile Completion Progress Widget -->
+                        <div class="settings-card" id="profile-completion-card">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                <h3 style="font-size: 1rem; color: var(--aff-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-tasks" style="color: #D4AF37;"></i> Profile Completion
+                                </h3>
+                                <span id="profile-completion-pct" style="font-weight: 700; font-size: 0.95rem; color: var(--aff-primary);">40%</span>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                                <svg width="52" height="52" viewBox="0 0 42 42" style="flex-shrink: 0;">
+                                    <circle cx="21" cy="21" r="18" fill="none" stroke="rgba(20,35,27,0.08)" stroke-width="3.5"/>
+                                    <circle id="profile-completion-svg-circle" cx="21" cy="21" r="18" fill="none" stroke="#D4AF37" stroke-width="3.5"
+                                        stroke-dasharray="113.097" stroke-dashoffset="67.85"
+                                        stroke-linecap="round" transform="rotate(-90 21 21)"
+                                        style="transition: stroke-dashoffset 0.8s ease;"/>
+                                    <text id="profile-completion-svg-text" x="21" y="24" text-anchor="middle" fill="#14231b" font-size="11" font-weight="700" font-family="'Outfit',sans-serif">40%</text>
+                                </svg>
+                                <div style="font-size: 0.82rem; color: var(--aff-text-muted); line-height: 1.4;">
+                                    <span id="profile-completion-status-text" style="font-weight: 600; color: var(--aff-primary); display: block;">Complete your profile</span>
+                                    Keep your details updated to ensure seamless payouts and security.
+                                </div>
+                            </div>
+
+                            <!-- Checklist Breakdown -->
+                            <div id="profile-completion-checklist" style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--aff-card-border); padding-top: 0.75rem; font-size: 0.8rem;">
+                                <!-- Dynamic check items -->
+                            </div>
+                        </div>
+
                         <!-- Progress toward next tier -->
                         <div class="settings-card milestone-tracker-card">
                             <h3 style="font-size: 1rem; color: var(--aff-primary); margin-bottom: 0.5rem;"><i class="fas fa-level-up-alt"></i> Ambassador Rank Progress</h3>
