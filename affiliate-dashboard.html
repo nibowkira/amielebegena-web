@@ -55,17 +55,22 @@
 
             <div class="aff-sidebar-footer">
                 <div class="aff-sidebar-user" id="sidebar-user-card" onclick="switchTab('settings')" onkeydown="if(event.key==='Enter'||event.key===' ')switchTab('settings')" role="button" tabindex="0" title="Click to view & edit Profile Settings">
-                    <div class="aff-user-avatar" id="avatar-letter">AD</div>
+                    <div class="aff-user-avatar-wrap">
+                        <div class="aff-user-avatar" id="avatar-letter">D</div>
+                        <div class="aff-avatar-edit-badge" title="Edit Profile">
+                            <i class="fas fa-pen"></i>
+                        </div>
+                    </div>
                     <div class="aff-user-info">
                         <h4 id="sidebar-user-name">Dawit Yohannes</h4>
                         <span id="sidebar-user-email">Affiliate Partner</span>
                     </div>
                     <div class="aff-user-setting-indicator" title="Profile Settings">
-                        <i class="fas fa-chevron-down"></i>
+                        <i class="fas fa-cog"></i>
                     </div>
                 </div>
                 <div class="aff-sidebar-bottom-actions">
-                    <a href="account.html" class="aff-menu-item-secondary"><i class="fas fa-arrow-left"></i> Exit to Account</a>
+                    <a href="account.html" class="aff-menu-item aff-menu-item-secondary"><i class="fas fa-arrow-left"></i> Exit to Account</a>
                 </div>
             </div>
         </aside>
