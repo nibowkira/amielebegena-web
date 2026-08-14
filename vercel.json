@@ -6,7 +6,7 @@
     {
       "src": "/image/(.*)",
       "headers": {
-        "cache-control": "public, max-age=86400, immutable"
+        "cache-control": "public, max-age=31536000, immutable"
       },
       "dest": "/image/$1"
     },
@@ -18,11 +18,18 @@
       "dest": "/audio/$1"
     },
     {
-      "src": "/Benaiah_536454528f.ttf",
+      "src": "/(.*)\\.(ttf|woff|woff2|eot)",
       "headers": {
         "cache-control": "public, max-age=31536000, immutable"
       },
-      "dest": "/Benaiah_536454528f.ttf"
+      "dest": "/$1.$2"
+    },
+    {
+      "src": "/(.*)\\.(css|js)",
+      "headers": {
+        "cache-control": "public, max-age=604800, stale-while-revalidate=86400"
+      },
+      "dest": "/$1.$2"
     },
     {
       "src": "/(.*)",
@@ -32,7 +39,7 @@
         "X-XSS-Protection": "1; mode=block",
         "Referrer-Policy": "strict-origin-when-cross-origin",
         "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
-        "Content-Security-Policy": "default-src 'self' https://*.supabase.co https://*.supabase.in; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in; media-src 'self' data: blob: https://*.supabase.co https://*.supabase.in; connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co wss://*.supabase.in;"
+        "Content-Security-Policy": "default-src 'self' https://*.supabase.co https://*.supabase.in; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: https://*.supabase.co https://*.supabase.in https://*.google-analytics.com https://*.analytics.google.com https://images.unsplash.com; media-src 'self' data: blob: https://*.supabase.co https://*.supabase.in; connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co wss://*.supabase.in https://*.google-analytics.com https://*.analytics.google.com https://open.er-api.com;"
       },
       "dest": "/$1"
     },

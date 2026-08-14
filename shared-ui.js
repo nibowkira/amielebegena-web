@@ -1,1 +1,33 @@
 window.showToast=function(e,t="success",n=4500){const o=document.getElementById("toast-container");if(!o)return;const a=document.createElement("div");a.className=`toast toast-${t}`,a.setAttribute("role","alert"),a.setAttribute("aria-live","assertive");const s={success:"fa-check-circle",error:"fa-exclamation-circle",info:"fa-info-circle",warning:"fa-exclamation-triangle"};a.innerHTML=`\n        <i class="fas ${s[t]||s.success} toast-icon"></i>\n        <div class="toast-body">${e}</div>\n        <button class="toast-close" aria-label="Dismiss notification" onclick="this.parentElement.remove()">&times;</button>\n    `,o.appendChild(a),requestAnimationFrame(()=>{requestAnimationFrame(()=>a.classList.add("show"))});const i=setTimeout(()=>{a.classList.remove("show"),setTimeout(()=>a.remove(),400)},n);a.querySelector(".toast-close").addEventListener("click",()=>clearTimeout(i))},window.showConfirmModal=function(e,t,n=!1,o="Confirm",a="Cancel"){return new Promise(s=>{const i=document.getElementById("custom-modal-backdrop"),c=document.getElementById("modal-header"),r=document.getElementById("modal-title"),d=document.getElementById("modal-body"),m=document.getElementById("modal-btn-confirm"),l=document.getElementById("modal-btn-cancel");if(!i||!m||!l)return void s(confirm(t));r.textContent=e,d.innerHTML=t,m.textContent=o,l.textContent=a,n?(c.classList.add("danger"),m.className="custom-modal-btn danger"):(c.classList.remove("danger"),m.className="custom-modal-btn confirm"),i.classList.add("show"),m.focus();const u=e=>{i.classList.remove("show"),m.removeEventListener("click",f),l.removeEventListener("click",w),document.removeEventListener("keydown",g),s(e)};function f(){u(!0)}function w(){u(!1)}function g(e){"Escape"===e.key&&u(!1)}m.addEventListener("click",f),l.addEventListener("click",w),document.addEventListener("keydown",g)})},window.renderEmptyState=function(e,t,n){const o=document.getElementById(e);if(!o)return;const a=window.AmieleSanitize?window.AmieleSanitize.escapeHtml:function(e){return null==e?"":String(e)};o.innerHTML=`\n        <div class="empty-state-container">\n            <svg class="empty-state-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">\n                <circle cx="100" cy="100" r="80" fill="currentColor" opacity="0.06"/>\n                <path d="M70 120H130M70 100H130M70 80H100" stroke="currentColor" stroke-width="6" stroke-linecap="round" opacity="0.4"/>\n                <rect x="50" y="50" width="100" height="100" rx="12" stroke="currentColor" stroke-width="8" stroke-linejoin="round" opacity="0.3"/>\n            </svg>\n            <h3>${a(t)}</h3>\n            <p>${a(n)}</p>\n        </div>\n    `},window.toggleDarkMode=function(){const e=document.documentElement,t="dark"===e.getAttribute("data-theme")?"light":"dark";e.setAttribute("data-theme",t),localStorage.setItem("amiele_theme",t);const n=document.getElementById("theme-toggle-icon");n&&(n.className="dark"===t?"fas fa-sun":"fas fa-moon"),showToast("dark"===t?"Dark mode enabled":"Light mode enabled","info",2e3)},window.applySavedTheme=function(){if("dark"===localStorage.getItem("amiele_theme")){document.documentElement.setAttribute("data-theme","dark");const e=document.getElementById("theme-toggle-icon");e&&(e.className="fas fa-sun")}},window.applySavedTheme();
+
+// Sticky & Glassmorphism Navbar Scroll Effect
+(function initStickyNavbar() {
+    function setupNav() {
+        const navbar = document.querySelector('.navbar');
+        if (!navbar) return;
+
+        let ticking = false;
+        const onScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    if (window.scrollY > 20) {
+                        navbar.classList.add('scrolled');
+                    } else {
+                        navbar.classList.remove('scrolled');
+                    }
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupNav);
+    } else {
+        setupNav();
+    }
+})();
