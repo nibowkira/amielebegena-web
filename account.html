@@ -429,8 +429,11 @@
                 <!-- SECTION 9: ACCOUNT SETTINGS -->
                 <div id="sec-settings" class="dash-tab-content" style="display: none;">
                     <div class="dash-tracker-card">
-                        <div class="dash-section-header">
+                        <div class="dash-section-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                             <h3 class="dash-section-title"><i class="fa-solid fa-gear"></i> Account Settings</h3>
+                            <button type="button" class="dash-btn dash-btn-outline dash-settings-back-btn" onclick="switchDashTab('dashboard')" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.88rem; padding: 7px 14px; border-radius: 8px; cursor: pointer;">
+                                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                            </button>
                         </div>
                         <form id="settings-form" style="display: flex; flex-direction: column; gap: 20px;">
                             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
@@ -468,7 +471,10 @@
                             </div>
 
                             <div style="padding-top: 10px; border-top: 1px solid var(--dash-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-                                <button type="button" id="save-settings-btn" class="dash-btn dash-btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+                                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <button type="button" id="save-settings-btn" class="dash-btn dash-btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+                                    <button type="button" class="dash-btn dash-btn-outline" onclick="switchDashTab('dashboard')"><i class="fa-solid fa-arrow-left"></i> Cancel / Back</button>
+                                </div>
                                 <button type="button" class="dash-btn dash-btn-outline" style="color: #C53030; border-color: #FEB2B2;" onclick="alert('Account deletion requires security confirmation. Please contact support at amielebegena@gmail.com')">
                                     <i class="fa-solid fa-trash-can"></i> Delete Account
                                 </button>
