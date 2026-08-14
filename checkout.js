@@ -35,6 +35,9 @@
   window.handleCartCheckout = function () {
     try {
       if (cartHasItems()) {
+        if (typeof window.closeCart === "function") {
+          window.closeCart();
+        }
         if (typeof window.openWhatsAppOrderModal === "function") {
           window.openWhatsAppOrderModal(true);
         } else {
