@@ -14,6 +14,11 @@
     <title>Customer Dashboard — Amiele Begena</title>
     <meta name="robots" content="noindex, nofollow">
     <meta name="googlebot" content="noindex, nofollow">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -32,7 +37,7 @@
             <a href="products.html">Products</a>
             <a href="about.html">About Product</a>
             <a href="about-us.html">About Us</a>
-            <a href="track-order.html">Track Order</a>
+            <a href="blog.html">Blog</a>
         </nav>
         <div class="nav-right">
             <select class="currency-switcher" onchange="changeCurrency(this.value)">
@@ -61,7 +66,8 @@
         <a href="products.html">Products</a>
         <a href="about.html">About Product</a>
         <a href="about-us.html">About Us</a>
-        <a href="track-order.html">Track Order</a>
+        <a href="blog.html">Blog</a>
+        <a href="account.html">Account / መለያ</a>
     </nav>
 
     <!-- Main Customer Dashboard -->
@@ -108,7 +114,7 @@
                     <li class="dash-nav-item" data-tab="pms" id="nav-pms-tab" onclick="switchDashTab('pms')" style="display: none;">
                         <i class="fa-solid fa-boxes-stacked"></i> Product Management
                     </li>
-                    
+
                     <div class="dash-nav-divider"></div>
 
                     <li class="dash-nav-item" data-tab="settings" onclick="switchDashTab('settings')">
@@ -714,7 +720,7 @@
             document.getElementById('dash-greeting-title').textContent = getGreeting(currentUser.name);
             document.getElementById('dash-user-email').textContent = currentUser.email || 'N/A';
             document.getElementById('dash-user-id').textContent = currentUser.id ? currentUser.id.slice(0, 8).toUpperCase() : 'CUST-001';
-            
+
             const joinDate = currentUser.createdAt ? new Date(currentUser.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Jul 2026';
             document.getElementById('dash-user-joined').textContent = joinDate;
 
@@ -1056,7 +1062,7 @@
                 // Update KPI Header counters
                 if (kpiCount) kpiCount.textContent = ordersState.totalCount;
                 if (subtitleCount) subtitleCount.textContent = `${ordersState.totalCount} order${ordersState.totalCount === 1 ? '' : 's'} recorded`;
-                
+
                 if (kpiDesc) {
                     if (orders.length > 0) {
                         kpiDesc.textContent = `Last order ${formatDaysAgo(orders[0].created_at)}`;
@@ -1090,13 +1096,13 @@
                     const qty = order.quantity || 1;
                     const unitPrice = p.price || 0;
                     const totalVal = unitPrice > 0 ? (unitPrice * qty) : 0;
-                    
+
                     const formattedTotal = typeof formatPrice === 'function' && totalVal > 0
-                        ? formatPrice(totalVal, (p.currency || 'USD')) 
+                        ? formatPrice(totalVal, (p.currency || 'USD'))
                         : (totalVal > 0 ? 'ETB ' + totalVal.toLocaleString() : 'ETB 42,000');
 
                     const dateStr = new Date(order.created_at).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-                    
+
                     const paymentBadge = getStatusBadgeHTML(order.payment_status || 'Pending');
                     const fulfillmentBadge = getStatusBadgeHTML(order.fulfillment_status || order.status || 'Pending');
 
@@ -1403,7 +1409,7 @@
             try {
                 const res = await window.NotificationsService.getNotifications({ page: 1, limit: 5 });
                 const notifs = res.notifications || res.data || [];
-                
+
                 // FIX [object Object] BUG: getUnreadCount() returns { success, count }
                 const unreadRes = await window.NotificationsService.getUnreadCount();
                 const unreadCount = typeof unreadRes === 'number' ? unreadRes : (unreadRes && typeof unreadRes.count === 'number' ? unreadRes.count : 0);
@@ -1438,7 +1444,7 @@
                     // Bulletproof Extraction to prevent [object Object]
                     const rawTitle = (typeof n.title === 'string') ? n.title : (n.title?.title || n.title?.name || 'Notification');
                     const rawMsg = (typeof n.message === 'string') ? n.message : (n.message?.message || n.message?.body || String(n.message || 'No description'));
-                    
+
                     const timeAgo = typeof formatRelativeTime === 'function' ? formatRelativeTime(n.created_at) : new Date(n.created_at).toLocaleDateString();
 
                     return `

@@ -12,6 +12,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - amielebegena</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
@@ -28,7 +33,7 @@
             <a href="products.html">Products</a>
             <a href="about.html">About Product</a>
             <a href="about-us.html">About Us</a>
-            <a href="track-order.html">Track Order</a>
+            <a href="blog.html">Blog</a>
         </nav>
         <div class="nav-right">
             <select class="currency-switcher" onchange="changeCurrency(this.value)">
@@ -54,7 +59,8 @@
         <a href="products.html">Products</a>
         <a href="about.html">About Product</a>
         <a href="about-us.html">About Us</a>
-        <a href="track-order.html">Track Order</a>
+        <a href="blog.html">Blog</a>
+        <a href="account.html">Account / መለያ</a>
     </nav>
 
     <main class="auth-page-wrapper">
@@ -63,7 +69,7 @@
                 <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">LOGIN</button>
                 <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">SIGN UP</button>
             </div>
-            
+
             <form id="form-login" class="auth-form active">
                 <div class="form-group mb-4">
                     <label>EMAIL ADDRESS</label>
@@ -75,7 +81,7 @@
                 </div>
                 <button type="submit" class="btn-primary w-full" style="margin-top: 1.5rem;">LOGIN</button>
             </form>
-            
+
             <form id="form-register" class="auth-form">
                 <div class="form-group mb-4">
                     <label>FULL NAME</label>
@@ -92,7 +98,7 @@
                 <button type="submit" class="btn-primary w-full" style="margin-top: 1.5rem;">SIGN UP</button>
             </form>
         </div>
-        
+
         <div id="cart-overlay" class="cart-overlay hidden"></div>
         <div id="cart-drawer" class="cart-drawer hidden">
             <div class="cart-header">
@@ -171,7 +177,7 @@
     <script src="js/orders-service.js"></script>
     <script src="js/affiliate-service.js"></script>
     <script src="db.js"></script>
-    
+
     <script src="js/utils/sanitize.js" defer></script>
     <script src="shared-ui.js" defer></script>
     <script src="whatsapp-widget.js" defer></script>
