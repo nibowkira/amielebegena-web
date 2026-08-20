@@ -27,7 +27,7 @@
                 password,
                 options: {
                     data: { full_name: name },
-                    emailRedirectTo: "https://amielestore-web.vercel.app/auth/confirm"
+                    emailRedirectTo: "https://amielebegena.vercel.app/auth/confirm"
                 }
             });
             if (error) throw error;

@@ -1,9 +1,9 @@
 # Amiele Begena (ዓሚኤል በገና)
 
-[![Live Website](https://img.shields.io/badge/Website-amielestore--web.vercel.app-14231b?style=for-the-badge&logo=vercel&logoColor=white)](https://amielestore-web.vercel.app/)
+[![Live Website](https://img.shields.io/badge/Website-amielebegena.vercel.app-14231b?style=for-the-badge&logo=vercel&logoColor=white)](https://amielebegena.vercel.app/)
 [![Database](https://img.shields.io/badge/Backend-Supabase%20%2F%20PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Platform](https://img.shields.io/badge/Architecture-Vanilla%20JS%20%2F%20SPA-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://github.com/nibowkira/amielebegena-web)
-[![Status](https://img.shields.io/badge/Status-Production%20Live-brightgreen?style=for-the-badge)](https://amielestore-web.vercel.app/)
+[![Status](https://img.shields.io/badge/Status-Production%20Live-brightgreen?style=for-the-badge)](https://amielebegena.vercel.app/)
 
 > **Preserving sacred acoustic heritage and ancient Ethiopian craftsmanship through a curated digital storefront and global partner ecosystem.**
 
@@ -14,7 +14,7 @@ Amiele Begena (ዓሚኤል በገና) is a bespoke cultural e-commerce platform
 ## 🌍 Live Website
 
 Explore the production platform:
-🔗 **[https://amielestore-web.vercel.app](https://amielestore-web.vercel.app/)**
+🔗 **[https://amielebegena.vercel.app](https://amielebegena.vercel.app/)**
 
 ---
 
@@ -311,7 +311,7 @@ The codebase has undergone system audits verifying:
 ## 🛡️ Production Status
 
 * **Status:** **Live & Operational**
-* **Deployment URL:** [https://amielestore-web.vercel.app](https://amielestore-web.vercel.app)
+* **Deployment URL:** [https://amielebegena.vercel.app](https://amielebegena.vercel.app)
 * **Order Processing:** Active via WhatsApp direct fulfillment.
 
 ---
