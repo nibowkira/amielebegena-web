@@ -58,4 +58,10 @@ CREATE POLICY "Affiliates can insert own withdrawals (verified email)"
         )
     );
 
+-- ---------------------------------------------------------------------------
+-- 4. Update check_wth_method constraint to support detailed account & bank details
+-- ---------------------------------------------------------------------------
+ALTER TABLE public.affiliate_withdrawals DROP CONSTRAINT IF EXISTS check_wth_method;
+ALTER TABLE public.affiliate_withdrawals ADD CONSTRAINT check_wth_method CHECK (char_length(method) >= 2);
+
 NOTIFY pgrst, 'reload schema';
