@@ -190,8 +190,21 @@
                 iconEl.className = 'confirm-icon success';
                 iconInner.className = 'fas fa-check-circle';
                 titleEl.textContent = 'Email Confirmed!';
-                descEl.textContent = 'Your email has been verified successfully. You can now log in to your account.';
+                let count = 3;
+                descEl.textContent = `Your email has been verified successfully. Redirecting to your account in ${count} seconds...`;
+                btnEl.textContent = 'Go to Account';
+                btnEl.href = '/account.html';
                 btnEl.classList.remove('hidden');
+
+                const countdownInterval = setInterval(() => {
+                    count--;
+                    if (count <= 0) {
+                        clearInterval(countdownInterval);
+                        window.location.href = '/account.html';
+                    } else {
+                        descEl.textContent = `Your email has been verified successfully. Redirecting to your account in ${count} seconds...`;
+                    }
+                }, 1000);
             }
 
             function showError(message) {
@@ -200,6 +213,7 @@
                 titleEl.textContent = 'Verification Failed';
                 descEl.textContent = message || 'We could not verify your email. The link may have expired or already been used. Please try signing up again.';
                 btnEl.textContent = 'Back to Login';
+                btnEl.href = '/login.html';
                 btnEl.classList.remove('hidden');
             }
 
@@ -238,7 +252,6 @@
                         }
 
                         if (session) {
-                            await client.auth.signOut();
                             showSuccess();
                             return;
                         }
@@ -254,7 +267,6 @@
                             return;
                         }
 
-                        await client.auth.signOut();
                         showSuccess();
                         return;
                     }

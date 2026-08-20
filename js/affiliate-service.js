@@ -575,6 +575,14 @@
             const client = window.AmieleSupabase.getClient();
             if (!client) throw new Error("Supabase client not initialized");
 
+            // Frontend email verification guard (database RLS is the real enforcement)
+            if (window.AuthService && typeof window.AuthService.isEmailVerified === 'function') {
+                const verified = await window.AuthService.isEmailVerified();
+                if (!verified) {
+                    throw new Error("Email verification required before requesting a withdrawal. Please verify your email first. / ገንዘብ ለመውሰድ ኢሜልዎን ማረጋገጥ ያስፈልጋል።");
+                }
+            }
+
             const metadata = await this.getAffiliateMetadata(userId);
             if (!metadata || amount > metadata.balance) {
                 throw new Error("Insufficient balance to perform withdrawal. / በቂ ሂሳብ የሎትም።");

@@ -25,6 +25,109 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="pms.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .email-verify-banner {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, rgba(212, 175, 55, 0.04) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            border-radius: 14px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            position: relative;
+            animation: bannerSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes bannerSlideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .email-verify-banner .verify-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(212, 175, 55, 0.12);
+            color: #D4AF37;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .email-verify-banner .verify-body {
+            flex: 1;
+            min-width: 0;
+        }
+        .email-verify-banner .verify-title {
+            font-family: 'Benaiah', 'Cormorant Garamond', serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--dash-forest, #14231b);
+            margin: 0 0 4px 0;
+        }
+        .email-verify-banner .verify-desc {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.82rem;
+            color: var(--dash-muted, #6a6e6b);
+            line-height: 1.5;
+            margin: 0 0 10px 0;
+        }
+        .email-verify-banner .verify-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .email-verify-banner .verify-resend-btn {
+            background: linear-gradient(135deg, #D4AF37, #C49B2F);
+            color: #14231b;
+            border: none;
+            border-radius: 8px;
+            padding: 7px 16px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .email-verify-banner .verify-resend-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+        .email-verify-banner .verify-resend-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .email-verify-banner .verify-status {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            color: var(--dash-muted, #6a6e6b);
+        }
+        .email-verify-banner .verify-status.success {
+            color: #2ecc71;
+        }
+        .email-verify-banner .verify-status.error {
+            color: #e74c3c;
+        }
+        .email-verify-banner .verify-dismiss {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--dash-muted, #6a6e6b);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .email-verify-banner .verify-dismiss:hover {
+            color: var(--dash-forest, #14231b);
+        }
+    </style>
 </head>
 <body>
     <!-- Navbar -->
@@ -169,6 +272,9 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Email Verification Banner (shown only when unverified) -->
+                    <div id="email-verify-banner" class="email-verify-banner" style="display:none;"></div>
 
                     <!-- Quick Actions Pills Row -->
                     <div class="dash-quick-actions-bar">
@@ -698,6 +804,89 @@
         document.addEventListener('DOMContentLoaded', async () => {
             currentUser = await (window.AuthGuard ? window.AuthGuard.protectPage() : window.getCurrentUser(true));
             if (!currentUser) return;
+
+            // --- Email Verification Banner ---
+            (async function showVerificationBanner() {
+                if (!window.AuthService || typeof window.AuthService.isEmailVerified !== 'function') return;
+                try {
+                    const verified = await window.AuthService.isEmailVerified();
+                    const banner = document.getElementById('email-verify-banner');
+                    if (!banner) return;
+                    if (verified) {
+                        banner.style.display = 'none';
+                        return;
+                    }
+                    banner.style.display = 'flex';
+                    banner.innerHTML = `
+                        <div class="verify-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
+                        <div class="verify-body">
+                            <div class="verify-title">Please verify your email address</div>
+                            <div class="verify-desc">
+                                Your account is active, but email verification is required before you can use affiliate commissions and withdrawals.
+                            </div>
+                            <div class="verify-actions">
+                                <button class="verify-resend-btn" id="verify-resend-btn" type="button">
+                                    <i class="fa-solid fa-paper-plane"></i> Resend Verification Email
+                                </button>
+                                <span class="verify-status" id="verify-status"></span>
+                            </div>
+                        </div>
+                        <button class="verify-dismiss" id="verify-dismiss" aria-label="Dismiss" title="Dismiss">&times;</button>
+                    `;
+
+                    const resendBtn = document.getElementById('verify-resend-btn');
+                    const statusEl = document.getElementById('verify-status');
+                    const dismissBtn = document.getElementById('verify-dismiss');
+
+                    dismissBtn.addEventListener('click', () => { banner.style.display = 'none'; });
+
+                    resendBtn.addEventListener('click', async () => {
+                        resendBtn.disabled = true;
+                        statusEl.textContent = 'Sending...';
+                        statusEl.className = 'verify-status';
+                        const result = await window.AuthService.resendVerificationEmail(currentUser.email);
+                        if (result.success) {
+                            statusEl.textContent = 'Verification email sent! Check your inbox.';
+                            statusEl.className = 'verify-status success';
+                            startCooldown(60);
+                        } else {
+                            statusEl.textContent = result.error || 'Failed to send. Try again later.';
+                            statusEl.className = 'verify-status error';
+                            if (result.cooldownRemaining) {
+                                startCooldown(result.cooldownRemaining);
+                            } else {
+                                resendBtn.disabled = false;
+                            }
+                        }
+                    });
+
+                    function startCooldown(seconds) {
+                        let remaining = seconds;
+                        resendBtn.disabled = true;
+                        resendBtn.innerHTML = `<i class="fa-solid fa-clock"></i> Resend in ${remaining}s`;
+                        const timer = setInterval(() => {
+                            remaining--;
+                            if (remaining <= 0) {
+                                clearInterval(timer);
+                                resendBtn.disabled = false;
+                                resendBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Resend Verification Email';
+                                statusEl.textContent = '';
+                            } else {
+                                resendBtn.innerHTML = `<i class="fa-solid fa-clock"></i> Resend in ${remaining}s`;
+                            }
+                        }, 1000);
+                    }
+
+                    // Check if there's an existing cooldown from sessionStorage
+                    const lastSent = parseInt(sessionStorage.getItem('amiele_verify_resend_ts') || '0', 10);
+                    if (lastSent) {
+                        const elapsed = Math.floor((Date.now() - lastSent) / 1000);
+                        if (elapsed < 60) startCooldown(60 - elapsed);
+                    }
+                } catch (e) {
+                    console.warn('[Amiele:Account] Verification banner check failed:', e);
+                }
+            })();
 
             const initialTab = window.AuthGuard ? window.AuthGuard.getInitialTab('dashboard') : 'dashboard';
             switchDashTab(initialTab, false);

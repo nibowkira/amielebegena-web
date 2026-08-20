@@ -158,6 +158,72 @@
             if (isAuth) {
                 window.location.href = redirectTo;
             }
+        },
+
+        /**
+         * Returns the raw Supabase auth user object (includes email_confirmed_at).
+         * Always fetches from Supabase Auth, never from cache or localStorage.
+         */
+        async getAuthUser() {
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) return null;
+            try {
+                const { data: { user }, error } = await client.auth.getUser();
+                if (error || !user) return null;
+                return user;
+            } catch (e) {
+                console.error("[Amiele:Auth] getAuthUser error:", e);
+                return null;
+            }
+        },
+
+        /**
+         * Checks if the current user's email is verified.
+         * Uses live Supabase auth state — never localStorage.
+         * @returns {Promise<boolean>}
+         */
+        async isEmailVerified() {
+            const authUser = await this.getAuthUser();
+            if (!authUser) return false;
+            return Boolean(authUser.email_confirmed_at);
+        },
+
+        /**
+         * Resends the verification email with a 60-second cooldown.
+         * Uses sessionStorage for cooldown tracking (not for verification state).
+         * @param {string} email
+         * @returns {Promise<{success: boolean, error?: string, cooldownRemaining?: number}>}
+         */
+        async resendVerificationEmail(email) {
+            const COOLDOWN_KEY = 'amiele_verify_resend_ts';
+            const COOLDOWN_SECONDS = 60;
+
+            // Check cooldown
+            const lastSent = parseInt(sessionStorage.getItem(COOLDOWN_KEY) || '0', 10);
+            const elapsed = Math.floor((Date.now() - lastSent) / 1000);
+            if (lastSent && elapsed < COOLDOWN_SECONDS) {
+                const remaining = COOLDOWN_SECONDS - elapsed;
+                return { success: false, error: `Please wait ${remaining} seconds before requesting again.`, cooldownRemaining: remaining };
+            }
+
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) return { success: false, error: 'Authentication service unavailable.' };
+
+            try {
+                const { error } = await client.auth.resend({
+                    type: 'signup',
+                    email: email
+                });
+                if (error) {
+                    console.error('[Amiele:Auth] Resend verification error:', error);
+                    return { success: false, error: error.message };
+                }
+                sessionStorage.setItem(COOLDOWN_KEY, String(Date.now()));
+                return { success: true };
+            } catch (e) {
+                console.error('[Amiele:Auth] Resend verification exception:', e);
+                return { success: false, error: e.message || 'An unexpected error occurred.' };
+            }
         }
     };
 
@@ -173,5 +239,11 @@
     };
     window.requireGuest = async function (redirectTo) {
         return await AuthService.requireGuest(redirectTo);
+    };
+    window.isEmailVerified = async function () {
+        return await AuthService.isEmailVerified();
+    };
+    window.resendVerificationEmail = async function (email) {
+        return await AuthService.resendVerificationEmail(email);
     };
 })();
