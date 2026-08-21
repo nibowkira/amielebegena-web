@@ -83,7 +83,7 @@ BEGIN
 
     -- Validate amount
     IF p_amount IS NULL OR p_amount < 500 THEN
-        RAISE EXCEPTION 'Minimum withdrawal amount is ETB 500.00.';
+        RAISE EXCEPTION 'Minimum withdrawal amount is ETB 500.00. / ዝቅተኛው የማውጣት መጠን 500 ብር ነው።';
     END IF;
 
     IF p_method IS NULL OR length(trim(p_method)) < 2 THEN
@@ -121,9 +121,9 @@ BEGIN
 
     -- Reject if requested amount exceeds remaining unreserved balance
     IF v_available_balance < p_amount THEN
-        RAISE EXCEPTION 'Insufficient available balance. Available: ETB %, Requested: ETB % (including pending requests).',
+        RAISE EXCEPTION 'Insufficient balance. Your available balance is ETB %. / በቂ ሂሳብ የሎትም። ያለዎት balance ETB % ነው።',
             trim(to_char(v_available_balance, 'FM999,999,990.00')),
-            trim(to_char(p_amount, 'FM999,999,990.00'));
+            trim(to_char(v_available_balance, 'FM999,999,990.00'));
     END IF;
 
     -- Insert withdrawal
@@ -292,7 +292,7 @@ BEGIN
 
     -- Strict balance verification: available balance MUST be >= withdrawal amount
     IF v_available_balance < v_wth.amount THEN
-        RAISE EXCEPTION 'Insufficient affiliate balance. Available: ETB %, Requested: ETB %',
+        RAISE EXCEPTION 'Insufficient balance. Available: ETB %, Requested: ETB %',
             trim(to_char(v_available_balance, 'FM999,999,990.00')),
             trim(to_char(v_wth.amount, 'FM999,999,990.00'));
     END IF;
@@ -411,9 +411,9 @@ BEGIN
         v_available_balance := GREATEST(0, v_total_earnings - v_total_committed);
 
         IF v_available_balance < NEW.amount THEN
-            RAISE EXCEPTION 'Insufficient available balance: Affiliate only has ETB % available (including in-flight reservations), but requested ETB %.',
+            RAISE EXCEPTION 'Insufficient balance. Your available balance is ETB %. / በቂ ሂሳብ የሎትም። ያለዎት balance ETB % ነው።',
                 trim(to_char(v_available_balance, 'FM999,999,990.00')),
-                trim(to_char(NEW.amount, 'FM999,999,990.00'));
+                trim(to_char(v_available_balance, 'FM999,999,990.00'));
         END IF;
     END IF;
 

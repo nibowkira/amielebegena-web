@@ -590,7 +590,8 @@
 
             const metadata = await this.getAffiliateMetadata(userId);
             if (!metadata || amount > metadata.balance) {
-                throw new Error("Insufficient balance to perform withdrawal. / በቂ ሂሳብ የሎትም።");
+                const avail = (metadata && metadata.balance) ? metadata.balance.toLocaleString() : "0";
+                throw new Error(`Insufficient balance. Your available balance is ETB ${avail}. / በቂ ሂሳብ የሎትም። ያለዎት balance ETB ${avail} ነው።`);
             }
 
             // Call secure database RPC with atomic reservation and row-level locking
@@ -602,7 +603,9 @@
 
             if (error) {
                 console.error("[Amiele:Affiliate] Error requesting withdrawal:", error);
-                throw new Error(error.message || "Failed to submit withdrawal request.");
+                let msg = error.message || "Failed to submit withdrawal request.";
+                msg = msg.replace(/^ERROR:\s*/i, "");
+                throw new Error(msg);
             }
 
             const wthId = data.id ? ("wth_" + data.id.slice(0, 8)) : ("wth_" + String(data).slice(0, 8));
