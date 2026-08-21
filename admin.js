@@ -669,6 +669,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 `;
             }
 
+            let badgeDisplay = `<span class="aff-badge ${escapeHtml(w.status)}">${escapeHtml(w.status)}</span>`;
+            if (w.status === "rejected" && w.rejectionReason) {
+                badgeDisplay += `<div style="margin-top:4px; font-size:0.75rem; color:#b91c1c; background:#fef2f2; padding:3px 6px; border-radius:4px; border:1px solid #fecaca; max-width:220px; line-height:1.2; word-break:break-word;"><strong>Reason:</strong> ${escapeHtml(w.rejectionReason)}</div>`;
+            }
+
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td><strong>${escapeHtml(w.id)}</strong></td>
@@ -676,7 +681,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <td style="font-weight:600;">ETB ${w.amount.toLocaleString()}</td>
                 <td>${escapeHtml(w.method)}<br>${escapeHtml(w.phone)}</td>
                 <td>${dateStr}</td>
-                <td><span class="aff-badge ${escapeHtml(w.status)}">${escapeHtml(w.status)}</span></td>
+                <td>${badgeDisplay}</td>
                 <td>${actionBtn}</td>
             `;
             tbody.appendChild(tr);
@@ -1164,8 +1169,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     window.rejectWithdrawal = async function (id, btnElement) {
-        const confirmed = await showConfirmModal("Reject Withdrawal Request", "Are you sure you want to decline this request? Funds will return to affiliate balance.", true);
+        const modalHtml = `
+            <div style="font-family: 'Outfit', sans-serif;">
+                <p style="margin: 0 0 1rem; color: var(--aff-text-muted);">
+                    Are you sure you want to decline this request? The funds will be restored immediately to the affiliate's available balance.
+                </p>
+                <label for="admin-rejection-reason" style="display:block; font-weight:600; font-size:0.85rem; margin-bottom:0.4rem; color:var(--aff-text);">
+                    Rejection Reason (will be shown to the affiliate):
+                </label>
+                <textarea id="admin-rejection-reason" class="aff-input" rows="3" style="width:100%; resize:vertical; padding:0.6rem; font-family:inherit; border-radius:6px; font-size:0.85rem;" placeholder="e.g. Account name mismatch, please verify and re-apply."></textarea>
+            </div>
+        `;
+        const confirmed = await showConfirmModal("Reject Withdrawal Request", modalHtml, true, "Reject Request", "Cancel");
         if (confirmed) {
+            const reasonInput = document.getElementById("admin-rejection-reason");
+            const reason = reasonInput ? reasonInput.value.trim() : "";
             let originalText = "";
             if (btnElement) {
                 originalText = btnElement.innerHTML;
@@ -1174,8 +1192,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             try {
                 if (window.AdminService) {
-                    const res = await window.AdminService.updateWithdrawalStatus(id, "rejected", currentUser.id);
-                    showToast(res && res.message ? res.message : "Withdrawal rejected.", "warning");
+                    const res = await window.AdminService.updateWithdrawalStatus(id, "rejected", currentUser.id, reason);
+                    showToast(res && res.message ? res.message : "Withdrawal rejected. Funds restored to affiliate.", "warning");
                 }
                 await renderWithdrawals();
                 renderDashboardStats();

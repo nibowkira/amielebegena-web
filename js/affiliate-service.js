@@ -569,6 +569,7 @@
                 method: item.method,
                 phone: item.phone,
                 status: item.status,
+                rejectionReason: item.rejection_reason || null,
                 createdAt: item.created_at
             }));
         },

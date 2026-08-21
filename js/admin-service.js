@@ -858,18 +858,20 @@
                 method: w.method,
                 phone: w.phone,
                 status: w.status,
+                rejectionReason: w.rejection_reason || null,
                 createdAt: w.created_at
             }));
         },
 
-        async updateWithdrawalStatus(withdrawalId, newStatus, adminId) {
+        async updateWithdrawalStatus(withdrawalId, newStatus, adminId, rejectionReason) {
             const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             if (!supabase) throw new Error("Supabase client not initialized");
 
             const { data, error } = await supabase.rpc("admin_update_withdrawal_status", {
                 p_withdrawal_id: withdrawalId,
                 p_new_status: newStatus,
-                p_admin_id: adminId || null
+                p_admin_id: adminId || null,
+                p_rejection_reason: rejectionReason || null
             });
 
             if (error) {
