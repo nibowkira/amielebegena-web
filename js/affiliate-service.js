@@ -300,8 +300,9 @@
             // Determine authoritative sales count (maximum of profile sales_count and approved commissions count)
             const salesCount = Math.max(affiliate.sales_count || 0, approvedCommissionCount);
 
-            // 4. Query withdrawals
+            // 4. Query withdrawals (both paid/approved and in-flight pending requests)
             let totalPaid = 0;
+            let pendingWithdrawals = 0;
             try {
                 const { data: wthData } = await client
                     .from("affiliate_withdrawals")
@@ -312,12 +313,16 @@
                     totalPaid = wthData
                         .filter((w) => w.status === "approved" || w.status === "paid")
                         .reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
+
+                    pendingWithdrawals = wthData
+                        .filter((w) => w.status === "pending")
+                        .reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
                 }
             } catch (err) {
                 console.warn("[Amiele:Affiliate] Error fetching withdrawals:", err);
             }
 
-            const availableBalance = Math.max(0, totalEarnings - totalPaid);
+            const availableBalance = Math.max(0, totalEarnings - totalPaid - pendingWithdrawals);
 
             const metadata = {
                 userId: userId,
@@ -588,26 +593,26 @@
                 throw new Error("Insufficient balance to perform withdrawal. / በቂ ሂሳብ የሎትም።");
             }
 
-            const { data, error } = await client
-                .from("affiliate_withdrawals")
-                .insert({
-                    affiliate_id: userId,
-                    amount: amount,
-                    method: method,
-                    phone: phone,
-                    status: "pending"
-                })
-                .select()
-                .single();
+            // Call secure database RPC with atomic reservation and row-level locking
+            const { data, error } = await client.rpc("request_affiliate_withdrawal", {
+                p_amount: amount,
+                p_method: method,
+                p_phone: phone
+            });
 
-            if (error) throw error;
+            if (error) {
+                console.error("[Amiele:Affiliate] Error requesting withdrawal:", error);
+                throw new Error(error.message || "Failed to submit withdrawal request.");
+            }
+
+            const wthId = data.id ? ("wth_" + data.id.slice(0, 8)) : ("wth_" + String(data).slice(0, 8));
             return {
-                id: "wth_" + data.id.slice(0, 8),
-                amount: parseFloat(data.amount),
-                method: data.method,
-                phone: data.phone,
-                status: data.status,
-                createdAt: data.createdAt || data.created_at
+                id: wthId,
+                amount: parseFloat(data.amount || amount),
+                method: data.method || method,
+                phone: data.phone || phone,
+                status: data.status || "pending",
+                createdAt: data.created_at || new Date().toISOString()
             };
         },
 

@@ -866,13 +866,17 @@
             const supabase = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             if (!supabase) throw new Error("Supabase client not initialized");
 
-            const { data, error } = await supabase.from("affiliate_withdrawals").update({
-                status: newStatus,
-                processed_by: adminId,
-                processed_at: new Date().toISOString()
-            }).eq("id", withdrawalId).select().single();
+            const { data, error } = await supabase.rpc("admin_update_withdrawal_status", {
+                p_withdrawal_id: withdrawalId,
+                p_new_status: newStatus,
+                p_admin_id: adminId || null
+            });
 
-            if (error) throw error;
+            if (error) {
+                console.error("[Amiele:Admin] Error updating withdrawal status:", error);
+                throw new Error(error.message || "Failed to update withdrawal status.");
+            }
+
             return data;
         },
 

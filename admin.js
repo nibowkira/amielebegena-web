@@ -660,12 +660,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             let actionBtn = "-";
             if (w.status === "pending") {
                 actionBtn = `
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#1565c0;" onclick="approveWithdrawal('${escapeHtml(w.rawId)}')">Approve</button>
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="rejectWithdrawal('${escapeHtml(w.rawId)}')">Reject</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#1565c0;" onclick="approveWithdrawal('${escapeHtml(w.rawId)}', this)">Approve</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#c62828;" onclick="rejectWithdrawal('${escapeHtml(w.rawId)}', this)">Reject</button>
                 `;
             } else if (w.status === "approved") {
                 actionBtn = `
-                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="markWithdrawalPaid('${escapeHtml(w.rawId)}')">Mark Paid</button>
+                    <button class="aff-btn" style="padding:0.4rem 0.8rem; font-size:0.75rem; background-color:#2e7d32;" onclick="markWithdrawalPaid('${escapeHtml(w.rawId)}', this)">Mark Paid</button>
                 `;
             }
 
@@ -1135,44 +1135,91 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     // Withdrawal Actions
-    window.approveWithdrawal = async function (id) {
+    window.approveWithdrawal = async function (id, btnElement) {
         const confirmed = await showConfirmModal("Approve Withdrawal Request", "Approve payout request?");
         if (confirmed) {
+            let originalText = "";
+            if (btnElement) {
+                originalText = btnElement.innerHTML;
+                btnElement.disabled = true;
+                btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            }
             try {
-                if (window.AdminService) await window.AdminService.updateWithdrawalStatus(id, "approved", currentUser.id);
-                showToast("Withdrawal request approved!", "success");
-                renderWithdrawals();
+                if (window.AdminService) {
+                    const res = await window.AdminService.updateWithdrawalStatus(id, "approved", currentUser.id);
+                    showToast(res && res.message ? res.message : "Withdrawal request approved!", "success");
+                }
+                await renderWithdrawals();
                 renderDashboardStats();
             } catch (err) {
-                showToast(err.message, "error");
+                showToast(err.message || "Failed to approve withdrawal.", "error");
+                await renderWithdrawals();
+            } finally {
+                if (btnElement && btnElement.isConnected) {
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = originalText;
+                }
             }
         }
     };
 
-    window.rejectWithdrawal = async function (id) {
+    window.rejectWithdrawal = async function (id, btnElement) {
         const confirmed = await showConfirmModal("Reject Withdrawal Request", "Are you sure you want to decline this request? Funds will return to affiliate balance.", true);
         if (confirmed) {
+            let originalText = "";
+            if (btnElement) {
+                originalText = btnElement.innerHTML;
+                btnElement.disabled = true;
+                btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            }
             try {
-                if (window.AdminService) await window.AdminService.updateWithdrawalStatus(id, "rejected", currentUser.id);
-                showToast("Withdrawal rejected.", "warning");
-                renderWithdrawals();
+                if (window.AdminService) {
+                    const res = await window.AdminService.updateWithdrawalStatus(id, "rejected", currentUser.id);
+                    showToast(res && res.message ? res.message : "Withdrawal rejected.", "warning");
+                }
+                await renderWithdrawals();
                 renderDashboardStats();
             } catch (err) {
-                showToast(err.message, "error");
+                showToast(err.message || "Failed to reject withdrawal.", "error");
+                await renderWithdrawals();
+            } finally {
+                if (btnElement && btnElement.isConnected) {
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = originalText;
+                }
             }
         }
     };
 
-    window.markWithdrawalPaid = async function (id) {
+    window.markWithdrawalPaid = async function (id, btnElement) {
         const confirmed = await showConfirmModal("Mark Withdrawal as PAID", "Mark request as successfully paid to partner?");
         if (confirmed) {
+            let originalText = "";
+            if (btnElement) {
+                originalText = btnElement.innerHTML;
+                btnElement.disabled = true;
+                btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            }
             try {
-                if (window.AdminService) await window.AdminService.updateWithdrawalStatus(id, "paid", currentUser.id);
-                showToast("Withdrawal marked as PAID successfully.", "success");
-                renderWithdrawals();
+                if (window.AdminService) {
+                    const res = await window.AdminService.updateWithdrawalStatus(id, "paid", currentUser.id);
+                    if (res && res.already_paid) {
+                        showToast(res.message || "Withdrawal already processed.", "info");
+                    } else {
+                        showToast(res && res.message ? res.message : "Withdrawal marked as paid successfully.", "success");
+                    }
+                }
+                await renderWithdrawals();
                 renderDashboardStats();
             } catch (err) {
-                showToast(err.message, "error");
+                // UI accurately displays the database-returned error (e.g. Insufficient balance)
+                showToast(err.message || "Failed to mark withdrawal as paid.", "error");
+                await renderWithdrawals();
+            } finally {
+                if (btnElement && btnElement.isConnected) {
+                    btnElement.disabled = false;
+                    btnElement.innerHTML = originalText;
+                }
             }
         }
     };
