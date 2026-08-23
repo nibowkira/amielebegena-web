@@ -285,11 +285,22 @@
                 actionBtn.innerHTML = 'Retry Connection <span class="offline-retry-dot"></span>';
                 actionBtn.href = '#';
 
+                function getSafeRedirect() {
+                    const raw = urlParams.get('redirect') || 'index.html';
+                    const trimmed = raw.trim();
+                    if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed) || /^\/\//.test(trimmed) || trimmed.includes('\\') || /[\x00-\x1F\x7F]/.test(trimmed)) {
+                        return 'index.html';
+                    }
+                    if (trimmed.startsWith('/') || /^[a-zA-Z0-9_/-]+\.html(\?.*)?$/i.test(trimmed)) {
+                        return trimmed;
+                    }
+                    return 'index.html';
+                }
+
                 actionBtn.addEventListener('click', (e) => {
                     e.preventDefault();
                     if (navigator.onLine) {
-                        const redirect = urlParams.get('redirect') || 'index.html';
-                        window.location.href = redirect;
+                        window.location.href = getSafeRedirect();
                     } else {
                         // Flashing alert
                         descEl.style.color = '#ff6b6b';
@@ -300,8 +311,7 @@
                 // Auto monitor reconnect
                 setInterval(() => {
                     if (navigator.onLine) {
-                        const redirect = urlParams.get('redirect') || 'index.html';
-                        window.location.href = redirect;
+                        window.location.href = getSafeRedirect();
                     }
                 }, 3000);
             }

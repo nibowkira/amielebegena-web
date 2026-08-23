@@ -1,21 +1,50 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// Security: Only allow requests from the production origin.
+const ALLOWED_ORIGIN = "https://amielebegena.vercel.app";
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") || "";
+  // Only reflect the origin if it matches the allowed production origin.
+  const allowedOrigin = origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : "null";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Vary": "Origin",
+  };
+}
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Security: Reject non-POST requests
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ success: false, error: "Method not allowed." }),
+      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_ANON_KEY") || "";
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // This edge function performs a direct table insert (bypassing RLS), so it
+    // requires the service role key. CORS is locked to the production origin
+    // above, so only the legitimate frontend can invoke this function.
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    if (!supabaseKey) {
+      console.error("[CreateGuestOrder] SUPABASE_SERVICE_ROLE_KEY is not configured.");
+      return new Response(
+        JSON.stringify({ success: false, error: "Server configuration error." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const body = await req.json();
     const {
@@ -24,7 +53,6 @@ serve(async (req) => {
       customer_email,
       country,
       product_id,
-      product_name,
       quantity = 1,
       referral_code,
       session_id,
@@ -54,65 +82,49 @@ serve(async (req) => {
     }
 
     const parsedQty = parseInt(String(quantity), 10);
-    if (isNaN(parsedQty) || parsedQty < 1) {
+    if (isNaN(parsedQty) || parsedQty < 1 || parsedQty > 100) {
       return new Response(
-        JSON.stringify({ success: false, error: "Quantity must be at least 1." }),
+        JSON.stringify({ success: false, error: "Quantity must be between 1 and 100." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // 2. Resolve Product UUID and Price
-    let resolvedProductId: string | null = null;
-    let resolvedProductName = product_name || "Ethiopian Instrument";
-    let resolvedPriceUSD = 100;
-
+    // 2. Resolve Product — UUID ONLY (no name-based fallbacks)
     const isUUID = typeof product_id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(product_id);
-    
-    if (isUUID) {
-      const { data: prod } = await supabase
-        .from("products")
-        .select("id, name, price")
-        .eq("id", product_id)
-        .single();
-      if (prod) {
-        resolvedProductId = prod.id;
-        resolvedProductName = prod.name;
-        resolvedPriceUSD = parseFloat(prod.price) || 100;
-      }
+
+    if (!isUUID) {
+      return new Response(
+        JSON.stringify({ success: false, error: "A valid product ID is required to place an order." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    if (!resolvedProductId && resolvedProductName) {
-      const { data: prod } = await supabase
-        .from("products")
-        .select("id, name, price")
-        .ilike("name", `%${resolvedProductName.split(" ")[0]}%`)
-        .limit(1)
-        .maybeSingle();
-      if (prod) {
-        resolvedProductId = prod.id;
-        resolvedProductName = prod.name;
-        resolvedPriceUSD = parseFloat(prod.price) || 100;
-      }
+    const { data: prod, error: prodErr } = await supabase
+      .from("products")
+      .select("id, name, price")
+      .eq("id", product_id)
+      .maybeSingle();
+
+    if (prodErr || !prod) {
+      return new Response(
+        JSON.stringify({ success: false, error: "The selected product could not be found. Please try again." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Fallback product UUID resolution if products table has entries
-    if (!resolvedProductId) {
-      const { data: prod } = await supabase.from("products").select("id, name, price").limit(1).maybeSingle();
-      if (prod) {
-        resolvedProductId = prod.id;
-      }
-    }
+    const resolvedProductId = prod.id;
+    const resolvedProductName = prod.name;
 
-    // 3. Resolve Affiliate Information
+    // 3. Resolve Affiliate Information — exact match only
     let resolvedAffiliateId: string | null = null;
     let resolvedAffiliateCode: string | null = null;
 
     const cleanRefCode = referral_code ? String(referral_code).trim() : null;
-    if (cleanRefCode) {
+    if (cleanRefCode && cleanRefCode.length <= 100) {
       const { data: aff } = await supabase
         .from("affiliates")
         .select("user_id, referral_code")
-        .ilike("referral_code", cleanRefCode)
+        .eq("referral_code", cleanRefCode)
         .maybeSingle();
 
       if (aff) {
@@ -129,17 +141,17 @@ serve(async (req) => {
     // 5. Create Order Record in Database
     const orderInsertPayload = {
       order_number: orderNumber,
-      customer_name: customer_name.trim(),
-      phone: phone.trim(),
-      customer_email: customer_email ? customer_email.trim() : "N/A",
-      country: country.trim(),
+      customer_name: customer_name.trim().substring(0, 200),
+      phone: phone.trim().substring(0, 30),
+      customer_email: customer_email ? customer_email.trim().substring(0, 254) : "N/A",
+      country: country.trim().substring(0, 100),
       product_id: resolvedProductId,
       quantity: parsedQty,
       referral_code: resolvedAffiliateCode || cleanRefCode,
       affiliate_id: resolvedAffiliateId,
       status: "pending",
       payment_status: "pending_payment",
-      notes: notes || "Guest WhatsApp Checkout",
+      notes: notes ? String(notes).substring(0, 500) : "Guest WhatsApp Checkout",
       whatsapp_sent_at: new Date().toISOString(),
     };
 
@@ -155,7 +167,6 @@ serve(async (req) => {
         JSON.stringify({
           success: false,
           error: "Failed to create order in database. Please try again.",
-          details: insertError?.message,
         }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -191,7 +202,7 @@ serve(async (req) => {
   } catch (err: any) {
     console.error("[CreateGuestOrder] Server Exception:", err);
     return new Response(
-      JSON.stringify({ success: false, error: err?.message || "Internal server error." }),
+      JSON.stringify({ success: false, error: "Internal server error." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

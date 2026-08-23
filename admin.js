@@ -485,7 +485,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // User Role Modifier
     window.changeUserRole = async function (userId, newRole) {
-        const confirmed = await showConfirmModal("Modify User Role", `Are you sure you want to change this user's role to <strong>${newRole}</strong>?`);
+        const confirmed = await showConfirmModal("Modify User Role", `Are you sure you want to change this user's role to <strong>${escapeHtml(newRole)}</strong>?`, false, "Confirm", "Cancel", true);
         if (confirmed) {
             try {
                 if (window.AdminService) await window.AdminService.changeUserRole(userId, newRole);
@@ -503,7 +503,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Affiliate Application Handlers
     window.approveApp = async function (userId, name) {
-        const confirmed = await showConfirmModal("Approve Affiliate Application", `Are you sure you want to approve the application for <strong>${name}</strong>?`);
+        const confirmed = await showConfirmModal("Approve Affiliate Application", `Are you sure you want to approve the application for <strong>${escapeHtml(name)}</strong>?`, false, "Confirm", "Cancel", true);
         if (confirmed) {
             try {
                 if (window.AdminService) {
@@ -521,7 +521,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     window.rejectApp = async function (userId, name) {
-        const confirmed = await showConfirmModal("Reject Affiliate Application", `Are you sure you want to reject the application for <strong>${name}</strong>?`, true);
+        const confirmed = await showConfirmModal("Reject Affiliate Application", `Are you sure you want to reject the application for <strong>${escapeHtml(name)}</strong>?`, true, "Confirm", "Cancel", true);
         if (confirmed) {
             try {
                 if (window.AdminService) {
@@ -1070,7 +1070,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     window.approveOrderPayment = async function (orderId, orderNum) {
-        const confirmed = await showConfirmModal("Approve Payment", `Approve payment for order <strong>${orderNum}</strong>? This will calculate and credit the affiliate commission automatically.`);
+        const confirmed = await showConfirmModal("Approve Payment", `Approve payment for order <strong>${escapeHtml(orderNum)}</strong>? This will calculate and credit the affiliate commission automatically.`, false, "Confirm", "Cancel", true);
         if (confirmed) {
             try {
                 if (window.AdminService) {
@@ -1090,7 +1090,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     window.rejectOrderPayment = async function (orderId, orderNum) {
-        const confirmed = await showConfirmModal("Reject Payment", `Reject payment for order <strong>${orderNum}</strong>? The order will be cancelled.`, true);
+        const confirmed = await showConfirmModal("Reject Payment", `Reject payment for order <strong>${escapeHtml(orderNum)}</strong>? The order will be cancelled.`, true, "Confirm", "Cancel", true);
         if (confirmed) {
             try {
                 if (window.AdminService) await window.AdminService.rejectPayment(orderId);
@@ -1180,7 +1180,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <textarea id="admin-rejection-reason" class="aff-input" rows="3" style="width:100%; resize:vertical; padding:0.6rem; font-family:inherit; border-radius:6px; font-size:0.85rem;" placeholder="e.g. Account name mismatch, please verify and re-apply."></textarea>
             </div>
         `;
-        const confirmed = await showConfirmModal("Reject Withdrawal Request", modalHtml, true, "Reject Request", "Cancel");
+        const confirmed = await showConfirmModal("Reject Withdrawal Request", modalHtml, true, "Reject Request", "Cancel", true);
         if (confirmed) {
             const reasonInput = document.getElementById("admin-rejection-reason");
             const reason = reasonInput ? reasonInput.value.trim() : "";
@@ -1438,7 +1438,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <span style="color:var(--aff-text-muted);">Close Modal Backdrop</span>
                     </div>
                 </div>
-            `, false, "Close Helper");
+            `, false, "Close Helper", true);
             return;
         }
 

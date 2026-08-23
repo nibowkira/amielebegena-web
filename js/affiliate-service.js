@@ -130,16 +130,19 @@
             }
 
             try {
-                const { data: aff, error: lookupErr } = await client
-                    .from("affiliates")
-                    .select("user_id, referral_code")
-                    .ilike("referral_code", code)
-                    .maybeSingle();
-
-                if (lookupErr) {
-                    console.error("[Amiele:Affiliate] Supabase Affiliate Query Error:", lookupErr);
-                    return;
+                let aff = null;
+                const { data: rpcRes, error: rpcErr } = await client.rpc("validate_referral_code", { p_code: code });
+                if (!rpcErr && rpcRes && rpcRes.valid) {
+                    aff = { user_id: rpcRes.user_id, referral_code: rpcRes.referral_code };
+                } else {
+                    const { data: fallbackAff } = await client
+                        .from("affiliates")
+                        .select("user_id, referral_code")
+                        .eq("referral_code", code)
+                        .maybeSingle();
+                    if (fallbackAff) aff = fallbackAff;
                 }
+
                 if (!aff) {
                     console.log("[Amiele:Affiliate] Affiliate not found for code:", code);
                     return;
@@ -181,6 +184,24 @@
             } catch (err) {
                 console.error("[Amiele:Affiliate] Exception in trackAffiliateClick:", err);
             }
+        },
+
+        /**
+         * Validate an affiliate referral code securely via RPC
+         */
+        async validateReferralCode(code) {
+            if (!code || typeof code !== "string") return { valid: false };
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
+            if (!client) return { valid: false };
+            try {
+                const { data, error } = await client.rpc("validate_referral_code", { p_code: code.trim() });
+                if (!error && data && data.valid) {
+                    return data;
+                }
+            } catch (err) {
+                console.warn("[Amiele:Affiliate] validate_referral_code RPC error:", err);
+            }
+            return { valid: false };
         },
 
         /**
