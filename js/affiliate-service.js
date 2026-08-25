@@ -610,6 +610,10 @@
                 }
             }
 
+            if (!amount || amount < 1000) {
+                throw new Error("Minimum withdrawal amount is 1,000 ETB. / ዝቅተኛው የማውጣት መጠን 1,000 ብር ነው።");
+            }
+
             const metadata = await this.getAffiliateMetadata(userId);
             if (!metadata || amount > metadata.balance) {
                 const avail = (metadata && metadata.balance) ? metadata.balance.toLocaleString() : "0";

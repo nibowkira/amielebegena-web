@@ -19,6 +19,12 @@
     <changefreq>monthly</changefreq>
   </url>
   <url>
+    <loc>https://amielebegena.vercel.app/about.html</loc>
+    <lastmod>2026-08-20</lastmod>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
     <loc>https://amielebegena.vercel.app/affiliate.html</loc>
     <lastmod>2026-08-20</lastmod>
     <priority>0.8</priority>

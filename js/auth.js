@@ -44,11 +44,27 @@
         },
 
         async signOut() {
-            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             cachedUser = null;
+            try {
+                if (window.AmieleDB && typeof window.AmieleDB.logout === 'function') {
+                    window.AmieleDB.logout();
+                }
+                localStorage.removeItem("amiele_current_session");
+                localStorage.removeItem("isLoggedIn");
+                localStorage.removeItem("userName");
+                localStorage.removeItem("userEmail");
+                localStorage.removeItem("userPhone");
+            } catch (e) {
+                console.warn("[Amiele:Auth] Local storage cleanup warning:", e);
+            }
+            const client = window.AmieleSupabase ? window.AmieleSupabase.getClient() : null;
             if (!client) return;
-            const { error } = await client.auth.signOut();
-            if (error) throw error;
+            try {
+                const { error } = await client.auth.signOut();
+                if (error) console.warn("[Amiele:Auth] signOut warning:", error);
+            } catch (err) {
+                console.warn("[Amiele:Auth] signOut exception:", err);
+            }
         },
 
         async updateProfile(userId, profileData) {

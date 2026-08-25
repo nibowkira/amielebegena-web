@@ -171,6 +171,7 @@
         <a href="about-us.html">About Us</a>
         <a href="blog.html">Blog</a>
         <a href="account.html">Account / መለያ</a>
+        <a href="#" onclick="handleUserLogout(event)" style="color: #C53030;"><i class="fa-solid fa-right-from-bracket"></i> Log Out / ውጣ</a>
     </nav>
 
     <!-- Main Customer Dashboard -->
@@ -223,7 +224,7 @@
                     <li class="dash-nav-item" data-tab="settings" onclick="switchDashTab('settings')">
                         <i class="fa-solid fa-gear"></i> Settings
                     </li>
-                    <li class="dash-nav-item" id="dash-logout-btn" style="color: #C53030;">
+                    <li class="dash-nav-item" id="dash-logout-btn" style="color: #C53030; cursor: pointer;">
                         <i class="fa-solid fa-right-from-bracket" style="color: #C53030;"></i> Log Out
                     </li>
                 </ul>
@@ -1006,10 +1007,45 @@
                 }
             });
 
-            document.getElementById('dash-logout-btn').addEventListener('click', () => {
-                if (window.AuthService) window.AuthService.signOut();
-                else window.location.href = 'login.html';
-            });
+            let isLoggingOut = false;
+            window.handleUserLogout = async function (e) {
+                if (e && typeof e.preventDefault === 'function') e.preventDefault();
+                if (isLoggingOut) return;
+                isLoggingOut = true;
+                const btn = document.getElementById('dash-logout-btn');
+                if (btn) {
+                    btn.style.opacity = '0.6';
+                    btn.style.pointerEvents = 'none';
+                }
+                try {
+                    if (typeof showToast === 'function') {
+                        showToast('Logged out successfully. / በሰላም ወጥተዋል።', 'info', 3000);
+                    }
+                    if (window.AuthService && typeof window.AuthService.signOut === 'function') {
+                        await window.AuthService.signOut();
+                    }
+                    if (window.AmieleDB && typeof window.AmieleDB.logout === 'function') {
+                        window.AmieleDB.logout();
+                    } else {
+                        localStorage.removeItem('amiele_current_session');
+                        localStorage.removeItem('isLoggedIn');
+                        localStorage.removeItem('userName');
+                        localStorage.removeItem('userEmail');
+                        localStorage.removeItem('userPhone');
+                    }
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                } catch (err) {
+                    console.error('[Amiele:Logout] Error:', err);
+                    window.location.href = 'login.html';
+                }
+            };
+
+            const logoutBtnEl = document.getElementById('dash-logout-btn');
+            if (logoutBtnEl) {
+                logoutBtnEl.addEventListener('click', window.handleUserLogout);
+            }
 
             // Portal Tab & Pill Setup (Admin vs Approved Affiliate vs Pending vs Rejected vs Customer)
             const affiliateNavTab = document.getElementById('nav-affiliate-tab');
