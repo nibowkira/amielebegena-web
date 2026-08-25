@@ -298,6 +298,46 @@
     color: #AEBDB4;
 }
 
+/* Real-time Withdrawal & Form Validation Highlights */
+.aff-input.input-error,
+.aff-select.input-error {
+    border-color: #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.04) !important;
+    box-shadow: 0 0 0 3.5px rgba(239, 68, 68, 0.22) !important;
+    color: #b91c1c;
+    transition: all 0.2s ease;
+}
+[data-theme="dark"] .aff-input.input-error {
+    background-color: rgba(239, 68, 68, 0.08) !important;
+    color: #fca5a5;
+}
+.aff-input.input-success {
+    border-color: #10b981 !important;
+    background-color: rgba(16, 185, 129, 0.04) !important;
+    box-shadow: 0 0 0 3.5px rgba(16, 185, 129, 0.18) !important;
+    transition: all 0.2s ease;
+}
+.wth-field-hint.error {
+    color: #dc2626 !important;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.wth-field-hint.success {
+    color: #059669 !important;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+[data-theme="dark"] .wth-field-hint.error {
+    color: #f87171 !important;
+}
+[data-theme="dark"] .wth-field-hint.success {
+    color: #34d399 !important;
+}
+
 /* ============================================================================
    SECURITY & PASSWORD STYLES
    ============================================================================ */
