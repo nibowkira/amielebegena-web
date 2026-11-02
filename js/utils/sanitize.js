@@ -1,1 +1,0 @@
-!function(){"use strict";const e={escapeHtml(e){if(null==e)return"";return String(e).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#x27;").replace(/\//g,"&#x2F;")}};window.AmieleSanitize=e}();

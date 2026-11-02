@@ -1,1 +1,0 @@
-document.addEventListener("DOMContentLoaded",()=>{const e=document.querySelector(".hero-section");if(!e)return;let t=window.pageYOffset,n=!1;function o(){const t=.3*window.pageYOffset;e.style.setProperty("--parallax-y",`${t}px`),n=!1}window.addEventListener("scroll",()=>{t=window.pageYOffset,n||(window.requestAnimationFrame(()=>{o()}),n=!0)},{passive:!0}),o()});

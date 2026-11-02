@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Amiele Begena - Affiliate Tour Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #050d08;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Demo Sidebar matching Amiele Begena Portal */
+    .aff-sidebar {
+      width: 250px;
+      background: #07150d;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px 14px;
+      flex-shrink: 0;
+    }
+
+    .aff-brand {
+      margin-bottom: 20px;
+      padding-left: 6px;
+    }
+    .aff-brand h1 {
+      font-size: 18px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+    }
+    .aff-brand p {
+      font-size: 8.5px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      color: #f5c518;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .aff-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .aff-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border-radius: 9999px;
+      color: #8ea396;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      width: 100%;
+    }
+    .aff-menu-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+    .aff-menu-item.active {
+      background: #f5c518;
+      color: #07150d;
+      box-shadow: 0 4px 16px rgba(245, 197, 24, 0.4);
+    }
+
+    .aff-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 12px;
+    }
+
+    .aff-user-card {
+      background: #0e2217;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .aff-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #f5c518;
+      color: #07150d;
+      font-weight: 900;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .aff-user-info {
+      flex: 1;
+      margin-left: 8px;
+    }
+    .aff-user-name {
+      font-size: 11px;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .aff-user-email {
+      font-size: 9px;
+      color: #7a9383;
+    }
+
+    .aff-exit-btn {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+      padding: 7px 12px;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.04);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    /* Main Demo Area */
+    .aff-main {
+      flex: 1;
+      background: #FAF8F5;
+      color: #14231b;
+      padding: 32px 40px;
+      overflow-y: auto;
+    }
+
+    .aff-hero {
+      background: #ffffff;
+      border: 1px solid rgba(20, 35, 27, 0.08);
+      border-radius: 24px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+    .aff-hero h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #14231b;
+      margin-bottom: 8px;
+    }
+    .aff-hero p {
+      font-size: 14px;
+      color: #556b5f;
+      line-height: 1.6;
+      max-width: 650px;
+    }
+
+    .aff-replay-tour-btn {
+      margin-top: 16px;
+      background: #14231b;
+      color: #f5c518;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 9999px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(20, 35, 27, 0.2);
+      transition: all 0.2s ease;
+    }
+    .aff-replay-tour-btn:hover {
+      background: #0d1a12;
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar with the 8 requested menu items -->
+  <aside class="aff-sidebar">
+    <div>
+      <div class="aff-brand">
+        <h1>ዓሚኤል በገና</h1>
+        <p>Affiliate Portal</p>
+      </div>
+
+      <nav class="aff-menu">
+        <button class="aff-menu-item active" onclick="activate(this, 'dashboard')">
+          <span>❖</span>
+          <span>Dashboard</span>
+        </button>
+        <button class="aff-menu-item" onclick="activate(this, 'referral')">
+          <span>∞</span>
+          <span>Referral Center</span>
+        </button>
+        <button class="aff-menu-item" onclick="activate(this, 'commissions')">
+          <span>▤</span>
+          <span>Commissions</span>
+        </button>
+        <button class="aff-menu-item" onclick="activate(this, 'withdrawals')">
+          <span>💳</span>
+          <span>Payout Queue</span>
+        </button>
+        <button class="aff-menu-item" onclick="activate(this, 'performance')">
+          <span>📊</span>
+          <span>Performance Report</span>
+        </button>
+        <button class="aff-menu-item" onclick="activate(this, 'marketing')">
+          <span>🛍</span>
+          <span>Marketing Center</span>
+        </button>
+        <button class="aff-menu-item" onclick="activate(this, 'campaigns')">
+          <span>🎯</span>
+          <span>Bonus Campaigns</span>
+        </button>
+        <button class="aff-menu-item" onclick="activate(this, 'settings')">
+          <span>⚙</span>
+          <span>Settings</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="aff-bottom">
+      <div class="aff-user-card" onclick="alert('User Settings')">
+        <div class="aff-avatar">J</div>
+        <div class="aff-user-info">
+          <div class="aff-user-name">jane</div>
+          <div class="aff-user-email">punchesbox@gmail.com</div>
+        </div>
+        <span style="color: #7a9383; font-size: 14px;">⚙</span>
+      </div>
+
+      <button class="aff-exit-btn" onclick="alert('Exit to Account')">
+        <span>←</span>
+        <span>Exit to Account</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Panel -->
+  <main class="aff-main">
+    <div class="aff-hero">
+      <h2>Welcome to the Amiele Begena Partner Guild ✦</h2>
+      <p>
+        Champion the sacred 10-string King David Harp (ዳዊት በገና) and authentic Ethiopian acoustic instruments while earning verified commissions.
+      </p>
+      <button class="aff-replay-tour-btn" onclick="AmieleTour.restart()">
+        <span>✦</span>
+        <span>Replay Onboarding Tour</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- Embed Tour Script -->
+  <script src="/amiele-tour.js"></script>
+  <script>
+    function activate(el, tab) {
+      document.querySelectorAll('.aff-menu-item').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // Initialize Tour
+    document.addEventListener('DOMContentLoaded', function () {
+      AmieleTour.init({
+        autoStart: true,
+        padding: 8,
+        onComplete: function () {
+          console.log('Amiele Begena Tour completed successfully!');
+        },
+        onSkip: function () {
+          console.log('Amiele Begena Tour skipped.');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
