@@ -61,6 +61,31 @@ export default function HomePage() {
 
   const [testimonialIndex, setTestimonialIndex] = useState(0);
 
+  // Mobile touch swipe handling
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+
+  const minSwipeDistance = 45;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    const distance = touchStartX - touchEndX;
+    if (distance > minSwipeDistance) {
+      nextTestimonial();
+    } else if (distance < -minSwipeDistance) {
+      prevTestimonial();
+    }
+  };
+
 
 
   // Review submission state
@@ -145,6 +170,61 @@ export default function HomePage() {
     testimonials[(testimonialIndex + 1) % testimonials.length],
     testimonials[(testimonialIndex + 2) % testimonials.length],
   ];
+
+  const renderTestimonialCard = (item: (typeof testimonials)[0], key?: string | number) => (
+    <div
+      key={key}
+      className="h-full rounded-2xl sm:rounded-3xl bg-[#13271d]/90 border border-white/5 p-6 sm:p-8 space-y-5 shadow-xl text-left flex flex-col justify-between transition-all duration-300 hover:border-[#2d6a4f]"
+    >
+      <div className="space-y-4">
+        {/* Quotation Marks Icon matching Screenshot */}
+        <div className="text-[#3b5e4c] flex items-center text-3xl font-serif select-none">
+          <span>““</span>
+        </div>
+
+        {/* Stars */}
+        <div className="flex items-center gap-1 text-[#eab308] text-xs">
+          {[...Array(5)].map((_, s) => (
+            <Star
+              key={s}
+              className={`w-3.5 h-3.5 ${
+                s < Math.floor(item.stars)
+                  ? "fill-current"
+                  : item.stars % 1 !== 0 && s === Math.floor(item.stars)
+                  ? "fill-current opacity-70"
+                  : "text-white/20"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Amharic Text */}
+        <p className="font-benaiah font-bold text-sm sm:text-[15px] text-[#fbf8f2] leading-relaxed">
+          {item.amharicText}
+        </p>
+
+        {/* English Text */}
+        <p className="text-xs text-[#cedad3]/85 italic leading-relaxed font-light">
+          {item.englishText}
+        </p>
+      </div>
+
+      {/* Author line with circular gold avatar badge matching Screenshot */}
+      <div className="pt-4 border-t border-white/10 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full bg-[#d4af37] text-[#0d1e16] font-bold text-xs flex items-center justify-center shrink-0 shadow">
+          {item.initial}
+        </div>
+        <div className="flex flex-col text-left">
+          <strong className="font-benaiah text-xs sm:text-sm font-bold text-white">
+            {item.author}
+          </strong>
+          <span className="text-[11px] text-[#52b788] font-medium">
+            {item.role}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="w-full flex flex-col">
@@ -286,99 +366,135 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Testimonial Cards Carousel Row with Chevron Buttons on Left & Right */}
-          <div className="relative flex items-center justify-between gap-3 sm:gap-6">
-            {/* Left Chevron Button */}
-            <button
-              onClick={prevTestimonial}
-              className="w-11 h-11 rounded-full bg-[#13271d] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] transition-all cursor-pointer shrink-0 shadow-lg"
-              aria-label="Previous testimonial"
+          {/* ================================================================
+              MOBILE CAROUSEL (< md): ONE REVIEW AT A TIME WITH SMOOTH SLIDE & SWIPE
+          ================================================================ */}
+          <div className="md:hidden space-y-6">
+            {/* Viewport for Single-Card Track */}
+            <div
+              className="w-full overflow-hidden touch-pan-y"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
             >
-              <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
-            </button>
-
-            {/* 3 Testimonials Side by Side */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-              {visibleTestimonials.map((item, i) => (
-                <div
-                  key={i}
-                  className="reveal active rounded-2xl sm:rounded-3xl bg-[#13271d]/90 border border-white/5 p-7 sm:p-8 space-y-5 shadow-xl text-left flex flex-col justify-between transition-all hover:border-[#2d6a4f]"
-                >
-                  <div className="space-y-4">
-                    {/* Quotation Marks Icon matching Screenshot */}
-                    <div className="text-[#3b5e4c] flex items-center text-3xl font-serif select-none">
-                      <span>““</span>
-                    </div>
-
-                    {/* Stars */}
-                    <div className="flex items-center gap-1 text-[#eab308] text-xs">
-                      {[...Array(5)].map((_, s) => (
-                        <Star
-                          key={s}
-                          className={`w-3.5 h-3.5 ${
-                            s < Math.floor(item.stars)
-                              ? "fill-current"
-                              : item.stars % 1 !== 0 && s === Math.floor(item.stars)
-                              ? "fill-current opacity-70"
-                              : "text-white/20"
-                          }`}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Amharic Text */}
-                    <p className="font-benaiah font-bold text-sm sm:text-[15px] text-[#fbf8f2] leading-relaxed">
-                      {item.amharicText}
-                    </p>
-
-                    {/* English Text */}
-                    <p className="text-xs text-[#cedad3]/85 italic leading-relaxed font-light">
-                      {item.englishText}
-                    </p>
+              <div
+                className="flex transition-transform duration-500 ease-out will-change-transform"
+                style={{ transform: `translateX(-${testimonialIndex * 100}%)` }}
+              >
+                {testimonials.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="w-full shrink-0 px-1 py-1"
+                    role="group"
+                    aria-roledescription="slide"
+                    aria-label={`Review ${idx + 1} of ${testimonials.length}`}
+                  >
+                    {renderTestimonialCard(item, idx)}
                   </div>
-
-                  {/* Author line with circular gold avatar badge matching Screenshot */}
-                  <div className="pt-4 border-t border-white/10 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#d4af37] text-[#0d1e16] font-bold text-xs flex items-center justify-center shrink-0 shadow">
-                      {item.initial}
-                    </div>
-                    <div className="flex flex-col text-left">
-                      <strong className="font-benaiah text-xs sm:text-sm font-bold text-white">
-                        {item.author}
-                      </strong>
-                      <span className="text-[11px] text-[#52b788] font-medium">
-                        {item.role}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            {/* Right Chevron Button */}
-            <button
-              onClick={nextTestimonial}
-              className="w-11 h-11 rounded-full bg-[#13271d] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] transition-all cursor-pointer shrink-0 shadow-lg"
-              aria-label="Next testimonial"
-            >
-              <ChevronRight className="w-5 h-5 stroke-[2.5]" />
-            </button>
+            {/* Mobile Navigation Controls */}
+            <div className="flex items-center justify-between gap-3 px-2">
+              <button
+                type="button"
+                onClick={prevTestimonial}
+                className="w-11 h-11 rounded-full bg-[#13271d] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-95 transition-all cursor-pointer shrink-0 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                aria-label="Previous review"
+              >
+                <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+              </button>
+
+              {/* Mobile Dots & Counter */}
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="flex items-center gap-1.5" role="tablist" aria-label="Review pagination">
+                  {testimonials.map((_, dotIdx) => (
+                    <button
+                      key={dotIdx}
+                      type="button"
+                      role="tab"
+                      aria-selected={testimonialIndex === dotIdx}
+                      onClick={() => setTestimonialIndex(dotIdx)}
+                      className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                        testimonialIndex === dotIdx
+                          ? "bg-[#d4af37] w-6"
+                          : "bg-[#213b2c] w-2 hover:bg-[#52b788]"
+                      }`}
+                      aria-label={`Go to review ${dotIdx + 1} of ${testimonials.length}`}
+                    />
+                  ))}
+                </div>
+                <span className="text-[10px] text-[#a2b5ab] font-medium tracking-wider">
+                  {testimonialIndex + 1} of {testimonials.length}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={nextTestimonial}
+                className="w-11 h-11 rounded-full bg-[#13271d] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-95 transition-all cursor-pointer shrink-0 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                aria-label="Next review"
+              >
+                <ChevronRight className="w-5 h-5 stroke-[2.5]" />
+              </button>
+            </div>
           </div>
 
-          {/* Dots Indicator below Testimonials matching Screenshot */}
-          <div className="flex items-center justify-center gap-2 pt-2">
-            {testimonials.map((_, dotIdx) => (
+          {/* ================================================================
+              DESKTOP CAROUSEL (md: and above): 3 CARDS SIDE BY SIDE
+          ================================================================ */}
+          <div className="hidden md:block space-y-6">
+            <div className="relative flex items-center justify-between gap-4 lg:gap-6">
+              {/* Left Chevron Button */}
               <button
-                key={dotIdx}
-                onClick={() => setTestimonialIndex(dotIdx)}
-                className={`h-2 rounded-full transition-all cursor-pointer ${
-                  testimonialIndex === dotIdx
-                    ? "bg-[#eab308] w-5"
-                    : "bg-[#213b2c] w-2 hover:bg-[#52b788]"
-                }`}
-                aria-label={`Go to slide ${dotIdx + 1}`}
-              />
-            ))}
+                type="button"
+                onClick={prevTestimonial}
+                className="w-11 h-11 rounded-full bg-[#13271d] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-95 transition-all cursor-pointer shrink-0 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                aria-label="Previous testimonial"
+              >
+                <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
+              </button>
+
+              {/* 3 Testimonials Side by Side */}
+              <div className="grid grid-cols-3 gap-6 w-full">
+                {visibleTestimonials.map((item, i) => (
+                  <div
+                    key={`${testimonialIndex}-${i}`}
+                    className="animate-in fade-in duration-300 h-full"
+                  >
+                    {renderTestimonialCard(item, `${testimonialIndex}-${i}`)}
+                  </div>
+                ))}
+              </div>
+
+              {/* Right Chevron Button */}
+              <button
+                type="button"
+                onClick={nextTestimonial}
+                className="w-11 h-11 rounded-full bg-[#13271d] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-95 transition-all cursor-pointer shrink-0 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                aria-label="Next testimonial"
+              >
+                <ChevronRight className="w-5 h-5 stroke-[2.5]" />
+              </button>
+            </div>
+
+            {/* Desktop Dots Indicator */}
+            <div className="flex items-center justify-center gap-2 pt-2">
+              {testimonials.map((_, dotIdx) => (
+                <button
+                  key={dotIdx}
+                  type="button"
+                  onClick={() => setTestimonialIndex(dotIdx)}
+                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                    testimonialIndex === dotIdx
+                      ? "bg-[#d4af37] w-6"
+                      : "bg-[#213b2c] w-2 hover:bg-[#52b788]"
+                  }`}
+                  aria-label={`Go to slide ${dotIdx + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
