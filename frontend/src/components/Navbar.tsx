@@ -29,10 +29,30 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close mobile menu and dropdowns on route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setCurrencyOpen(false);
+  }, [pathname]);
+
+  // Keyboard accessibility: close open menus on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMobileMenuOpen(false);
+        setCurrencyOpen(false);
+      }
+    };
+    if (mobileMenuOpen || currencyOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [mobileMenuOpen, currencyOpen]);
+
   const navLinks = [
     { name: "HOME", href: "/" },
     { name: "PRODUCTS", href: "/products" },
-    { name: "ABOUT PRODUCT", href: "/#favorites" },
+    { name: "ABOUT PRODUCT", href: "/about-product" },
     { name: "ABOUT US", href: "/about" },
     { name: "BLOG", href: "/blog" },
   ];
@@ -172,9 +192,12 @@ export default function Navbar() {
 
             {/* Mobile Menu Trigger */}
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-1.5 text-[#14231b]"
-              aria-label="Toggle mobile menu"
+              className="md:hidden p-2 text-[#14231b] hover:text-[#2d6a4f] rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+              aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-nav-menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -184,7 +207,10 @@ export default function Navbar() {
         {/* Mobile Drawer */}
         {mobileMenuOpen && (
           <div
-            className={`pointer-events-auto md:hidden p-4 bg-[#FAF8F5] border border-[#14231b]/20 shadow-2xl space-y-3 nav-transition ${
+            id="mobile-nav-menu"
+            role="region"
+            aria-label="Mobile Navigation Menu"
+            className={`pointer-events-auto md:hidden p-4 bg-[#FAF8F5] border border-[#14231b]/20 shadow-2xl space-y-3 nav-transition animate-in fade-in duration-150 ${
               scrolled ? "max-w-6xl mx-auto mt-2 rounded-3xl" : "w-full border-t border-[#14231b]/10"
             }`}
           >
@@ -193,13 +219,17 @@ export default function Navbar() {
                 key={link.name}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 text-xs font-bold tracking-wider text-[#14231b] hover:bg-[#DFDAD0] rounded-xl"
+                className="block px-3.5 py-2.5 text-xs font-bold tracking-wider text-[#14231b] hover:bg-[#DFDAD0] rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
               >
                 {link.name}
               </Link>
             ))}
             <div className="pt-2 border-t border-[#14231b]/15 flex items-center justify-between text-xs font-bold text-[#14231b]">
-              <Link href={user ? "/account" : "/login"} onClick={() => setMobileMenuOpen(false)}>
+              <Link
+                href={user ? "/account" : "/login"}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3.5 py-2 rounded-lg hover:bg-[#DFDAD0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+              >
                 {user ? `Account (${profile?.role || "User"})` : "Sign In / Register"}
               </Link>
             </div>

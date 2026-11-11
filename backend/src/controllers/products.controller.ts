@@ -92,6 +92,65 @@ export function calculateProductHealth(product: any): {
 }
 
 /**
+ * Validates and sanitizes the craftsmanship details payload
+ */
+export function sanitizeCraftsmanshipDetails(input: any): Record<string, any> {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return {};
+  }
+
+  const result: Record<string, any> = {};
+
+  // 1. Story (string max 5000)
+  if (typeof input.story === "string") {
+    result.story = input.story.trim().slice(0, 5000);
+  }
+
+  // 2. Materials (string max 5000)
+  if (typeof input.materials === "string") {
+    result.materials = input.materials.trim().slice(0, 5000);
+  }
+
+  // 3. Components (array max 12 items, string fields only)
+  if (Array.isArray(input.components)) {
+    result.components = input.components
+      .slice(0, 12)
+      .filter((item: any) => item && typeof item === "object" && !Array.isArray(item))
+      .map((item: any) => {
+        const row: Record<string, string> = {
+          name: typeof item.name === "string" ? item.name.trim().slice(0, 200) : "",
+          description: typeof item.description === "string" ? item.description.trim().slice(0, 1000) : "",
+        };
+        if (typeof item.image === "string" && item.image.trim()) {
+          row.image = item.image.trim().slice(0, 500);
+        }
+        return row;
+      })
+      .filter((row: any) => row.name.length > 0 || row.description.length > 0);
+  }
+
+  // 4. Highlights (array max 12 items, string fields only)
+  if (Array.isArray(input.highlights)) {
+    result.highlights = input.highlights
+      .slice(0, 12)
+      .filter((item: any) => item && typeof item === "object" && !Array.isArray(item))
+      .map((item: any) => {
+        const row: Record<string, string> = {
+          title: typeof item.title === "string" ? item.title.trim().slice(0, 200) : "",
+          text: typeof item.text === "string" ? item.text.trim().slice(0, 1000) : "",
+        };
+        if (typeof item.image === "string" && item.image.trim()) {
+          row.image = item.image.trim().slice(0, 500);
+        }
+        return row;
+      })
+      .filter((row: any) => row.title.length > 0 || row.text.length > 0);
+  }
+
+  return result;
+}
+
+/**
  * GET /api/products
  * Full querying with search, filtering, sorting, pagination, and health scoring
  */
@@ -203,6 +262,7 @@ export const getProducts = async (req: Request, res: Response) => {
         category: p.category,
         shortDescription: p.short_description,
         description: p.description,
+        details: p.details || {},
         price: parseFloat(p.price) || 0,
         currency: p.currency || "USD",
         stock: p.stock ?? 0,
@@ -310,6 +370,7 @@ export const getProductBySlugOrId = async (req: Request, res: Response) => {
       category: data.category,
       shortDescription: data.short_description,
       description: data.description,
+      details: data.details || {},
       price: parseFloat(data.price) || 0,
       currency: data.currency || "USD",
       stock: data.stock ?? 0,
@@ -353,6 +414,7 @@ export const createProduct = async (req: Request, res: Response) => {
       stock = 0,
       shortDescription,
       description,
+      details,
       featured = false,
       status = "active",
       badge,
@@ -413,6 +475,7 @@ export const createProduct = async (req: Request, res: Response) => {
         stock: stockNum,
         short_description: shortDescription?.trim() || null,
         description: description?.trim() || null,
+        details: sanitizeCraftsmanshipDetails(details),
         featured: Boolean(featured),
         status: status || "active",
         badge: badge?.trim() || null,
@@ -463,6 +526,7 @@ export const updateProduct = async (req: Request, res: Response) => {
       stock,
       shortDescription,
       description,
+      details,
       featured,
       status,
       badge,
@@ -486,6 +550,7 @@ export const updateProduct = async (req: Request, res: Response) => {
     if (stock !== undefined) updates.stock = parseInt(stock, 10) || 0;
     if (shortDescription !== undefined) updates.short_description = shortDescription ? shortDescription.trim() : null;
     if (description !== undefined) updates.description = description ? description.trim() : null;
+    if (details !== undefined) updates.details = sanitizeCraftsmanshipDetails(details);
     if (featured !== undefined) updates.featured = Boolean(featured);
     if (status !== undefined) updates.status = status;
     if (badge !== undefined) updates.badge = badge ? badge.trim() : null;

@@ -1,4 +1,4 @@
-import { pgTable, text, uuid, numeric, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid, numeric, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // 1. Profiles (matches public.profiles)
@@ -31,6 +31,7 @@ export const products = pgTable("products", {
   status: text("status").notNull().default("active"), // 'draft', 'active', 'inactive', 'out_of_stock', 'archived'
   badge: text("badge"),
   detailsLink: text("details_link"),
+  details: jsonb("details").default({}),
   audioUrl: text("audio_url"),
   audioEnabled: boolean("audio_enabled").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),

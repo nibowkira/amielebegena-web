@@ -7,6 +7,25 @@ export interface ProductImage {
   sortOrder?: number;
 }
 
+export interface ProductComponentItem {
+  name: string;
+  description: string;
+  image?: string;
+}
+
+export interface ProductHighlightItem {
+  title: string;
+  text: string;
+  image?: string;
+}
+
+export interface ProductCraftsmanshipDetails {
+  story?: string;
+  materials?: string;
+  components?: ProductComponentItem[];
+  highlights?: ProductHighlightItem[];
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -14,6 +33,7 @@ export interface Product {
   category: "strings" | "percussion" | "wind" | "accessories" | "bags" | "books" | string;
   shortDescription?: string;
   description?: string;
+  details?: ProductCraftsmanshipDetails;
   price: number | string;
   currency: string;
   stock: number;

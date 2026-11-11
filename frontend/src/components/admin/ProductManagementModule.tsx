@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Product, ProductImage } from "../../lib/types";
+import {
+  Product,
+  ProductImage,
+  ProductComponentItem,
+  ProductHighlightItem,
+  ProductCraftsmanshipDetails,
+} from "../../lib/types";
 import {
   fetchAdminProducts,
   checkSlugAvailability,
@@ -32,6 +38,8 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Sparkles,
   Layers,
   ArrowUpDown,
@@ -108,6 +116,70 @@ export default function ProductManagementModule() {
   const [newImageUrl, setNewImageUrl] = useState<string>("");
   const [formSaving, setFormSaving] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Editor Modal Tab ("general" | "craftsmanship" | "media" | "seo")
+  const [editorTab, setEditorTab] = useState<"general" | "craftsmanship" | "media" | "seo">("general");
+
+  // Craftsmanship & About Product Specific State
+  const [formCraftStory, setFormCraftStory] = useState<string>("");
+  const [formCraftMaterials, setFormCraftMaterials] = useState<string>("");
+  const [formCraftComponents, setFormCraftComponents] = useState<ProductComponentItem[]>([]);
+  const [formCraftHighlights, setFormCraftHighlights] = useState<ProductHighlightItem[]>([]);
+
+  // Craftsmanship Row Handlers (Immutable updates)
+  const handleAddComponent = () => {
+    if (formCraftComponents.length >= 12) return;
+    setFormCraftComponents((prev) => [...prev, { name: "", description: "", image: "" }]);
+  };
+
+  const handleRemoveComponent = (index: number) => {
+    setFormCraftComponents((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMoveComponent = (index: number, direction: "up" | "down") => {
+    setFormCraftComponents((prev) => {
+      const target = direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= prev.length) return prev;
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[target];
+      copy[target] = temp;
+      return copy;
+    });
+  };
+
+  const handleUpdateComponent = (index: number, field: keyof ProductComponentItem, value: string) => {
+    setFormCraftComponents((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  };
+
+  const handleAddHighlight = () => {
+    if (formCraftHighlights.length >= 12) return;
+    setFormCraftHighlights((prev) => [...prev, { title: "", text: "", image: "" }]);
+  };
+
+  const handleRemoveHighlight = (index: number) => {
+    setFormCraftHighlights((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleMoveHighlight = (index: number, direction: "up" | "down") => {
+    setFormCraftHighlights((prev) => {
+      const target = direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= prev.length) return prev;
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[target];
+      copy[target] = temp;
+      return copy;
+    });
+  };
+
+  const handleUpdateHighlight = (index: number, field: keyof ProductHighlightItem, value: string) => {
+    setFormCraftHighlights((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  };
 
   // Load products
   const loadProducts = async () => {
@@ -262,6 +334,11 @@ export default function ProductManagementModule() {
     setFormAudioEnabled(true);
     setFormMetaTitle("");
     setFormMetaDesc("");
+    setEditorTab("general");
+    setFormCraftStory("");
+    setFormCraftMaterials("");
+    setFormCraftComponents([]);
+    setFormCraftHighlights([]);
     setFormImages([
       {
         storagePath: "/image/photo_2025-10-01_07-26-53.jpg",
@@ -294,6 +371,15 @@ export default function ProductManagementModule() {
     setFormAudioEnabled(Boolean(p.audioEnabled));
     setFormMetaTitle(p.metaTitle || "");
     setFormMetaDesc(p.metaDescription || "");
+    setEditorTab("general");
+    setFormCraftStory(p.details?.story || "");
+    setFormCraftMaterials(p.details?.materials || "");
+    setFormCraftComponents(
+      Array.isArray(p.details?.components) ? p.details.components.map((c) => ({ ...c })) : []
+    );
+    setFormCraftHighlights(
+      Array.isArray(p.details?.highlights) ? p.details.highlights.map((h) => ({ ...h })) : []
+    );
     setFormImages(
       p.images && p.images.length > 0
         ? p.images.map((img) => ({
@@ -402,6 +488,24 @@ export default function ProductManagementModule() {
         stock: stockNum,
         shortDescription: formShortDesc.trim() || undefined,
         description: formDesc.trim() || undefined,
+        details: {
+          story: formCraftStory.trim() || undefined,
+          materials: formCraftMaterials.trim() || undefined,
+          components: formCraftComponents
+            .filter((c) => c.name.trim() || c.description.trim())
+            .map((c) => ({
+              name: c.name.trim(),
+              description: c.description.trim(),
+              image: c.image?.trim() || undefined,
+            })),
+          highlights: formCraftHighlights
+            .filter((h) => h.title.trim() || h.text.trim())
+            .map((h) => ({
+              title: h.title.trim(),
+              text: h.text.trim(),
+              image: h.image?.trim() || undefined,
+            })),
+        },
         status: formStatus,
         featured: formFeatured,
         badge: formBadge.trim() || undefined,
@@ -1009,6 +1113,61 @@ export default function ProductManagementModule() {
               </div>
             </div>
 
+            {/* Modal Navigation Tabs */}
+            <div className="flex items-center gap-1 px-5 border-b border-[#E7E3D8] bg-[#FAF8F5] overflow-x-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => setEditorTab("general")}
+                className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
+                  editorTab === "general"
+                    ? "border-[#d4af37] text-[#14231b] font-extrabold"
+                    : "border-transparent text-[#737874] hover:text-[#14231b]"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>General</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorTab("craftsmanship")}
+                className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
+                  editorTab === "craftsmanship"
+                    ? "border-[#d4af37] text-[#14231b] font-extrabold"
+                    : "border-transparent text-[#737874] hover:text-[#14231b]"
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
+                <span>Craftsmanship &amp; Story</span>
+                {(formCraftStory || formCraftMaterials || formCraftComponents.length > 0 || formCraftHighlights.length > 0) && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorTab("media")}
+                className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
+                  editorTab === "media"
+                    ? "border-[#d4af37] text-[#14231b] font-extrabold"
+                    : "border-transparent text-[#737874] hover:text-[#14231b]"
+                }`}
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Media &amp; Audio ({formImages.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorTab("seo")}
+                className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
+                  editorTab === "seo"
+                    ? "border-[#d4af37] text-[#14231b] font-extrabold"
+                    : "border-transparent text-[#737874] hover:text-[#14231b]"
+                }`}
+              >
+                <Info className="w-3.5 h-3.5" />
+                <span>SEO</span>
+              </button>
+            </div>
+
             {/* Drawer Body / Scrollable Form */}
             <form onSubmit={handleSaveProduct} id="productForm" className="flex-1 overflow-y-auto p-6 space-y-6">
               {formError && (
@@ -1038,391 +1197,697 @@ export default function ProductManagementModule() {
                 </div>
               )}
 
-              {/* SECTION 1: BASIC INFORMATION */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
-                  1. Basic Information
-                </h4>
+              {/* =========================================================
+                  TAB 1: GENERAL
+              ========================================================= */}
+              {editorTab === "general" && (
+                <div className="space-y-6">
+                  {/* SECTION 1: BASIC INFORMATION */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
+                      1. Basic Information
+                    </h4>
 
-                {/* Name */}
-                <div>
-                  <label className="block text-xs font-bold text-[#14231b] mb-1">
-                    Instrument Name (English &amp; Amharic) *
-                  </label>
-                  <input
-                    type="text"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    placeholder="e.g. በገና (Begena) — Ten-String Box Lyre"
-                    className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    required
-                  />
-                </div>
-
-                {/* Slug with live availability */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-bold text-[#14231b]">
-                      Slug / URL Identifier *
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleGenerateSlug}
-                      className="text-[11px] font-bold text-[#d4af37] hover:underline"
-                    >
-                      Generate from Name
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formSlug}
-                      onChange={(e) => {
-                        setFormSlug(e.target.value);
-                        checkSlug(e.target.value);
-                      }}
-                      placeholder="e.g. begena"
-                      className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37] font-mono"
-                      required
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs">
-                      {slugChecking ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-gray-400" />
-                      ) : slugAvailable === true ? (
-                        <Check className="w-4 h-4 text-emerald-600" />
-                      ) : slugAvailable === false ? (
-                        <X className="w-4 h-4 text-red-600" />
-                      ) : null}
+                    {/* Name */}
+                    <div>
+                      <label className="block text-xs font-bold text-[#14231b] mb-1">
+                        Instrument Name (English &amp; Amharic) *
+                      </label>
+                      <input
+                        type="text"
+                        value={formName}
+                        onChange={(e) => setFormName(e.target.value)}
+                        placeholder="e.g. በገና (Begena) — Ten-String Box Lyre"
+                        className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                        required
+                      />
                     </div>
-                  </div>
-                </div>
 
-                {/* Category & Badge */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-[#14231b] mb-1">
-                      Category *
-                    </label>
-                    <select
-                      value={formCategory}
-                      onChange={(e) => setFormCategory(e.target.value)}
-                      className="w-full px-3 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-semibold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    >
-                      <option value="strings">Strings / በገናና ክራር</option>
-                      <option value="percussion">Percussion / ከበሮ</option>
-                      <option value="wind">Wind / ዋሽንት</option>
-                      <option value="accessories">Accessories / መለዋወጫዎች</option>
-                      <option value="bags">Bags / ቦርሳዎች</option>
-                      <option value="books">Books / መጻሕፍት</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#14231b] mb-1">
-                      Promotional Badge
-                    </label>
-                    <input
-                      type="text"
-                      value={formBadge}
-                      onChange={(e) => setFormBadge(e.target.value)}
-                      placeholder="e.g. Masterpiece, Best Seller"
-                      className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    />
-                  </div>
-                </div>
-
-                {/* Featured Checkbox */}
-                <div className="flex items-center gap-2 pt-1">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    checked={formFeatured}
-                    onChange={(e) => setFormFeatured(e.target.checked)}
-                    className="w-4 h-4 rounded text-[#d4af37] focus:ring-[#d4af37] cursor-pointer"
-                  />
-                  <label htmlFor="featured" className="text-xs font-bold text-[#14231b] cursor-pointer">
-                    Feature on Homepage Hero &amp; Favorites Slider
-                  </label>
-                </div>
-              </div>
-
-              {/* SECTION 2: PRICING & INVENTORY */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
-                  2. Pricing &amp; Inventory
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-[#14231b] mb-1">
-                      Base Price *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formPrice}
-                      onChange={(e) => setFormPrice(e.target.value)}
-                      className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#14231b] mb-1">
-                      Currency *
-                    </label>
-                    <select
-                      value={formCurrency}
-                      onChange={(e) => setFormCurrency(e.target.value)}
-                      className="w-full px-3 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    >
-                      <option value="USD">USD ($)</option>
-                      <option value="ETB">ETB (Ethiopian Birr)</option>
-                      <option value="EUR">EUR (€)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#14231b] mb-1">
-                      Stock Count *
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={formStock}
-                      onChange={(e) => setFormStock(e.target.value)}
-                      className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-[#14231b] mb-1">
-                      Status *
-                    </label>
-                    <select
-                      value={formStatus}
-                      onChange={(e) => setFormStatus(e.target.value)}
-                      className="w-full px-3 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    >
-                      <option value="active">Active (Visible)</option>
-                      <option value="draft">Draft (Admin Only)</option>
-                      <option value="out_of_stock">Out of Stock</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#14231b] mb-1">
-                      Catalog Sort Order
-                    </label>
-                    <input
-                      type="number"
-                      value={formSortOrder}
-                      onChange={(e) => setFormSortOrder(e.target.value)}
-                      className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-semibold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION 3: STORYTELLING & SPECIFICATIONS */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
-                  3. Descriptions &amp; Cultural Story
-                </h4>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#14231b] mb-1">
-                    Short Description (Product Card Summary)
-                  </label>
-                  <input
-                    type="text"
-                    value={formShortDesc}
-                    onChange={(e) => setFormShortDesc(e.target.value)}
-                    placeholder="e.g. Sacred Ten-String Lyre crafted from highland Wanza wood."
-                    className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#14231b] mb-1">
-                    Full Description, Materials &amp; Artisan Notes
-                  </label>
-                  <textarea
-                    rows={4}
-                    value={formDesc}
-                    onChange={(e) => setFormDesc(e.target.value)}
-                    placeholder="Describe the artisan crafting process, wood seasoning, parchment tuning, modal scales..."
-                    className="w-full p-3.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                  />
-                </div>
-              </div>
-
-              {/* SECTION 4: MEDIA & AUDIO AUDITION */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1 flex items-center justify-between">
-                  <span>4. Photography &amp; Audio Audition</span>
-                  <span className="text-[10px] text-[#d4af37] lowercase">
-                    {formImages.length} images added
-                  </span>
-                </h4>
-
-                {/* Add Image URL */}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    placeholder="Enter image storage path (e.g. /image/photo_2025-10-01_07-26-53.jpg)"
-                    className="flex-1 px-3.5 py-2 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddImage}
-                    className="px-4 py-2 rounded-xl bg-[#14231b] text-white text-xs font-bold hover:bg-black transition-colors"
-                  >
-                    Add Photo
-                  </button>
-                </div>
-
-                {/* Gallery List */}
-                {formImages.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                    {formImages.map((img, idx) => (
-                      <div
-                        key={idx}
-                        className={`relative aspect-square rounded-xl bg-[#FAF8F5] border-2 overflow-hidden flex items-center justify-center group ${
-                          img.isCover ? "border-[#d4af37]" : "border-[#E7E3D8]"
-                        }`}
-                      >
-                        <img src={img.storagePath} alt={img.altText} className="w-full h-full object-cover" />
-
-                        {img.isCover && (
-                          <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-[#d4af37] text-[#14231b] text-[9px] font-black uppercase shadow">
-                            Cover
-                          </span>
-                        )}
-
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 text-white">
-                          {!img.isCover && (
-                            <button
-                              type="button"
-                              onClick={() => handleSetCoverImage(idx)}
-                              className="px-2 py-0.5 rounded bg-[#d4af37] text-[#14231b] text-[10px] font-bold"
-                            >
-                              Set Cover
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(idx)}
-                            className="px-2 py-0.5 rounded bg-red-600 text-white text-[10px] font-bold"
-                          >
-                            Remove
-                          </button>
+                    {/* Slug with live availability */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-bold text-[#14231b]">
+                          Slug / URL Identifier *
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleGenerateSlug}
+                          className="text-[11px] font-bold text-[#d4af37] hover:underline cursor-pointer"
+                        >
+                          Generate from Name
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={formSlug}
+                          onChange={(e) => {
+                            setFormSlug(e.target.value);
+                            checkSlug(e.target.value);
+                          }}
+                          placeholder="e.g. begena"
+                          className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37] font-mono"
+                          required
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs">
+                          {slugChecking ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin text-gray-400" />
+                          ) : slugAvailable === true ? (
+                            <Check className="w-4 h-4 text-emerald-600" />
+                          ) : slugAvailable === false ? (
+                            <X className="w-4 h-4 text-red-600" />
+                          ) : null}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Audio Audition Section */}
-                <div className="p-4 bg-[#FAF8F5] rounded-xl border border-[#E7E3D8] space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Music className="w-4 h-4 text-[#d4af37]" />
-                      <span className="text-xs font-bold text-[#14231b]">
-                        Interactive Sound Audition Sample
-                      </span>
                     </div>
 
-                    <label className="flex items-center gap-1.5 cursor-pointer">
+                    {/* Category & Badge */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#14231b] mb-1">
+                          Category *
+                        </label>
+                        <select
+                          value={formCategory}
+                          onChange={(e) => setFormCategory(e.target.value)}
+                          className="w-full px-3 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-semibold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                        >
+                          <option value="strings">Strings / በገናና ክራር</option>
+                          <option value="percussion">Percussion / ከበሮ</option>
+                          <option value="wind">Wind / ዋሽንት</option>
+                          <option value="accessories">Accessories / መለዋወጫዎች</option>
+                          <option value="bags">Bags / ቦርሳዎች</option>
+                          <option value="books">Books / መጻሕፍት</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#14231b] mb-1">
+                          Promotional Badge
+                        </label>
+                        <input
+                          type="text"
+                          value={formBadge}
+                          onChange={(e) => setFormBadge(e.target.value)}
+                          placeholder="e.g. Masterpiece, Best Seller"
+                          className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Featured Checkbox */}
+                    <div className="flex items-center gap-2 pt-1">
                       <input
                         type="checkbox"
-                        checked={formAudioEnabled}
-                        onChange={(e) => setFormAudioEnabled(e.target.checked)}
-                        className="w-4 h-4 rounded text-[#d4af37] focus:ring-[#d4af37]"
+                        id="featured"
+                        checked={formFeatured}
+                        onChange={(e) => setFormFeatured(e.target.checked)}
+                        className="w-4 h-4 rounded text-[#d4af37] focus:ring-[#d4af37] cursor-pointer"
                       />
-                      <span className="text-[11px] font-bold text-[#14231b]">Enable</span>
-                    </label>
+                      <label htmlFor="featured" className="text-xs font-bold text-[#14231b] cursor-pointer">
+                        Feature on Homepage Hero &amp; Favorites Slider
+                      </label>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={formAudioUrl}
-                      onChange={(e) => setFormAudioUrl(e.target.value)}
-                      placeholder="/audio/begena.mp3"
-                      className="flex-1 px-3 py-2 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] font-mono focus:outline-none focus:border-[#d4af37]"
-                    />
+                  {/* SECTION 2: PRICING & INVENTORY */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
+                      2. Pricing &amp; Inventory
+                    </h4>
 
-                    {formAudioUrl && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#14231b] mb-1">
+                          Base Price *
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={formPrice}
+                          onChange={(e) => setFormPrice(e.target.value)}
+                          className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#14231b] mb-1">
+                          Currency *
+                        </label>
+                        <select
+                          value={formCurrency}
+                          onChange={(e) => setFormCurrency(e.target.value)}
+                          className="w-full px-3 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                        >
+                          <option value="USD">USD ($)</option>
+                          <option value="ETB">ETB (Ethiopian Birr)</option>
+                          <option value="EUR">EUR (€)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#14231b] mb-1">
+                          Stock Count *
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={formStock}
+                          onChange={(e) => setFormStock(e.target.value)}
+                          className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-[#14231b] mb-1">
+                          Status *
+                        </label>
+                        <select
+                          value={formStatus}
+                          onChange={(e) => setFormStatus(e.target.value)}
+                          className="w-full px-3 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                        >
+                          <option value="active">Active (Visible)</option>
+                          <option value="draft">Draft (Admin Only)</option>
+                          <option value="out_of_stock">Out of Stock</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#14231b] mb-1">
+                          Catalog Sort Order
+                        </label>
+                        <input
+                          type="number"
+                          value={formSortOrder}
+                          onChange={(e) => setFormSortOrder(e.target.value)}
+                          className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-semibold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 3: STORYTELLING & SPECIFICATIONS */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
+                      3. Descriptions &amp; Cultural Story
+                    </h4>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#14231b] mb-1">
+                        Short Description (Product Card Summary)
+                      </label>
+                      <input
+                        type="text"
+                        value={formShortDesc}
+                        onChange={(e) => setFormShortDesc(e.target.value)}
+                        placeholder="e.g. Sacred Ten-String Lyre crafted from highland Wanza wood."
+                        className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#14231b] mb-1">
+                        Full Description, Materials &amp; Artisan Notes
+                      </label>
+                      <textarea
+                        rows={4}
+                        value={formDesc}
+                        onChange={(e) => setFormDesc(e.target.value)}
+                        placeholder="Describe the artisan crafting process, wood seasoning, parchment tuning, modal scales..."
+                        className="w-full p-3.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* =========================================================
+                  TAB 2: CRAFTSMANSHIP & STORY
+              ========================================================= */}
+              {editorTab === "craftsmanship" && (
+                <div className="space-y-6">
+                  {/* Story & Heritage */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-[#14231b]">
+                        Product Heritage &amp; Story
+                      </label>
+                      <span className="text-[10px] text-gray-400">
+                        {formCraftStory.length} / 5000
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#737874]">
+                      Editorial storytelling for the dedicated &ldquo;About Product&rdquo; showcase page. Describe the history, sacred role, and cultural significance.
+                    </p>
+                    <textarea
+                      rows={5}
+                      maxLength={5000}
+                      value={formCraftStory}
+                      onChange={(e) => setFormCraftStory(e.target.value)}
+                      placeholder="e.g. For centuries, the Begena has echoed through Ethiopian highland monasteries..."
+                      className="w-full p-3.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  {/* Materials & Construction */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-[#14231b]">
+                        Materials &amp; Construction
+                      </label>
+                      <span className="text-[10px] text-gray-400">
+                        {formCraftMaterials.length} / 5000
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#737874]">
+                      Describe woods (Wanza, Tid), parchment (ox hide/goat skin), gut strings, beeswax, and traditional artisan methods.
+                    </p>
+                    <textarea
+                      rows={4}
+                      maxLength={5000}
+                      value={formCraftMaterials}
+                      onChange={(e) => setFormCraftMaterials(e.target.value)}
+                      placeholder="e.g. Carved from seasoned highland Cordia africana (Wanza) wood, covered with taut ox-hide parchment..."
+                      className="w-full p-3.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  {/* Key Components Repeatable Rows */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between border-b border-[#E7E3D8] pb-2">
+                      <div>
+                        <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider">
+                          Key Components ({formCraftComponents.length}/12)
+                        </h4>
+                        <p className="text-[11px] text-[#737874]">
+                          Anatomical breakdown of the instrument (Soundbox, Yoke, Tuning Pegs, Bridge, Strings).
+                        </p>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => {
-                          if (!modalAudioRef.current) return;
-                          if (modalAudioPlaying) {
-                            modalAudioRef.current.pause();
-                            setModalAudioPlaying(false);
-                          } else {
-                            modalAudioRef.current.play().then(() => setModalAudioPlaying(true));
-                          }
-                        }}
-                        className="px-3 py-2 rounded-xl bg-[#14231b] text-[#25D366] text-xs font-bold flex items-center gap-1 hover:bg-black"
+                        onClick={handleAddComponent}
+                        disabled={formCraftComponents.length >= 12}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FAF8F5] border border-[#d4af37] text-[#14231b] hover:bg-[#d4af37] text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                       >
-                        {modalAudioPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                        <span>{modalAudioPlaying ? "Stop" : "Test"}</span>
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Component</span>
                       </button>
+                    </div>
+
+                    {formCraftComponents.length === 0 ? (
+                      <div className="p-6 text-center rounded-xl border border-dashed border-[#E7E3D8] bg-[#FAF8F5]/50">
+                        <p className="text-xs text-[#737874]">No key components added yet.</p>
+                        <button
+                          type="button"
+                          onClick={handleAddComponent}
+                          className="mt-2 text-xs font-bold text-[#d4af37] hover:underline cursor-pointer"
+                        >
+                          + Add First Component
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {formCraftComponents.map((comp, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3.5 rounded-xl border border-[#E7E3D8] bg-[#FAF8F5]/60 space-y-3 relative group"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-extrabold tracking-wider uppercase text-[#d4af37] bg-white px-2 py-0.5 rounded border border-[#E7E3D8]">
+                                Component #{idx + 1}
+                              </span>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveComponent(idx, "up")}
+                                  disabled={idx === 0}
+                                  title="Move Up"
+                                  className="w-6 h-6 rounded bg-white border border-[#E7E3D8] flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                  <ChevronUp className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveComponent(idx, "down")}
+                                  disabled={idx === formCraftComponents.length - 1}
+                                  title="Move Down"
+                                  className="w-6 h-6 rounded bg-white border border-[#E7E3D8] flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                  <ChevronDown className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveComponent(idx)}
+                                  title="Remove Component"
+                                  className="w-6 h-6 rounded bg-white border border-red-200 flex items-center justify-center text-red-500 hover:bg-red-50 cursor-pointer ml-1"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[11px] font-bold text-[#14231b] mb-1">
+                                  Component Name *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={comp.name}
+                                  onChange={(e) => handleUpdateComponent(idx, "name", e.target.value)}
+                                  placeholder="e.g. Derk (Resonating Box)"
+                                  className="w-full px-3 py-2 bg-white border border-[#E7E3D8] rounded-lg text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-bold text-[#14231b] mb-1">
+                                  Optional Image URL / Path
+                                </label>
+                                <input
+                                  type="text"
+                                  value={comp.image || ""}
+                                  onChange={(e) => handleUpdateComponent(idx, "image", e.target.value)}
+                                  placeholder="/image/derk-box.jpg"
+                                  className="w-full px-3 py-2 bg-white border border-[#E7E3D8] rounded-lg text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-bold text-[#14231b] mb-1">
+                                Description
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={comp.description}
+                                onChange={(e) => handleUpdateComponent(idx, "description", e.target.value)}
+                                placeholder="Details on this specific component's craftsmanship and acoustic role..."
+                                className="w-full p-2.5 bg-white border border-[#E7E3D8] rounded-lg text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
 
-                  {formAudioUrl && (
-                    <audio
-                      ref={modalAudioRef}
-                      src={formAudioUrl}
-                      onEnded={() => setModalAudioPlaying(false)}
-                      className="hidden"
+                  {/* Distinctive Highlights Repeatable Rows */}
+                  <div className="space-y-3 pt-4">
+                    <div className="flex items-center justify-between border-b border-[#E7E3D8] pb-2">
+                      <div>
+                        <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider">
+                          Distinctive Highlights ({formCraftHighlights.length}/12)
+                        </h4>
+                        <p className="text-[11px] text-[#737874]">
+                          Editorial feature callouts (alternating images and text on the About Product page).
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddHighlight}
+                        disabled={formCraftHighlights.length >= 12}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FAF8F5] border border-[#d4af37] text-[#14231b] hover:bg-[#d4af37] text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Highlight</span>
+                      </button>
+                    </div>
+
+                    {formCraftHighlights.length === 0 ? (
+                      <div className="p-6 text-center rounded-xl border border-dashed border-[#E7E3D8] bg-[#FAF8F5]/50">
+                        <p className="text-xs text-[#737874]">No distinctive highlights added yet.</p>
+                        <button
+                          type="button"
+                          onClick={handleAddHighlight}
+                          className="mt-2 text-xs font-bold text-[#d4af37] hover:underline cursor-pointer"
+                        >
+                          + Add First Highlight
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {formCraftHighlights.map((hl, idx) => (
+                          <div
+                            key={idx}
+                            className="p-3.5 rounded-xl border border-[#E7E3D8] bg-[#FAF8F5]/60 space-y-3 relative group"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-extrabold tracking-wider uppercase text-[#d4af37] bg-white px-2 py-0.5 rounded border border-[#E7E3D8]">
+                                Highlight #{idx + 1}
+                              </span>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveHighlight(idx, "up")}
+                                  disabled={idx === 0}
+                                  title="Move Up"
+                                  className="w-6 h-6 rounded bg-white border border-[#E7E3D8] flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                  <ChevronUp className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveHighlight(idx, "down")}
+                                  disabled={idx === formCraftHighlights.length - 1}
+                                  title="Move Down"
+                                  className="w-6 h-6 rounded bg-white border border-[#E7E3D8] flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                                >
+                                  <ChevronDown className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveHighlight(idx)}
+                                  title="Remove Highlight"
+                                  className="w-6 h-6 rounded bg-white border border-red-200 flex items-center justify-center text-red-500 hover:bg-red-50 cursor-pointer ml-1"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[11px] font-bold text-[#14231b] mb-1">
+                                  Highlight Title *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={hl.title}
+                                  onChange={(e) => handleUpdateHighlight(idx, "title", e.target.value)}
+                                  placeholder="e.g. Sacred Buzzing Resonance"
+                                  className="w-full px-3 py-2 bg-white border border-[#E7E3D8] rounded-lg text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[11px] font-bold text-[#14231b] mb-1">
+                                  Optional Image URL / Path
+                                </label>
+                                <input
+                                  type="text"
+                                  value={hl.image || ""}
+                                  onChange={(e) => handleUpdateHighlight(idx, "image", e.target.value)}
+                                  placeholder="/image/buzzing-bridge.jpg"
+                                  className="w-full px-3 py-2 bg-white border border-[#E7E3D8] rounded-lg text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-bold text-[#14231b] mb-1">
+                                Highlight Body Text
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={hl.text}
+                                onChange={(e) => handleUpdateHighlight(idx, "text", e.target.value)}
+                                placeholder="Explain this distinctive characteristic and why it sets the instrument apart..."
+                                className="w-full p-2.5 bg-white border border-[#E7E3D8] rounded-lg text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* =========================================================
+                  TAB 3: MEDIA & AUDIO
+              ========================================================= */}
+              {editorTab === "media" && (
+                <div className="space-y-4">
+                  <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1 flex items-center justify-between">
+                    <span>Photography &amp; Audio Audition</span>
+                    <span className="text-[10px] text-[#d4af37] lowercase">
+                      {formImages.length} images added
+                    </span>
+                  </h4>
+
+                  {/* Add Image URL */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newImageUrl}
+                      onChange={(e) => setNewImageUrl(e.target.value)}
+                      placeholder="Enter image storage path (e.g. /image/photo_2025-10-01_07-26-53.jpg)"
+                      className="flex-1 px-3.5 py-2 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
                     />
+                    <button
+                      type="button"
+                      onClick={handleAddImage}
+                      className="px-4 py-2 rounded-xl bg-[#14231b] text-white text-xs font-bold hover:bg-black transition-colors cursor-pointer"
+                    >
+                      Add Photo
+                    </button>
+                  </div>
+
+                  {/* Gallery List */}
+                  {formImages.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                      {formImages.map((img, idx) => (
+                        <div
+                          key={idx}
+                          className={`relative aspect-square rounded-xl bg-[#FAF8F5] border-2 overflow-hidden flex items-center justify-center group ${
+                            img.isCover ? "border-[#d4af37]" : "border-[#E7E3D8]"
+                          }`}
+                        >
+                          <img src={img.storagePath} alt={img.altText} className="w-full h-full object-cover" />
+
+                          {img.isCover && (
+                            <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-[#d4af37] text-[#14231b] text-[9px] font-black uppercase shadow">
+                              Cover
+                            </span>
+                          )}
+
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 text-white">
+                            {!img.isCover && (
+                              <button
+                                type="button"
+                                onClick={() => handleSetCoverImage(idx)}
+                                className="px-2 py-0.5 rounded bg-[#d4af37] text-[#14231b] text-[10px] font-bold cursor-pointer"
+                              >
+                                Set Cover
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(idx)}
+                              className="px-2 py-0.5 rounded bg-red-600 text-white text-[10px] font-bold cursor-pointer"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                </div>
-              </div>
 
-              {/* SECTION 5: SEO METADATA */}
-              <div className="space-y-4">
-                <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
-                  5. SEO &amp; Search Engine Optimization
-                </h4>
+                  {/* Audio Audition Section */}
+                  <div className="p-4 bg-[#FAF8F5] rounded-xl border border-[#E7E3D8] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Music className="w-4 h-4 text-[#d4af37]" />
+                        <span className="text-xs font-bold text-[#14231b]">
+                          Interactive Sound Audition Sample
+                        </span>
+                      </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-[#14231b] mb-1">
-                    Meta Title
-                  </label>
-                  <input
-                    type="text"
-                    value={formMetaTitle}
-                    onChange={(e) => setFormMetaTitle(e.target.value)}
-                    placeholder="Amiele Begena — Handcrafted Ethiopian Begena Harp"
-                    className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                  />
-                </div>
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formAudioEnabled}
+                          onChange={(e) => setFormAudioEnabled(e.target.checked)}
+                          className="w-4 h-4 rounded text-[#d4af37] focus:ring-[#d4af37]"
+                        />
+                        <span className="text-[11px] font-bold text-[#14231b]">Enable</span>
+                      </label>
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-[#14231b] mb-1">
-                    Meta Description
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={formMetaDesc}
-                    onChange={(e) => setFormMetaDesc(e.target.value)}
-                    placeholder="Discover authentic handcrafted sacred Ethiopian Begena harps..."
-                    className="w-full p-3.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                  />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={formAudioUrl}
+                        onChange={(e) => setFormAudioUrl(e.target.value)}
+                        placeholder="/audio/begena.mp3"
+                        className="flex-1 px-3 py-2 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] font-mono focus:outline-none focus:border-[#d4af37]"
+                      />
+
+                      {formAudioUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!modalAudioRef.current) return;
+                            if (modalAudioPlaying) {
+                              modalAudioRef.current.pause();
+                              setModalAudioPlaying(false);
+                            } else {
+                              modalAudioRef.current.play().then(() => setModalAudioPlaying(true));
+                            }
+                          }}
+                          className="px-3 py-2 rounded-xl bg-[#14231b] text-[#25D366] text-xs font-bold flex items-center gap-1 hover:bg-black cursor-pointer"
+                        >
+                          {modalAudioPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                          <span>{modalAudioPlaying ? "Stop" : "Test"}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {formAudioUrl && (
+                      <audio
+                        ref={modalAudioRef}
+                        src={formAudioUrl}
+                        onEnded={() => setModalAudioPlaying(false)}
+                        className="hidden"
+                      />
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* =========================================================
+                  TAB 4: SEO
+              ========================================================= */}
+              {editorTab === "seo" && (
+                <div className="space-y-4">
+                  <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
+                    SEO &amp; Search Engine Optimization
+                  </h4>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#14231b] mb-1">
+                      Meta Title
+                    </label>
+                    <input
+                      type="text"
+                      value={formMetaTitle}
+                      onChange={(e) => setFormMetaTitle(e.target.value)}
+                      placeholder="Amiele Begena — Handcrafted Ethiopian Begena Harp"
+                      className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#14231b] mb-1">
+                      Meta Description
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={formMetaDesc}
+                      onChange={(e) => setFormMetaDesc(e.target.value)}
+                      placeholder="Discover authentic handcrafted sacred Ethiopian Begena harps..."
+                      className="w-full p-3.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                    />
+                  </div>
+                </div>
+              )}
             </form>
 
             {/* Drawer Footer Actions */}
