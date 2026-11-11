@@ -1,7 +1,8 @@
 import { Product, Order } from "./types";
 import { supabase } from "./supabase";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || "https://amielebegena-web.onrender.com/api";
+const API_BASE_URL = rawApiUrl.replace(/\/+$/, "");
 
 async function getAuthHeader(tokenOverride?: string): Promise<Record<string, string>> {
   if (tokenOverride) {
