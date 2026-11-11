@@ -7,7 +7,7 @@ import { initialProducts } from "../../data/products";
 import { Product } from "../../lib/types";
 import { fetchProducts } from "../../lib/api";
 import { useScrollLock } from "../../lib/useScrollLock";
-import { Heart, Play, Pause, ChevronDown, Check, Volume2, X, Info } from "lucide-react";
+import { Heart, Play, Pause, ChevronDown, Check, Volume2, X, Info, ShoppingBag } from "lucide-react";
 
 interface CuratedProduct {
   id: string;
@@ -382,19 +382,19 @@ export default function ProductsPage() {
         </div>
 
         {/* Title and Sort Bar Row */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-baseline justify-between gap-4 pb-6">
-          <h1 className="text-4xl sm:text-5xl font-black text-[#14231b] tracking-tight">
+        <div className="flex flex-col sm:flex-row items-start sm:items-baseline justify-between gap-3 sm:gap-4 pb-6">
+          <h1 className="text-3xl min-[360px]:text-4xl sm:text-5xl font-black text-[#14231b] tracking-tight">
             Our Products
           </h1>
 
-          {/* Sort Selector matching screenshot */}
-          <div className="flex items-center gap-2 self-end sm:self-auto text-xs text-[#5b615e]">
-            <span className="font-medium text-neutral-600">Sort by:</span>
+          {/* Sort Selector: wraps neatly on narrow screens without being pushed to the edge */}
+          <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2 text-xs text-[#5b615e] w-full sm:w-auto">
+            <span className="font-semibold text-neutral-700">Sort by:</span>
             <div className="relative">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none pl-3 pr-8 py-2 rounded-xl bg-[#EAE5DB] text-xs font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors"
+                className="appearance-none pl-3 pr-8 py-2 rounded-xl bg-[#EAE5DB] text-xs font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors min-h-[38px]"
               >
                 <option value="newest">Newest Arrivals</option>
                 <option value="price-low">Price: Low to High</option>
@@ -417,25 +417,32 @@ export default function ProductsPage() {
               <p className="text-xs text-[#737874] mt-1 mb-3">Filter by Category</p>
             </div>
 
-            {/* Vertical Category Filter List matching screenshot */}
-            <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 no-scrollbar">
-              {collections.map((col) => {
-                const isSelected = activeCategory === col.id;
-                return (
-                  <button
-                    key={col.id}
-                    onClick={() => setActiveCategory(col.id)}
-                    className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap text-left ${
-                      isSelected
-                        ? "bg-[#14231b] text-white shadow-sm"
-                        : "bg-transparent text-[#14231b] hover:bg-[#EAE5DB]/60"
-                    }`}
-                  >
-                    <span className="text-base">{col.icon}</span>
-                    <span className="tracking-wide">{col.label}</span>
-                  </button>
-                );
-              })}
+            {/* Category Filter List with Right-Edge Fade Gradient on Mobile */}
+            <div className="relative w-full">
+              <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 no-scrollbar snap-x snap-mandatory touch-pan-x">
+                {collections.map((col) => {
+                  const isSelected = activeCategory === col.id;
+                  return (
+                    <button
+                      key={col.id}
+                      onClick={() => setActiveCategory(col.id)}
+                      className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap text-left shrink-0 snap-start min-h-[44px] ${
+                        isSelected
+                          ? "bg-[#14231b] text-white shadow-sm"
+                          : "bg-transparent text-[#14231b] hover:bg-[#EAE5DB]/60"
+                      }`}
+                    >
+                      <span className="text-base">{col.icon}</span>
+                      <span className="tracking-wide">{col.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Right-edge fade gradient for mobile horizontal scroll indicator */}
+              <div
+                className="pointer-events-none md:hidden absolute right-0 top-0 bottom-2 w-10 bg-gradient-to-l from-[#FAF8F5] via-[#FAF8F5]/80 to-transparent"
+                aria-hidden="true"
+              />
             </div>
           </aside>
 
@@ -532,30 +539,39 @@ export default function ProductsPage() {
 
                       {/* Dual Action Buttons: ADD TO CART + ORDER VIA WHATSAPP */}
                       <div className="flex items-center gap-2 pt-1">
-                        {/* ADD TO CART Pill */}
+                        {/* ADD TO CART Pill matching user's custom design */}
                         <button
                           onClick={() => handleAddToCart(product)}
-                          className="px-3.5 sm:px-4 py-2.5 rounded-full border border-[#14231b] bg-white hover:bg-[#EDE8DE] text-[#14231b] text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shrink-0 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                          className={`px-4 py-2.5 rounded-full font-bold text-xs sm:text-[13px] tracking-wide transition-all active:scale-95 shrink-0 flex items-center justify-center gap-2 cursor-pointer shadow-sm border ${
+                            isAdded
+                              ? "bg-[#2d6a4f] text-white border-[#52b788]"
+                              : "bg-[#0d1e16] hover:bg-[#07130d] text-white border-white/10"
+                          }`}
                         >
                           {isAdded ? (
                             <>
-                              <Check className="w-3.5 h-3.5 text-[#25D366]" />
-                              <span>ADDED</span>
+                              <Check className="w-4 h-4 text-[#52b788] stroke-[2.5]" />
+                              <span>Added</span>
                             </>
                           ) : (
-                            <span>ADD TO CART</span>
+                            <>
+                              <ShoppingBag className="w-4 h-4 text-[#f5c518] shrink-0 stroke-[2.2]" />
+                              <span>Add to Cart</span>
+                            </>
                           )}
                         </button>
 
-                        {/* ORDER VIA WHATSAPP Pill */}
+                        {/* Upgraded Luxury Emerald ORDER VIA WHATSAPP Pill */}
                         <button
                           onClick={() => handleOrderWhatsApp(product)}
-                          className="flex-1 py-2.5 px-3 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-xs cursor-pointer whitespace-nowrap"
+                          className="flex-1 py-2.5 px-3 rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white text-xs sm:text-[13px] font-bold tracking-wide flex items-center justify-center gap-1.5 sm:gap-2 transition-all active:scale-95 shadow-[0_3px_12px_rgba(37,211,102,0.28)] hover:shadow-[0_5px_18px_rgba(37,211,102,0.38)] cursor-pointer whitespace-nowrap border border-white/20 min-h-[42px]"
                         >
-                          <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
-                            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
-                          </svg>
-                          <span>ORDER VIA WHATSAPP</span>
+                          <span className="w-4.5 h-4.5 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                            <svg className="w-3 h-3 fill-white shrink-0" viewBox="0 0 24 24">
+                              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
+                            </svg>
+                          </span>
+                          <span>Order via WhatsApp</span>
                         </button>
                       </div>
                     </div>
@@ -700,20 +716,23 @@ export default function ProductsPage() {
                   handleAddToCart(detailsModalProduct);
                   setDetailsModalProduct(null);
                 }}
-                className="px-5 py-3 rounded-full border border-[#14231b] bg-white hover:bg-[#EDE8DE] text-[#14231b] text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-xs"
+                className="px-5 py-3 rounded-full bg-[#0d1e16] hover:bg-[#07130d] text-white font-bold text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shadow-sm border border-white/10"
               >
-                Add to Cart
+                <ShoppingBag className="w-4 h-4 text-[#f5c518] shrink-0 stroke-[2.2]" />
+                <span>Add to Cart</span>
               </button>
               <button
                 onClick={() => {
                   handleOrderWhatsApp(detailsModalProduct);
                   setDetailsModalProduct(null);
                 }}
-                className="flex-1 py-3 px-4 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                className="flex-1 py-3 px-5 rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white text-xs sm:text-sm font-bold tracking-wide flex items-center justify-center gap-2 transition-all cursor-pointer shadow-[0_4px_14px_rgba(37,211,102,0.32)] hover:shadow-[0_6px_20px_rgba(37,211,102,0.42)] border border-white/20 active:scale-95 min-h-[46px]"
               >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
-                </svg>
+                <span className="w-5 h-5 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                  <svg className="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24">
+                    <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
+                  </svg>
+                </span>
                 <span>Order via WhatsApp</span>
               </button>
             </div>

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 import { CurrencyProvider } from "../context/CurrencyContext";
@@ -11,6 +11,11 @@ import CartDrawer from "../components/CartDrawer";
 import WhatsAppModal from "../components/WhatsAppModal";
 import WhatsAppFloating from "../components/WhatsAppFloating";
 import ScrollObserver from "../components/ScrollObserver";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Amiele Begena (ዓሚኤል በገና) — Sacred Ethiopian Musical Instruments",

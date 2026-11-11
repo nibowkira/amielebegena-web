@@ -7,7 +7,7 @@ import { useCart } from "../context/CartContext";
 
 export default function WhatsAppFloating() {
   const pathname = usePathname();
-  const { isOpen: cartOpen } = useCart();
+  const { isOpen: cartOpen, isCheckoutModalOpen } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -26,12 +26,15 @@ export default function WhatsAppFloating() {
     };
   }, [isOpen]);
 
-  // Suppress floating widget in admin, affiliate portal, or when cart is open
+  // Suppress floating widget in admin, affiliate portal, when cart or checkout modal is open,
+  // or on product pages that already have the dedicated sticky "Inquire on WhatsApp" bar.
   if (
     pathname?.startsWith("/admin") ||
     pathname?.startsWith("/affiliate") ||
     pathname?.startsWith("/affiliate-dashboard") ||
-    cartOpen
+    pathname?.startsWith("/about-product") ||
+    cartOpen ||
+    isCheckoutModalOpen
   ) {
     return null;
   }
@@ -44,7 +47,7 @@ export default function WhatsAppFloating() {
   };
 
   return (
-    <div ref={containerRef} className="fixed bottom-6 right-6 z-50 select-none">
+    <div ref={containerRef} className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 select-none">
       {/* WhatsApp Chat Popup Box matching user's screenshot */}
       {isOpen && (
         <div className="absolute bottom-16 right-0 mb-2 w-[310px] sm:w-[335px] rounded-2xl shadow-2xl overflow-hidden border border-black/10 bg-[#eee7da] animate-in fade-in slide-in-from-bottom-3 duration-200">
@@ -87,7 +90,7 @@ export default function WhatsAppFloating() {
             <div className="flex justify-center pt-1">
               <button
                 onClick={handleStartChat}
-                className="rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold text-xs sm:text-sm py-2.5 px-8 shadow-md active:scale-95 transition-all cursor-pointer"
+                className="rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white font-bold text-xs sm:text-sm py-2.5 px-8 shadow-[0_4px_14px_rgba(37,211,102,0.32)] hover:shadow-[0_6px_20px_rgba(37,211,102,0.42)] active:scale-95 transition-all cursor-pointer border border-white/20"
               >
                 Start Chat
               </button>
@@ -96,10 +99,10 @@ export default function WhatsAppFloating() {
         </div>
       )}
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button (52px on mobile with safe clearance) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-14 h-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-xl hover:bg-[#20ba5a] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+        className="relative w-[52px] h-[52px] sm:w-14 sm:h-14 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-xl hover:bg-[#20ba5a] hover:scale-105 active:scale-95 transition-all cursor-pointer"
         aria-label="Open WhatsApp Chat"
       >
         {/* Red notification dot */}

@@ -737,7 +737,7 @@ ${baseUrl}/?ref=${activeCode}`,
       {/* ========================================================= */}
       {/* 2. MAIN CONTENT AREA (Ivory / Clean Off-White)            */}
       {/* ========================================================= */}
-      <main className="flex-1 min-w-0 px-6 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-9 space-y-8 w-full bg-[#FAF8F4] transition-colors duration-200 dark:bg-[#080d0a]">
+      <main className="flex-1 min-w-0 px-3.5 py-4 sm:px-6 sm:py-6 lg:px-12 lg:py-9 space-y-6 sm:space-y-8 w-full bg-[#FAF8F4] transition-colors duration-200 dark:bg-[#080d0a]">
         {/* Top Header Bar */}
         <div className="flex items-center justify-between pb-2 gap-3">
           <div className="flex items-center gap-3">
@@ -837,6 +837,34 @@ ${baseUrl}/?ref=${activeCode}`,
           </div>
         </div>
 
+        {/* Mobile Quick Tab Navigation (< md) */}
+        <div className="md:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1.5 touch-pan-x -mx-3.5 px-3.5 border-b border-gray-200/50 dark:border-white/5">
+          {[
+            { id: "dashboard", label: "Overview" },
+            { id: "referrals", label: "Referrals" },
+            { id: "commissions", label: "Commissions" },
+            { id: "payouts", label: "Payouts" },
+            { id: "marketing", label: "Marketing" },
+            { id: "campaigns", label: "Campaigns" },
+            { id: "achievements", label: "Badges" },
+            { id: "broadcasts", label: "Broadcasts" },
+            { id: "settings", label: "Settings" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                activeTab === tab.id
+                  ? "bg-[#14231b] text-[#f5c518] shadow-xs dark:bg-[#f5c518] dark:text-[#14231b]"
+                  : "bg-white/80 dark:bg-[#112419] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 hover:bg-gray-100"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         {/* ========================================================= */}
         {/* VIEW 1: OVERVIEW DASHBOARD (activeTab === "dashboard")    */}
         {/* ========================================================= */}
@@ -857,10 +885,10 @@ ${baseUrl}/?ref=${activeCode}`,
             </div>
 
             {/* 8 Stats Cards (2 rows of 4 cards) - Exact Match to Reference Image */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
               {/* Card 1: Available Balance (Yellow Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-6 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
@@ -883,7 +911,7 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 2: Total Earnings (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-6 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
@@ -906,7 +934,7 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 3: Pending Commissions (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-6 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
@@ -929,7 +957,7 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 4: Total Paid Out (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-6 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
@@ -952,7 +980,7 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 5: Total Clicks (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-6 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
@@ -975,7 +1003,7 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 6: Total Referrals (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-6 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
@@ -998,7 +1026,7 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 7: Paid Orders (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-6 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
@@ -1021,7 +1049,7 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 8: Conversion Rate (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-6 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
@@ -1181,7 +1209,7 @@ ${baseUrl}/?ref=${activeCode}`,
                   }`}
                 >
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-xs min-w-[680px]">
                       <thead
                         className={`uppercase tracking-wider text-[10px] font-bold ${
                           darkMode ? "bg-[#112419] text-gray-300" : "bg-gray-50 text-gray-500"
@@ -1433,7 +1461,7 @@ ${baseUrl}/?ref=${activeCode}`,
               }`}
             >
               <div className="overflow-x-auto">
-                <table className="w-full text-left">
+                <table className="w-full text-left min-w-[700px]">
                   {/* Table Header with Warm Rounded Background */}
                   <thead>
                     <tr
@@ -1669,7 +1697,7 @@ ${baseUrl}/?ref=${activeCode}`,
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left">
+                <table className="w-full text-left min-w-[700px]">
                   <thead>
                     <tr
                       className={`text-[11px] sm:text-xs font-bold uppercase tracking-wider ${

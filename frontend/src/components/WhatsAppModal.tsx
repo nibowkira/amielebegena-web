@@ -107,36 +107,34 @@ export default function WhatsAppModal() {
   };
 
   const primaryItem = items[0];
+  const effectiveSubtotal =
+    subtotalUSD > 0
+      ? subtotalUSD
+      : items.reduce(
+          (sum, i) => sum + (Number(i.price) || 85) * (Number(i.quantity) || 1),
+          0
+        );
 
-  // Footer for the Order Modal
+  // Footer for the Order Modal: On mobile, Submit is full-width with Cancel below it
   const modalFooter = (
-    <>
-      <button
-        type="button"
-        onClick={closeCheckoutModal}
-        disabled={submitting}
-        className="px-5 py-2.5 sm:px-6 sm:py-3 rounded-full border border-[#E8E1D6] bg-white hover:bg-[#F8F5EF] text-[#172820] text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D9B32E]/30 disabled:opacity-50"
-      >
-        Cancel
-      </button>
-
+    <div className="w-full flex flex-col sm:flex-row-reverse sm:items-center sm:justify-between gap-2.5 sm:gap-4">
       <button
         type="submit"
         form="amiele-order-form"
         disabled={submitting}
-        className="px-6 py-2.5 sm:px-8 sm:py-3 rounded-full bg-[#14271D] hover:bg-[#0c1811] text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-lg active:scale-[0.99] transition-all flex items-center gap-2.5 cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#D9B32E]"
+        className="w-full sm:w-auto px-6 py-3 rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-[0_4px_16px_rgba(37,211,102,0.32)] hover:shadow-[0_6px_22px_rgba(37,211,102,0.42)] active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#25D366] min-h-[46px] border border-white/20"
       >
         {submitting ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin text-[#D9B32E]" />
+            <Loader2 className="w-4 h-4 animate-spin text-white" />
             <span>Connecting to Master Artisan...</span>
           </>
         ) : (
           <>
             {/* WhatsApp Icon */}
-            <span className="w-5 h-5 rounded-full bg-[#25D366] text-white flex items-center justify-center shrink-0 shadow-2xs">
+            <span className="w-5.5 h-5.5 rounded-full bg-white/20 backdrop-blur-xs text-white flex items-center justify-center shrink-0 shadow-2xs">
               <svg
-                className="w-3 h-3 fill-current"
+                className="w-3.5 h-3.5 fill-current"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -147,7 +145,16 @@ export default function WhatsAppModal() {
           </>
         )}
       </button>
-    </>
+
+      <button
+        type="button"
+        onClick={closeCheckoutModal}
+        disabled={submitting}
+        className="w-full sm:w-auto px-5 py-2.5 rounded-full border border-transparent sm:border-[#E8E1D6] bg-transparent sm:bg-white hover:bg-[#F8F5EF] text-[#7D867F] sm:text-[#172820] text-xs sm:text-sm font-bold transition-all shadow-none sm:shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D9B32E]/30 disabled:opacity-50 min-h-[40px] sm:min-h-[44px]"
+      >
+        Cancel
+      </button>
+    </div>
   );
 
   return (
@@ -259,7 +266,7 @@ export default function WhatsAppModal() {
                   Item Total
                 </span>
                 <span className="text-base sm:text-lg font-black text-[#14271D]">
-                  {formatPrice(subtotalUSD, "USD")}
+                  {formatPrice(effectiveSubtotal, "USD")}
                 </span>
               </div>
             </div>

@@ -27,8 +27,8 @@ export default function CartDrawer() {
   if (!isOpen) return null;
 
   const totalDisplay = items.length > 0
-    ? formatPrice(subtotalUSD, "USD")
-    : `${currency} 0`;
+    ? formatPrice(subtotalUSD, currency)
+    : formatPrice(0, currency);
 
   return (
     <div
@@ -62,7 +62,7 @@ export default function CartDrawer() {
           >
             <h2
               style={{
-                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
                 fontSize: "1.5rem",
                 fontWeight: 700,
                 color: "#1a1a1a",
@@ -100,7 +100,7 @@ export default function CartDrawer() {
                   style={{
                     color: "#6b6b6b",
                     fontSize: "0.95rem",
-                    fontFamily: "'Georgia', 'Times New Roman', serif",
+                    fontFamily: "'Cormorant Garamond', Georgia, serif",
                   }}
                 >
                   Your cart is empty.
@@ -156,7 +156,7 @@ export default function CartDrawer() {
                         <div className="flex items-start justify-between gap-2">
                           <h3
                             style={{
-                              fontFamily: "'Georgia', 'Times New Roman', serif",
+                              fontFamily: "'Cormorant Garamond', Georgia, serif",
                               fontSize: "0.9rem",
                               fontWeight: 600,
                               color: "#1a1a1a",
@@ -236,7 +236,7 @@ export default function CartDrawer() {
                         {/* Price */}
                         <span
                           style={{
-                            fontFamily: "'Georgia', 'Times New Roman', serif",
+                            fontFamily: "'Cormorant Garamond', Georgia, serif",
                             fontWeight: 700,
                             fontSize: "0.9rem",
                             color: "#1a1a1a",
@@ -261,7 +261,7 @@ export default function CartDrawer() {
             <div className="flex items-center justify-between mb-4">
               <span
                 style={{
-                  fontFamily: "'Georgia', 'Times New Roman', serif",
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
                   fontSize: "1.05rem",
                   fontWeight: 700,
                   color: "#1a1a1a",
@@ -271,7 +271,7 @@ export default function CartDrawer() {
               </span>
               <span
                 style={{
-                  fontFamily: "'Georgia', 'Times New Roman', serif",
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
                   fontSize: "1.05rem",
                   fontWeight: 700,
                   color: "#1a1a1a",
@@ -288,7 +288,7 @@ export default function CartDrawer() {
               style={{
                 backgroundColor: "#1b3022",
                 color: "#ffffff",
-                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
                 fontSize: "0.95rem",
                 fontWeight: 600,
                 padding: "14px 24px",

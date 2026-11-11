@@ -195,33 +195,40 @@ export default async function AboutProductDetailPage({ params }: PageProps) {
               </span>
             </nav>
 
-            {/* Instrument Switcher Horizontal Carousel */}
+            {/* Instrument Switcher Horizontal Carousel with Right-Edge Fade on Mobile */}
             {activeInstruments && activeInstruments.length > 1 && (
-              <div
-                role="tablist"
-                aria-label="Available traditional instruments"
-                className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 touch-pan-x"
-              >
-                <span className="text-[10px] font-extrabold text-[#737874] uppercase tracking-wider shrink-0 mr-1 hidden lg:inline">
-                  Select Instrument:
-                </span>
-                {activeInstruments.map((item) => {
-                  const isActive = item.slug === rawProduct.slug;
-                  return (
-                    <Link
-                      key={item.id}
-                      href={`/about-product/${item.slug}`}
-                      aria-current={isActive ? "page" : undefined}
-                      className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[36px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] ${
-                        isActive
-                          ? "bg-[#14231b] text-[#FAF8F5] shadow-sm border border-[#d4af37]"
-                          : "bg-white/90 hover:bg-white text-[#5b615e] hover:text-[#14231b] border border-[#E7E3D8]"
-                      }`}
-                    >
-                      {item.name}
-                    </Link>
-                  );
-                })}
+              <div className="relative max-w-full overflow-hidden">
+                <div
+                  role="tablist"
+                  aria-label="Available traditional instruments"
+                  className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 touch-pan-x snap-x snap-mandatory pr-6 sm:pr-0"
+                >
+                  <span className="text-[10px] font-extrabold text-[#737874] uppercase tracking-wider shrink-0 mr-1 hidden lg:inline">
+                    Select Instrument:
+                  </span>
+                  {activeInstruments.map((item) => {
+                    const isActive = item.slug === rawProduct.slug;
+                    return (
+                      <Link
+                        key={item.id}
+                        href={`/about-product/${item.slug}`}
+                        aria-current={isActive ? "page" : undefined}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[36px] flex items-center justify-center snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] ${
+                          isActive
+                            ? "bg-[#14231b] text-[#FAF8F5] shadow-sm border border-[#d4af37]"
+                            : "bg-white/90 hover:bg-white text-[#5b615e] hover:text-[#14231b] border border-[#E7E3D8]"
+                        }`}
+                      >
+                        {item.name}
+                      </Link>
+                    );
+                  })}
+                </div>
+                {/* Right-edge fade gradient indicator on mobile */}
+                <div
+                  className="pointer-events-none sm:hidden absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#FAF8F5] to-transparent"
+                  aria-hidden="true"
+                />
               </div>
             )}
           </div>

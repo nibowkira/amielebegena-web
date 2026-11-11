@@ -776,7 +776,7 @@ export default function ProductManagementModule() {
       {/* Products Table */}
       <div className="bg-white rounded-2xl border border-[#E7E3D8] shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-xs min-w-[850px]">
             <thead>
               <tr className="bg-[#FAF8F5] border-b border-[#E7E3D8] text-[#5b615e] font-extrabold uppercase tracking-wider text-[10px]">
                 <th className="py-3.5 px-4 w-10">
@@ -1074,11 +1074,11 @@ export default function ProductManagementModule() {
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsEditorOpen(false);
           }}
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 animate-in fade-in duration-200"
         >
-          <div className="w-full max-w-3xl max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col justify-between overflow-hidden border border-[#E7E3D8] animate-in zoom-in-95 duration-200">
+          <div className="w-full max-w-3xl max-h-[92vh] bg-white rounded-2xl shadow-2xl flex flex-col justify-between overflow-hidden border border-[#E7E3D8] animate-in zoom-in-95 duration-200">
             {/* Modal Header with Health Score */}
-            <div className="p-5 border-b border-[#E7E3D8] flex items-center justify-between bg-[#FAF8F5]">
+            <div className="p-3.5 sm:p-5 border-b border-[#E7E3D8] flex items-center justify-between bg-[#FAF8F5]">
               <div>
                 <span className="text-[10px] font-extrabold text-[#d4af37] uppercase tracking-widest block">
                   {editingProduct ? "Edit Instrument" : "Create Masterpiece"}
@@ -1114,7 +1114,7 @@ export default function ProductManagementModule() {
             </div>
 
             {/* Modal Navigation Tabs */}
-            <div className="flex items-center gap-1 px-5 border-b border-[#E7E3D8] bg-[#FAF8F5] overflow-x-auto shrink-0">
+            <div className="flex items-center gap-1 px-3 sm:px-5 border-b border-[#E7E3D8] bg-[#FAF8F5] overflow-x-auto shrink-0 touch-pan-x no-scrollbar">
               <button
                 type="button"
                 onClick={() => setEditorTab("general")}
@@ -1169,7 +1169,7 @@ export default function ProductManagementModule() {
             </div>
 
             {/* Drawer Body / Scrollable Form */}
-            <form onSubmit={handleSaveProduct} id="productForm" className="flex-1 overflow-y-auto p-6 space-y-6">
+            <form onSubmit={handleSaveProduct} id="productForm" className="flex-1 overflow-y-auto p-3.5 sm:p-6 space-y-5 sm:space-y-6">
               {formError && (
                 <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />

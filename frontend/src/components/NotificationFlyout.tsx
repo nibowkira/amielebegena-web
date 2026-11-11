@@ -263,14 +263,14 @@ export default function NotificationFlyout({
       {isOpen && (
         <div
           ref={popoverRef}
-          className="absolute right-0 mt-2.5 w-[320px] sm:w-[360px] bg-white rounded-2xl p-4 shadow-[0_20px_50px_-12px_rgba(20,35,27,0.22)] border border-[#14231b]/15 z-50 pointer-events-auto text-[#14231b] animate-in fade-in zoom-in-95 duration-150"
+          className="fixed left-3 right-3 top-[76px] sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2.5 w-auto sm:w-[360px] max-w-[calc(100vw-24px)] sm:max-w-none max-h-[70vh] sm:max-h-[520px] flex flex-col bg-white rounded-2xl p-4 shadow-[0_20px_50px_-12px_rgba(20,35,27,0.22)] border border-[#14231b]/15 z-50 pointer-events-auto text-[#14231b] animate-in fade-in zoom-in-95 duration-150"
           style={{ transformOrigin: "top right" }}
         >
           {/* Subtle Sacred Gold Top Accent Bar */}
           <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mb-3 rounded-full opacity-80" />
 
           {/* Header Row: Title & Filter Pills */}
-          <div className="flex items-center justify-between pb-2.5 border-b border-[#14231b]/10">
+          <div className="flex items-center justify-between pb-2.5 border-b border-[#14231b]/10 shrink-0">
             <div className="flex items-center gap-1.5">
               <h3 className="font-serif text-sm font-bold text-[#14231b] tracking-tight">
                 Notifications
@@ -306,7 +306,7 @@ export default function NotificationFlyout({
 
           {/* Notification List with Overscroll Containment */}
           <div
-            className="divide-y divide-[#14231b]/5 max-h-[340px] overflow-y-auto pr-0.5 mt-1 space-y-0.5 overscroll-contain"
+            className="divide-y divide-[#14231b]/5 flex-1 max-h-[calc(70vh-125px)] sm:max-h-[340px] overflow-y-auto pr-0.5 mt-1 space-y-0.5 overscroll-contain"
             style={{ overscrollBehavior: "contain" }}
           >
             {filteredNotifications.length === 0 ? (

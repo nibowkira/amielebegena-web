@@ -58,9 +58,9 @@ export default function PremiumModal({
         style={{ touchAction: "none" }}
       />
 
-      {/* Outer Modal Container: Exactly 708px x 750px on desktop */}
+      {/* Outer Modal Container: Responsive height using 100dvh */}
       <div
-        className={`relative w-full max-w-[calc(100vw-32px)] md:w-[708px] h-[750px] max-h-[calc(100dvh-32px)] rounded-[24px] sm:rounded-[26px] bg-[#FAF8F4] text-[#172820] border border-[#E8E1D6] shadow-[0_25px_70px_-15px_rgba(20,39,29,0.35)] flex flex-col box-border overflow-hidden z-10 animate-in zoom-in-95 fade-in duration-200 ${className}`}
+        className={`relative w-full max-w-[calc(100vw-24px)] md:w-[708px] h-[750px] max-h-[calc(100dvh-24px)] rounded-[22px] sm:rounded-[26px] bg-[#FAF8F4] text-[#172820] border border-[#E8E1D6] shadow-[0_25px_70px_-15px_rgba(20,39,29,0.35)] flex flex-col box-border overflow-hidden z-10 animate-in zoom-in-95 fade-in duration-200 ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* ========================================================= */}
@@ -122,7 +122,7 @@ export default function PremiumModal({
         {/* FIXED FOOTER                                              */}
         {/* ========================================================= */}
         {footer && (
-          <footer className="px-6 py-4 sm:px-8 sm:py-4.5 border-t border-[#E8E1D6] bg-[#FAF8F4] flex items-center justify-between gap-4 shrink-0">
+          <footer className="px-4 py-3 sm:px-8 sm:py-4.5 border-t border-[#E8E1D6] bg-[#FAF8F4] w-full shrink-0">
             {footer}
           </footer>
         )}

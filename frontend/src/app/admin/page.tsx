@@ -43,6 +43,7 @@ import {
   Scissors,
   Hammer,
   Plane,
+  Menu,
   X,
   AlertCircle,
   AlertTriangle,
@@ -408,8 +409,21 @@ export default function AdminDashboardPage() {
     }
   }, []);
 
+  const [mobileAdminMenuOpen, setMobileAdminMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileAdminMenuOpen(false);
+    };
+    if (mobileAdminMenuOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [mobileAdminMenuOpen]);
+
   const switchTab = (tab: AdminTab) => {
     setActiveTab(tab);
+    setMobileAdminMenuOpen(false);
     if (typeof window !== "undefined") {
       const queryParam = tab === "commissions" || tab === "orders" ? "commissions" : tab;
       const url = `/admin?tab=${queryParam}`;
@@ -535,16 +549,72 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#FAF8F5] text-[#1C1C1C]">
+      {/* ================= MOBILE ADMIN TOP BAR (< lg) ================= */}
+      <div className="lg:hidden bg-[#07150D] text-white p-3 sm:p-4 border-b border-white/10 sticky top-0 z-30 shadow-md">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileAdminMenuOpen(!mobileAdminMenuOpen)}
+              className="p-2 rounded-xl bg-white/10 hover:bg-white/15 text-white active:scale-95 transition-all cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
+              aria-label="Toggle Admin Navigation"
+            >
+              {mobileAdminMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+            <div>
+              <span className="font-benaiah text-lg sm:text-xl font-extrabold text-white leading-tight block">
+                ዓሚኤል በገና
+              </span>
+              <span className="text-[9px] font-extrabold text-[#D4AF37] tracking-widest uppercase block">
+                ADMIN CONSOLE
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <NotificationFlyout triggerStyle="circle" />
+            <Link
+              href="/account"
+              className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-[11px] font-semibold text-gray-300 hover:text-white transition-colors"
+            >
+              Exit
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Drawer Backdrop (< lg) */}
+      {mobileAdminMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
+          onClick={() => setMobileAdminMenuOpen(false)}
+        />
+      )}
+
       {/* ================= LEFT DARK FOREST GREEN SIDEBAR ================= */}
-      <aside className="w-full lg:w-64 bg-[#07150D] text-white shrink-0 p-5 flex flex-col justify-between select-none border-r border-white/5">
+      <aside
+        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 lg:z-30 w-72 max-w-[85vw] lg:w-64 bg-[#07150D] text-white shrink-0 p-5 flex flex-col justify-between select-none border-r border-white/5 h-screen overflow-y-auto transition-transform duration-300 ease-in-out ${
+          mobileAdminMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
         <div className="space-y-6">
           {/* Logo Section */}
           <div className="space-y-1">
-            <Link href="/" className="block">
-              <span className="font-benaiah text-2xl font-extrabold tracking-wide text-white block">
-                ዓሚኤል በገና
-              </span>
-            </Link>
+            <div className="flex items-center justify-between">
+              <Link href="/" className="block">
+                <span className="font-benaiah text-2xl font-extrabold tracking-wide text-white block">
+                  ዓሚኤል በገና
+                </span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setMobileAdminMenuOpen(false)}
+                className="lg:hidden p-1 rounded-lg text-white/70 hover:text-white hover:bg-white/10"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
             <span className="text-[10px] font-extrabold text-[#D4AF37] tracking-[0.2em] uppercase block">
               ADMIN CONSOLE
             </span>
@@ -555,7 +625,7 @@ export default function AdminDashboardPage() {
             {/* 1. Dashboard */}
             <button
               onClick={() => switchTab("dashboard")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
                 activeTab === "dashboard"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -568,7 +638,7 @@ export default function AdminDashboardPage() {
             {/* 2. Products Catalog */}
             <button
               onClick={() => switchTab("products")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
                 activeTab === "products"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -581,7 +651,7 @@ export default function AdminDashboardPage() {
             {/* 2. User Roles */}
             <button
               onClick={() => switchTab("users")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
                 activeTab === "users"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -594,7 +664,7 @@ export default function AdminDashboardPage() {
             {/* 3. Applications Queue */}
             <button
               onClick={() => switchTab("applications")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
                 activeTab === "applications"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -607,7 +677,7 @@ export default function AdminDashboardPage() {
             {/* 4. Order Management */}
             <button
               onClick={() => switchTab("commissions")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
                 activeTab === "commissions" || activeTab === "orders"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -620,7 +690,7 @@ export default function AdminDashboardPage() {
             {/* 5. Payout Queue */}
             <button
               onClick={() => switchTab("withdrawals")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
                 activeTab === "withdrawals"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -633,7 +703,7 @@ export default function AdminDashboardPage() {
             {/* 7. Campaigns Creator */}
             <button
               onClick={() => switchTab("campaigns")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
                 activeTab === "campaigns"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -646,7 +716,7 @@ export default function AdminDashboardPage() {
             {/* 8. Broadcast Update */}
             <button
               onClick={() => switchTab("announcements")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
                 activeTab === "announcements"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -677,7 +747,7 @@ export default function AdminDashboardPage() {
 
           <Link
             href="/account"
-            className="flex items-center gap-2 text-gray-400 hover:text-white text-xs font-semibold px-2 py-1 transition-colors"
+            className="flex items-center gap-2 text-gray-400 hover:text-white text-xs font-semibold px-2 py-1 transition-colors min-h-[38px]"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Exit Console</span>
@@ -686,7 +756,7 @@ export default function AdminDashboardPage() {
       </aside>
 
       {/* ================= RIGHT MAIN WORKSPACE ================= */}
-      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto max-h-screen">
+      <main className="flex-1 min-w-0 p-3.5 sm:p-6 lg:p-8 space-y-6 overflow-y-auto max-h-screen w-full max-w-full">
         {/* =========================================================================
             TAB: PRODUCT MANAGEMENT CONSOLE
         ========================================================================= */}
@@ -1268,7 +1338,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div className="overflow-x-auto text-xs">
-                  <table className="w-full text-left">
+                  <table className="w-full text-left min-w-[500px]">
                     <thead className="text-[10px] font-bold uppercase text-[#667085] border-b border-gray-100">
                       <tr>
                         <th className="pb-2">Product</th>
@@ -1546,7 +1616,7 @@ export default function AdminDashboardPage() {
 
             <div className="bg-white rounded-2xl border border-[#E7E3D8] shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[650px]">
                   <thead className="bg-[#FAF8F5] text-[#14231b] uppercase text-[10px] font-bold tracking-wider border-b border-[#E7E3D8]">
                     <tr>
                       <th className="p-4 font-extrabold text-[#667085]">USER ID</th>
@@ -1625,7 +1695,7 @@ export default function AdminDashboardPage() {
 
             <div className="bg-white rounded-2xl border border-[#E7E3D8] shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[650px]">
                   <thead className="bg-[#FAF8F5] text-[#14231b] uppercase text-[10px] font-bold tracking-wider border-b border-[#E7E3D8]">
                     <tr>
                       <th className="p-4 font-extrabold text-[#667085]">APP ID</th>
@@ -1939,7 +2009,7 @@ export default function AdminDashboardPage() {
             {/* Orders Table Card */}
             <div className="bg-white rounded-2xl border border-[#E7E3D8] shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[650px]">
                   <thead className="bg-[#FAF8F5] text-[#14231b] uppercase text-[10px] font-bold tracking-wider border-b border-[#E7E3D8]">
                     <tr>
                       <th className="p-4 font-extrabold text-[#667085]">ORDER REF</th>
@@ -2033,7 +2103,7 @@ export default function AdminDashboardPage() {
 
             <div className="bg-white rounded-2xl border border-[#E7E3D8] shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[650px]">
                   <thead className="bg-[#FAF8F5] text-[#14231b] uppercase text-[10px] font-bold tracking-wider border-b border-[#E7E3D8]">
                     <tr>
                       <th className="p-4 font-extrabold text-[#667085]">REQUEST ID</th>
@@ -2213,7 +2283,7 @@ export default function AdminDashboardPage() {
               </h2>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[650px]">
                   <thead className="bg-[#FAF8F5] text-[#14231b] uppercase text-[10px] font-bold tracking-wider border-b border-[#E7E3D8]">
                     <tr>
                       <th className="p-3.5 font-extrabold text-[#667085]">

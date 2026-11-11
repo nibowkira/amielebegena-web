@@ -267,3 +267,16 @@ h1, h2, h3, h4, h5, h6 {
 .animate-float-slow {
   animation: floatSlow 3.5s ease-in-out infinite;
 }
+
+/* Mobile-First Global Safety Standards */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}

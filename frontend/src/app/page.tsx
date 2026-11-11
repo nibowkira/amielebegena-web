@@ -174,7 +174,7 @@ export default function HomePage() {
   const renderTestimonialCard = (item: (typeof testimonials)[0], key?: string | number) => (
     <div
       key={key}
-      className="h-full rounded-2xl sm:rounded-3xl bg-[#13271d]/90 border border-white/5 p-6 sm:p-8 space-y-5 shadow-xl text-left flex flex-col justify-between transition-all duration-300 hover:border-[#2d6a4f]"
+      className="h-full rounded-2xl sm:rounded-3xl bg-[#13271d]/90 border border-white/5 px-8 py-7 sm:p-8 space-y-5 shadow-xl text-left flex flex-col justify-between transition-all duration-300 hover:border-[#2d6a4f]"
     >
       <div className="space-y-4">
         {/* Quotation Marks Icon matching Screenshot */}
@@ -242,7 +242,7 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto w-full z-10 space-y-6 text-left">
           {/* Top Subtitle Tag */}
           <div className="reveal">
-            <span className="text-[11px] sm:text-xs font-semibold tracking-widest text-[#a2b5ab] uppercase font-benaiah">
+            <span className="text-sm sm:text-[15px] font-bold tracking-widest text-[#d4af37] uppercase font-benaiah">
               ከሺህ ዓመታት ጥበብ የተቀዳ የዛሬው ብርሃን
             </span>
           </div>
@@ -254,8 +254,8 @@ export default function HomePage() {
             መሰንቆዎችን ከእኛ ዘንድ ያገኛሉ ።
           </h1>
 
-          {/* Body Description */}
-          <p className="reveal font-benaiah text-xs sm:text-sm text-[#cedad3] leading-relaxed max-w-2xl font-normal opacity-90">
+          {/* Body Description (Increased to 16-18px with high contrast) */}
+          <p className="reveal font-benaiah text-base sm:text-lg text-[#f4f7f5] leading-relaxed max-w-2xl font-normal">
             እውነተኛ ባህላዊ የሙዚቃ መሣሪያዎች በእጅ የተዘጋጁ፤ ለጸሎትና ለዝማሬ የሚያገለግሉ የተመረጡ በገናዎች፣ ክራሮችና መሰንቆዎችን እንድናዘጋጅልዎ የእጅ ጥበብ ውጤት ናቸው።
             ጥራታቸው የተረጋገጠ እና ለረጅም ጊዜ የሚያገለግሉ፤ ጥንቃቄ የተሞላበት ማሸጊያ እና ፈጣን አገልግሎት።
           </p>
@@ -330,17 +330,19 @@ export default function HomePage() {
                       : formatPrice(p.priceUSD, "USD")}
                   </p>
 
-                  {/* Green WhatsApp Order Button */}
+                  {/* Action Button: Refined Luxury Emerald Order via WhatsApp */}
                   <div className="w-full pt-3">
                     <button
                       onClick={() => handleOrderWhatsApp(p)}
-                      className="w-full py-3 px-5 rounded-full bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm hover:scale-[1.02] active:scale-95 transition-all cursor-pointer"
+                      className="w-full py-2.5 sm:py-3 px-5 rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white font-bold text-xs sm:text-[13px] tracking-wide flex items-center justify-center gap-2.5 shadow-[0_4px_14px_rgba(37,211,102,0.32)] hover:shadow-[0_6px_20px_rgba(37,211,102,0.42)] hover:scale-[1.01] active:scale-95 transition-all cursor-pointer border border-white/25 min-h-[44px]"
                     >
-                      {/* WhatsApp Icon */}
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
-                      </svg>
-                      <span className="uppercase tracking-wider">ORDER VIA WHATSAPP</span>
+                      {/* WhatsApp Icon with translucent circular badge */}
+                      <span className="w-5.5 h-5.5 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0 shadow-2xs">
+                        <svg className="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
+                        </svg>
+                      </span>
+                      <span>Order via WhatsApp</span>
                     </button>
                   </div>
                 </div>
@@ -369,75 +371,75 @@ export default function HomePage() {
           {/* ================================================================
               MOBILE CAROUSEL (< md): ONE REVIEW AT A TIME WITH SMOOTH SLIDE & SWIPE
           ================================================================ */}
-          <div className="md:hidden space-y-6">
-            {/* Viewport for Single-Card Track */}
-            <div
-              className="w-full overflow-hidden touch-pan-y"
-              onTouchStart={onTouchStart}
-              onTouchMove={onTouchMove}
-              onTouchEnd={onTouchEnd}
-            >
+          <div className="md:hidden space-y-4">
+            {/* Relative Viewport with Side Gutters so Centered Buttons Never Touch or Overlay the Card */}
+            <div className="relative px-10 min-[380px]:px-12">
+              {/* Viewport for Single-Card Track */}
               <div
-                className="flex transition-transform duration-500 ease-out will-change-transform"
-                style={{ transform: `translateX(-${testimonialIndex * 100}%)` }}
+                className="w-full overflow-hidden touch-pan-y"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
               >
-                {testimonials.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="w-full shrink-0 px-1 py-1"
-                    role="group"
-                    aria-roledescription="slide"
-                    aria-label={`Review ${idx + 1} of ${testimonials.length}`}
-                  >
-                    {renderTestimonialCard(item, idx)}
-                  </div>
-                ))}
+                <div
+                  className="flex transition-transform duration-500 ease-out will-change-transform"
+                  style={{ transform: `translateX(-${testimonialIndex * 100}%)` }}
+                >
+                  {testimonials.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="w-full shrink-0 px-1 py-1"
+                      role="group"
+                      aria-roledescription="slide"
+                      aria-label={`Review ${idx + 1} of ${testimonials.length}`}
+                    >
+                      {renderTestimonialCard(item, idx)}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Mobile Navigation Controls */}
-            <div className="flex items-center justify-between gap-3 px-2">
+              {/* Vertically Centered Scroll Buttons Outside the Card in the Side Gutters */}
+              {/* Previous Button (Far Left Gutter) */}
               <button
                 type="button"
                 onClick={prevTestimonial}
-                className="w-11 h-11 rounded-full bg-[#13271d] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-95 transition-all cursor-pointer shrink-0 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 min-[380px]:w-10 min-[380px]:h-10 rounded-full bg-[#13271d]/90 backdrop-blur-md border border-[#d4af37]/60 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-90 transition-all cursor-pointer shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
                 aria-label="Previous review"
               >
                 <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
               </button>
 
-              {/* Mobile Dots & Counter */}
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="flex items-center gap-1.5" role="tablist" aria-label="Review pagination">
-                  {testimonials.map((_, dotIdx) => (
-                    <button
-                      key={dotIdx}
-                      type="button"
-                      role="tab"
-                      aria-selected={testimonialIndex === dotIdx}
-                      onClick={() => setTestimonialIndex(dotIdx)}
-                      className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                        testimonialIndex === dotIdx
-                          ? "bg-[#d4af37] w-6"
-                          : "bg-[#213b2c] w-2 hover:bg-[#52b788]"
-                      }`}
-                      aria-label={`Go to review ${dotIdx + 1} of ${testimonials.length}`}
-                    />
-                  ))}
-                </div>
-                <span className="text-[10px] text-[#a2b5ab] font-medium tracking-wider">
-                  {testimonialIndex + 1} of {testimonials.length}
-                </span>
-              </div>
-
+              {/* Next Button (Far Right Gutter) */}
               <button
                 type="button"
                 onClick={nextTestimonial}
-                className="w-11 h-11 rounded-full bg-[#13271d] border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-95 transition-all cursor-pointer shrink-0 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 min-[380px]:w-10 min-[380px]:h-10 rounded-full bg-[#13271d]/90 backdrop-blur-md border border-[#d4af37]/60 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-90 transition-all cursor-pointer shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
                 aria-label="Next review"
               >
                 <ChevronRight className="w-5 h-5 stroke-[2.5]" />
               </button>
+            </div>
+
+            {/* Mobile Dots at the Bottom */}
+            <div className="flex justify-center pt-1.5">
+              <div className="flex items-center gap-1.5" role="tablist" aria-label="Review pagination">
+                {testimonials.map((_, dotIdx) => (
+                  <button
+                    key={dotIdx}
+                    type="button"
+                    role="tab"
+                    aria-selected={testimonialIndex === dotIdx}
+                    onClick={() => setTestimonialIndex(dotIdx)}
+                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                      testimonialIndex === dotIdx
+                        ? "bg-[#d4af37] w-6"
+                        : "bg-[#213b2c] w-2 hover:bg-[#52b788]"
+                    }`}
+                    aria-label={`Go to review ${dotIdx + 1} of ${testimonials.length}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 

@@ -501,10 +501,105 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#FAF8F5] text-[#14231b] py-6 sm:py-8 px-4 sm:px-6 lg:px-10">
-      <div className="max-w-[1340px] mx-auto flex flex-col lg:flex-row gap-6 lg:gap-7 items-start">
-        {/* ================= LEFT SIDEBAR ================= */}
-        <aside className="w-full lg:w-64 xl:w-72 shrink-0 bg-white rounded-3xl p-4 sm:p-5 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-1 lg:sticky lg:top-24 self-start max-h-[calc(100vh-100px)] overflow-y-auto no-scrollbar">
+    <div className="w-full min-h-screen bg-[#FAF8F5] text-[#14231b] py-4 sm:py-8 px-3 sm:px-6 lg:px-10">
+      <div className="max-w-[1340px] mx-auto flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-7 items-start">
+        {/* ================= MOBILE TAB NAVIGATION (< lg) ================= */}
+        <div className="w-full lg:hidden bg-white rounded-2xl p-2 border border-[#14231b]/8 shadow-xs sticky top-[76px] z-20 backdrop-blur-md bg-white/95">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5 touch-pan-x">
+            <button
+              onClick={() => switchTab("dashboard")}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
+                activeTab === "dashboard"
+                  ? "bg-[#14231b] text-white shadow-xs"
+                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
+              }`}
+            >
+              <Home className={`w-3.5 h-3.5 ${activeTab === "dashboard" ? "text-[#f3be3b] fill-current" : ""}`} />
+              <span>Dashboard</span>
+            </button>
+
+            <button
+              onClick={() => switchTab("orders")}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
+                activeTab === "orders"
+                  ? "bg-[#14231b] text-white shadow-xs"
+                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
+              }`}
+            >
+              <Package className={`w-3.5 h-3.5 ${activeTab === "orders" ? "text-[#f3be3b] fill-current" : ""}`} />
+              <span>Orders</span>
+            </button>
+
+            <button
+              onClick={() => switchTab("wishlist")}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
+                activeTab === "wishlist"
+                  ? "bg-[#14231b] text-white shadow-xs"
+                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${activeTab === "wishlist" ? "text-[#f3be3b] fill-current" : ""}`} />
+              <span>Wishlist</span>
+            </button>
+
+            <button
+              onClick={() => switchTab("notifications")}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
+                activeTab === "notifications"
+                  ? "bg-[#14231b] text-white shadow-xs"
+                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
+              }`}
+            >
+              <Bell className={`w-3.5 h-3.5 ${activeTab === "notifications" ? "text-[#f3be3b] fill-current" : ""}`} />
+              <span>Alerts</span>
+            </button>
+
+            <button
+              onClick={() => switchTab("addresses")}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
+                activeTab === "addresses"
+                  ? "bg-[#14231b] text-white shadow-xs"
+                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
+              }`}
+            >
+              <MapPin className={`w-3.5 h-3.5 ${activeTab === "addresses" ? "text-[#f3be3b]" : ""}`} />
+              <span>Addresses</span>
+            </button>
+
+            <button
+              onClick={() => switchTab("settings")}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
+                activeTab === "settings"
+                  ? "bg-[#14231b] text-white shadow-xs"
+                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
+              }`}
+            >
+              <Settings className={`w-3.5 h-3.5 ${activeTab === "settings" ? "text-[#f3be3b]" : ""}`} />
+              <span>Settings</span>
+            </button>
+
+            {isAdmin ? (
+              <Link
+                href="/admin?tab=dashboard"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 bg-[#0F2418] text-[#D4AF37] border border-[#D4AF37]/50 min-h-[40px]"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Admin Console</span>
+              </Link>
+            ) : (
+              <Link
+                href={isAffiliate ? "/affiliate/dashboard" : "/affiliate"}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 bg-[#fefcf8] border border-[#d4af37]/50 text-[#14231b] min-h-[40px]"
+              >
+                <TrendingUp className="w-3.5 h-3.5 text-[#b8860b]" />
+                <span>{isAffiliate ? "Affiliate Portal" : "Earn"}</span>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* ================= LEFT SIDEBAR (lg: and above) ================= */}
+        <aside className="hidden lg:block lg:w-64 xl:w-72 shrink-0 bg-white rounded-3xl p-4 sm:p-5 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-1 lg:sticky lg:top-24 self-start max-h-[calc(100vh-100px)] overflow-y-auto no-scrollbar">
           {/* 1. Dashboard (Active if activeTab === 'dashboard') */}
           <button
             onClick={() => switchTab("dashboard")}
@@ -719,9 +814,9 @@ export default function AccountPage() {
                       </span>
                     </div>
 
-                    {/* Email, ID, Member since */}
-                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs text-[#5a625d] font-medium pt-0.5">
-                      <div className="flex items-center gap-1.5">
+                    {/* Email, ID, Member since (Stacked neatly on mobile, inline on tablet+) */}
+                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-1.5 sm:gap-4 text-xs text-[#5a625d] font-medium pt-0.5">
+                      <div className="flex items-center gap-1.5 break-all">
                         <span>✉️</span>
                         <span>{displayEmail}</span>
                       </div>
@@ -898,7 +993,7 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <span className="font-serif text-2xl sm:text-3xl font-extrabold text-[#14231b]">
-                      18
+                      3
                     </span>
                   </div>
                   <div>
@@ -1089,18 +1184,7 @@ export default function AccountPage() {
               </div>
 
               {/* Inner Table / Empty State Container */}
-              <div className="border border-gray-200/80 rounded-2xl bg-white p-5 sm:p-7">
-                {/* 7 Table Column Headers */}
-                <div className="grid grid-cols-7 text-[11px] sm:text-xs font-bold tracking-wider uppercase text-[#737874] pb-5 text-left font-sans">
-                  <span>ORDER #</span>
-                  <span>PRODUCT</span>
-                  <span>DATE</span>
-                  <span>QTY</span>
-                  <span>TOTAL</span>
-                  <span>PAYMENT</span>
-                  <span>STATUS</span>
-                </div>
-
+              <div className="border border-gray-200/80 rounded-2xl bg-white p-4 sm:p-7">
                 {filteredOrders.length === 0 ? (
                   <div className="py-12 sm:py-16 text-center flex flex-col items-center justify-center space-y-3">
                     {/* Open Shipping Box Graphic matching screenshot */}
@@ -1139,46 +1223,111 @@ export default function AccountPage() {
                     </Link>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-100 pt-2 font-sans">
-                    {filteredOrders.map((order, idx) => (
-                      <div
-                        key={order.id || idx}
-                        className="grid grid-cols-7 text-xs items-center py-3.5 hover:bg-[#FAF8F5] transition-colors"
-                      >
-                        <span className="font-bold text-[#14231b]">
-                          {order.order_number || `#AM-${idx + 1000}`}
-                        </span>
-                        <span className="font-medium text-[#14231b] truncate pr-2">
-                          {order.product_name || "Handmade Ethiopian Begena"}
-                        </span>
-                        <span className="text-[#6b726d]">
-                          {order.created_at ? new Date(order.created_at).toLocaleDateString() : "Recent"}
-                        </span>
-                        <span className="font-semibold text-[#14231b]">{order.quantity || 1}</span>
-                        <span className="font-bold text-[#14231b]">
-                          {order.total_price || (order.total_amount ? `ETB ${order.total_amount.toLocaleString()}` : "$450")}
-                        </span>
-                        <span className="text-xs text-[#5a625d] font-medium">
-                          {order.payment_method || "Telebirr"}
-                        </span>
-                        <div>
-                          <span
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
-                              order.status === "Delivered"
-                                ? "bg-emerald-100 text-emerald-800"
-                                : order.status === "Crafting" || order.status === "Preparing"
-                                ? "bg-amber-100 text-amber-800"
-                                : order.status === "Cancelled"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-blue-100 text-blue-800"
-                            }`}
-                          >
-                            {order.status || "Pending"}
-                          </span>
+                  <>
+                    {/* MOBILE CARDS VIEW (< md) */}
+                    <div className="space-y-3 md:hidden font-sans">
+                      {filteredOrders.map((order, idx) => (
+                        <div
+                          key={order.id || idx}
+                          className="p-3.5 sm:p-4 rounded-xl border border-gray-100 bg-[#FAF8F5]/60 hover:bg-[#FAF8F5] transition-colors space-y-2.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-xs text-[#14231b]">
+                              {order.order_number || `#AM-${idx + 1000}`}
+                            </span>
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                                order.status === "Delivered"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : order.status === "Crafting" || order.status === "Preparing"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : order.status === "Cancelled"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-blue-100 text-blue-800"
+                              }`}
+                            >
+                              {order.status || "Pending"}
+                            </span>
+                          </div>
+
+                          <div className="text-xs font-bold text-[#14231b] line-clamp-1">
+                            {order.product_name || "Handmade Ethiopian Begena"}
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-gray-200/50 text-[11px] text-[#737874]">
+                            <span>
+                              {order.created_at ? new Date(order.created_at).toLocaleDateString() : "Recent"} • Qty: {order.quantity || 1}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] bg-white px-1.5 py-0.5 rounded border border-gray-200 text-[#5a625d]">
+                                {order.payment_method || "Telebirr"}
+                              </span>
+                              <span className="font-bold text-xs text-[#14231b]">
+                                {order.total_price || (order.total_amount ? `ETB ${order.total_amount.toLocaleString()}` : "$450")}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* DESKTOP TABLE VIEW (md: and above with contained horizontal scroll) */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <div className="min-w-[680px]">
+                        {/* 7 Table Column Headers */}
+                        <div className="grid grid-cols-7 text-[11px] sm:text-xs font-bold tracking-wider uppercase text-[#737874] pb-4 text-left font-sans border-b border-gray-100">
+                          <span>ORDER #</span>
+                          <span>PRODUCT</span>
+                          <span>DATE</span>
+                          <span>QTY</span>
+                          <span>TOTAL</span>
+                          <span>PAYMENT</span>
+                          <span>STATUS</span>
+                        </div>
+
+                        <div className="divide-y divide-gray-100 pt-1 font-sans">
+                          {filteredOrders.map((order, idx) => (
+                            <div
+                              key={order.id || idx}
+                              className="grid grid-cols-7 text-xs items-center py-3.5 hover:bg-[#FAF8F5] transition-colors"
+                            >
+                              <span className="font-bold text-[#14231b]">
+                                {order.order_number || `#AM-${idx + 1000}`}
+                              </span>
+                              <span className="font-medium text-[#14231b] truncate pr-2">
+                                {order.product_name || "Handmade Ethiopian Begena"}
+                              </span>
+                              <span className="text-[#6b726d]">
+                                {order.created_at ? new Date(order.created_at).toLocaleDateString() : "Recent"}
+                              </span>
+                              <span className="font-semibold text-[#14231b]">{order.quantity || 1}</span>
+                              <span className="font-bold text-[#14231b]">
+                                {order.total_price || (order.total_amount ? `ETB ${order.total_amount.toLocaleString()}` : "$450")}
+                              </span>
+                              <span className="text-xs text-[#5a625d] font-medium">
+                                {order.payment_method || "Telebirr"}
+                              </span>
+                              <div>
+                                <span
+                                  className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
+                                    order.status === "Delivered"
+                                      ? "bg-emerald-100 text-emerald-800"
+                                      : order.status === "Crafting" || order.status === "Preparing"
+                                      ? "bg-amber-100 text-amber-800"
+                                      : order.status === "Cancelled"
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-blue-100 text-blue-800"
+                                  }`}
+                                >
+                                  {order.status || "Pending"}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -1663,8 +1812,8 @@ export default function AccountPage() {
 
       {/* ================= EDIT PROFILE MODAL ================= */}
       {editModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 border border-[#14231b]/10 shadow-2xl space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-md max-h-[92vh] overflow-y-auto bg-white rounded-3xl p-5 sm:p-8 border border-[#14231b]/10 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-[#14231b]/10 pb-4">
               <h3 className="font-serif text-2xl font-bold text-[#14231b]">Edit Profile Details</h3>
               <button
@@ -1828,8 +1977,8 @@ export default function AccountPage() {
 
       {/* ================= ADD / EDIT SHIPPING ADDRESS MODAL ================= */}
       {addressModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-[#14231b]/10 space-y-5 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[92vh] overflow-y-auto p-5 sm:p-7 shadow-2xl border border-[#14231b]/10 space-y-5 animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-[#14231b]/8">
               <div className="flex items-center gap-2.5">

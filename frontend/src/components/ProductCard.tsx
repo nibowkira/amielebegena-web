@@ -74,20 +74,20 @@ export default function ProductCard({ product }: { product: Product }) {
 
           <button
             onClick={handleAdd}
-            className={`px-4 py-2.5 rounded-xl font-bold text-xs tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-md ${
+            className={`px-4.5 py-2.5 rounded-full font-bold text-xs sm:text-[13px] tracking-wide transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95 border ${
               added
-                ? "bg-[#2d6a4f] text-[#fbf8f2] border border-[#52b788]"
-                : "gold-gradient-bg text-[#080b09] hover:brightness-110 active:scale-95"
+                ? "bg-[#2d6a4f] text-white border-[#52b788]"
+                : "bg-[#0d1e16] hover:bg-[#07130d] text-white border-white/10"
             }`}
           >
             {added ? (
               <>
-                <Check className="w-3.5 h-3.5" />
+                <Check className="w-4 h-4 text-[#52b788] stroke-[2.5]" />
                 <span>Added</span>
               </>
             ) : (
               <>
-                <ShoppingBag className="w-3.5 h-3.5" />
+                <ShoppingBag className="w-4 h-4 text-[#f5c518] shrink-0 stroke-[2.2]" />
                 <span>Add to Cart</span>
               </>
             )}

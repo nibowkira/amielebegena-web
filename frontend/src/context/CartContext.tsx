@@ -70,12 +70,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = (product: Product, quantity: number = 1) => {
     const existingIndex = items.findIndex((i) => i.productId === product.id);
     const coverImage = product.images?.[0]?.storagePath || "/image/photo_2025-10-01_07-26-53.jpg";
-    const priceNum = typeof product.price === "string" ? parseFloat(product.price) : product.price;
+    
+    // Resolve price robustly across Product, CuratedProduct, and raw API schemas
+    const rawPrice =
+      product.price !== undefined && product.price !== null
+        ? product.price
+        : (product as any).priceUSD !== undefined && (product as any).priceUSD !== null
+        ? (product as any).priceUSD
+        : (product as any).priceETB !== undefined && (product as any).priceETB !== null
+        ? (product as any).priceETB
+        : 85;
+    const parsed = typeof rawPrice === "string" ? parseFloat(rawPrice) : Number(rawPrice);
+    const priceNum = !isNaN(parsed) && parsed > 0 ? parsed : 85;
 
     let updated: CartItem[];
     if (existingIndex > -1) {
       updated = [...items];
       updated[existingIndex].quantity += quantity;
+      if (!updated[existingIndex].price || updated[existingIndex].price === 0) {
+        updated[existingIndex].price = priceNum;
+      }
     } else {
       updated = [
         ...items,
@@ -83,7 +97,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           id: `${product.id}-${Date.now()}`,
           productId: product.id,
           name: product.name,
-          price: priceNum || 0,
+          price: priceNum,
           currency: product.currency || "USD",
           image: coverImage,
           quantity: quantity,
