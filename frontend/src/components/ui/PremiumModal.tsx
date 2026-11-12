@@ -45,7 +45,7 @@ export default function PremiumModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 p-4 sm:p-6 flex items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-50 p-4 sm:p-6 md:p-8 flex items-center justify-center overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="premium-modal-title"
@@ -58,15 +58,15 @@ export default function PremiumModal({
         style={{ touchAction: "none" }}
       />
 
-      {/* Outer Modal Container: Responsive height using 100dvh */}
+      {/* Outer Modal Container: Compact responsive size with comfortable outer padding */}
       <div
-        className={`relative w-full max-w-[calc(100vw-24px)] md:w-[708px] h-[750px] max-h-[calc(100dvh-24px)] rounded-[22px] sm:rounded-[26px] bg-[#FAF8F4] text-[#172820] border border-[#E8E1D6] shadow-[0_25px_70px_-15px_rgba(20,39,29,0.35)] flex flex-col box-border overflow-hidden z-10 animate-in zoom-in-95 fade-in duration-200 ${className}`}
+        className={`relative w-full max-w-[94%] sm:max-w-[540px] md:max-w-[600px] max-h-[calc(100dvh-40px)] sm:max-h-[82vh] rounded-[22px] sm:rounded-[26px] bg-[#FAF8F4] text-[#172820] border border-[#E8E1D6] shadow-[0_25px_70px_-15px_rgba(20,39,29,0.35)] flex flex-col box-border overflow-hidden z-10 animate-in zoom-in-95 fade-in duration-200 ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* ========================================================= */}
         {/* FIXED HEADER                                              */}
         {/* ========================================================= */}
-        <header className="px-6 py-5 sm:px-8 sm:py-5 border-b border-[#E8E1D6] bg-[#FAF8F4] flex items-center justify-between gap-4 shrink-0">
+        <header className="px-5 py-4 sm:px-7 sm:py-4.5 border-b border-[#E8E1D6] bg-[#FAF8F4] flex items-center justify-between gap-4 shrink-0">
           <div className="min-w-0 flex-1">
             {eyebrow && (
               <div className="flex items-center gap-2 mb-0.5">
@@ -108,7 +108,7 @@ export default function PremiumModal({
         {/* SCROLLABLE CENTRAL CONTENT AREA                           */}
         {/* ========================================================= */}
         <div
-          className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5"
+          className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-4"
           style={{
             overscrollBehavior: "contain",
             WebkitOverflowScrolling: "touch",
@@ -122,7 +122,7 @@ export default function PremiumModal({
         {/* FIXED FOOTER                                              */}
         {/* ========================================================= */}
         {footer && (
-          <footer className="px-4 py-3 sm:px-8 sm:py-4.5 border-t border-[#E8E1D6] bg-[#FAF8F4] w-full shrink-0">
+          <footer className="px-4 py-3 sm:px-7 sm:py-3.5 border-t border-[#E8E1D6] bg-[#FAF8F4] w-full shrink-0">
             {footer}
           </footer>
         )}

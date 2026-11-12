@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useCart } from "../context/CartContext";
 import { useCurrency } from "../context/CurrencyContext";
 import { createGuestOrder } from "../lib/api";
@@ -13,6 +14,7 @@ import {
   Loader2,
   ChevronDown,
   Sparkles,
+  AlertCircle,
 } from "lucide-react";
 
 export default function WhatsAppModal() {
@@ -45,6 +47,10 @@ export default function WhatsAppModal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (items.length === 0) {
+      setErrorMsg("Your cart is empty. Please select an authentic Begena instrument or accessory before placing an order.");
+      return;
+    }
     if (!formData.name.trim() || !formData.phone.trim()) {
       setErrorMsg("Please provide both your full name and WhatsApp phone number.");
       return;
@@ -116,7 +122,25 @@ export default function WhatsAppModal() {
         );
 
   // Footer for the Order Modal: On mobile, Submit is full-width with Cancel below it
-  const modalFooter = (
+  const modalFooter = items.length === 0 ? (
+    <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4">
+      <button
+        type="button"
+        onClick={closeCheckoutModal}
+        className="w-full sm:w-auto px-5 py-2.5 rounded-full border border-[#E8E1D6] bg-white hover:bg-[#F8F5EF] text-[#172820] text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer min-h-[42px]"
+      >
+        Close
+      </button>
+      <Link
+        href="/products"
+        onClick={closeCheckoutModal}
+        className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-[#14271D] hover:bg-[#0c1811] text-white text-xs sm:text-sm font-bold transition-all inline-flex items-center justify-center gap-2 shadow-xs cursor-pointer min-h-[42px]"
+      >
+        <span>Browse Products</span>
+        <ArrowRight className="w-4 h-4" />
+      </Link>
+    </div>
+  ) : (
     <div className="w-full flex flex-col sm:flex-row-reverse sm:items-center sm:justify-between gap-2.5 sm:gap-4">
       <button
         type="submit"
@@ -218,6 +242,45 @@ export default function WhatsAppModal() {
             </button>
           </div>
         </div>
+      ) : items.length === 0 ? (
+        /* ========================================================= */
+        /* EMPTY CART STATE                                          */
+        /* ========================================================= */
+        <div className="py-8 px-4 text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 text-amber-600 mx-auto flex items-center justify-center shadow-xs">
+            <AlertCircle className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-amber-600 uppercase">
+              NO PRODUCT SELECTED
+            </span>
+            <h3 className="text-xl sm:text-2xl font-black text-[#14271D] tracking-tight">
+              Your Cart is Empty
+            </h3>
+            <p className="text-xs sm:text-sm text-[#7D867F] max-w-sm mx-auto leading-relaxed">
+              Please choose an authentic Begena instrument, master strings, or accessories before proceeding to checkout.
+            </p>
+          </div>
+
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 max-w-xs mx-auto">
+            <Link
+              href="/products"
+              onClick={closeCheckoutModal}
+              className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#14271D] hover:bg-[#0c1811] text-white text-xs sm:text-sm font-bold shadow-xs transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Explore Instruments</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <button
+              type="button"
+              onClick={closeCheckoutModal}
+              className="w-full sm:w-auto px-5 py-3 rounded-full border border-[#E8E1D6] bg-white hover:bg-[#F8F5EF] text-[#172820] text-xs sm:text-sm font-bold shadow-xs transition-all cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       ) : (
         /* ========================================================= */
         /* ORDER FORM CONTENT                                        */
@@ -294,7 +357,7 @@ export default function WhatsAppModal() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g. Yohannes Mengistu"
-                  className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
+                  className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                 />
               </div>
 
@@ -308,7 +371,7 @@ export default function WhatsAppModal() {
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="+251 9... or international"
-                  className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
+                  className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                 />
               </div>
             </div>
@@ -324,7 +387,7 @@ export default function WhatsAppModal() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="you@domain.com"
-                  className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
+                  className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                 />
               </div>
 
@@ -336,7 +399,7 @@ export default function WhatsAppModal() {
                   <select
                     value={formData.country}
                     onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="w-full appearance-none px-4 py-3 pr-10 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-sm font-semibold text-[#172820] focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all cursor-pointer shadow-2xs"
+                    className="w-full appearance-none px-4 py-3 pr-10 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all cursor-pointer shadow-2xs"
                   >
                     <option value="Ethiopia">Ethiopia (Local Handcrafted Delivery)</option>
                     <option value="United States">United States (DHL Express)</option>
@@ -363,7 +426,7 @@ export default function WhatsAppModal() {
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="e.g. Please pre-tune to Tizita pentatonic scale, request flight-certified hardshell case, include spare gut strings, etc."
-                className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all resize-none shadow-2xs"
+                className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all resize-none shadow-2xs"
               />
             </div>
           </div>

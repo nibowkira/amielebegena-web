@@ -1,17 +1,33 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useCurrency } from "../context/CurrencyContext";
 import { useScrollLock } from "../lib/useScrollLock";
-import { X, Plus, Minus, Trash2 } from "lucide-react";
+import { X, Plus, Minus, Trash2, AlertCircle } from "lucide-react";
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, subtotalUSD, openCheckoutModal, referralCode } = useCart();
   const { formatPrice, currency } = useCurrency();
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   // Bulletproof lock of background scroll while drawer is open
   useScrollLock(isOpen);
+
+  useEffect(() => {
+    if (items.length > 0) {
+      setCheckoutError(null);
+    }
+  }, [items.length]);
+
+  const handleCheckout = () => {
+    if (items.length === 0) {
+      setCheckoutError("Your cart is empty. Please add a product before checking out.");
+      return;
+    }
+    setCheckoutError(null);
+    openCheckoutModal();
+  };
 
   // Close drawer on Escape key
   useEffect(() => {
@@ -281,12 +297,29 @@ export default function CartDrawer() {
               </span>
             </div>
 
+            {/* Error Message if cart is empty */}
+            {checkoutError && (
+              <div className="mb-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center justify-between shadow-2xs animate-in fade-in duration-150">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>{checkoutError}</span>
+                </div>
+                <button
+                  onClick={() => setCheckoutError(null)}
+                  className="p-1 text-amber-700 hover:text-amber-900 cursor-pointer"
+                  aria-label="Dismiss error"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
             {/* Checkout Button */}
             <button
-              onClick={openCheckoutModal}
+              onClick={handleCheckout}
               className="w-full transition-all cursor-pointer"
               style={{
-                backgroundColor: "#1b3022",
+                backgroundColor: items.length === 0 ? "#738077" : "#1b3022",
                 color: "#ffffff",
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
                 fontSize: "0.95rem",
@@ -297,10 +330,12 @@ export default function CartDrawer() {
                 letterSpacing: "0.02em",
               }}
               onMouseEnter={(e) => {
-                (e.target as HTMLButtonElement).style.backgroundColor = "#264a33";
+                if (items.length > 0) {
+                  (e.target as HTMLButtonElement).style.backgroundColor = "#264a33";
+                }
               }}
               onMouseLeave={(e) => {
-                (e.target as HTMLButtonElement).style.backgroundColor = "#1b3022";
+                (e.target as HTMLButtonElement).style.backgroundColor = items.length === 0 ? "#738077" : "#1b3022";
               }}
             >
               Checkout
