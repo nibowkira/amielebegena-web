@@ -550,121 +550,22 @@ export default function AdminDashboardPage() {
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#FAF8F5] text-[#1C1C1C]">
       {/* ================= MOBILE ADMIN TOP BAR (< lg) ================= */}
-      <div className="lg:hidden bg-[#07150D] text-white border-b border-white/10 sticky top-0 z-30 shadow-md">
-        <div className="p-3 sm:p-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setMobileAdminMenuOpen(!mobileAdminMenuOpen)}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/15 text-white active:scale-95 transition-all cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center"
-              aria-label="Toggle Admin Navigation"
-            >
-              {mobileAdminMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-            <div>
-              <span className="font-benaiah text-lg sm:text-xl font-extrabold text-white leading-tight block">
-                ዓሚኤል በገና
-              </span>
-              <span className="text-[9px] font-extrabold text-[#D4AF37] tracking-widest uppercase block">
-                ADMIN CONSOLE
-              </span>
-            </div>
-          </div>
+      <div className="lg:hidden bg-[#FAF8F5] text-[#1C1C1C] border-b border-gray-200/60 sticky top-0 z-30 px-4 py-3 sm:px-6 flex items-center justify-between">
+        {/* Left: Rounded Hamburger Menu Button */}
+        <button
+          type="button"
+          onClick={() => setMobileAdminMenuOpen(!mobileAdminMenuOpen)}
+          className="p-2.5 rounded-xl border border-gray-300/80 bg-neutral-100/80 hover:bg-neutral-200 text-[#1C1C1C] active:scale-95 transition-all cursor-pointer min-h-[42px] min-w-[42px] flex items-center justify-center shadow-2xs"
+          aria-label="Toggle Admin Navigation"
+        >
+          {mobileAdminMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5 stroke-[2.2]" />}
+        </button>
 
-          <div className="flex items-center gap-2">
-            <NotificationFlyout triggerStyle="circle" />
-            <Link
-              href="/account"
-              className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-[11px] font-semibold text-gray-300 hover:text-white transition-colors"
-            >
-              Exit
-            </Link>
-          </div>
-        </div>
-
-        {/* Mobile Horizontal Pill Tabs Matching Screenshot 1 */}
-        <div className="px-3 pb-2.5 pt-0.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x">
-          <button
-            onClick={() => switchTab("dashboard")}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-              activeTab === "dashboard"
-                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
-                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
-            }`}
-          >
-            Dashboard
-          </button>
-          <button
-            onClick={() => switchTab("products")}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-              activeTab === "products"
-                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
-                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
-            }`}
-          >
-            Products
-          </button>
-          <button
-            onClick={() => switchTab("commissions")}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-              activeTab === "commissions" || activeTab === "orders"
-                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
-                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
-            }`}
-          >
-            Orders
-          </button>
-          <button
-            onClick={() => switchTab("users")}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-              activeTab === "users"
-                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
-                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
-            }`}
-          >
-            Users
-          </button>
-          <button
-            onClick={() => switchTab("applications")}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-              activeTab === "applications"
-                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
-                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
-            }`}
-          >
-            Applications
-          </button>
-          <button
-            onClick={() => switchTab("withdrawals")}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-              activeTab === "withdrawals"
-                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
-                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
-            }`}
-          >
-            Payouts
-          </button>
-          <button
-            onClick={() => switchTab("campaigns")}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-              activeTab === "campaigns"
-                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
-                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
-            }`}
-          >
-            Campaigns
-          </button>
-          <button
-            onClick={() => switchTab("announcements")}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
-              activeTab === "announcements"
-                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
-                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
-            }`}
-          >
-            Broadcast
-          </button>
-        </div>
+        {/* Right: Notification icon replaces Admin Console title */}
+        <NotificationFlyout
+          triggerStyle="circle"
+          buttonClassName="w-10 h-10 rounded-full bg-white border border-gray-300/80 flex items-center justify-center text-[#14231b] shadow-2xs hover:bg-[#F4F1EA] transition-all cursor-pointer relative"
+        />
       </div>
 
       {/* Mobile Drawer Backdrop (< lg) */}
@@ -677,11 +578,11 @@ export default function AdminDashboardPage() {
 
       {/* ================= LEFT DARK FOREST GREEN SIDEBAR ================= */}
       <aside
-        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 lg:z-30 w-72 max-w-[85vw] lg:w-64 bg-[#07150D] text-white shrink-0 p-5 flex flex-col justify-between select-none border-r border-white/5 h-screen overflow-y-auto transition-transform duration-300 ease-in-out ${
+        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 lg:z-30 w-72 max-w-[85vw] lg:w-64 bg-[#07150D] text-white shrink-0 p-4 lg:p-5 flex flex-col justify-between select-none border-r border-white/5 h-[100dvh] lg:h-screen overflow-y-auto transition-transform duration-300 ease-in-out pb-[env(safe-area-inset-bottom,16px)] ${
           mobileAdminMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Logo Section */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
@@ -705,11 +606,11 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Sidebar Menu Items */}
-          <nav className="space-y-1.5 text-xs font-semibold">
+          <nav className="space-y-1 text-xs font-semibold">
             {/* 1. Dashboard */}
             <button
               onClick={() => switchTab("dashboard")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
                 activeTab === "dashboard"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -722,7 +623,7 @@ export default function AdminDashboardPage() {
             {/* 2. Products Catalog */}
             <button
               onClick={() => switchTab("products")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
                 activeTab === "products"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -732,10 +633,10 @@ export default function AdminDashboardPage() {
               <span>Products Catalog</span>
             </button>
 
-            {/* 2. User Roles */}
+            {/* 3. User Roles */}
             <button
               onClick={() => switchTab("users")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
                 activeTab === "users"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -745,10 +646,10 @@ export default function AdminDashboardPage() {
               <span>User Roles</span>
             </button>
 
-            {/* 3. Applications Queue */}
+            {/* 4. Applications Queue */}
             <button
               onClick={() => switchTab("applications")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
                 activeTab === "applications"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -758,10 +659,10 @@ export default function AdminDashboardPage() {
               <span>Applications Queue</span>
             </button>
 
-            {/* 4. Order Management */}
+            {/* 5. Order Management */}
             <button
               onClick={() => switchTab("commissions")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
                 activeTab === "commissions" || activeTab === "orders"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -771,10 +672,10 @@ export default function AdminDashboardPage() {
               <span>Order Management</span>
             </button>
 
-            {/* 5. Payout Queue */}
+            {/* 6. Payout Queue */}
             <button
               onClick={() => switchTab("withdrawals")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
                 activeTab === "withdrawals"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -787,7 +688,7 @@ export default function AdminDashboardPage() {
             {/* 7. Campaigns Creator */}
             <button
               onClick={() => switchTab("campaigns")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
                 activeTab === "campaigns"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -800,7 +701,7 @@ export default function AdminDashboardPage() {
             {/* 8. Broadcast Update */}
             <button
               onClick={() => switchTab("announcements")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[42px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
                 activeTab === "announcements"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
@@ -812,8 +713,8 @@ export default function AdminDashboardPage() {
           </nav>
         </div>
 
-        {/* Bottom Profile & Exit Console */}
-        <div className="pt-6 border-t border-white/10 space-y-3">
+        {/* Bottom Profile & Exit Console - lifted above mobile browser toolbar */}
+        <div className="pt-4 lg:pt-6 border-t border-white/10 space-y-2.5 pb-4 lg:pb-0">
           <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/5">
             <div className="w-9 h-9 rounded-full bg-[#f5c518] text-[#14231b] font-black flex items-center justify-center text-xs shrink-0 shadow-xs">
               AD
@@ -831,7 +732,7 @@ export default function AdminDashboardPage() {
 
           <Link
             href="/account"
-            className="flex items-center gap-2 text-gray-400 hover:text-white text-xs font-semibold px-2 py-1 transition-colors min-h-[38px]"
+            className="flex items-center gap-2 text-gray-400 hover:text-white text-xs font-semibold px-2 py-2 transition-colors min-h-[38px]"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Exit Console</span>
@@ -850,43 +751,50 @@ export default function AdminDashboardPage() {
             TAB 1: EXECUTIVE ANALYTICS CONSOLE (DASHBOARD)
         ========================================================================= */}
         {activeTab === "dashboard" && (
-          <div className="space-y-5 animate-in fade-in duration-200">
+          <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-200">
             {/* Top Executive Hero Card */}
-            <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E7E3D8] shadow-sm space-y-4">
+            <div className="relative bg-white rounded-[28px] sm:rounded-3xl p-5 sm:p-6 border border-[#E7E3D8] shadow-sm space-y-4">
+              {/* Top Gold Gradient Accent Bar */}
+              <div className="absolute top-0 inset-x-8 sm:inset-x-12 h-1 bg-gradient-to-r from-[#d4af37]/40 via-[#d4af37] to-[#d4af37]/40 rounded-full" />
+
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 <div className="space-y-1">
                   {/* Status Badges */}
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#E6F4EA] text-[#16A34A] text-[10px] font-extrabold uppercase tracking-wider border border-[#16A34A]/20">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F4EA] text-[#16A34A] text-[11px] font-extrabold uppercase tracking-wider border border-[#16A34A]/20">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" />
                       LIVE SUPABASE
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#F1F3F4] text-[#3C4043] text-[10px] font-bold uppercase tracking-wider">
-                      <Calendar className="w-3 h-3 text-[#5F6368]" />
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F1F3F4] text-[#3C4043] text-[11px] font-bold uppercase tracking-wider">
+                      <Calendar className="w-3.5 h-3.5 text-[#5F6368]" />
                       2026
                     </span>
                   </div>
 
                   {/* Title & Subtitle */}
-                  <h1 className="text-2xl sm:text-[26px] font-extrabold text-[#1C1C1C] tracking-tight leading-snug">
+                  <h1 className="text-2xl sm:text-[28px] font-black text-[#1C1C1C] tracking-tight leading-snug mt-1">
                     Executive Analytics Console
                   </h1>
-                  <p className="text-xs text-[#667085] font-medium">
+                  <p className="text-xs sm:text-sm text-[#667085] font-medium">
                     Real-time business intelligence for Amiele Begena.
                   </p>
                 </div>
 
-                {/* Right Meta & Refresh */}
-                <div className="flex items-center gap-3 shrink-0">
+                {/* Right Meta & Refresh (Desktop / Tablet view) */}
+                <div className="hidden md:flex items-center gap-3 shrink-0">
                   <NotificationFlyout triggerStyle="circle" />
 
-                  <span className="text-xs text-[#667085] font-medium hidden sm:inline">
-                    Updated: {timeStr}
-                  </span>
+                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#FAF8F5] border border-[#E7E3D8] shadow-2xs">
+                    <Clock className="w-4 h-4 text-[#c59a27] shrink-0" />
+                    <div className="text-xs sm:text-sm text-[#14231b] font-bold">
+                      <span className="text-[#667085] text-[11px] font-semibold mr-1.5">Updated:</span>
+                      <span className="font-mono font-black">{timeStr}</span>
+                    </div>
+                  </div>
 
                   <button
                     onClick={handleRefresh}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#f5c518] hover:bg-[#eab308] text-[#1C1C1C] text-xs font-bold shadow-sm hover:shadow transition-all cursor-pointer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#f3be3b] hover:bg-[#e5b02d] text-[#14231b] text-xs sm:text-sm font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
                     <span>Refresh Console</span>
@@ -894,11 +802,30 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
+              {/* Mobile Meta & Refresh Row (< md) */}
+              <div className="flex md:hidden items-center justify-between gap-3 pt-1">
+                <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#FAF8F5] border border-[#E7E3D8] shadow-2xs">
+                  <Clock className="w-4 h-4 text-[#c59a27] shrink-0" />
+                  <div className="text-xs sm:text-sm text-[#14231b] font-bold">
+                    <span className="text-[#667085] text-[11px] font-semibold mr-1.5">Updated:</span>
+                    <span className="font-mono font-black">{timeStr}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleRefresh}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#f3be3b] hover:bg-[#e5b02d] text-[#14231b] text-xs sm:text-sm font-bold shadow-xs hover:shadow transition-all cursor-pointer active:scale-95 shrink-0"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                  <span>Refresh Console</span>
+                </button>
+              </div>
+
               {/* Quick Action Navigation Pills Row */}
-              <div className="pt-2 border-t border-[#E7E3D8] flex flex-wrap items-center gap-2 text-xs font-bold">
+              <div className="flex pt-3 border-t border-[#E7E3D8] flex-wrap items-center gap-2 text-xs font-bold">
                 <button
                   onClick={() => switchTab("commissions")}
-                  className="px-3.5 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E3D8] text-[#14231b] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3.5 py-2 rounded-full bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E3D8] text-[#14231b] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <CheckCheck className="w-3.5 h-3.5 text-blue-600" />
                   <span>Approve Orders</span>
@@ -906,7 +833,7 @@ export default function AdminDashboardPage() {
 
                 <button
                   onClick={() => switchTab("campaigns")}
-                  className="px-3.5 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E3D8] text-[#14231b] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3.5 py-2 rounded-full bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E3D8] text-[#14231b] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Target className="w-3.5 h-3.5 text-purple-600" />
                   <span>Campaigns</span>
@@ -914,15 +841,15 @@ export default function AdminDashboardPage() {
 
                 <button
                   onClick={() => switchTab("withdrawals")}
-                  className="px-4 py-1.5 rounded-full bg-[#0F2418] text-white flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  className="px-3.5 py-2 rounded-full bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E3D8] text-[#14231b] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  <CreditCard className="w-3.5 h-3.5 text-[#f5c518]" />
+                  <CreditCard className="w-3.5 h-3.5 text-amber-600" />
                   <span>Payments</span>
                 </button>
 
                 <button
                   onClick={() => switchTab("applications")}
-                  className="px-3.5 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E3D8] text-[#14231b] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3.5 py-2 rounded-full bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E3D8] text-[#14231b] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Affiliates</span>
@@ -930,7 +857,7 @@ export default function AdminDashboardPage() {
 
                 <button
                   onClick={() => switchTab("users")}
-                  className="px-3.5 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E3D8] text-[#14231b] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-3.5 py-2 rounded-full bg-[#FAF8F5] hover:bg-[#F4F1EA] border border-[#E7E3D8] text-[#14231b] flex items-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <Users className="w-3.5 h-3.5 text-blue-600" />
                   <span>Customers</span>
@@ -941,13 +868,13 @@ export default function AdminDashboardPage() {
             {/* 12 Executive KPI Cards Grid (4 Columns x 3 Rows) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
               {/* Card 1: TOTAL REVENUE */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-[#667085]">
                     TOTAL REVENUE
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
-                    <Wallet className="w-4 h-4 text-[#b8860b]" />
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF3E0] border border-[#FAF3E0] text-[#c59a27] flex items-center justify-center shrink-0">
+                    <Wallet className="w-4 h-4 text-[#c59a27]" />
                   </div>
                 </div>
                 <div>
@@ -955,34 +882,34 @@ export default function AdminDashboardPage() {
                     ETB 76,500
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">Confirmed & Paid Sales</span>
+                <span className="text-xs text-[#667085]">Confirmed & Paid Sales</span>
               </div>
 
               {/* Card 2: REVENUE THIS MONTH */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-[#667085]">
                     REVENUE THIS MONTH
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
-                    <TrendingUp className="w-4 h-4 text-[#b8860b]" />
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF3E0] border border-[#FAF3E0] text-[#c59a27] flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-4 h-4 text-[#c59a27]" />
                   </div>
                 </div>
                 <div>
                   <span className="text-2xl sm:text-[28px] font-extrabold text-[#1C1C1C]">
-                    ETB 17,000
+                    ETB 0
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">Current Calendar Month</span>
+                <span className="text-xs text-[#667085]">Current Calendar Month</span>
               </div>
 
               {/* Card 3: TOTAL ORDERS */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     TOTAL ORDERS
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <ShoppingBag className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
@@ -991,16 +918,16 @@ export default function AdminDashboardPage() {
                     89
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">All Orders Recorded</span>
+                <span className="text-xs text-[#667085]">All Orders Recorded</span>
               </div>
 
               {/* Card 4: PENDING ORDERS */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     PENDING ORDERS
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                     <Clock className="w-4 h-4" />
                   </div>
                 </div>
@@ -1009,16 +936,16 @@ export default function AdminDashboardPage() {
                     80
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">Awaiting Admin Approval</span>
+                <span className="text-xs text-[#667085]">Awaiting Admin Approval</span>
               </div>
 
               {/* Card 5: CONFIRMED ORDERS */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     CONFIRMED ORDERS
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                     <CheckCheck className="w-4 h-4" />
                   </div>
                 </div>
@@ -1027,16 +954,16 @@ export default function AdminDashboardPage() {
                     9
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">Payment Verified</span>
+                <span className="text-xs text-[#667085]">Payment Verified</span>
               </div>
 
               {/* Card 6: SHIPPED ORDERS */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     SHIPPED ORDERS
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <Truck className="w-4 h-4" />
                   </div>
                 </div>
@@ -1045,16 +972,16 @@ export default function AdminDashboardPage() {
                     0
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">In Dispatch / Logistics</span>
+                <span className="text-xs text-[#667085]">In Dispatch / Logistics</span>
               </div>
 
               {/* Card 7: DELIVERED ORDERS */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     DELIVERED ORDERS
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                     <PackageCheck className="w-4 h-4" />
                   </div>
                 </div>
@@ -1063,16 +990,16 @@ export default function AdminDashboardPage() {
                     0
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">Completed Deliveries</span>
+                <span className="text-xs text-[#667085]">Completed Deliveries</span>
               </div>
 
               {/* Card 8: TOTAL CUSTOMERS */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     TOTAL CUSTOMERS
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <Users className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
@@ -1081,16 +1008,16 @@ export default function AdminDashboardPage() {
                     33
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">Unique Buyer Identities</span>
+                <span className="text-xs text-[#667085]">Unique Buyer Identities</span>
               </div>
 
               {/* Card 9: TOTAL AFFILIATES */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     TOTAL AFFILIATES
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <UserCheck className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
@@ -1099,16 +1026,16 @@ export default function AdminDashboardPage() {
                     7
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">Active Partners</span>
+                <span className="text-xs text-[#667085]">Active Partners</span>
               </div>
 
               {/* Card 10: TOP AFFILIATE */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-benaiah text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     TOP AFFILIATE
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <Award className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
@@ -1117,16 +1044,16 @@ export default function AdminDashboardPage() {
                     jane
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">Lifetime Top Producer</span>
+                <span className="text-xs text-[#667085]">Lifetime Top Producer</span>
               </div>
 
               {/* Card 11: TOP AFFILIATE SALES */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     TOP AFFILIATE SALES
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <Flame className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
@@ -1135,16 +1062,16 @@ export default function AdminDashboardPage() {
                     ETB 4,500
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">Associated Gross Volume</span>
+                <span className="text-xs text-[#667085]">Associated Gross Volume</span>
               </div>
 
               {/* Card 12: ACTIVE CAMPAIGNS */}
-              <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     ACTIVE CAMPAIGNS
                   </span>
-                  <div className="w-8 h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <Activity className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>

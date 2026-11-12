@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Bell,
@@ -12,7 +13,10 @@ import {
   X,
   Sparkles,
   ExternalLink,
+  Info,
+  Clock,
 } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
 export interface NotificationItem {
   id: string;
@@ -21,99 +25,196 @@ export interface NotificationItem {
   actionText: string;
   targetBold?: string;
   bodyPreview?: string;
-  avatarUrl: string;
-  badgeType: "comment" | "package" | "invite" | "like";
+  avatarUrl?: string;
+  badgeType: "comment" | "package" | "invite" | "like" | "info" | "order";
   isUnread: boolean;
   hasActions?: boolean;
+  link?: string;
+  createdAt: string;
 }
 
-const defaultNotifications: NotificationItem[] = [
-  {
-    id: "notif_1",
-    sender: "Pixelwave",
-    timeAgo: "1h ago",
-    actionText: "Commented on",
-    targetBold: "Master Begena Harps",
-    bodyPreview:
-      "These artisanal gut strings sound exceptionally resonant. Maybe these could be pre-stretched before global DHL packaging.",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-    badgeType: "comment",
-    isUnread: true,
-  },
-  {
-    id: "notif_2",
-    sender: "Artisan Workshop",
-    timeAgo: "1h ago",
-    actionText: "Acoustic calibration finalized -",
-    targetBold: "Order #AM-2026-001170",
-    bodyPreview: "Status: Hand-carved wanza wood frame completed and tuned.",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
-    badgeType: "package",
-    isUnread: true,
-  },
-  {
-    id: "notif_3",
-    sender: "Liturgical Guild",
-    timeAgo: "1h ago",
-    actionText: "Invited you to curate",
-    targetBold: "Sacred Acoustic Heritage Exhibition",
-    bodyPreview: undefined,
-    avatarUrl:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
-    badgeType: "invite",
-    isUnread: true,
-    hasActions: true,
-  },
-  {
-    id: "notif_4",
-    sender: "Luna T.",
-    timeAgo: "1h ago",
-    actionText: "Liked",
-    targetBold: "Kirar Acoustic Resonance Study",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80",
-    badgeType: "like",
-    isUnread: false,
-  },
-  {
-    id: "notif_5",
-    sender: "Affiliate Engine",
-    timeAgo: "2h ago",
-    actionText: "Commission verified on",
-    targetBold: "Order #AM-2026-001171",
-    bodyPreview:
-      "ETB 680 credited to available balance for referral code giddymesfi-3659.",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&auto=format&fit=crop&q=80",
-    badgeType: "comment",
-    isUnread: false,
-  },
-];
+function formatTimeAgo(isoString: string): string {
+  try {
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffSec = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (isNaN(diffSec) || diffSec < 60) return "just now";
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHour = Math.floor(diffMin / 60);
+    if (diffHour < 24) return `${diffHour}h ago`;
+    const diffDays = Math.floor(diffHour / 24);
+    return `${diffDays}d ago`;
+  } catch {
+    return "recently";
+  }
+}
+
+function mapRowToNotification(row: any): NotificationItem {
+  return {
+    id: String(row.id),
+    sender: row.title || "Amiele System",
+    timeAgo: formatTimeAgo(row.created_at || new Date().toISOString()),
+    actionText: row.message || "",
+    targetBold: undefined,
+    bodyPreview: row.message || undefined,
+    avatarUrl: row.avatar_url || undefined,
+    badgeType: (row.type as any) || "info",
+    isUnread: !row.is_read,
+    link: row.link || undefined,
+    createdAt: row.created_at || new Date().toISOString(),
+  };
+}
 
 interface NotificationFlyoutProps {
   buttonClassName?: string;
   iconClassName?: string;
   badgeCount?: number;
-  triggerStyle?: "pill" | "circle" | "transparent";
+  triggerStyle?: "pill" | "circle" | "transparent" | "menu-row";
+  onOpenChange?: (open: boolean) => void;
+}
+
+// Live real-time Supabase notifications state shared across all components
+let globalNotifications: NotificationItem[] = [];
+let isInitialized = false;
+const subscribers = new Set<(items: NotificationItem[]) => void>();
+
+function notifySubscribers() {
+  subscribers.forEach((callback) => callback([...globalNotifications]));
+}
+
+async function fetchRealNotifications() {
+  try {
+    const { data, error } = await supabase
+      .from("notifications")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.warn("Supabase notifications query error:", error.message);
+      return;
+    }
+
+    if (data) {
+      globalNotifications = data.map(mapRowToNotification);
+      notifySubscribers();
+    }
+  } catch (err) {
+    console.warn("Error fetching real notifications:", err);
+  }
+}
+
+function initRealtimeNotifications() {
+  if (isInitialized) return;
+  isInitialized = true;
+
+  fetchRealNotifications();
+
+  // Subscribe to real-time postgres changes on the notifications table
+  try {
+    supabase
+      .channel("public:notifications_realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications" },
+        () => {
+          fetchRealNotifications();
+        }
+      )
+      .subscribe();
+  } catch (err) {
+    console.warn("Realtime subscription setup failed:", err);
+  }
+}
+
+export function useNotificationStore() {
+  const [notifications, setNotifications] = useState<NotificationItem[]>(globalNotifications);
+
+  useEffect(() => {
+    initRealtimeNotifications();
+    subscribers.add(setNotifications);
+    setNotifications([...globalNotifications]);
+    return () => {
+      subscribers.delete(setNotifications);
+    };
+  }, []);
+
+  const unreadCount = notifications.filter((n) => n.isUnread).length;
+
+  const markAsRead = async (id: string) => {
+    globalNotifications = globalNotifications.map((n) =>
+      n.id === id ? { ...n, isUnread: false } : n
+    );
+    notifySubscribers();
+
+    try {
+      await supabase.from("notifications").update({ is_read: true }).eq("id", id);
+    } catch (e) {
+      console.warn("Failed to mark notification read in Supabase:", e);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    globalNotifications = globalNotifications.map((n) => ({ ...n, isUnread: false }));
+    notifySubscribers();
+
+    try {
+      await supabase.from("notifications").update({ is_read: true }).eq("is_read", false);
+    } catch (e) {
+      console.warn("Failed to mark all read in Supabase:", e);
+    }
+  };
+
+  return { notifications, unreadCount, markAsRead, markAllAsRead, refresh: fetchRealNotifications };
 }
 
 export default function NotificationFlyout({
   buttonClassName = "",
   iconClassName = "w-5 h-5 stroke-[1.8]",
-  badgeCount = 3,
+  badgeCount,
   triggerStyle = "transparent",
+  onOpenChange,
 }: NotificationFlyoutProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<"all" | "unread">("all");
-  const [notifications, setNotifications] = useState<NotificationItem[]>(
-    defaultNotifications
-  );
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore();
   const [actionHandled, setActionHandled] = useState<{ [id: string]: string }>({});
 
   const containerRef = useRef<HTMLDivElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const triggerButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [mounted, setMounted] = useState(false);
+  const [popoverPos, setPopoverPos] = useState<{ top: number; right: number } | null>(null);
+
+  const displayBadgeCount = badgeCount !== undefined ? badgeCount : unreadCount;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen || !mounted) return;
+
+    const updatePos = () => {
+      if (triggerButtonRef.current) {
+        const rect = triggerButtonRef.current.getBoundingClientRect();
+        setPopoverPos({
+          top: rect.bottom + 8,
+          right: Math.max(12, window.innerWidth - rect.right),
+        });
+      }
+    };
+
+    updatePos();
+    window.addEventListener("resize", updatePos);
+    window.addEventListener("scroll", updatePos, { passive: true });
+    return () => {
+      window.removeEventListener("resize", updatePos);
+      window.removeEventListener("scroll", updatePos);
+    };
+  }, [isOpen, mounted]);
 
   // Lock background scrolling and movement when notification flyout is open
   useEffect(() => {
@@ -193,17 +294,12 @@ export default function NotificationFlyout({
   // Handle invitation buttons
   const handleAction = (id: string, decision: "accepted" | "declined") => {
     setActionHandled((prev) => ({ ...prev, [id]: decision }));
-    // Mark as read once acted upon
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isUnread: false } : n))
-    );
+    markAsRead(id);
   };
 
   // Mark all as read
   const handleMarkAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isUnread: false } : n))
-    );
+    markAsRead(id);
   };
 
   const filteredNotifications = notifications.filter((n) => {
@@ -211,61 +307,103 @@ export default function NotificationFlyout({
     return true;
   });
 
-  const unreadCount = notifications.filter((n) => n.isUnread).length;
+  const toggleOpen = () => {
+    const next = !isOpen;
+    setIsOpen(next);
+    onOpenChange?.(next);
+  };
 
   return (
-    <div className="relative inline-block" ref={containerRef}>
-      {/* Trigger Button without background matching Profile & Cart icons */}
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={
-          buttonClassName ||
-          (triggerStyle === "pill"
-            ? `w-8 h-8 rounded-xl bg-[#FAF8F5] hover:bg-white border border-[#14231b]/15 shadow-2xs flex items-center justify-center transition-all cursor-pointer relative hover:border-[#D4AF37]/60 ${
-                isOpen ? "z-50 ring-2 ring-[#D4AF37]/50 bg-white" : ""
-              }`
-            : triggerStyle === "circle"
-            ? `w-8 h-8 rounded-full bg-[#FAF8F5] border border-[#14231b]/15 flex items-center justify-center text-[#14231b] hover:bg-[#F4F1EA] hover:border-[#D4AF37]/60 transition-colors relative cursor-pointer ${
-                isOpen ? "z-50 ring-2 ring-[#D4AF37]/50" : ""
-              }`
-            : `relative p-1.5 text-[#14231b] hover:text-[#2d6a4f] transition-transform hover:scale-110 cursor-pointer ${
-                isOpen ? "z-50 text-[#2d6a4f]" : ""
-              }`)
-        }
-        aria-label="Notifications"
-        aria-expanded={isOpen}
-      >
-        <Bell className={iconClassName} />
-        {(badgeCount !== undefined ? badgeCount : unreadCount) > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[17px] h-4 px-1 rounded-full bg-[#f3be3b] text-[#14231b] text-[10px] font-black flex items-center justify-center shadow-xs border border-white">
-            {badgeCount !== undefined ? badgeCount : unreadCount}
-          </span>
-        )}
-      </button>
-
-      {/* Fullscreen Backdrop: Blocks background clicks, gestures, and movement */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-[#07150D]/30 backdrop-blur-[1.5px] pointer-events-auto transition-opacity animate-in fade-in duration-150"
-          onClick={() => setIsOpen(false)}
-          onWheel={(e) => {
-            if (e.cancelable) e.preventDefault();
-          }}
-          onTouchMove={(e) => {
-            if (e.cancelable) e.preventDefault();
-          }}
-          aria-hidden="true"
-        />
+    <div
+      className={triggerStyle === "menu-row" ? "w-full" : "relative inline-block"}
+      ref={containerRef}
+    >
+      {triggerStyle === "menu-row" ? (
+        <button
+          ref={triggerButtonRef}
+          type="button"
+          onClick={toggleOpen}
+          className={
+            buttonClassName ||
+            "w-full px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-[#FAF8F5] transition-colors flex items-center justify-between cursor-pointer"
+          }
+          aria-label={displayBadgeCount > 0 ? `Notifications, ${displayBadgeCount} unread` : "Notifications"}
+          aria-expanded={isOpen}
+        >
+          <div className="flex items-center gap-2.5">
+            <Bell className="w-4 h-4 text-[#14231b]" />
+            <span>Notifications</span>
+          </div>
+          {displayBadgeCount > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-[#f3be3b] text-[#14231b] text-xs font-black shadow-xs">
+              {displayBadgeCount}
+            </span>
+          )}
+        </button>
+      ) : (
+        <button
+          ref={triggerButtonRef}
+          type="button"
+          onClick={toggleOpen}
+          className={
+            buttonClassName ||
+            (triggerStyle === "pill"
+              ? `w-8 h-8 rounded-xl bg-[#FAF8F5] hover:bg-white border border-[#14231b]/15 shadow-2xs flex items-center justify-center transition-all cursor-pointer relative hover:border-[#D4AF37]/60 ${
+                  isOpen ? "z-50 ring-2 ring-[#D4AF37]/50 bg-white" : ""
+                }`
+              : triggerStyle === "circle"
+              ? `w-8 h-8 rounded-full bg-[#FAF8F5] border border-[#14231b]/15 flex items-center justify-center text-[#14231b] hover:bg-[#F4F1EA] hover:border-[#D4AF37]/60 transition-colors relative cursor-pointer ${
+                  isOpen ? "z-50 ring-2 ring-[#D4AF37]/50" : ""
+                }`
+              : `relative p-1.5 text-[#14231b] hover:text-[#2d6a4f] transition-transform hover:scale-110 cursor-pointer ${
+                  isOpen ? "z-50 text-[#2d6a4f]" : ""
+                }`)
+          }
+          aria-label={displayBadgeCount > 0 ? `Notifications, ${displayBadgeCount} unread` : "Notifications"}
+          aria-expanded={isOpen}
+        >
+          <Bell className={iconClassName} />
+          {displayBadgeCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[17px] h-4 px-1 rounded-full bg-[#f3be3b] text-[#14231b] text-[10px] font-black flex items-center justify-center shadow-xs border border-white">
+              {displayBadgeCount}
+            </span>
+          )}
+        </button>
       )}
 
-      {/* Brand-styled Flyout Menu */}
-      {isOpen && (
-        <div
-          ref={popoverRef}
-          className="fixed left-3 right-3 top-[76px] sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2.5 w-auto sm:w-[360px] max-w-[calc(100vw-24px)] sm:max-w-none max-h-[70vh] sm:max-h-[520px] flex flex-col bg-white rounded-2xl p-4 shadow-[0_20px_50px_-12px_rgba(20,35,27,0.22)] border border-[#14231b]/15 z-50 pointer-events-auto text-[#14231b] animate-in fade-in zoom-in-95 duration-150"
-          style={{ transformOrigin: "top right" }}
-        >
+      {/* Fullscreen Blurred Backdrop & Flyout Menu Portaled to document.body */}
+      {mounted && isOpen && createPortal(
+        <>
+          {/* Fullscreen Backdrop: Blurs the entire window */}
+          <div
+            className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-md pointer-events-auto transition-opacity animate-in fade-in duration-200"
+            onClick={() => {
+              setIsOpen(false);
+              onOpenChange?.(false);
+            }}
+            onWheel={(e) => {
+              if (e.cancelable) e.preventDefault();
+            }}
+            onTouchMove={(e) => {
+              if (e.cancelable) e.preventDefault();
+            }}
+            aria-hidden="true"
+          />
+
+          {/* Brand-styled Flyout Menu */}
+          <div
+            ref={popoverRef}
+            style={
+              popoverPos && typeof window !== "undefined" && window.innerWidth >= 768
+                ? {
+                    top: `${popoverPos.top}px`,
+                    right: `${popoverPos.right}px`,
+                    position: "fixed",
+                  }
+                : undefined
+            }
+            className="fixed left-3 right-3 top-[76px] md:left-auto md:right-auto md:top-auto w-auto md:w-[360px] max-w-[calc(100vw-24px)] md:max-w-none max-h-[75vh] md:max-h-[520px] flex flex-col bg-white rounded-2xl p-4 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.35)] border border-[#14231b]/15 z-[9999] pointer-events-auto text-[#14231b] animate-in fade-in zoom-in-95 duration-150"
+          >
           {/* Subtle Sacred Gold Top Accent Bar */}
           <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mb-3 rounded-full opacity-80" />
 
@@ -310,8 +448,16 @@ export default function NotificationFlyout({
             style={{ overscrollBehavior: "contain" }}
           >
             {filteredNotifications.length === 0 ? (
-              <div className="py-8 text-center text-[11px] text-[#737874]">
-                No unread notifications at this time.
+              <div className="py-12 px-4 text-center flex flex-col items-center justify-center space-y-2">
+                <div className="w-10 h-10 rounded-full bg-[#FAF8F5] border border-[#14231b]/10 flex items-center justify-center text-[#14231b]/40">
+                  <Bell className="w-5 h-5 stroke-[1.5]" />
+                </div>
+                <p className="text-xs font-bold text-[#14231b]">No notifications</p>
+                <p className="text-[11px] text-[#737874] max-w-[220px]">
+                  {activeFilter === "unread"
+                    ? "You have no unread notifications at this time."
+                    : "You have no notifications at this time."}
+                </p>
               </div>
             ) : (
               filteredNotifications.map((n) => (
@@ -324,11 +470,17 @@ export default function NotificationFlyout({
                 >
                   {/* Left: Avatar with Mini Brand Badge */}
                   <div className="relative shrink-0 mt-0.5">
-                    <img
-                      src={n.avatarUrl}
-                      alt={n.sender}
-                      className="w-8.5 h-8.5 rounded-full object-cover border border-[#14231b]/10 shadow-2xs"
-                    />
+                    {n.avatarUrl && n.avatarUrl.length > 5 ? (
+                      <img
+                        src={n.avatarUrl}
+                        alt={n.sender}
+                        className="w-8.5 h-8.5 rounded-full object-cover border border-[#14231b]/10 shadow-2xs"
+                      />
+                    ) : (
+                      <div className="w-8.5 h-8.5 rounded-full bg-[#14231b]/10 text-[#14231b] flex items-center justify-center font-bold text-xs border border-[#14231b]/10 shadow-2xs">
+                        {n.sender.charAt(0).toUpperCase()}
+                      </div>
+                    )}
 
                     {/* Mini Badge on Avatar corner themed with brand colors */}
                     <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center border-2 border-white shadow-2xs">
@@ -337,19 +489,24 @@ export default function NotificationFlyout({
                           <MessageSquare className="w-2 h-2" />
                         </div>
                       )}
-                      {n.badgeType === "package" && (
-                        <div className="w-full h-full bg-[#b8860b] rounded-full flex items-center justify-center text-white" title="Masterpiece / Order">
+                      {(n.badgeType === "package" || n.badgeType === "order") && (
+                        <div className="w-full h-full bg-[#b8860b] rounded-full flex items-center justify-center text-white" title="Order">
                           <Package className="w-2 h-2" />
                         </div>
                       )}
                       {n.badgeType === "invite" && (
-                        <div className="w-full h-full bg-[#2d6a4f] rounded-full flex items-center justify-center text-white" title="Exhibition / Invitation">
+                        <div className="w-full h-full bg-[#2d6a4f] rounded-full flex items-center justify-center text-white" title="Invitation">
                           <UserPlus className="w-2 h-2" />
                         </div>
                       )}
                       {n.badgeType === "like" && (
                         <div className="w-full h-full bg-[#c0392b] rounded-full flex items-center justify-center text-white" title="Appreciation">
                           <Heart className="w-2 h-2 fill-current" />
+                        </div>
+                      )}
+                      {!["comment", "package", "order", "invite", "like"].includes(n.badgeType) && (
+                        <div className="w-full h-full bg-[#14231b] rounded-full flex items-center justify-center text-white" title="Notice">
+                          <Bell className="w-2 h-2" />
                         </div>
                       )}
                     </div>
@@ -438,18 +595,16 @@ export default function NotificationFlyout({
             </Link>
             <button
               type="button"
-              onClick={() =>
-                setNotifications((prev) =>
-                  prev.map((n) => ({ ...n, isUnread: false }))
-                )
-              }
+              onClick={markAllAsRead}
               className="text-[#b8860b] hover:text-[#8c6508] font-bold text-[10.5px] hover:underline cursor-pointer"
             >
               Mark all as read
             </button>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </>,
+      document.body
+    )}
+  </div>
+);
 }

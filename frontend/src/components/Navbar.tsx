@@ -54,7 +54,6 @@ export default function Navbar() {
     { name: "PRODUCTS", href: "/products" },
     { name: "ABOUT PRODUCT", href: "/about-product" },
     { name: "ABOUT US", href: "/about" },
-    { name: "BLOG", href: "/blog" },
   ];
 
   const currencies: Currency[] = ["ETB", "USD", "EUR"];
@@ -87,9 +86,9 @@ export default function Navbar() {
               : "w-full max-w-full rounded-none px-4 sm:px-8 lg:px-20 h-[72px] bg-[#FAF8F5] border-none shadow-none"
           }`}
         >
-          {/* Brand Logo in Benaiah Font (Scaled down on mobile to prevent crowding) */}
+          {/* Brand Logo in Benaiah Font (Scaled appropriately on small mobile screens to prevent crowding) */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <span className="font-benaiah text-lg min-[360px]:text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#14231b] tracking-wide group-hover:text-[#2d6a4f] transition-colors whitespace-nowrap">
+            <span className="font-benaiah text-base min-[360px]:text-lg min-[380px]:text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#14231b] tracking-wide group-hover:text-[#2d6a4f] transition-colors whitespace-nowrap">
               ዓሚኤል በገና
             </span>
           </Link>
@@ -117,13 +116,14 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Right Actions: Clean layout keeping >=8px gap, secondary items moved to drawer on mobile */}
+          {/* Right Actions: Desktop shows full controls; Mobile (<768px) shows Cart then Hamburger */}
           <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 shrink-0">
-            {/* Currency Switcher Pill - visible on mobile & desktop matching reference */}
-            <div className="relative">
+            {/* Currency Switcher Dropdown - Desktop only (moved into menu on mobile) */}
+            <div className="hidden md:block relative">
               <button
+                type="button"
                 onClick={() => setCurrencyOpen(!currencyOpen)}
-                className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg border border-[#14231b] sm:border-[#14231b]/20 bg-white sm:bg-[#DFDAD0]/50 text-xs font-bold text-[#14231b] hover:bg-[#DFDAD0] transition-all cursor-pointer min-h-[32px] sm:min-h-[38px]"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#14231b]/20 bg-[#DFDAD0]/50 text-xs font-bold text-[#14231b] hover:bg-[#DFDAD0] transition-all cursor-pointer min-h-[38px]"
                 aria-label="Select currency"
               >
                 <span>{currency}</span>
@@ -139,6 +139,7 @@ export default function Navbar() {
                   {currencies.map((c) => (
                     <button
                       key={c}
+                      type="button"
                       onClick={() => {
                         setCurrency(c);
                         setCurrencyOpen(false);
@@ -148,6 +149,7 @@ export default function Navbar() {
                           ? "bg-[#14231b] text-white"
                           : "text-[#14231b] hover:bg-[#DFDAD0]"
                       }`}
+                      aria-label={`Select ${c}`}
                     >
                       {c}
                     </button>
@@ -156,107 +158,149 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Notification Flyout - Visible on Tablet/Desktop, hidden on mobile header matching reference */}
-            <div className="hidden sm:flex items-center">
-              <NotificationFlyout triggerStyle="transparent" badgeCount={23} />
+            {/* Notification Flyout - Desktop header only (moved into menu on mobile) */}
+            <div className="hidden md:flex items-center">
+              <NotificationFlyout triggerStyle="transparent" />
             </div>
 
-            {/* Cart Icon Button */}
+            {/* Cart Icon Button - Always visible on mobile and desktop */}
             <button
+              type="button"
               onClick={openCart}
-              className="relative p-2 text-[#14231b] hover:text-[#2d6a4f] transition-transform hover:scale-105 active:scale-95 cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center rounded-full"
-              aria-label="View Cart"
+              className="relative min-w-[44px] min-h-[44px] w-11 h-11 text-[#14231b] hover:text-[#2d6a4f] transition-transform active:scale-95 cursor-pointer flex items-center justify-center rounded-full"
+              aria-label={totalCount > 0 ? `Open cart, ${totalCount} items` : "Open cart"}
             >
               <ShoppingCart className="w-5 h-5 stroke-[1.8]" />
               {totalCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#e63946] text-white text-[10px] font-bold flex items-center justify-center shadow">
+                <span
+                  style={{ top: "-4px", right: "-4px" }}
+                  className="absolute min-w-[18px] h-[18px] px-1 rounded-full bg-[#e63946] text-white text-[10px] font-bold flex items-center justify-center shadow-xs pointer-events-none"
+                >
                   {totalCount}
                 </span>
               )}
             </button>
 
-            {/* User Account Icon in purple matching screenshot */}
+            {/* User Account Icon - Desktop only (moved into menu on mobile) */}
             <Link
               href={user ? "/account" : "/login"}
-              className="flex p-2 text-[#512c85] hover:text-[#2d6a4f] transition-transform hover:scale-105 items-center justify-center rounded-full min-h-[40px] min-w-[40px]"
+              className="hidden md:flex p-2 text-[#512c85] hover:text-[#2d6a4f] transition-transform hover:scale-105 items-center justify-center rounded-full min-h-[40px] min-w-[40px]"
               aria-label="User Account"
             >
               <UserIcon className="w-5 h-5 fill-current" />
             </Link>
 
-            {/* Mobile Menu Trigger matching screenshot with clean icon */}
+            {/* Mobile Menu (Hamburger) Button - Far right, >=44x44px, >=8px gap from cart */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-1.5 sm:p-2 text-[#14231b] hover:text-[#2d6a4f] rounded-lg cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center transition-colors"
-              aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+              className="md:hidden min-w-[44px] min-h-[44px] w-11 h-11 p-2 text-[#14231b] hover:text-[#2d6a4f] rounded-lg cursor-pointer flex items-center justify-center transition-colors"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav-menu"
             >
-              <Menu className="w-5 h-5" />
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6 stroke-[2]" />
+              ) : (
+                <Menu className="w-6 h-6 stroke-[2]" />
+              )}
             </button>
           </div>
         </div>
 
-        {/* Mobile Semi-Transparent Dark Backdrop below header */}
+        {/* Mobile Semi-Transparent Dark Backdrop */}
         {mobileMenuOpen && (
           <div
-            className="fixed top-16 sm:top-20 inset-x-0 bottom-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-150 pointer-events-auto md:hidden"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200 pointer-events-auto md:hidden"
             onClick={() => setMobileMenuOpen(false)}
             aria-hidden="true"
           />
         )}
 
-        {/* Right-Side Slide-Out Mobile Drawer matching exact screenshot */}
+        {/* Mobile Slide-Out Drawer (100dvh with overflow-y: auto) */}
         {mobileMenuOpen && (
           <div
             id="mobile-nav-menu"
             role="region"
             aria-label="Mobile Navigation Menu"
-            className="fixed top-16 sm:top-20 right-0 bottom-0 z-50 pointer-events-auto md:hidden w-[54%] min-w-[210px] max-w-[270px] bg-white border-l border-gray-100 shadow-2xl flex flex-col justify-start overflow-y-auto animate-in slide-in-from-right duration-200"
+            className="fixed top-0 right-0 bottom-0 z-40 h-[100dvh] w-[75%] sm:w-[60%] max-w-[320px] bg-white border-l border-gray-100 shadow-2xl flex flex-col justify-start overflow-y-auto animate-in slide-in-from-right duration-200 pt-[76px] pb-8 pointer-events-auto md:hidden"
           >
-            <div className="flex flex-col w-full divide-y divide-gray-100 border-b border-gray-100">
+            <div className="flex flex-col w-full divide-y divide-gray-100">
+              {/* 1. Home */}
               <Link
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-[#FAF8F5] transition-colors"
               >
                 Home
               </Link>
+
+              {/* 2. Products */}
               <Link
                 href="/products"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-[#FAF8F5] transition-colors"
               >
                 Products
               </Link>
+
+              {/* 3. About Product */}
               <Link
                 href="/about-product"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-[#FAF8F5] transition-colors"
               >
                 About Product
               </Link>
+
+              {/* 4. About Us */}
               <Link
                 href="/about"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-[#FAF8F5] transition-colors"
               >
                 About Us
               </Link>
-              <Link
-                href="/blog"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
-              >
-                Blog
-              </Link>
+
+              {/* 5. Currency Selector (ETB, USD, EUR) */}
+              <div className="px-6 py-3.5 flex flex-col gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#14231b]/60">
+                  Currency
+                </span>
+                <div className="flex items-center gap-2">
+                  {currencies.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setCurrency(c)}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold transition-all text-center cursor-pointer ${
+                        currency === c
+                          ? "bg-[#14231b] text-white shadow-xs"
+                          : "bg-[#FAF8F5] text-[#14231b] hover:bg-[#DFDAD0] border border-[#14231b]/15"
+                      }`}
+                      aria-label={`Switch currency to ${c}`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 7. Notifications (with unread count badge on right) */}
+              <div>
+                <NotificationFlyout triggerStyle="menu-row" />
+              </div>
+
+              {/* 8. Account / Sign In */}
               <Link
                 href={user ? "/account" : "/login"}
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-[#FAF8F5] transition-colors flex items-center justify-between"
               >
-                Account / መለያ
+                <div className="flex items-center gap-2.5">
+                  <UserIcon className="w-4 h-4 text-[#512c85] fill-current" />
+                  <span>{user ? "Account / መለያ" : "Account / Sign In"}</span>
+                </div>
               </Link>
             </div>
           </div>
