@@ -16,6 +16,7 @@ export const createGuestOrder = async (req: Request, res: Response) => {
       referral_code,
       session_id,
       notes = "Guest WhatsApp Checkout",
+      items,
     } = req.body;
 
     if (!customer_name || !phone) {
@@ -25,58 +26,102 @@ export const createGuestOrder = async (req: Request, res: Response) => {
       });
     }
 
-    // Call stored procedure create_guest_order
-    const rpcPayload = {
-      p_customer_name: customer_name,
-      p_phone: phone,
-      p_customer_email: customer_email || "N/A",
-      p_country: country || "Ethiopia",
-      p_product_id: product_id || null,
-      p_product_name: product_name || null,
-      p_quantity: parseInt(String(quantity), 10) || 1,
-      p_referral_code: referral_code || null,
-      p_session_id: session_id || null,
-      p_notes: notes,
-    };
+    // C4 Fix: If multiple items are provided in the cart, create orders for ALL items
+    const orderItems: Array<{ product_id?: string; product_name?: string; quantity: number }> =
+      Array.isArray(items) && items.length > 0
+        ? items.map((i: any) => ({
+            product_id: i.product_id || i.productId,
+            product_name: i.product_name || i.name,
+            quantity: parseInt(String(i.quantity), 10) || 1,
+          }))
+        : [
+            {
+              product_id: product_id || null,
+              product_name: product_name || null,
+              quantity: parseInt(String(quantity), 10) || 1,
+            },
+          ];
 
-    const { data, error } = await supabase.rpc("create_guest_order", rpcPayload);
+    const createdOrders: any[] = [];
+    const errors: string[] = [];
 
-    if (error) {
-      console.warn("RPC create_guest_order returned error, attempting fallback insert:", error);
-      // Fallback direct insert
-      const year = new Date().getFullYear();
-      const randNum = Math.floor(100000 + Math.random() * 900000);
-      const generatedOrderNumber = `AM-${year}-${randNum}`;
+    for (const item of orderItems) {
+      let resolvedProdId = item.product_id || null;
+      if (!resolvedProdId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedProdId)) {
+        // Safe slug / name resolution fallback
+        const term = item.product_id || item.product_name || "";
+        const { data: matched } = await supabase
+          .from("products")
+          .select("id")
+          .is("deleted_at", null)
+          .eq("status", "active")
+          .or(`slug.eq.${term},name.ilike.%${term}%`)
+          .limit(1)
+          .maybeSingle();
+        if (matched) resolvedProdId = matched.id;
+      }
 
-      const { data: newOrder, error: insertError } = await supabase
-        .from("orders")
-        .insert({
-          order_number: generatedOrderNumber,
-          customer_name,
-          phone,
-          customer_email: customer_email || null,
-          country: country || "Ethiopia",
-          product_id: product_id || null,
-          quantity: parseInt(String(quantity), 10) || 1,
-          referral_code: referral_code || null,
-          notes,
-          payment_status: "pending_payment",
-          status: "pending",
-        })
-        .select()
-        .single();
+      const rpcPayload = {
+        p_customer_name: customer_name,
+        p_phone: phone,
+        p_customer_email: customer_email || "N/A",
+        p_country: country || "Ethiopia",
+        p_product_id: resolvedProdId,
+        p_product_name: item.product_name || null,
+        p_quantity: item.quantity,
+        p_referral_code: referral_code || null,
+        p_session_id: session_id || null,
+        p_notes: notes,
+      };
 
-      if (insertError) throw insertError;
+      const { data, error } = await supabase.rpc("create_guest_order", rpcPayload);
 
-      return res.status(201).json({
-        success: true,
-        order_number: generatedOrderNumber,
-        order_id: newOrder.id,
-        status: "pending_payment",
+      if (error) {
+        console.warn("RPC create_guest_order technical error:", error);
+        errors.push(error.message || "Failed to process order via RPC");
+      } else if (data && data.success === false) {
+        console.warn("RPC create_guest_order business rule rejected:", data.error);
+        errors.push(data.error || "Order could not be accepted");
+      } else if (data) {
+        createdOrders.push(data);
+      }
+    }
+
+    if (createdOrders.length === 0 && errors.length > 0) {
+      return res.status(500).json({
+        success: false,
+        error: errors.join(", ") || "Failed to process order",
       });
     }
 
-    return res.status(201).json(data || { success: true });
+    // If request contains authenticated bearer token, attach customer_id to created orders
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      try {
+        const token = authHeader.split(" ")[1];
+        const { data: { user } } = await supabase.auth.getUser(token);
+        if (user?.id) {
+          const orderIds = createdOrders.map((o) => o.order_id).filter(Boolean);
+          if (orderIds.length > 0) {
+            await supabase
+              .from("orders")
+              .update({ customer_id: user.id })
+              .in("id", orderIds);
+          }
+        }
+      } catch (authErr) {
+        console.warn("Could not attach customer_id from token:", authErr);
+      }
+    }
+
+    const primaryOrder = createdOrders[0] || {};
+    return res.status(201).json({
+      success: true,
+      order_number: primaryOrder.order_number,
+      order_id: primaryOrder.order_id,
+      orders: createdOrders,
+      total_items_ordered: createdOrders.length,
+    });
   } catch (error: any) {
     console.error("Error in createGuestOrder:", error);
     return res.status(500).json({

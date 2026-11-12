@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
 import { useCurrency } from "../context/CurrencyContext";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { fetchProducts } from "../lib/api";
+import { Product } from "../lib/types";
 
 export default function HomePage() {
-  const { openCheckoutModal, addItem } = useCart();
+  const { openDirectOrder } = useCart();
   const { formatPrice, currency } = useCurrency();
 
   // Testimonials matching the exact screenshot
@@ -114,8 +116,18 @@ export default function HomePage() {
 
 
 
-  // Products matching exact Screenshot 4
-  const favoriteProducts = [
+  const [liveProducts, setLiveProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    fetchProducts().then((data) => {
+      if (data && data.length > 0) {
+        setLiveProducts(data);
+      }
+    }).catch((e) => console.warn("Failed to fetch home products:", e));
+  }, []);
+
+  // Products matching exact Screenshot 4, backed by real Supabase products
+  const defaultFavoriteProducts = [
     {
       id: "a0000000-0000-0000-0000-000000000001",
       name: "በገና (Begena)",
@@ -148,8 +160,26 @@ export default function HomePage() {
     },
   ];
 
+  const favoriteProducts = defaultFavoriteProducts.map((def) => {
+    const live = liveProducts.find((p) => p.slug === def.slug || p.id === def.id);
+    if (!live) return def;
+    const cover = live.images?.find((img) => img.isCover)?.storagePath || live.images?.[0]?.storagePath || def.image;
+    const priceNum = typeof live.price === "string" ? parseFloat(live.price) : Number(live.price);
+    return {
+      id: live.id,
+      name: live.name,
+      slug: live.slug,
+      category: live.category,
+      subtitle: live.shortDescription || def.subtitle,
+      priceETB: def.priceETB,
+      priceUSD: !isNaN(priceNum) && priceNum > 0 ? priceNum : def.priceUSD,
+      image: cover,
+      _realProduct: live,
+    };
+  });
+
   const handleOrderWhatsApp = (product: (typeof favoriteProducts)[0]) => {
-    addItem({
+    const targetProduct: Product = (product as any)._realProduct || {
       id: product.id,
       name: product.name,
       slug: product.slug,
@@ -159,9 +189,9 @@ export default function HomePage() {
       stock: 50,
       featured: true,
       status: "active",
-      images: [{ storagePath: product.image, isCover: true }],
-    });
-    openCheckoutModal();
+      images: [{ id: "cover", productId: product.id, storagePath: product.image, isCover: true, sortOrder: 0 }],
+    };
+    openDirectOrder(targetProduct);
   };
 
   // Visible testimonials (3 cards in view)

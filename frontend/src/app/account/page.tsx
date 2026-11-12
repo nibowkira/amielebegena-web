@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
@@ -9,6 +9,7 @@ import { useCart } from "../../context/CartContext";
 import { initialProducts } from "../../data/products";
 import { Product } from "../../lib/types";
 import { supabase } from "../../lib/supabase";
+import { useNotificationStore } from "../../components/NotificationFlyout";
 import {
   Home,
   Package,
@@ -38,6 +39,15 @@ import {
   Save,
   ShieldCheck,
   ExternalLink,
+  Copy,
+  Check,
+  CheckCircle,
+  Clock,
+  Award,
+  AlertCircle,
+  Sparkles,
+  RefreshCw,
+  FileText,
 } from "lucide-react";
 
 export default function AccountPage() {
@@ -45,6 +55,7 @@ export default function AccountPage() {
   const { user, profile, loading: authLoading, signOut, refreshProfile } = useAuth();
   const { currency, setCurrency, formatPrice } = useCurrency();
   const { addItem, openCart } = useCart();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore();
 
   const [biographyInput, setBiographyInput] = useState("");
   const [preferredCurrency, setPreferredCurrency] = useState(currency || "ETB");
@@ -53,58 +64,153 @@ export default function AccountPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
 
+  // Authentication guard: redirect to sign-in when logged out
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login?redirect=/account");
+    }
+  }, [user, authLoading, router]);
+
   useEffect(() => {
     if (currency) setPreferredCurrency(currency);
   }, [currency]);
 
+  // Check if current user is an Admin (strictly checked against Supabase profile role)
+  const isAdmin = profile?.role === "admin";
+
   // Check if current user is an approved affiliate
   const [isAffiliate, setIsAffiliate] = useState(false);
+  const [referralCode, setReferralCode] = useState<string>("");
+  const [affiliateApp, setAffiliateApp] = useState<{
+    user_id: string;
+    full_name?: string;
+    phone?: string;
+    motivation?: string;
+    social_link?: string;
+    status: "pending" | "approved" | "rejected";
+    rejection_reason?: string;
+    created_at: string;
+  } | null>(null);
 
-  useEffect(() => {
-    if (profile?.role === "affiliate") {
-      setIsAffiliate(true);
-      return;
-    }
-    if (typeof window !== "undefined") {
-      const cached = localStorage.getItem("amiele_is_affiliate");
-      if (cached === "true") {
+  // Application modal and form state
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [isViewAppModalOpen, setIsViewAppModalOpen] = useState(false);
+  const [submittingApp, setSubmittingApp] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [applyForm, setApplyForm] = useState({
+    fullName: "",
+    phone: "",
+    motivation: "",
+    socialLink: "",
+  });
+
+  // Authoritative real-time Supabase check for Affiliate & Application records
+  const fetchAffiliateStatus = async (userId: string) => {
+    try {
+      // 1. Check if user is an approved affiliate with an active code
+      const { data: affData } = await supabase
+        .from("affiliates")
+        .select("user_id, referral_code")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (affData && affData.referral_code) {
         setIsAffiliate(true);
-        return;
-      }
-    }
-    if (!user?.id) {
-      setIsAffiliate(false);
-      return;
-    }
-    const checkAffiliate = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("affiliates")
-          .select("user_id, referral_code")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (!error && data && data.referral_code) {
-          setIsAffiliate(true);
-          if (typeof window !== "undefined") {
-            localStorage.setItem("amiele_is_affiliate", "true");
-          }
-        } else {
-          setIsAffiliate(false);
-        }
-      } catch {
+        setReferralCode(affData.referral_code);
+      } else if (profile?.role === "affiliate") {
+        setIsAffiliate(true);
+      } else {
         setIsAffiliate(false);
       }
-    };
-    checkAffiliate();
+
+      // 2. Check user's affiliate application status
+      const { data: appData, error: appErr } = await supabase
+        .from("affiliate_applications")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (!appErr && appData) {
+        setAffiliateApp(appData as any);
+      } else {
+        setAffiliateApp(null);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch affiliate status:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchAffiliateStatus(user.id);
+    } else {
+      setIsAffiliate(false);
+      setAffiliateApp(null);
+    }
   }, [user, profile]);
 
-  // Check if current user is an Admin
-  const isAdmin =
-    profile?.role === "admin" ||
-    user?.email === "tadessenibowkira@gmail.com" ||
-    user?.email?.toLowerCase().includes("admin") ||
-    (typeof window !== "undefined" && localStorage.getItem("amiele_is_admin") === "true") ||
-    true; // Enabled to match the requested dashboard layout in screenshot
+  // Submit or re-apply for Amiele Affiliate program
+  const handleSubmitApplication = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user?.id) return;
+    if (!applyForm.motivation.trim()) {
+      setApplyError("Please share why you want to join the affiliate program.");
+      return;
+    }
+
+    setSubmittingApp(true);
+    setApplyError(null);
+
+    try {
+      const nowIso = new Date().toISOString();
+
+      // Update name & phone on profile
+      if (applyForm.fullName || applyForm.phone) {
+        await supabase
+          .from("profiles")
+          .update({
+            ...(applyForm.fullName ? { full_name: applyForm.fullName.trim() } : {}),
+            ...(applyForm.phone ? { phone: applyForm.phone.trim() } : {}),
+          })
+          .eq("id", user.id);
+      }
+
+      const payload = {
+        user_id: user.id,
+        motivation: applyForm.motivation.trim(),
+        social_link: (applyForm.socialLink || "None").trim(),
+        status: "pending",
+        created_at: nowIso,
+      };
+
+      const { data, error } = await supabase
+        .from("affiliate_applications")
+        .upsert(payload, { onConflict: "user_id" })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setAffiliateApp(data as any);
+      setIsApplyModalOpen(false);
+    } catch (err: any) {
+      console.error("Application submission error:", err);
+      setApplyError(err?.message || "Failed to submit application. Please try again.");
+    } finally {
+      setSubmittingApp(false);
+    }
+  };
+
+  // Copy referral link to clipboard
+  const handleCopyReferralCode = () => {
+    if (!referralCode) return;
+    const url = `${window.location.origin}/?ref=${referralCode}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+    });
+  };
 
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "orders" | "wishlist" | "notifications" | "addresses" | "settings"
@@ -426,38 +532,52 @@ export default function AccountPage() {
     if (profile?.phone) setPhoneInput(profile.phone);
   }, [profile]);
 
-  // Load user orders from Supabase if available
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (!user?.email && !user?.id) return;
-      try {
-        const { data, error } = await supabase
-          .from("orders")
-          .select("*")
-          .or(`customer_email.eq.${user.email},user_id.eq.${user.id}`)
-          .order("created_at", { ascending: false });
+  // Load user orders from Supabase with joined product details
+  const fetchOrders = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*, product:products(name, price, currency, slug, images:product_images(storage_path, is_cover))")
+        .eq("customer_id", user.id)
+        .order("created_at", { ascending: false });
 
-        if (!error && data) {
-          setOrdersList(data);
-        }
-      } catch (err) {
-        console.warn("Could not load user orders:", err);
+      if (!error && data) {
+        setOrdersList(data);
+      } else if (error) {
+        console.warn("Error fetching user orders:", error);
       }
-    };
+    } catch (err) {
+      console.warn("Could not load user orders:", err);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
     fetchOrders();
-  }, [user]);
+    const handleOrderCreated = () => fetchOrders();
+    window.addEventListener("amiele_order_created", handleOrderCreated);
+    return () => window.removeEventListener("amiele_order_created", handleOrderCreated);
+  }, [fetchOrders]);
+
+  useEffect(() => {
+    if (activeTab === "orders") {
+      fetchOrders();
+    }
+  }, [activeTab, fetchOrders]);
 
   // Filtered orders
   const filteredOrders = ordersList.filter((o) => {
+    const prodName = o.product?.name || o.product_name || "";
     const matchesSearch =
       !orderSearch.trim() ||
       (o.order_number && o.order_number.toLowerCase().includes(orderSearch.toLowerCase())) ||
-      (o.product_name && o.product_name.toLowerCase().includes(orderSearch.toLowerCase())) ||
+      prodName.toLowerCase().includes(orderSearch.toLowerCase()) ||
       (o.id && o.id.toLowerCase().includes(orderSearch.toLowerCase()));
 
     const matchesStatus =
       orderStatusFilter === "All Statuses" ||
-      (o.status && o.status.toLowerCase() === orderStatusFilter.toLowerCase().replace(/\s+/g, "_"));
+      (o.status && o.status.toLowerCase() === orderStatusFilter.toLowerCase().replace(/\s+/g, "_")) ||
+      (o.fulfillment_status && o.fulfillment_status.toLowerCase() === orderStatusFilter.toLowerCase().replace(/\s+/g, "_"));
 
     return matchesSearch && matchesStatus;
   });
@@ -499,6 +619,14 @@ export default function AccountPage() {
       setSavingProfile(false);
     }
   };
+
+  if (authLoading || !user) {
+    return (
+      <div className="w-full min-h-[70vh] flex items-center justify-center bg-[#FAF8F5]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#14231b]" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-[#FAF8F5] text-[#14231b] py-3 sm:py-8 px-3 sm:px-6 lg:px-10">
@@ -590,38 +718,73 @@ export default function AccountPage() {
             <span>Shipping Addresses</span>
           </button>
 
-          {/* 6. Admin Portal (ADMIN) - Matches Screenshot */}
-          {isAdmin ? (
-            <>
-              <div className="pt-1.5 pb-0.5">
-                <Link
-                  href="/admin?tab=dashboard"
-                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <ShieldCheck className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform" />
-                    <span>Admin Portal</span>
-                  </div>
-                  <span className="bg-[#0F2418] text-[#D4AF37] border border-[#D4AF37] text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shadow-xs">
-                    ADMIN
-                  </span>
-                </Link>
-              </div>
-            </>
-          ) : (
+          {/* 6. Admin Portal (ADMIN) - Only shown to Admin accounts */}
+          {isAdmin && (
             <div className="pt-1.5 pb-0.5">
               <Link
-                href={isAffiliate ? "/affiliate/dashboard" : "/affiliate"}
+                href="/admin?tab=dashboard"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <ShieldCheck className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform" />
+                  <span>Admin Portal</span>
+                </div>
+                <span className="bg-[#0F2418] text-[#D4AF37] border border-[#D4AF37] text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shadow-xs">
+                  ADMIN
+                </span>
+              </Link>
+            </div>
+          )}
+
+          {/* 7. Affiliate Portal / Dashboard (State E: Admins see this too; Affiliates see it; Customers see Apply/Status) */}
+          {(isAdmin || isAffiliate) ? (
+            <div className="pt-1.5 pb-0.5">
+              <Link
+                href="/affiliate/dashboard"
                 className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <TrendingUp className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform" />
-                  <span>{isAffiliate ? "Affiliate Portal" : "Become an Affiliate"}</span>
+                  <span>Affiliate Dashboard</span>
                 </div>
-                <span className="bg-[#d4af37] text-[#14231b] text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shadow-xs">
-                  EARN
+                <span className="bg-[#0F2418] text-[#D4AF37] border border-[#D4AF37] text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shadow-xs">
+                  AFFILIATE
                 </span>
               </Link>
+            </div>
+          ) : (
+            <div className="pt-1.5 pb-0.5">
+              <button
+                type="button"
+                onClick={() => {
+                  if (affiliateApp?.status === "pending") {
+                    setIsViewAppModalOpen(true);
+                  } else {
+                    setApplyForm({
+                      fullName: affiliateApp?.full_name || profile?.fullName || "",
+                      phone: affiliateApp?.phone || profile?.phone || "",
+                      motivation: affiliateApp?.motivation || "",
+                      socialLink: affiliateApp?.social_link || "",
+                    });
+                    setIsApplyModalOpen(true);
+                  }
+                }}
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <TrendingUp className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform" />
+                  <span>
+                    {affiliateApp?.status === "pending"
+                      ? "Application Under Review"
+                      : affiliateApp?.status === "rejected"
+                      ? "Affiliate Application"
+                      : "Become an Affiliate"}
+                  </span>
+                </div>
+                <span className="bg-[#d4af37] text-[#14231b] text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shadow-xs">
+                  {affiliateApp?.status === "pending" ? "REVIEW" : "EARN"}
+                </span>
+              </button>
             </div>
           )}
 
@@ -726,8 +889,8 @@ export default function AccountPage() {
                       </span>
                     </div>
 
-                    {/* Email & ID Row */}
-                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs text-[#5a625d] font-semibold pt-0.5">
+                    {/* Email & ID Row - Separate lines on mobile */}
+                    <div className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-1 sm:gap-3 text-xs text-[#5a625d] font-semibold pt-0.5">
                       <div className="flex items-center gap-1.5">
                         <span>✉️</span>
                         <span>{displayEmail}</span>
@@ -768,8 +931,8 @@ export default function AccountPage() {
               {/* 2. QUICK ACTION PILLS (Mobile 2x2 Grid, Desktop Flex Row) */}
               {/* Mobile (< md): 2x2 Grid + Full Width Support */}
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full md:hidden">
-                {/* 1. Admin Portal (or Affiliate) */}
-                {isAdmin ? (
+                {/* 1. Admin Portal (Strictly for Admins) */}
+                {isAdmin && (
                   <Link
                     href="/admin?tab=dashboard"
                     className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
@@ -777,17 +940,47 @@ export default function AccountPage() {
                     <ShieldCheck className="w-4 h-4 text-[#d4af37]" />
                     <span>Admin Portal</span>
                   </Link>
-                ) : (
+                )}
+
+                {/* 2. Affiliate Portal / Status (For Admins and Affiliates, or Apply/Review for Customers) */}
+                {(isAdmin || isAffiliate) ? (
                   <Link
-                    href={isAffiliate ? "/affiliate/dashboard" : "/affiliate"}
+                    href="/affiliate/dashboard"
                     className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
                   >
                     <TrendingUp className="w-4 h-4 text-[#d4af37]" />
-                    <span>{isAffiliate ? "Affiliate Portal" : "Affiliate"}</span>
+                    <span>Affiliate Dashboard</span>
                   </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (affiliateApp?.status === "pending") {
+                        setIsViewAppModalOpen(true);
+                      } else {
+                        setApplyForm({
+                          fullName: affiliateApp?.full_name || profile?.fullName || "",
+                          phone: affiliateApp?.phone || profile?.phone || "",
+                          motivation: affiliateApp?.motivation || "",
+                          socialLink: affiliateApp?.social_link || "",
+                        });
+                        setIsApplyModalOpen(true);
+                      }
+                    }}
+                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer"
+                  >
+                    <TrendingUp className="w-4 h-4 text-[#d4af37]" />
+                    <span>
+                      {affiliateApp?.status === "pending"
+                        ? "In Review"
+                        : affiliateApp?.status === "rejected"
+                        ? "Reapply"
+                        : "Affiliate"}
+                    </span>
+                  </button>
                 )}
 
-                {/* 2. Browse Products */}
+                {/* 3. Browse Products */}
                 <Link
                   href="/products"
                   className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
@@ -796,7 +989,7 @@ export default function AccountPage() {
                   <span>Browse Products</span>
                 </Link>
 
-                {/* 3. Track Order */}
+                {/* 4. Track Order */}
                 <Link
                   href="/track-order"
                   className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
@@ -805,7 +998,7 @@ export default function AccountPage() {
                   <span>Track Order</span>
                 </Link>
 
-                {/* 4. Saved Wishlist */}
+                {/* 5. Saved Wishlist */}
                 <button
                   onClick={() => switchTab("wishlist")}
                   className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer"
@@ -814,10 +1007,10 @@ export default function AccountPage() {
                   <span>Saved Wishlist</span>
                 </button>
 
-                {/* 5. Support (Full width on row 3) */}
+                {/* 6. Support */}
                 <Link
                   href="/contact"
-                  className="col-span-2 py-3 px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                  className="py-3 px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
                 >
                   <Headphones className="w-4 h-4 text-[#d4af37]" />
                   <span>Support</span>
@@ -826,7 +1019,8 @@ export default function AccountPage() {
 
               {/* Desktop (md: and above): Inline Flex Row of Luxury Pills */}
               <div className="hidden md:flex flex-wrap items-center gap-2.5 sm:gap-3 w-full">
-                {isAdmin ? (
+                {/* Admin Portal (Strictly for Admins) */}
+                {isAdmin && (
                   <Link
                     href="/admin?tab=dashboard"
                     className="px-4 py-2 rounded-full bg-white hover:bg-[#14231b] hover:text-white border border-[#14231b]/10 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-[#14231b]/25 transition-all duration-200 text-xs font-bold text-[#14231b] flex items-center gap-1.5 cursor-pointer hover:scale-[1.03] active:scale-[0.98] group"
@@ -834,14 +1028,44 @@ export default function AccountPage() {
                     <ShieldCheck className="w-3.5 h-3.5 text-[#b8860b] group-hover:text-[#f3be3b] transition-colors" />
                     <span>Admin Portal</span>
                   </Link>
-                ) : (
+                )}
+
+                {/* Affiliate Portal / Dashboard (State E: Admins see this; Affiliates see it; Customers see Apply/Status) */}
+                {(isAdmin || isAffiliate) ? (
                   <Link
-                    href={isAffiliate ? "/affiliate/dashboard" : "/affiliate"}
+                    href="/affiliate/dashboard"
                     className="px-4 py-2 rounded-full bg-white hover:bg-[#14231b] hover:text-white border border-[#14231b]/10 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-[#14231b]/25 transition-all duration-200 text-xs font-bold text-[#14231b] flex items-center gap-1.5 cursor-pointer hover:scale-[1.03] active:scale-[0.98] group"
                   >
                     <TrendingUp className="w-3.5 h-3.5 text-[#b8860b] group-hover:text-[#f3be3b] transition-colors" />
-                    <span>{isAffiliate ? "Affiliate Portal" : "Become an Affiliate"}</span>
+                    <span>Affiliate Dashboard</span>
                   </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (affiliateApp?.status === "pending") {
+                        setIsViewAppModalOpen(true);
+                      } else {
+                        setApplyForm({
+                          fullName: affiliateApp?.full_name || profile?.fullName || "",
+                          phone: affiliateApp?.phone || profile?.phone || "",
+                          motivation: affiliateApp?.motivation || "",
+                          socialLink: affiliateApp?.social_link || "",
+                        });
+                        setIsApplyModalOpen(true);
+                      }
+                    }}
+                    className="px-4 py-2 rounded-full bg-white hover:bg-[#14231b] hover:text-white border border-[#14231b]/10 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-[#14231b]/25 transition-all duration-200 text-xs font-bold text-[#14231b] flex items-center gap-1.5 cursor-pointer hover:scale-[1.03] active:scale-[0.98] group"
+                  >
+                    <TrendingUp className="w-3.5 h-3.5 text-[#b8860b] group-hover:text-[#f3be3b] transition-colors" />
+                    <span>
+                      {affiliateApp?.status === "pending"
+                        ? "Application Under Review"
+                        : affiliateApp?.status === "rejected"
+                        ? "Reapply as Affiliate"
+                        : "Become an Affiliate"}
+                    </span>
+                  </button>
                 )}
 
                 <Link
@@ -877,6 +1101,230 @@ export default function AccountPage() {
                 </Link>
               </div>
 
+              {/* 3. DEDICATED AFFILIATE STATUS SPOTLIGHT CARD (State A, B, C, D) */}
+              {!isAdmin && (
+                <>
+                  {/* STATE A: NOT APPLIED (New Customer) */}
+                  {!isAffiliate && (!affiliateApp || !affiliateApp.status) && (
+                    <div className="w-full bg-gradient-to-br from-[#FAF8F4] via-[#F8F5EE] to-[#EDE7D9] rounded-3xl p-5 sm:p-6 border border-[#d4af37]/40 shadow-xs relative overflow-hidden group">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-[#d4af37]" />
+                            <span className="text-[10px] sm:text-[11px] font-extrabold tracking-widest text-[#946e19] uppercase">
+                              AMIELE PARTNERSHIP • የክብር አጋርነት
+                            </span>
+                          </div>
+                          <h3 className="font-benaiah text-xl sm:text-2xl font-bold text-[#14231b] tracking-tight">
+                            Become an Amiele Affiliate / የዓሚኤል ተባባሪ ይሁኑ
+                          </h3>
+                          <p className="text-xs sm:text-sm text-[#4a524c] max-w-xl leading-relaxed">
+                            Earn <strong className="text-[#14231b] font-bold">8% lifetime commission</strong> on every handcrafted sacred Ethiopian Begena, Kirar, and Masenqo ordered with your referral link. Payouts in ETB (direct bank deposit) or USD worldwide.
+                          </p>
+                        </div>
+                        <div className="shrink-0 pt-2 sm:pt-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setApplyForm({
+                                fullName: profile?.fullName || "",
+                                phone: profile?.phone || "",
+                                motivation: "",
+                                socialLink: "",
+                              });
+                              setIsApplyModalOpen(true);
+                            }}
+                            className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-[#D9B32E] hover:text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
+                          >
+                            <Sparkles className="w-4 h-4 text-[#D9B32E]" />
+                            <span>Apply now / አሁን ያመልክቱ</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STATE B: PENDING (Application under review) */}
+                  {!isAffiliate && affiliateApp?.status === "pending" && (
+                    <div className="w-full bg-gradient-to-br from-[#FAF8F4] via-[#F8F5EE] to-[#FAF3E1] rounded-3xl p-5 sm:p-6 border border-[#d4af37]/50 shadow-xs relative overflow-hidden">
+                      <div className="space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-[#d4af37] animate-pulse" />
+                              <span className="text-[10px] sm:text-[11px] font-black tracking-widest text-[#946e19] uppercase">
+                                APPLICATION UNDER REVIEW • ማመልከቻዎ እየተገመገመ ነው
+                              </span>
+                            </div>
+                            <h3 className="font-benaiah text-xl sm:text-2xl font-bold text-[#14231b] tracking-tight">
+                              Application Under Review
+                            </h3>
+                            <p className="text-xs sm:text-sm text-[#4a524c]">
+                              Submitted on{" "}
+                              <strong className="text-[#14231b] font-bold">
+                                {new Date(affiliateApp.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                              </strong>
+                              . Our artisan guild is reviewing your details.
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setIsViewAppModalOpen(true)}
+                            className="self-start sm:self-center px-4 py-2.5 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#14231b]/15 text-[#14231b] text-xs font-bold shadow-xs hover:shadow transition-all duration-200 flex items-center gap-2 cursor-pointer min-h-[40px] shrink-0"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-[#946e19]" />
+                            <span>View Application / ማመልከቻ ይመልከቱ</span>
+                          </button>
+                        </div>
+
+                        {/* 3-Step Progress Bar: Submitted -> Under review -> Approved */}
+                        <div className="pt-2 pb-1">
+                          <div className="relative flex items-center justify-between w-full max-w-xl mx-auto px-2">
+                            {/* Connecting Line background */}
+                            <div className="absolute left-8 right-8 top-3.5 sm:top-4 h-0.5 bg-gray-200 -z-0">
+                              <div className="h-full bg-[#2d6a4f] w-1/2 transition-all duration-500" />
+                            </div>
+
+                            {/* Step 1: Submitted (Done) */}
+                            <div className="flex flex-col items-center gap-1 sm:gap-1.5 z-10">
+                              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#2d6a4f] text-white flex items-center justify-center text-xs font-bold shadow-xs">
+                                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
+                              </div>
+                              <span className="text-[10px] sm:text-xs font-extrabold text-[#14231b]">Submitted</span>
+                              <span className="text-[9px] text-[#737874] hidden sm:block">Done</span>
+                            </div>
+
+                            {/* Step 2: Under Review (Current / Active) */}
+                            <div className="flex flex-col items-center gap-1 sm:gap-1.5 z-10">
+                              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#d4af37] text-[#14231b] flex items-center justify-center text-xs font-black shadow-md ring-4 ring-[#d4af37]/25 animate-pulse">
+                                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+                              </div>
+                              <span className="text-[10px] sm:text-xs font-extrabold text-[#946e19]">Under Review</span>
+                              <span className="text-[9px] text-[#946e19] font-bold hidden sm:block">Current Stage</span>
+                            </div>
+
+                            {/* Step 3: Approved (Not yet) */}
+                            <div className="flex flex-col items-center gap-1 sm:gap-1.5 z-10">
+                              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#E5E1D8] text-[#8a918b] flex items-center justify-center text-xs font-bold border border-gray-300">
+                                <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                              </div>
+                              <span className="text-[10px] sm:text-xs font-bold text-[#8a918b]">Approved</span>
+                              <span className="text-[9px] text-gray-400 hidden sm:block">Not Yet</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STATE C: APPROVED (Active Affiliate) */}
+                  {(isAffiliate || affiliateApp?.status === "approved" || profile?.role === "affiliate") && (
+                    <div className="w-full bg-gradient-to-br from-[#FAF8F4] via-[#F8F5EE] to-[#E9F4EE] rounded-3xl p-5 sm:p-6 border border-[#2d6a4f]/35 shadow-xs relative overflow-hidden">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-[#2d6a4f]" />
+                            <span className="text-[10px] sm:text-[11px] font-black tracking-widest text-[#2d6a4f] uppercase">
+                              APPROVED AFFILIATE • 8% LIFETIME COMMISSION
+                            </span>
+                          </div>
+                          <h3 className="font-benaiah text-xl sm:text-2xl font-bold text-[#14231b] tracking-tight">
+                            You are an Amiele Affiliate / እርስዎ የዓሚኤል ተባባሪ ነዎት
+                          </h3>
+                          <p className="text-xs sm:text-sm text-[#4a524c] max-w-xl">
+                            Your partnership is active. Share your unique code or link to earn 8% on every Ethiopian instrument ordered.
+                          </p>
+
+                          {referralCode && (
+                            <div className="pt-1 flex items-center gap-2 flex-wrap">
+                              <div className="px-3.5 py-1.5 rounded-xl bg-white border border-[#2d6a4f]/30 text-xs font-mono font-black text-[#14231b] shadow-2xs flex items-center gap-2">
+                                <span className="text-[#737874] text-[10px] uppercase font-sans">Referral Code:</span>
+                                <span className="text-[#2d6a4f]">{referralCode}</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={handleCopyReferralCode}
+                                className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#FAF8F5] border border-gray-200 text-xs font-bold text-[#14231b] shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                              >
+                                {copiedCode ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 text-[#2d6a4f]" />
+                                    <span className="text-[#2d6a4f]">Copied!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3.5 h-3.5 text-[#737874]" />
+                                    <span>Copy Link</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="shrink-0 pt-2 sm:pt-0">
+                          <Link
+                            href="/affiliate/dashboard"
+                            className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#14231b] hover:bg-[#2d6a4f] text-[#D9B32E] hover:text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 cursor-pointer flex items-center justify-center gap-2 min-h-[44px]"
+                          >
+                            <TrendingUp className="w-4 h-4 text-[#D9B32E]" />
+                            <span>Open Affiliate Dashboard</span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STATE D: REJECTED */}
+                  {!isAffiliate && affiliateApp?.status === "rejected" && (
+                    <div className="w-full bg-gradient-to-br from-[#FAF8F4] via-[#FDF5F5] to-[#FBEBEB] rounded-3xl p-5 sm:p-6 border border-red-200 shadow-xs relative overflow-hidden">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="space-y-1.5 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-red-600" />
+                            <span className="text-[10px] sm:text-[11px] font-black tracking-widest text-red-600 uppercase">
+                              APPLICATION NOT APPROVED • ማመልከቻው አልተፈቀደም
+                            </span>
+                          </div>
+                          <h3 className="font-benaiah text-xl sm:text-2xl font-bold text-[#14231b] tracking-tight">
+                            Application Not Approved
+                          </h3>
+                          <p className="text-xs sm:text-sm text-[#4a524c]">
+                            {affiliateApp.rejection_reason ? (
+                              <>
+                                Review feedback: <strong className="text-red-700 font-semibold">&ldquo;{affiliateApp.rejection_reason}&rdquo;</strong>
+                              </>
+                            ) : (
+                              "Your application was not approved at this time. You may update your profile or promotional channels and submit a reapplication."
+                            )}
+                          </p>
+                        </div>
+
+                        <div className="shrink-0 pt-1 sm:pt-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setApplyForm({
+                                fullName: affiliateApp.full_name || profile?.fullName || "",
+                                phone: affiliateApp.phone || profile?.phone || "",
+                                motivation: affiliateApp.motivation || "",
+                                socialLink: affiliateApp.social_link || "",
+                              });
+                              setIsApplyModalOpen(true);
+                            }}
+                            className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-[#14231b] hover:bg-[#2d6a4f] text-white font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5 min-h-[44px]"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5 text-[#D9B32E]" />
+                            <span>Reapply / በድጋሚ ያመልክቱ</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
               {/* 3. FOUR METRIC STAT CARDS - Exact Match to Screenshot */}
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 w-full">
                 {/* Card 1: TOTAL ORDERS */}
@@ -894,12 +1342,14 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <span className="font-serif text-3xl font-extrabold text-[#14231b]">
-                      8
+                      {ordersList.length}
                     </span>
                   </div>
                   <div>
                     <span className="text-xs text-[#8a918b] font-semibold">
-                      Last order 25 days ago
+                      {ordersList.length > 0 && ordersList[0].created_at
+                        ? `Last order ${new Date(ordersList[0].created_at).toLocaleDateString()}`
+                        : "No orders placed yet"}
                     </span>
                   </div>
                 </div>
@@ -919,12 +1369,14 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <span className="font-serif text-3xl font-extrabold text-[#14231b]">
-                      0
+                      {ordersList.filter((o) => o.status !== "Delivered" && o.status !== "Cancelled" && o.fulfillment_status !== "Delivered" && o.fulfillment_status !== "Cancelled").length}
                     </span>
                   </div>
                   <div>
                     <span className="text-xs text-[#8a918b] font-semibold">
-                      Currently in craftsmanship
+                      {ordersList.filter((o) => o.status !== "Delivered" && o.status !== "Cancelled" && o.fulfillment_status !== "Delivered" && o.fulfillment_status !== "Cancelled").length > 0
+                        ? "Currently in craftsmanship / shipping"
+                        : "No active orders"}
                     </span>
                   </div>
                 </div>
@@ -969,12 +1421,14 @@ export default function AccountPage() {
                   </div>
                   <div>
                     <span className="font-serif text-3xl font-extrabold text-[#14231b]">
-                      23
+                      {unreadCount}
                     </span>
                   </div>
                   <div>
-                    <span className="text-xs text-[#8a918b] font-semibold">
-                      Latest: Application Approved
+                    <span className="text-xs text-[#8a918b] font-semibold truncate block">
+                      {notifications.length > 0
+                        ? `Latest: ${notifications[0].sender || notifications[0].actionText}`
+                        : "No unread alerts"}
                     </span>
                   </div>
                 </div>
@@ -1011,63 +1465,87 @@ export default function AccountPage() {
                 </button>
 
                 {/* Spotlight Order Card */}
-                <div className="border border-gray-100 rounded-2xl p-3 sm:p-4 bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3.5">
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-gray-100 shrink-0 bg-white">
-                      <img
-                        src="/image/photo_2025-10-01_07-26-53.jpg"
-                        alt="በገና (Begena)"
-                        className="w-full h-full object-cover"
-                      />
+                {ordersList.length > 0 ? (
+                  <div className="border border-gray-100 rounded-2xl p-3 sm:p-4 bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3.5">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-gray-100 shrink-0 bg-[#FAF8F5] flex items-center justify-center">
+                        <img
+                          src={
+                            ordersList[0].product?.images?.[0]?.storage_path ||
+                            "/image/photo_2025-10-01_07-26-53.jpg"
+                          }
+                          alt={ordersList[0].product?.name || ordersList[0].product_name || "በገና (Begena)"}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="space-y-0.5 min-w-0">
+                        <h3 className="font-bold text-sm sm:text-base text-[#14231b] leading-tight truncate">
+                          {ordersList[0].product?.name || ordersList[0].product_name || "በገና (Begena)"}
+                        </h3>
+                        <p className="text-xs text-gray-500 font-semibold leading-relaxed">
+                          Order <span className="font-bold text-[#14231b]">#{ordersList[0].order_number}</span> • Courier:{" "}
+                          <strong className="font-bold text-[#14231b]">
+                            {ordersList[0].shipping_company || "DHL Express"}
+                          </strong>{" "}
+                          • Status:{" "}
+                          <span className="font-bold text-[#14231b]">
+                            {ordersList[0].fulfillment_status || ordersList[0].status || "Pending"}
+                          </span>
+                        </p>
+                      </div>
                     </div>
-                    <div className="space-y-0.5 min-w-0">
-                      <h3 className="font-bold text-sm sm:text-base text-[#14231b] leading-tight">
-                        በገና (Begena)
-                      </h3>
-                      <p className="text-xs text-gray-500 font-semibold leading-relaxed">
-                        Order <span className="font-bold text-[#14231b]">#AM-2026-001170</span> • Courier:{" "}
-                        <strong className="font-bold text-[#14231b]">DHL Express</strong> • Est:{" "}
-                        <span className="font-bold text-[#14231b]">7-14 Days</span>
-                      </p>
+
+                    {/* Desktop Actions on the right (inline) */}
+                    <div className="hidden md:flex items-center gap-2.5 shrink-0">
+                      <Link
+                        href={`/track-order?order=${ordersList[0].order_number}`}
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#d4af37] hover:bg-[#c49e29] text-[#14231b] text-xs font-bold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                      >
+                        <Truck className="w-3.5 h-3.5" />
+                        <span>Track Package</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => switchTab("orders")}
+                        className="px-4 py-2.5 rounded-xl border border-[#14231b]/15 bg-white hover:bg-[#FAF8F5] text-xs font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 cursor-pointer"
+                      >
+                        View Order
+                      </button>
+                    </div>
+
+                    {/* Mobile Actions below (< md) */}
+                    <div className="md:hidden space-y-2.5 pt-1 w-full">
+                      <Link
+                        href={`/track-order?order=${ordersList[0].order_number}`}
+                        className="w-full py-3 px-4 rounded-2xl bg-[#cf9e26] hover:bg-[#be8d19] text-[#14231b] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98]"
+                      >
+                        <Truck className="w-4 h-4 text-[#14231b]" />
+                        <span>Track Package</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => switchTab("orders")}
+                        className="w-full py-3 px-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 text-[#14231b] text-xs sm:text-sm font-bold flex items-center justify-center shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+                      >
+                        <span>View Order</span>
+                      </button>
                     </div>
                   </div>
-
-                  {/* Desktop Actions on the right (inline) */}
-                  <div className="hidden md:flex items-center gap-2.5 shrink-0">
+                ) : (
+                  <div className="border border-gray-100 rounded-2xl p-4 sm:p-5 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-bold text-[#14231b]">No active orders to track</p>
+                      <p className="text-xs text-[#737874]">Explore our handcrafted Ethiopian instruments and place your first order.</p>
+                    </div>
                     <Link
-                      href="/track-order?order=AM-2026-001170"
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#d4af37] hover:bg-[#c49e29] text-[#14231b] text-xs font-bold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                      href="/products"
+                      className="px-4 py-2 rounded-xl bg-[#d4af37] hover:bg-[#c49e29] text-[#14231b] text-xs font-bold shadow-xs hover:shadow transition-all inline-flex items-center gap-1.5 shrink-0"
                     >
-                      <Truck className="w-3.5 h-3.5" />
-                      <span>Track Package</span>
+                      <Store className="w-3.5 h-3.5" />
+                      <span>Browse Products</span>
                     </Link>
-                    <button
-                      type="button"
-                      onClick={() => switchTab("orders")}
-                      className="px-4 py-2.5 rounded-xl border border-[#14231b]/15 bg-white hover:bg-[#FAF8F5] text-xs font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 cursor-pointer"
-                    >
-                      View Order
-                    </button>
                   </div>
-
-                  {/* Mobile Actions below (< md) */}
-                  <div className="md:hidden space-y-2.5 pt-1 w-full">
-                    <Link
-                      href="/track-order?order=AM-2026-001170"
-                      className="w-full py-3 px-4 rounded-2xl bg-[#cf9e26] hover:bg-[#be8d19] text-[#14231b] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98]"
-                    >
-                      <Truck className="w-4 h-4 text-[#14231b]" />
-                      <span>Track Package</span>
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => switchTab("orders")}
-                      className="w-full py-3 px-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 text-[#14231b] text-xs sm:text-sm font-bold flex items-center justify-center shadow-xs transition-all active:scale-[0.98] cursor-pointer"
-                    >
-                      <span>View Order</span>
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* 5. RECENT NOTIFICATIONS (Visible on desktop) */}
@@ -1089,42 +1567,38 @@ export default function AccountPage() {
                   </button>
                 </div>
 
-                {/* Notification Item 1: Commission Pending */}
-                <div className="border border-[#14231b]/10 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-4 bg-white hover:bg-[#FAF8F5] hover:border-[#14231b]/20 transition-all duration-200 group cursor-pointer shadow-xs hover:shadow-md">
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-[#EAE6DD] text-[#14231b] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                      <Bell className="w-4 h-4 fill-current" />
-                    </div>
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs sm:text-sm text-[#14231b]">Commission Pending</span>
-                        <span className="w-2 h-2 rounded-full bg-[#f3be3b] inline-block shadow-xs shrink-0" />
-                      </div>
-                      <p className="text-[11px] sm:text-xs text-[#6b726d] truncate">
-                        Your referral order AM-2026-001171 has been verified.
-                      </p>
-                    </div>
+                {notifications.length === 0 ? (
+                  <div className="py-6 text-center text-xs text-[#737874] flex flex-col items-center justify-center space-y-1">
+                    <p className="font-semibold text-[#14231b]">No notifications</p>
+                    <p className="text-[11px]">You have no notifications at this time.</p>
                   </div>
-                  <span className="text-[11px] sm:text-xs font-semibold text-[#8a918b] shrink-0">10/17/2026</span>
-                </div>
-
-                {/* Notification Item 2: Application Approved */}
-                <div className="border border-[#14231b]/10 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-4 bg-white hover:bg-[#FAF8F5] hover:border-[#14231b]/20 transition-all duration-200 group cursor-pointer shadow-xs hover:shadow-md">
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-[#EAE6DD] text-[#14231b] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                      <Bell className="w-4 h-4 fill-current" />
-                    </div>
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs sm:text-sm text-[#14231b]">Application Approved</span>
+                ) : (
+                  notifications.slice(0, 3).map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => markAsRead(n.id)}
+                      className={`border border-[#14231b]/10 rounded-2xl p-3.5 sm:p-4 flex items-center justify-between gap-4 bg-white hover:bg-[#FAF8F5] hover:border-[#14231b]/20 transition-all duration-200 group cursor-pointer shadow-xs hover:shadow-md ${
+                        n.isUnread ? "bg-[#FAF8F5]/80" : "opacity-80"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-[#EAE6DD] text-[#14231b] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <Bell className="w-4 h-4 fill-current" />
+                        </div>
+                        <div className="min-w-0 space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-xs sm:text-sm text-[#14231b] truncate">{n.sender}</span>
+                            {n.isUnread && <span className="w-2 h-2 rounded-full bg-[#f3be3b] inline-block shadow-xs shrink-0" />}
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-[#6b726d] truncate">
+                            {n.actionText}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-[11px] sm:text-xs text-[#6b726d] truncate">
-                        Congratulations! Your Amiele affiliate partner application has been approved.
-                      </p>
+                      <span className="text-[11px] sm:text-xs font-semibold text-[#8a918b] shrink-0">{n.timeAgo}</span>
                     </div>
-                  </div>
-                  <span className="text-[11px] sm:text-xs font-semibold text-[#8a918b] shrink-0">8/13/2026</span>
-                </div>
+                  ))
+                )}
               </div>
             </>
           )}
@@ -1246,21 +1720,21 @@ export default function AccountPage() {
                             </span>
                             <span
                               className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                                order.status === "Delivered"
+                                order.status === "Delivered" || order.fulfillment_status === "Delivered"
                                   ? "bg-emerald-100 text-emerald-800"
-                                  : order.status === "Crafting" || order.status === "Preparing"
+                                  : order.status === "Crafting" || order.fulfillment_status === "Crafting" || order.status === "Preparing"
                                   ? "bg-amber-100 text-amber-800"
-                                  : order.status === "Cancelled"
+                                  : order.status === "Cancelled" || order.fulfillment_status === "Cancelled"
                                   ? "bg-red-100 text-red-800"
                                   : "bg-blue-100 text-blue-800"
                               }`}
                             >
-                              {order.status || "Pending"}
+                              {order.fulfillment_status || order.status || "Pending"}
                             </span>
                           </div>
 
                           <div className="text-xs font-bold text-[#14231b] line-clamp-1">
-                            {order.product_name || "Handmade Ethiopian Begena"}
+                            {order.product?.name || order.product_name || "Handmade Ethiopian Begena"}
                           </div>
 
                           <div className="flex items-center justify-between pt-2 border-t border-gray-200/50 text-[11px] text-[#737874]">
@@ -1269,10 +1743,10 @@ export default function AccountPage() {
                             </span>
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] bg-white px-1.5 py-0.5 rounded border border-gray-200 text-[#5a625d]">
-                                {order.payment_method || "Telebirr"}
+                                {order.payment_status ? order.payment_status.replace(/_/g, " ").toUpperCase() : order.payment_method || "WhatsApp"}
                               </span>
                               <span className="font-bold text-xs text-[#14231b]">
-                                {order.total_price || (order.total_amount ? `ETB ${order.total_amount.toLocaleString()}` : "$450")}
+                                {order.total_price || (order.product?.price ? `${order.product.currency === "USD" ? "$" : "ETB "}${(Number(order.product.price) * (order.quantity || 1)).toLocaleString()}` : (order.total_amount ? `ETB ${order.total_amount.toLocaleString()}` : "$450"))}
                               </span>
                             </div>
                           </div>
@@ -1304,31 +1778,31 @@ export default function AccountPage() {
                                 {order.order_number || `#AM-${idx + 1000}`}
                               </span>
                               <span className="font-medium text-[#14231b] truncate pr-2">
-                                {order.product_name || "Handmade Ethiopian Begena"}
+                                {order.product?.name || order.product_name || "Handmade Ethiopian Begena"}
                               </span>
                               <span className="text-[#6b726d]">
                                 {order.created_at ? new Date(order.created_at).toLocaleDateString() : "Recent"}
                               </span>
                               <span className="font-semibold text-[#14231b]">{order.quantity || 1}</span>
                               <span className="font-bold text-[#14231b]">
-                                {order.total_price || (order.total_amount ? `ETB ${order.total_amount.toLocaleString()}` : "$450")}
+                                {order.total_price || (order.product?.price ? `${order.product.currency === "USD" ? "$" : "ETB "}${(Number(order.product.price) * (order.quantity || 1)).toLocaleString()}` : (order.total_amount ? `ETB ${order.total_amount.toLocaleString()}` : "$450"))}
                               </span>
                               <span className="text-xs text-[#5a625d] font-medium">
-                                {order.payment_method || "Telebirr"}
+                                {order.payment_status ? order.payment_status.replace(/_/g, " ").toUpperCase() : order.payment_method || "WhatsApp"}
                               </span>
                               <div>
                                 <span
                                   className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
-                                    order.status === "Delivered"
+                                    order.status === "Delivered" || order.fulfillment_status === "Delivered"
                                       ? "bg-emerald-100 text-emerald-800"
-                                      : order.status === "Crafting" || order.status === "Preparing"
+                                      : order.status === "Crafting" || order.fulfillment_status === "Crafting" || order.status === "Preparing"
                                       ? "bg-amber-100 text-amber-800"
-                                      : order.status === "Cancelled"
+                                      : order.status === "Cancelled" || order.fulfillment_status === "Cancelled"
                                       ? "bg-red-100 text-red-800"
                                       : "bg-blue-100 text-blue-800"
                                   }`}
                                 >
-                                  {order.status || "Pending"}
+                                  {order.fulfillment_status || order.status || "Pending"}
                                 </span>
                               </div>
                             </div>
@@ -1921,58 +2395,43 @@ export default function AccountPage() {
 
             {/* Notification Items */}
             <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
-              <div className="border border-[#14231b]/10 rounded-2xl p-4 flex items-start justify-between gap-3 bg-[#FAF8F5]/60 hover:bg-[#FAF8F5] transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#faeed6] text-[#b47a16] flex items-center justify-center shrink-0 mt-0.5">
-                    <TrendingUp className="w-4 h-4" />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs sm:text-sm text-[#14231b]">Commission Pending</span>
-                      <span className="w-2 h-2 rounded-full bg-[#f3be3b] inline-block" />
+              {notifications.length === 0 ? (
+                <div className="py-8 text-center text-xs text-[#737874] flex flex-col items-center justify-center space-y-1">
+                  <p className="font-semibold text-[#14231b]">No notifications in archive</p>
+                  <p className="text-[11px]">When orders, commissions, or system updates arrive, they will appear here.</p>
+                </div>
+              ) : (
+                notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    onClick={() => markAsRead(n.id)}
+                    className={`border border-[#14231b]/10 rounded-2xl p-4 flex items-start justify-between gap-3 bg-white hover:bg-[#FAF8F5] transition-colors cursor-pointer ${
+                      n.isUnread ? "bg-[#FAF8F5]/80" : ""
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-[#faeed6] text-[#b47a16] flex items-center justify-center shrink-0 mt-0.5">
+                        <Bell className="w-4 h-4" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs sm:text-sm text-[#14231b]">{n.sender}</span>
+                          {n.isUnread && <span className="w-2 h-2 rounded-full bg-[#f3be3b] inline-block" />}
+                        </div>
+                        <p className="text-xs text-[#6b726d] leading-relaxed">
+                          {n.actionText}
+                        </p>
+                        <span className="text-[11px] font-semibold text-[#8a918b] block pt-1">{n.timeAgo}</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-[#6b726d] leading-relaxed">
-                      Your referral order AM-2026-001171 has been verified and credit is pending release.
-                    </p>
-                    <span className="text-[11px] font-semibold text-[#8a918b] block pt-1">Oct 17, 2026</span>
                   </div>
-                </div>
-              </div>
-
-              <div className="border border-[#14231b]/10 rounded-2xl p-4 flex items-start justify-between gap-3 bg-white hover:bg-[#FAF8F5] transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5">
-                    <CheckCircle2 className="w-4 h-4" />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="font-bold text-xs sm:text-sm text-[#14231b]">Application Approved</span>
-                    <p className="text-xs text-[#6b726d] leading-relaxed">
-                      Congratulations! Your Amiele affiliate partner application has been approved.
-                    </p>
-                    <span className="text-[11px] font-semibold text-[#8a918b] block pt-1">Aug 13, 2026</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="border border-[#14231b]/10 rounded-2xl p-4 flex items-start justify-between gap-3 bg-white hover:bg-[#FAF8F5] transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#faeed6] text-[#b47a16] flex items-center justify-center shrink-0 mt-0.5">
-                    <Package className="w-4 h-4" />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="font-bold text-xs sm:text-sm text-[#14231b]">Welcome to Amiele Begena</span>
-                    <p className="text-xs text-[#6b726d] leading-relaxed">
-                      Your sacred instrument account is now verified. Explore master artisan creations.
-                    </p>
-                    <span className="text-[11px] font-semibold text-[#8a918b] block pt-1">Jul 2026</span>
-                  </div>
-                </div>
-              </div>
+                ))
+              )}
             </div>
 
             {/* Modal Footer */}
             <div className="pt-2 flex items-center justify-between border-t border-[#14231b]/8">
-              <span className="text-xs text-[#737874] font-medium">3 alerts in archive</span>
+              <span className="text-xs text-[#737874] font-medium">{notifications.length} alerts in archive</span>
               <button
                 onClick={() => setFullNotificationModal(false)}
                 className="px-5 py-2 rounded-xl bg-[#14231b] text-white text-xs font-bold hover:bg-[#1f3629] transition-all cursor-pointer"
@@ -2110,6 +2569,228 @@ export default function AccountPage() {
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ================= AFFILIATE APPLICATION MODAL (Apply / Reapply) ================= */}
+      {isApplyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-[#FAF8F4] border border-[#E8E1D6] rounded-3xl max-w-lg w-full shadow-[0_25px_70px_-15px_rgba(20,39,29,0.35)] overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-[#E8E1D6] flex items-center justify-between bg-[#F8F5EE] shrink-0">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
+                  <span className="text-[10px] font-black tracking-widest text-[#946e19] uppercase">
+                    AMIELE AFFILIATE PARTNERSHIP
+                  </span>
+                </div>
+                <h3 className="font-benaiah text-xl sm:text-2xl font-bold text-[#14231b]">
+                  {affiliateApp?.status === "rejected" ? "Reapply for Partnership" : "Affiliate Application"}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsApplyModalOpen(false)}
+                className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 border border-gray-200 flex items-center justify-center text-[#14231b] cursor-pointer transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Form Body */}
+            <form id="affiliateApplyForm" onSubmit={handleSubmitApplication} className="p-6 space-y-4 overflow-y-auto flex-1 text-xs">
+              {applyError && (
+                <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
+                  <span className="font-medium text-xs">{applyError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-[#14231b] mb-1.5">
+                  Full Name / ሙሉ ስም <span className="text-[#D9B32E]">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={applyForm.fullName}
+                  onChange={(e) => setApplyForm({ ...applyForm, fullName: e.target.value })}
+                  placeholder="e.g. Dawit Tadesse"
+                  className="w-full p-3.5 border border-[#E8E1D6] rounded-[14px] bg-[#FCFBF8] text-base sm:text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-[#14231b] mb-1.5">
+                  Phone Number / ስልክ ቁጥር <span className="text-[#D9B32E]">*</span>
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={applyForm.phone}
+                  onChange={(e) => setApplyForm({ ...applyForm, phone: e.target.value })}
+                  placeholder="e.g. +251 91 122 3344"
+                  className="w-full p-3.5 border border-[#E8E1D6] rounded-[14px] bg-[#FCFBF8] text-base sm:text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-[#14231b] mb-1.5">
+                  Why do you want to join? / ለምን መቀላቀል ይፈልጋሉ? <span className="text-[#D9B32E]">*</span>
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={applyForm.motivation}
+                  onChange={(e) => setApplyForm({ ...applyForm, motivation: e.target.value })}
+                  placeholder="Describe your audience, musical background, or how you plan to introduce Amiele Begena instruments to students, churches, or patrons..."
+                  className="w-full p-3.5 border border-[#E8E1D6] rounded-[14px] bg-[#FCFBF8] text-base sm:text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37] leading-relaxed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold uppercase tracking-wider text-[#14231b] mb-1.5">
+                  Social Link / Website / Channel (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={applyForm.socialLink}
+                  onChange={(e) => setApplyForm({ ...applyForm, socialLink: e.target.value })}
+                  placeholder="e.g. https://instagram.com/my_music or Telegram channel"
+                  className="w-full p-3.5 border border-[#E8E1D6] rounded-[14px] bg-[#FCFBF8] text-base sm:text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+            </form>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-[#E8E1D6] bg-[#FAF8F4] flex flex-col sm:flex-row-reverse sm:items-center sm:justify-between gap-2.5 shrink-0">
+              <button
+                type="submit"
+                form="affiliateApplyForm"
+                disabled={submittingApp}
+                className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-[#D9B32E] hover:text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-md transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[44px]"
+              >
+                {submittingApp ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-[#D9B32E]" />
+                    <span>Submitting Application...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-[#D9B32E]" />
+                    <span>{affiliateApp?.status === "rejected" ? "Resubmit Application" : "Submit Application"}</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsApplyModalOpen(false)}
+                disabled={submittingApp}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-full border border-gray-200 text-xs sm:text-sm font-bold text-[#14231b] hover:bg-gray-100 transition-colors cursor-pointer min-h-[40px]"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= VIEW APPLICATION MODAL (Read-Only State B) ================= */}
+      {isViewAppModalOpen && affiliateApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-[#FAF8F4] border border-[#E8E1D6] rounded-3xl max-w-lg w-full shadow-[0_25px_70px_-15px_rgba(20,39,29,0.35)] overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-[#E8E1D6] flex items-center justify-between bg-[#F8F5EE] shrink-0">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-3.5 h-3.5 text-[#d4af37]" />
+                  <span className="text-[10px] font-black tracking-widest text-[#946e19] uppercase">
+                    APPLICATION SUMMARY • ማመልከቻ
+                  </span>
+                </div>
+                <h3 className="font-benaiah text-xl sm:text-2xl font-bold text-[#14231b]">
+                  Submitted Application
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsViewAppModalOpen(false)}
+                className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 border border-gray-200 flex items-center justify-center text-[#14231b] cursor-pointer transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Read-only Content */}
+            <div className="p-6 space-y-4 overflow-y-auto flex-1 text-xs">
+              <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 text-[#946e19] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 shrink-0" />
+                  <span className="font-bold">Status: Under Review by Guild Admins</span>
+                </div>
+                <span className="text-[10px] font-mono font-bold">
+                  {new Date(affiliateApp.created_at).toLocaleDateString()}
+                </span>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
+                  Applicant Name
+                </span>
+                <p className="font-bold text-sm text-[#14231b]">
+                  {affiliateApp.full_name || profile?.fullName || "N/A"}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
+                  Contact Phone
+                </span>
+                <p className="font-bold text-sm text-[#14231b]">
+                  {affiliateApp.phone || profile?.phone || "N/A"}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
+                  Why you want to join / Motivation
+                </span>
+                <p className="p-3.5 rounded-xl bg-white border border-[#E8E1D6] text-[#333] leading-relaxed">
+                  {affiliateApp.motivation || "No motivation provided."}
+                </p>
+              </div>
+
+              {affiliateApp.social_link && affiliateApp.social_link !== "None" && (
+                <div className="space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
+                    Social Link / Website
+                  </span>
+                  <p className="font-mono text-xs text-[#2d6a4f] truncate">
+                    {affiliateApp.social_link}
+                  </p>
+                </div>
+              )}
+
+              <p className="text-[11px] text-[#737874] leading-relaxed italic pt-2">
+                Note: Applications cannot be modified while under review. Once reviewed by an administrator, your dashboard will automatically update to reflect approval or feedback.
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-[#E8E1D6] bg-[#FAF8F4] flex justify-end shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsViewAppModalOpen(false)}
+                className="px-6 py-2.5 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white text-xs font-bold transition-all shadow-xs cursor-pointer min-h-[40px]"
+              >
+                Close / ዝጋ
+              </button>
+            </div>
           </div>
         </div>
       )}

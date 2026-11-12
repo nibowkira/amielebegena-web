@@ -289,12 +289,12 @@ export default function NotificationFlyout({
           aria-label={displayBadgeCount > 0 ? `Notifications, ${displayBadgeCount} unread` : "Notifications"}
           aria-expanded={isOpen}
         >
-          <div className="flex items-center gap-2.5">
-            <Bell className="w-4 h-4 text-[#14231b]" />
-            <span>Notifications</span>
+          <div className="flex items-center gap-3">
+            <Bell className="w-5 h-5 text-[#737874] group-hover:text-[#14231b] shrink-0 transition-colors" />
+            <span className="font-bold text-sm text-[#14231b]">Notifications</span>
           </div>
           {displayBadgeCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-[#f3be3b] text-[#14231b] text-xs font-black shadow-xs">
+            <span className="w-6 h-6 rounded-full bg-[#d4af37] text-[#14231b] text-xs font-black flex items-center justify-center shadow-xs shrink-0">
               {displayBadgeCount}
             </span>
           )}
@@ -335,7 +335,11 @@ export default function NotificationFlyout({
         <>
           {/* Fullscreen Backdrop: Blurs the entire window */}
           <div
-            className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-md pointer-events-auto transition-opacity animate-in fade-in duration-200"
+            className="fixed inset-0 z-[9998] bg-black/60 pointer-events-auto transition-opacity animate-in fade-in duration-200"
+            style={{
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+            }}
             onClick={() => {
               setIsOpen(false);
               onOpenChange?.(false);

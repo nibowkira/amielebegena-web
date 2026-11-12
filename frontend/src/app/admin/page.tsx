@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import {
   LayoutGrid,
@@ -18,6 +19,7 @@ import {
   RefreshCw,
   Wallet,
   TrendingUp,
+  Loader2,
   Clock,
   CheckCheck,
   Truck,
@@ -132,7 +134,19 @@ interface AnnouncementItem {
 }
 
 export default function AdminDashboardPage() {
-  const { user, profile } = useAuth();
+  const router = useRouter();
+  const { user, profile, loading: authLoading } = useAuth();
+
+  // Authentication & Admin Role Enforcement
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        router.replace("/login?redirect=/admin");
+      } else if (profile && profile.role !== "admin") {
+        router.replace("/account");
+      }
+    }
+  }, [user, profile, authLoading, router]);
 
   const [activeTab, setActiveTab] = useState<AdminTab>("dashboard");
   const [loading, setLoading] = useState(false);
@@ -547,6 +561,43 @@ export default function AdminDashboardPage() {
     return matchesFilter && matchesSearch;
   });
 
+  if (authLoading || (user && !profile)) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-[#FAF8F5]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#14231b]" />
+      </div>
+    );
+  }
+
+  if (!user || profile?.role !== "admin") {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center shadow-xs">
+          <AlertTriangle className="w-8 h-8 stroke-[2.2]" />
+        </div>
+        <div className="space-y-1">
+          <span className="text-[11px] font-bold tracking-widest text-red-600 uppercase">
+            HTTP 403 FORBIDDEN
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#14231b] tracking-tight">
+            Administrator Access Required
+          </h1>
+        </div>
+        <p className="text-xs sm:text-sm text-[#737874] max-w-md leading-relaxed">
+          Your account is signed in as a customer. Administrator credentials are required to access and manage the Amiele Begena Admin Portal.
+        </p>
+        <div className="pt-2">
+          <Link
+            href="/account"
+            className="px-6 py-2.5 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white text-xs font-bold transition-all min-h-[44px] inline-flex items-center justify-center shadow-sm"
+          >
+            Return to Customer Dashboard / ወደ መለያ ይመለሱ
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#FAF8F5] text-[#1C1C1C]">
       {/* ================= MOBILE ADMIN TOP BAR (< lg) ================= */}
@@ -578,7 +629,7 @@ export default function AdminDashboardPage() {
 
       {/* ================= LEFT DARK FOREST GREEN SIDEBAR ================= */}
       <aside
-        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 lg:z-30 w-72 max-w-[85vw] lg:w-64 bg-[#07150D] text-white shrink-0 p-4 lg:p-5 flex flex-col justify-between select-none border-r border-white/5 h-[100dvh] lg:h-screen overflow-y-auto transition-transform duration-300 ease-in-out pb-[env(safe-area-inset-bottom,16px)] ${
+        className={`fixed lg:sticky top-0 inset-y-0 left-0 z-50 lg:z-30 w-[min(85vw,320px)] lg:w-64 bg-[#07150D] text-white shrink-0 p-4 lg:p-5 flex flex-col justify-between select-none border-r border-white/5 h-[100dvh] lg:h-screen overflow-y-auto transition-transform duration-300 ease-in-out pb-[env(safe-area-inset-bottom,16px)] ${
           mobileAdminMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
         }`}
       >
@@ -594,10 +645,10 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => setMobileAdminMenuOpen(false)}
-                className="lg:hidden p-1 rounded-lg text-white/70 hover:text-white hover:bg-white/10"
+                className="lg:hidden p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-white/80 hover:text-white hover:bg-white/10 cursor-pointer"
                 aria-label="Close menu"
               >
-                <X className="w-5 h-5" />
+                <X className="w-6 h-6 stroke-[2]" />
               </button>
             </div>
             <span className="text-[10px] font-extrabold text-[#D4AF37] tracking-[0.2em] uppercase block">
@@ -606,108 +657,108 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Sidebar Menu Items */}
-          <nav className="space-y-1 text-xs font-semibold">
+          <nav className="space-y-1.5 text-[15px] font-semibold">
             {/* 1. Dashboard */}
             <button
               onClick={() => switchTab("dashboard")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[44px] ${
                 activeTab === "dashboard"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
               }`}
             >
-              <LayoutGrid className="w-4 h-4" />
+              <LayoutGrid className="w-5 h-5" />
               <span>Dashboard</span>
             </button>
 
             {/* 2. Products Catalog */}
             <button
               onClick={() => switchTab("products")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[44px] ${
                 activeTab === "products"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
               }`}
             >
-              <Package className="w-4 h-4" />
+              <Package className="w-5 h-5" />
               <span>Products Catalog</span>
             </button>
 
             {/* 3. User Roles */}
             <button
               onClick={() => switchTab("users")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[44px] ${
                 activeTab === "users"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
               }`}
             >
-              <Users className="w-4 h-4" />
+              <Users className="w-5 h-5" />
               <span>User Roles</span>
             </button>
 
             {/* 4. Applications Queue */}
             <button
               onClick={() => switchTab("applications")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[44px] ${
                 activeTab === "applications"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
               }`}
             >
-              <FileText className="w-4 h-4" />
+              <FileText className="w-5 h-5" />
               <span>Applications Queue</span>
             </button>
 
             {/* 5. Order Management */}
             <button
               onClick={() => switchTab("commissions")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[44px] ${
                 activeTab === "commissions" || activeTab === "orders"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
               }`}
             >
-              <ShoppingBag className="w-4 h-4" />
+              <ShoppingBag className="w-5 h-5" />
               <span>Order Management</span>
             </button>
 
             {/* 6. Payout Queue */}
             <button
               onClick={() => switchTab("withdrawals")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[44px] ${
                 activeTab === "withdrawals"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
               }`}
             >
-              <CreditCard className="w-4 h-4" />
+              <CreditCard className="w-5 h-5" />
               <span>Payout Queue</span>
             </button>
 
             {/* 7. Campaigns Creator */}
             <button
               onClick={() => switchTab("campaigns")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[44px] ${
                 activeTab === "campaigns"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
               }`}
             >
-              <Target className="w-4 h-4" />
+              <Target className="w-5 h-5" />
               <span>Campaigns Creator</span>
             </button>
 
             {/* 8. Broadcast Update */}
             <button
               onClick={() => switchTab("announcements")}
-              className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl transition-all cursor-pointer min-h-[40px] ${
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all cursor-pointer min-h-[44px] ${
                 activeTab === "announcements"
                   ? "bg-[#f5c518] text-[#14231b] font-bold shadow-md shadow-[#f5c518]/25"
                   : "text-[#94A3B8] hover:text-white hover:bg-white/5"
               }`}
             >
-              <Megaphone className="w-4 h-4" />
+              <Megaphone className="w-5 h-5" />
               <span>Broadcast Update</span>
             </button>
           </nav>

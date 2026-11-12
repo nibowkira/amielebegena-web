@@ -20,6 +20,7 @@ import {
 } from "../../lib/api";
 import { useCurrency } from "../../context/CurrencyContext";
 import { supabase } from "../../lib/supabase";
+import { useScrollLock } from "../../lib/useScrollLock";
 import {
   Search,
   Filter,
@@ -88,6 +89,23 @@ export default function ProductManagementModule() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [deleteConfirmProduct, setDeleteConfirmProduct] = useState<Product | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  // Lock background window scrolling while modal/drawer is open
+  useScrollLock(isEditorOpen || !!deleteConfirmProduct);
+
+  // Close modals on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (isEditorOpen) setIsEditorOpen(false);
+        if (deleteConfirmProduct) setDeleteConfirmProduct(null);
+      }
+    };
+    if (isEditorOpen || deleteConfirmProduct) {
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [isEditorOpen, deleteConfirmProduct]);
 
   // Audio audition inside modal
   const [modalAudioPlaying, setModalAudioPlaying] = useState<boolean>(false);
@@ -1067,61 +1085,85 @@ export default function ProductManagementModule() {
       </div>
 
       {/* =========================================================================
-          PRODUCT EDITOR DRAWER (CREATE & EDIT)
+          PRODUCT EDITOR DRAWER (CREATE & EDIT) — ORDER MODAL DESIGN SYSTEM
       ========================================================================= */}
       {isEditorOpen && (
         <div
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsEditorOpen(false);
           }}
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 p-2 sm:p-4 md:p-6 flex items-center justify-center overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+          style={{ overscrollBehavior: "none" }}
         >
-          <div className="w-full max-w-3xl max-h-[92vh] bg-white rounded-2xl shadow-2xl flex flex-col justify-between overflow-hidden border border-[#E7E3D8] animate-in zoom-in-95 duration-200">
-            {/* Modal Header with Health Score */}
-            <div className="p-3.5 sm:p-5 border-b border-[#E7E3D8] flex items-center justify-between bg-[#FAF8F5]">
-              <div>
-                <span className="text-[10px] font-extrabold text-[#d4af37] uppercase tracking-widest block">
-                  {editingProduct ? "Edit Instrument" : "Create Masterpiece"}
-                </span>
-                <h3 className="font-benaiah font-extrabold text-xl text-[#14231b]">
-                  {formName || "Untitled Product"}
-                </h3>
+          {/* Darkened, Blurred Backdrop matching PremiumModal */}
+          <div
+            className="fixed inset-0 bg-[#07130b]/75 backdrop-blur-md transition-opacity duration-300"
+            onClick={() => setIsEditorOpen(false)}
+            style={{ touchAction: "none" }}
+          />
+
+          {/* Modal Container: Same card style, radius, border, background, shadow as Order Modal */}
+          <div
+            className="relative w-full max-w-3xl h-[100dvh] sm:h-auto sm:max-h-[88vh] rounded-none sm:rounded-[26px] bg-[#FAF8F4] text-[#172820] border border-[#E8E1D6] shadow-[0_25px_70px_-15px_rgba(20,39,29,0.35)] flex flex-col box-border overflow-hidden z-10 animate-in zoom-in-95 fade-in duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header with Eyebrow, Title, Health Score & Close Button */}
+            <header className="px-5 py-4 sm:px-7 sm:py-4.5 border-b border-[#E8E1D6] bg-[#FAF8F4] flex items-center justify-between gap-4 shrink-0">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
+                  <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-[#D9B32E] uppercase truncate">
+                    {editingProduct ? "EDIT CATALOG MASTERPIECE" : "ADD NEW INSTRUMENT"}
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-black text-[#14271D] tracking-tight truncate leading-tight">
+                  {formName || (editingProduct ? "Edit Instrument" : "Create Masterpiece")}
+                </h2>
+                <p className="text-xs text-[#7D867F] font-medium mt-0.5 truncate">
+                  {editingProduct
+                    ? "Update acoustic specifications, media, and craftsmanship details"
+                    : "Add an authentic handcrafted Ethiopian instrument to Amiele Begena"}
+                </p>
               </div>
 
-              {/* Health Score Pill */}
-              <div className="flex items-center gap-3">
+              {/* Health Score Pill + Circular Close Button */}
+              <div className="flex items-center gap-3 shrink-0">
                 <div
-                  className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5 ${
+                  className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border shadow-2xs ${
                     liveHealth.score >= 85
                       ? "bg-emerald-50 text-emerald-800 border-emerald-300"
                       : liveHealth.score >= 70
                       ? "bg-amber-50 text-amber-800 border-amber-300"
                       : "bg-red-50 text-red-800 border-red-300"
                   }`}
-                  title="Live completeness score"
+                  title="Live catalog completeness score"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#D9B32E]" />
                   <span>Health: {liveHealth.score}%</span>
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => setIsEditorOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white border border-[#E7E3D8] flex items-center justify-center text-gray-500 hover:text-black cursor-pointer"
+                  className="w-9 h-9 rounded-full bg-white border border-[#E8E1D6] text-[#7D867F] hover:text-[#172820] hover:bg-[#F8F5EF] flex items-center justify-center transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D9B32E]/30"
+                  aria-label="Close modal"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4 stroke-[2.5]" />
                 </button>
               </div>
-            </div>
+            </header>
 
-            {/* Modal Navigation Tabs */}
-            <div className="flex items-center gap-1 px-3 sm:px-5 border-b border-[#E7E3D8] bg-[#FAF8F5] overflow-x-auto shrink-0 touch-pan-x no-scrollbar">
+            {/* Navigation Tabs Bar with Gold Indicators */}
+            <div className="flex items-center gap-1.5 px-4 sm:px-7 border-b border-[#E8E1D6] bg-[#F8F5EF] overflow-x-auto shrink-0 touch-pan-x no-scrollbar">
               <button
                 type="button"
                 onClick={() => setEditorTab("general")}
-                className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
+                className={`py-3 px-3.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
                   editorTab === "general"
-                    ? "border-[#d4af37] text-[#14231b] font-extrabold"
-                    : "border-transparent text-[#737874] hover:text-[#14231b]"
+                    ? "border-[#D9B32E] text-[#14231b] font-black"
+                    : "border-transparent text-[#7D867F] hover:text-[#14231b]"
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -1130,25 +1172,25 @@ export default function ProductManagementModule() {
               <button
                 type="button"
                 onClick={() => setEditorTab("craftsmanship")}
-                className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
+                className={`py-3 px-3.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
                   editorTab === "craftsmanship"
-                    ? "border-[#d4af37] text-[#14231b] font-extrabold"
-                    : "border-transparent text-[#737874] hover:text-[#14231b]"
+                    ? "border-[#D9B32E] text-[#14231b] font-black"
+                    : "border-transparent text-[#7D867F] hover:text-[#14231b]"
                 }`}
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
+                <Sparkles className="w-3.5 h-3.5 text-[#D9B32E]" />
                 <span>Craftsmanship &amp; Story</span>
                 {(formCraftStory || formCraftMaterials || formCraftComponents.length > 0 || formCraftHighlights.length > 0) && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
                 )}
               </button>
               <button
                 type="button"
                 onClick={() => setEditorTab("media")}
-                className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
+                className={`py-3 px-3.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
                   editorTab === "media"
-                    ? "border-[#d4af37] text-[#14231b] font-extrabold"
-                    : "border-transparent text-[#737874] hover:text-[#14231b]"
+                    ? "border-[#D9B32E] text-[#14231b] font-black"
+                    : "border-transparent text-[#7D867F] hover:text-[#14231b]"
                 }`}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
@@ -1157,10 +1199,10 @@ export default function ProductManagementModule() {
               <button
                 type="button"
                 onClick={() => setEditorTab("seo")}
-                className={`px-4 py-2.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
+                className={`py-3 px-3.5 text-xs font-bold transition-all border-b-2 cursor-pointer flex items-center gap-2 shrink-0 ${
                   editorTab === "seo"
-                    ? "border-[#d4af37] text-[#14231b] font-extrabold"
-                    : "border-transparent text-[#737874] hover:text-[#14231b]"
+                    ? "border-[#D9B32E] text-[#14231b] font-black"
+                    : "border-transparent text-[#7D867F] hover:text-[#14231b]"
                 }`}
               >
                 <Info className="w-3.5 h-3.5" />
@@ -1168,8 +1210,17 @@ export default function ProductManagementModule() {
               </button>
             </div>
 
-            {/* Drawer Body / Scrollable Form */}
-            <form onSubmit={handleSaveProduct} id="productForm" className="flex-1 overflow-y-auto p-3.5 sm:p-6 space-y-5 sm:space-y-6">
+            {/* Scrollable Form Body Container */}
+            <form
+              onSubmit={handleSaveProduct}
+              id="productForm"
+              className="flex-1 overflow-y-auto p-4 sm:p-7 space-y-5"
+              style={{
+                overscrollBehavior: "contain",
+                WebkitOverflowScrolling: "touch",
+                touchAction: "pan-y",
+              }}
+            >
               {formError && (
                 <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
@@ -1201,38 +1252,50 @@ export default function ProductManagementModule() {
                   TAB 1: GENERAL
               ========================================================= */}
               {editorTab === "general" && (
-                <div className="space-y-6">
+                <div className="space-y-5">
                   {/* SECTION 1: BASIC INFORMATION */}
-                  <div className="space-y-4">
-                    <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
-                      1. Basic Information
-                    </h4>
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F5EF] border border-[#E8E1D6] shadow-xs space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
+                        <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-[#D9B32E] uppercase">
+                          1. BASIC IDENTIFICATION
+                        </span>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-black text-[#14271D]">
+                        Instrument Identity &amp; Classification
+                      </h4>
+                      <p className="text-xs text-[#7D867F] font-medium">
+                        Define public title in Amharic &amp; English, category, and URL permalink identifier
+                      </p>
+                      <div className="h-[1px] w-full bg-[#E8E1D6] my-2.5" />
+                    </div>
 
                     {/* Name */}
-                    <div>
-                      <label className="block text-xs font-bold text-[#14231b] mb-1">
-                        Instrument Name (English &amp; Amharic) *
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
+                        Instrument Name (English &amp; Amharic) <span className="text-[#D9B32E]">*</span>
                       </label>
                       <input
                         type="text"
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         placeholder="e.g. በገና (Begena) — Ten-String Box Lyre"
-                        className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                         required
                       />
                     </div>
 
                     {/* Slug with live availability */}
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-xs font-bold text-[#14231b]">
-                          Slug / URL Identifier *
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
+                          Slug / URL Identifier <span className="text-[#D9B32E]">*</span>
                         </label>
                         <button
                           type="button"
                           onClick={handleGenerateSlug}
-                          className="text-[11px] font-bold text-[#d4af37] hover:underline cursor-pointer"
+                          className="text-[11px] font-bold text-[#D9B32E] hover:underline cursor-pointer"
                         >
                           Generate from Name
                         </button>
@@ -1246,10 +1309,10 @@ export default function ProductManagementModule() {
                             checkSlug(e.target.value);
                           }}
                           placeholder="e.g. begena"
-                          className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37] font-mono"
+                          className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs font-mono"
                           required
                         />
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs">
+                        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs">
                           {slugChecking ? (
                             <RefreshCw className="w-3.5 h-3.5 animate-spin text-gray-400" />
                           ) : slugAvailable === true ? (
@@ -1263,14 +1326,14 @@ export default function ProductManagementModule() {
 
                     {/* Category & Badge */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-[#14231b] mb-1">
-                          Category *
+                      <div className="space-y-1.5">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
+                          Category <span className="text-[#D9B32E]">*</span>
                         </label>
                         <select
                           value={formCategory}
                           onChange={(e) => setFormCategory(e.target.value)}
-                          className="w-full px-3 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-semibold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                          className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                         >
                           <option value="strings">Strings / በገናና ክራር</option>
                           <option value="percussion">Percussion / ከበሮ</option>
@@ -1281,8 +1344,8 @@ export default function ProductManagementModule() {
                         </select>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-bold text-[#14231b] mb-1">
+                      <div className="space-y-1.5">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
                           Promotional Badge
                         </label>
                         <input
@@ -1290,36 +1353,48 @@ export default function ProductManagementModule() {
                           value={formBadge}
                           onChange={(e) => setFormBadge(e.target.value)}
                           placeholder="e.g. Masterpiece, Best Seller"
-                          className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                          className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                         />
                       </div>
                     </div>
 
                     {/* Featured Checkbox */}
-                    <div className="flex items-center gap-2 pt-1">
+                    <div className="flex items-center gap-2.5 pt-1">
                       <input
                         type="checkbox"
                         id="featured"
                         checked={formFeatured}
                         onChange={(e) => setFormFeatured(e.target.checked)}
-                        className="w-4 h-4 rounded text-[#d4af37] focus:ring-[#d4af37] cursor-pointer"
+                        className="w-4 h-4 rounded text-[#D9B32E] focus:ring-[#D9B32E] cursor-pointer"
                       />
-                      <label htmlFor="featured" className="text-xs font-bold text-[#14231b] cursor-pointer">
-                        Feature on Homepage Hero &amp; Favorites Slider
+                      <label htmlFor="featured" className="text-xs font-bold text-[#14271D] cursor-pointer">
+                        Feature on Homepage Hero &amp; Favorites Showcase
                       </label>
                     </div>
                   </div>
 
                   {/* SECTION 2: PRICING & INVENTORY */}
-                  <div className="space-y-4">
-                    <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
-                      2. Pricing &amp; Inventory
-                    </h4>
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F5EF] border border-[#E8E1D6] shadow-xs space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
+                        <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-[#D9B32E] uppercase">
+                          2. PRICING &amp; INVENTORY
+                        </span>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-black text-[#14271D]">
+                        Financial Rates &amp; Stock Controls
+                      </h4>
+                      <p className="text-xs text-[#7D867F] font-medium">
+                        Base instrument price, default currency, stock counts, and visibility status
+                      </p>
+                      <div className="h-[1px] w-full bg-[#E8E1D6] my-2.5" />
+                    </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-[#14231b] mb-1">
-                          Base Price *
+                      <div className="space-y-1.5">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
+                          Base Price <span className="text-[#D9B32E]">*</span>
                         </label>
                         <input
                           type="number"
@@ -1327,19 +1402,19 @@ export default function ProductManagementModule() {
                           min="0"
                           value={formPrice}
                           onChange={(e) => setFormPrice(e.target.value)}
-                          className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                          className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-bold text-[#172820] focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                           required
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-bold text-[#14231b] mb-1">
-                          Currency *
+                      <div className="space-y-1.5">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
+                          Currency <span className="text-[#D9B32E]">*</span>
                         </label>
                         <select
                           value={formCurrency}
                           onChange={(e) => setFormCurrency(e.target.value)}
-                          className="w-full px-3 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                          className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-bold text-[#172820] focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                         >
                           <option value="USD">USD ($)</option>
                           <option value="ETB">ETB (Ethiopian Birr)</option>
@@ -1347,30 +1422,30 @@ export default function ProductManagementModule() {
                         </select>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-bold text-[#14231b] mb-1">
-                          Stock Count *
+                      <div className="space-y-1.5">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
+                          Stock Count <span className="text-[#D9B32E]">*</span>
                         </label>
                         <input
                           type="number"
                           min="0"
                           value={formStock}
                           onChange={(e) => setFormStock(e.target.value)}
-                          className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                          className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-bold text-[#172820] focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                           required
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-[#14231b] mb-1">
-                          Status *
+                      <div className="space-y-1.5">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
+                          Status <span className="text-[#D9B32E]">*</span>
                         </label>
                         <select
                           value={formStatus}
                           onChange={(e) => setFormStatus(e.target.value)}
-                          className="w-full px-3 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-bold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                          className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-bold text-[#172820] focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                         >
                           <option value="active">Active (Visible)</option>
                           <option value="draft">Draft (Admin Only)</option>
@@ -1379,28 +1454,40 @@ export default function ProductManagementModule() {
                         </select>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-bold text-[#14231b] mb-1">
+                      <div className="space-y-1.5">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
                           Catalog Sort Order
                         </label>
                         <input
                           type="number"
                           value={formSortOrder}
                           onChange={(e) => setFormSortOrder(e.target.value)}
-                          className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs font-semibold text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                          className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                         />
                       </div>
                     </div>
                   </div>
 
-                  {/* SECTION 3: STORYTELLING & SPECIFICATIONS */}
-                  <div className="space-y-4">
-                    <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
-                      3. Descriptions &amp; Cultural Story
-                    </h4>
+                  {/* SECTION 3: DESCRIPTIONS & STORY */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F5EF] border border-[#E8E1D6] shadow-xs space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
+                        <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-[#D9B32E] uppercase">
+                          3. DESCRIPTIONS &amp; CULTURAL STORY
+                        </span>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-black text-[#14271D]">
+                        Customer Copy &amp; Acoustic Summary
+                      </h4>
+                      <p className="text-xs text-[#7D867F] font-medium">
+                        Short card summary and comprehensive description for the catalog
+                      </p>
+                      <div className="h-[1px] w-full bg-[#E8E1D6] my-2.5" />
+                    </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-[#14231b] mb-1">
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
                         Short Description (Product Card Summary)
                       </label>
                       <input
@@ -1408,12 +1495,12 @@ export default function ProductManagementModule() {
                         value={formShortDesc}
                         onChange={(e) => setFormShortDesc(e.target.value)}
                         placeholder="e.g. Sacred Ten-String Lyre crafted from highland Wanza wood."
-                        className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-[#14231b] mb-1">
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
                         Full Description, Materials &amp; Artisan Notes
                       </label>
                       <textarea
@@ -1421,7 +1508,7 @@ export default function ProductManagementModule() {
                         value={formDesc}
                         onChange={(e) => setFormDesc(e.target.value)}
                         placeholder="Describe the artisan crafting process, wood seasoning, parchment tuning, modal scales..."
-                        className="w-full p-3.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
+                        className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                       />
                     </div>
                   </div>
@@ -1432,51 +1519,75 @@ export default function ProductManagementModule() {
                   TAB 2: CRAFTSMANSHIP & STORY
               ========================================================= */}
               {editorTab === "craftsmanship" && (
-                <div className="space-y-6">
-                  {/* Story & Heritage */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs font-bold text-[#14231b]">
-                        Product Heritage &amp; Story
-                      </label>
-                      <span className="text-[10px] text-gray-400">
-                        {formCraftStory.length} / 5000
-                      </span>
+                <div className="space-y-5">
+                  {/* Story & Heritage Card */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F5EF] border border-[#E8E1D6] shadow-xs space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
+                          <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-[#D9B32E] uppercase">
+                            EDITORIAL HERITAGE
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-[#7D867F]">
+                          {formCraftStory.length} / 5000
+                        </span>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-black text-[#14271D]">
+                        Product Heritage &amp; Spiritual Story
+                      </h4>
+                      <p className="text-xs text-[#7D867F] font-medium">
+                        Editorial storytelling for the dedicated &ldquo;About Product&rdquo; showcase page. Describe sacred history, liturgical role, and cultural resonance.
+                      </p>
+                      <div className="h-[1px] w-full bg-[#E8E1D6] my-2.5" />
                     </div>
-                    <p className="text-[11px] text-[#737874]">
-                      Editorial storytelling for the dedicated &ldquo;About Product&rdquo; showcase page. Describe the history, sacred role, and cultural significance.
-                    </p>
-                    <textarea
-                      rows={5}
-                      maxLength={5000}
-                      value={formCraftStory}
-                      onChange={(e) => setFormCraftStory(e.target.value)}
-                      placeholder="e.g. For centuries, the Begena has echoed through Ethiopian highland monasteries..."
-                      className="w-full p-3.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    />
+
+                    <div className="space-y-1.5">
+                      <textarea
+                        rows={5}
+                        maxLength={5000}
+                        value={formCraftStory}
+                        onChange={(e) => setFormCraftStory(e.target.value)}
+                        placeholder="e.g. For centuries, the Begena has echoed through Ethiopian highland monasteries..."
+                        className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
+                      />
+                    </div>
                   </div>
 
-                  {/* Materials & Construction */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs font-bold text-[#14231b]">
-                        Materials &amp; Construction
-                      </label>
-                      <span className="text-[10px] text-gray-400">
-                        {formCraftMaterials.length} / 5000
-                      </span>
+                  {/* Materials & Construction Card */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F5EF] border border-[#E8E1D6] shadow-xs space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
+                          <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-[#D9B32E] uppercase">
+                            ATELIER PROVENANCE
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono font-bold text-[#7D867F]">
+                          {formCraftMaterials.length} / 5000
+                        </span>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-black text-[#14271D]">
+                        Materials, Seasoning &amp; Construction
+                      </h4>
+                      <p className="text-xs text-[#7D867F] font-medium">
+                        Detail woods (Wanza, Tid), parchment (ox hide/goat skin), gut strings, beeswax, and sacred crafting methods.
+                      </p>
+                      <div className="h-[1px] w-full bg-[#E8E1D6] my-2.5" />
                     </div>
-                    <p className="text-[11px] text-[#737874]">
-                      Describe woods (Wanza, Tid), parchment (ox hide/goat skin), gut strings, beeswax, and traditional artisan methods.
-                    </p>
-                    <textarea
-                      rows={4}
-                      maxLength={5000}
-                      value={formCraftMaterials}
-                      onChange={(e) => setFormCraftMaterials(e.target.value)}
-                      placeholder="e.g. Carved from seasoned highland Cordia africana (Wanza) wood, covered with taut ox-hide parchment..."
-                      className="w-full p-3.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    />
+
+                    <div className="space-y-1.5">
+                      <textarea
+                        rows={4}
+                        maxLength={5000}
+                        value={formCraftMaterials}
+                        onChange={(e) => setFormCraftMaterials(e.target.value)}
+                        placeholder="e.g. Carved from seasoned highland Cordia africana (Wanza) wood, covered with taut ox-hide parchment..."
+                        className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
+                      />
+                    </div>
                   </div>
 
                   {/* Key Components Repeatable Rows */}
@@ -1723,101 +1834,127 @@ export default function ProductManagementModule() {
                   TAB 3: MEDIA & AUDIO
               ========================================================= */}
               {editorTab === "media" && (
-                <div className="space-y-4">
-                  <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1 flex items-center justify-between">
-                    <span>Photography &amp; Audio Audition</span>
-                    <span className="text-[10px] text-[#d4af37] lowercase">
-                      {formImages.length} images added
-                    </span>
-                  </h4>
-
-                  {/* Add Image URL */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newImageUrl}
-                      onChange={(e) => setNewImageUrl(e.target.value)}
-                      placeholder="Enter image storage path (e.g. /image/photo_2025-10-01_07-26-53.jpg)"
-                      className="flex-1 px-3.5 py-2 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddImage}
-                      className="px-4 py-2 rounded-xl bg-[#14231b] text-white text-xs font-bold hover:bg-black transition-colors cursor-pointer"
-                    >
-                      Add Photo
-                    </button>
-                  </div>
-
-                  {/* Gallery List */}
-                  {formImages.length > 0 && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                      {formImages.map((img, idx) => (
-                        <div
-                          key={idx}
-                          className={`relative aspect-square rounded-xl bg-[#FAF8F5] border-2 overflow-hidden flex items-center justify-center group ${
-                            img.isCover ? "border-[#d4af37]" : "border-[#E7E3D8]"
-                          }`}
-                        >
-                          <img src={img.storagePath} alt={img.altText} className="w-full h-full object-cover" />
-
-                          {img.isCover && (
-                            <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-[#d4af37] text-[#14231b] text-[9px] font-black uppercase shadow">
-                              Cover
-                            </span>
-                          )}
-
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 text-white">
-                            {!img.isCover && (
-                              <button
-                                type="button"
-                                onClick={() => handleSetCoverImage(idx)}
-                                className="px-2 py-0.5 rounded bg-[#d4af37] text-[#14231b] text-[10px] font-bold cursor-pointer"
-                              >
-                                Set Cover
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveImage(idx)}
-                              className="px-2 py-0.5 rounded bg-red-600 text-white text-[10px] font-bold cursor-pointer"
-                            >
-                              Remove
-                            </button>
-                          </div>
+                <div className="space-y-5">
+                  {/* Photography & Gallery Card */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F5EF] border border-[#E8E1D6] shadow-xs space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
+                          <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-[#D9B32E] uppercase">
+                            GALLERY ASSETS
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Audio Audition Section */}
-                  <div className="p-4 bg-[#FAF8F5] rounded-xl border border-[#E7E3D8] space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Music className="w-4 h-4 text-[#d4af37]" />
-                        <span className="text-xs font-bold text-[#14231b]">
-                          Interactive Sound Audition Sample
+                        <span className="text-[10px] font-mono font-bold text-[#D9B32E]">
+                          {formImages.length} images added
                         </span>
                       </div>
-
-                      <label className="flex items-center gap-1.5 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formAudioEnabled}
-                          onChange={(e) => setFormAudioEnabled(e.target.checked)}
-                          className="w-4 h-4 rounded text-[#d4af37] focus:ring-[#d4af37]"
-                        />
-                        <span className="text-[11px] font-bold text-[#14231b]">Enable</span>
-                      </label>
+                      <h4 className="text-sm sm:text-base font-black text-[#14271D]">
+                        Photography &amp; Cover Visuals
+                      </h4>
+                      <p className="text-xs text-[#7D867F] font-medium">
+                        High-resolution instrument photography and primary catalog cover assignment
+                      </p>
+                      <div className="h-[1px] w-full bg-[#E8E1D6] my-2.5" />
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    {/* Add Image URL */}
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        placeholder="Enter storage path (e.g. /image/photo_2025-10-01_07-26-53.jpg)"
+                        className="flex-1 px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddImage}
+                        className="px-5 py-3 rounded-full bg-[#14231b] hover:bg-black text-[#D9B32E] text-xs font-bold transition-colors cursor-pointer shrink-0 min-h-[44px]"
+                      >
+                        Add Photo
+                      </button>
+                    </div>
+
+                    {/* Gallery Grid */}
+                    {formImages.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                        {formImages.map((img, idx) => (
+                          <div
+                            key={idx}
+                            className={`relative aspect-square rounded-2xl bg-white border-2 overflow-hidden flex items-center justify-center group shadow-2xs ${
+                              img.isCover ? "border-[#D9B32E] ring-2 ring-[#D9B32E]/30" : "border-[#E8E1D6]"
+                            }`}
+                          >
+                            <img src={img.storagePath} alt={img.altText} className="w-full h-full object-cover" />
+
+                            {img.isCover && (
+                              <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full bg-[#D9B32E] text-[#14231b] text-[9px] font-black uppercase shadow-xs">
+                                Cover Photo
+                              </span>
+                            )}
+
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 text-white">
+                              {!img.isCover && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleSetCoverImage(idx)}
+                                  className="px-2.5 py-1 rounded-full bg-[#D9B32E] text-[#14231b] text-[10px] font-bold cursor-pointer hover:bg-white transition-colors"
+                                >
+                                  Set Cover
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(idx)}
+                                className="px-2.5 py-1 rounded-full bg-red-600 text-white text-[10px] font-bold cursor-pointer hover:bg-red-700 transition-colors"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Audio Audition Section Card */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F5EF] border border-[#E8E1D6] shadow-xs space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
+                          <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-[#D9B32E] uppercase">
+                            ACOUSTIC AUDITION
+                          </span>
+                        </div>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formAudioEnabled}
+                            onChange={(e) => setFormAudioEnabled(e.target.checked)}
+                            className="w-4 h-4 rounded text-[#D9B32E] focus:ring-[#D9B32E]"
+                          />
+                          <span className="text-xs font-bold text-[#14271D]">Enable Audio</span>
+                        </label>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-black text-[#14271D]">
+                        Interactive Sound Sample &amp; Scale Tuning
+                      </h4>
+                      <p className="text-xs text-[#7D867F] font-medium">
+                        Acoustic pentatonic sample for prospective buyers to hear the instrument voice
+                      </p>
+                      <div className="h-[1px] w-full bg-[#E8E1D6] my-2.5" />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center gap-2">
                       <input
                         type="text"
                         value={formAudioUrl}
                         onChange={(e) => setFormAudioUrl(e.target.value)}
                         placeholder="/audio/begena.mp3"
-                        className="flex-1 px-3 py-2 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] font-mono focus:outline-none focus:border-[#d4af37]"
+                        className="w-full sm:flex-1 px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] font-mono focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                       />
 
                       {formAudioUrl && (
@@ -1832,10 +1969,10 @@ export default function ProductManagementModule() {
                               modalAudioRef.current.play().then(() => setModalAudioPlaying(true));
                             }
                           }}
-                          className="px-3 py-2 rounded-xl bg-[#14231b] text-[#25D366] text-xs font-bold flex items-center gap-1 hover:bg-black cursor-pointer"
+                          className="w-full sm:w-auto px-5 py-3 rounded-full bg-[#14231b] text-[#25D366] text-xs font-bold flex items-center justify-center gap-2 hover:bg-black cursor-pointer shadow-xs min-h-[44px]"
                         >
-                          {modalAudioPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                          <span>{modalAudioPlaying ? "Stop" : "Test"}</span>
+                          {modalAudioPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
+                          <span>{modalAudioPlaying ? "Pause Audio" : "Audition Voice"}</span>
                         </button>
                       )}
                     </div>
@@ -1856,60 +1993,86 @@ export default function ProductManagementModule() {
                   TAB 4: SEO
               ========================================================= */}
               {editorTab === "seo" && (
-                <div className="space-y-4">
-                  <h4 className="text-xs font-extrabold text-[#14231b] uppercase tracking-wider border-b border-[#E7E3D8] pb-1">
-                    SEO &amp; Search Engine Optimization
-                  </h4>
+                <div className="space-y-5">
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#F8F5EF] border border-[#E8E1D6] shadow-xs space-y-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#D9B32E]" />
+                        <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-[#D9B32E] uppercase">
+                          DISCOVERABILITY
+                        </span>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-black text-[#14271D]">
+                        Search Engine Metadata &amp; OpenGraph
+                      </h4>
+                      <p className="text-xs text-[#7D867F] font-medium">
+                        Title tag and description for Google Search indexing and social previews
+                      </p>
+                      <div className="h-[1px] w-full bg-[#E8E1D6] my-2.5" />
+                    </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-[#14231b] mb-1">
-                      Meta Title
-                    </label>
-                    <input
-                      type="text"
-                      value={formMetaTitle}
-                      onChange={(e) => setFormMetaTitle(e.target.value)}
-                      placeholder="Amiele Begena — Handcrafted Ethiopian Begena Harp"
-                      className="w-full px-3.5 py-2.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    />
-                  </div>
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
+                        Meta Title
+                      </label>
+                      <input
+                        type="text"
+                        value={formMetaTitle}
+                        onChange={(e) => setFormMetaTitle(e.target.value)}
+                        placeholder="Amiele Begena — Handcrafted Ethiopian Begena Harp"
+                        className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-[#14231b] mb-1">
-                      Meta Description
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={formMetaDesc}
-                      onChange={(e) => setFormMetaDesc(e.target.value)}
-                      placeholder="Discover authentic handcrafted sacred Ethiopian Begena harps..."
-                      className="w-full p-3.5 border border-[#E7E3D8] rounded-xl text-xs text-[#14231b] focus:outline-none focus:border-[#d4af37]"
-                    />
+                    <div className="space-y-1.5">
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-[#14271D]">
+                        Meta Description
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={formMetaDesc}
+                        onChange={(e) => setFormMetaDesc(e.target.value)}
+                        placeholder="Discover authentic handcrafted sacred Ethiopian Begena harps..."
+                        className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
             </form>
 
-            {/* Drawer Footer Actions */}
-            <div className="p-4 border-t border-[#E7E3D8] bg-[#FAF8F5] flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setIsEditorOpen(false)}
-                className="px-4 py-2.5 rounded-xl border border-[#E7E3D8] bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
+            {/* FIXED FOOTER (Same design system as Order Modal) */}
+            <footer className="px-4 py-3 sm:px-7 sm:py-3.5 border-t border-[#E8E1D6] bg-[#FAF8F4] w-full shrink-0">
+              <div className="w-full flex flex-col sm:flex-row-reverse sm:items-center sm:justify-between gap-2.5 sm:gap-4">
+                <button
+                  type="submit"
+                  form="productForm"
+                  disabled={formSaving}
+                  className="w-full sm:w-auto px-6 py-3 rounded-full bg-gradient-to-r from-[#14271D] via-[#1f3f2f] to-[#14271D] hover:bg-[#0c1811] text-[#D9B32E] hover:text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-[0_4px_16px_rgba(20,39,29,0.32)] hover:shadow-[0_6px_22px_rgba(20,39,29,0.42)] active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#D9B32E] min-h-[46px] border border-[#D9B32E]/30"
+                >
+                  {formSaving ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#D9B32E]" />
+                      <span>Saving Masterpiece...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-[#D9B32E]" />
+                      <span>{editingProduct ? "Save Changes" : "Create Instrument"}</span>
+                    </>
+                  )}
+                </button>
 
-              <button
-                type="submit"
-                form="productForm"
-                disabled={formSaving}
-                className="px-6 py-2.5 rounded-xl bg-[#d4af37] hover:bg-[#b8972e] text-[#14231b] text-xs font-extrabold uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2"
-              >
-                {formSaving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                <span>{editingProduct ? "Save Changes" : "Create Instrument"}</span>
-              </button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => setIsEditorOpen(false)}
+                  disabled={formSaving}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-full border border-transparent sm:border-[#E8E1D6] bg-transparent sm:bg-white hover:bg-[#F8F5EF] text-[#7D867F] sm:text-[#172820] text-xs sm:text-sm font-bold transition-all shadow-none sm:shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D9B32E]/30 disabled:opacity-50 min-h-[40px] sm:min-h-[44px]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </footer>
           </div>
         </div>
       )}

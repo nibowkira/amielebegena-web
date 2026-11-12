@@ -316,9 +316,7 @@ function AffiliatePortalContent() {
     if (authLoading) return;
 
     if (!user) {
-      // Allow seamless portal preview matching live screenshot
-      setIsApproved(true);
-      setCheckingApp(false);
+      router.replace("/login?redirect=/affiliate/dashboard");
       return;
     }
 
@@ -515,7 +513,7 @@ ${baseUrl}/?ref=${activeCode}`,
   // -------------------------------------------------------------
   // GUARD SCREEN 1: Loading state
   // -------------------------------------------------------------
-  if (authLoading || (user && checkingApp && !isApproved)) {
+  if (authLoading || !user || (checkingApp && !isApproved)) {
     return (
       <div className="w-full min-h-[85vh] flex flex-col items-center justify-center p-6 bg-[#FAF8F5]">
         <div className="w-16 h-16 rounded-2xl bg-[#14231b] flex items-center justify-center text-[#f3be3b] text-3xl shadow-lg animate-pulse mb-4">

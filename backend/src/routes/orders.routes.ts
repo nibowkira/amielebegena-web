@@ -7,14 +7,18 @@ import {
   updateFulfillment,
   approvePayment,
 } from "../controllers/orders.controller.js";
+import { requireAdmin } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
+// Public routes for guest ordering and tracking
 router.post("/guest", createGuestOrder);
 router.post("/track", trackOrder);
-router.get("/", getOrders);
-router.get("/:id", getOrderById);
-router.patch("/:id/fulfillment", updateFulfillment);
-router.post("/:id/approve-payment", approvePayment);
+
+// Protected Admin routes: Orders management, fulfillment updates, and payment approval
+router.get("/", requireAdmin, getOrders);
+router.get("/:id", requireAdmin, getOrderById);
+router.patch("/:id/fulfillment", requireAdmin, updateFulfillment);
+router.post("/:id/approve-payment", requireAdmin, approvePayment);
 
 export default router;

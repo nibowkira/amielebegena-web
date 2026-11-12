@@ -2,15 +2,17 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CartItem, Product } from "../lib/types";
-import { recordAffiliateClick } from "../lib/api";
+import { recordAffiliateClick, fetchProducts } from "../lib/api";
 
 interface CartContextType {
   items: CartItem[];
+  directOrderItem: CartItem | null;
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
   addItem: (product: Product, quantity?: number) => void;
+  openDirectOrder: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -26,6 +28,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [directOrderItem, setDirectOrderItem] = useState<CartItem | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState<boolean>(false);
   const [referralCode, setReferralCode] = useState<string | null>(null);
@@ -34,8 +37,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem("amiele_cart");
+      let parsedItems: CartItem[] = [];
       if (savedCart) {
-        setItems(JSON.parse(savedCart));
+        parsedItems = JSON.parse(savedCart);
+        setItems(parsedItems);
+      }
+
+      // C10: On load, validate cart items against the database and remove nonexistent ones
+      if (parsedItems.length > 0) {
+        fetchProducts().then((liveProducts) => {
+          if (liveProducts && liveProducts.length > 0) {
+            const validIds = new Set(liveProducts.map((p) => p.id));
+            const validItems = parsedItems.filter((i) => validIds.has(i.productId));
+            if (validItems.length !== parsedItems.length) {
+              setItems(validItems);
+              try {
+                localStorage.setItem("amiele_cart", JSON.stringify(validItems));
+              } catch (e) {}
+            }
+          }
+        }).catch((e) => console.warn("Cart validation skipped:", e));
       }
 
       // Check URL parameters for ?ref=... or ?aff=...
@@ -109,6 +130,35 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     openCart();
   };
 
+  const openDirectOrder = (product: Product, quantity: number = 1) => {
+    const coverImage = product.images?.[0]?.storagePath || "/image/photo_2025-10-01_07-26-53.jpg";
+    const rawPrice =
+      product.price !== undefined && product.price !== null
+        ? product.price
+        : (product as any).priceUSD !== undefined && (product as any).priceUSD !== null
+        ? (product as any).priceUSD
+        : (product as any).priceETB !== undefined && (product as any).priceETB !== null
+        ? (product as any).priceETB
+        : 85;
+    const parsed = typeof rawPrice === "string" ? parseFloat(rawPrice) : Number(rawPrice);
+    const priceNum = !isNaN(parsed) && parsed > 0 ? parsed : 85;
+
+    const directItem: CartItem = {
+      id: `direct-${product.id}-${Date.now()}`,
+      productId: product.id,
+      name: product.name,
+      price: priceNum,
+      currency: product.currency || "USD",
+      image: coverImage,
+      quantity: quantity,
+      category: product.category,
+    };
+
+    setDirectOrderItem(directItem);
+    closeCart();
+    setIsCheckoutModalOpen(true);
+  };
+
   const removeItem = (productId: string) => {
     const updated = items.filter((i) => i.productId !== productId);
     saveCart(updated);
@@ -137,11 +187,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     <CartContext.Provider
       value={{
         items,
+        directOrderItem,
         isOpen,
         openCart,
         closeCart,
         toggleCart,
         addItem,
+        openDirectOrder,
         removeItem,
         updateQuantity,
         clearCart,
@@ -150,10 +202,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         referralCode,
         isCheckoutModalOpen,
         openCheckoutModal: () => {
+          setDirectOrderItem(null);
           closeCart();
           setIsCheckoutModalOpen(true);
         },
-        closeCheckoutModal: () => setIsCheckoutModalOpen(false),
+        closeCheckoutModal: () => {
+          setDirectOrderItem(null);
+          setIsCheckoutModalOpen(false);
+        },
       }}
     >
       {children}

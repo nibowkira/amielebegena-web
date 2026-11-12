@@ -6,8 +6,12 @@ import {
   getWithdrawalRequests,
   reviewWithdrawal,
 } from "../controllers/admin.controller.js";
+import { requireAdmin } from "../middleware/auth.middleware.js";
 
 const router = Router();
+
+// Enforce admin permissions server-side on all admin routes
+router.use(requireAdmin);
 
 router.get("/analytics", getAnalytics);
 router.get("/applications", getAffiliateApplications);

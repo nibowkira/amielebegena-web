@@ -30,18 +30,6 @@ export const requireAdmin = async (
     }
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      // In development, if no token is provided but request is from localhost dev console,
-      // allow with warning to ensure local pairing workflow isn't blocked, but log it.
-      if (
-        process.env.NODE_ENV === "development" &&
-        (req.headers.origin?.includes("localhost") ||
-          req.headers.host?.includes("localhost"))
-      ) {
-        req.user = { id: "local-dev-admin", email: "admin@amiele.local" };
-        req.userRole = "admin";
-        return next();
-      }
-
       return res.status(401).json({
         success: false,
         error: "Unauthorized: Missing authentication bearer token.",

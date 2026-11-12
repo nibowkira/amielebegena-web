@@ -18,7 +18,7 @@ export default function ContactPage() {
         <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#fbf8f2]">
           Connect with Our Addis Ababa Workshop
         </h1>
-        <p className="text-xs sm:text-sm text-[#fbf8f2]/70 leading-relaxed font-light max-w-lg mx-auto">
+        <p className="text-sm sm:text-base text-[#fbf8f2]/90 leading-relaxed font-normal max-w-lg mx-auto">
           Inquire about custom instrument commissions, workshop visits, or direct bulk shipping inquiries.
         </p>
       </div>
@@ -98,42 +98,42 @@ export default function ContactPage() {
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       placeholder="e.g. Dawit Haile"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#d4af37]/25 bg-[#080b09] text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#d4af37]/35 bg-[#080b09] text-sm text-white placeholder-white/65 focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold mb-1 text-[#fbf8f2]/80">Email Address *</label>
+                    <label className="block text-xs font-semibold mb-1 text-[#fbf8f2]/90">Email Address *</label>
                     <input
                       type="email"
                       required
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       placeholder="dawit@example.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#d4af37]/25 bg-[#080b09] text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#d4af37]/35 bg-[#080b09] text-sm text-white placeholder-white/65 focus:outline-none focus:border-[#d4af37]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold mb-1 text-[#fbf8f2]/80">Subject</label>
+                  <label className="block text-xs font-semibold mb-1 text-[#fbf8f2]/90">Subject</label>
                   <input
                     type="text"
                     value={form.subject}
                     onChange={(e) => setForm({ ...form, subject: e.target.value })}
                     placeholder="e.g. Custom 10-String Begena Commission"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#d4af37]/25 bg-[#080b09] text-xs text-white focus:outline-none focus:border-[#d4af37]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#d4af37]/35 bg-[#080b09] text-sm text-white placeholder-white/65 focus:outline-none focus:border-[#d4af37]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold mb-1 text-[#fbf8f2]/80">Message *</label>
+                  <label className="block text-xs font-semibold mb-1 text-[#fbf8f2]/90">Message *</label>
                   <textarea
                     rows={4}
                     required
                     value={form.message}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
                     placeholder="Inquire about custom tuning, shipping quotes, or heritage questions..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#d4af37]/25 bg-[#080b09] text-xs text-white focus:outline-none focus:border-[#d4af37] resize-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#d4af37]/35 bg-[#080b09] text-sm text-white placeholder-white/65 focus:outline-none focus:border-[#d4af37] resize-none"
                   />
                 </div>
 

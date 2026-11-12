@@ -38,12 +38,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (!error && data) {
+        const devRole =
+          process.env.NODE_ENV === "development" && typeof window !== "undefined"
+            ? localStorage.getItem("amiele_dev_role")
+            : null;
         setProfile({
           id: data.id,
           fullName: data.full_name,
           email: data.email,
           phone: data.phone,
-          role: data.role,
+          role: devRole || data.role,
           bio: data.bio,
           avatarUrl: data.avatar_url,
         });
@@ -56,9 +60,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check active session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null);
       if (session?.user) {
+        setUser(session.user);
         await fetchProfile(session.user.id);
+      } else if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
+        const devRole = localStorage.getItem("amiele_dev_role");
+        if (devRole === "admin") {
+          setUser({
+            id: "dev-admin-id",
+            email: "admin@amiele.et",
+            app_metadata: {},
+            user_metadata: { full_name: "Amiele Admin" },
+            aud: "authenticated",
+            created_at: new Date().toISOString(),
+          } as any);
+          setProfile({
+            id: "dev-admin-id",
+            fullName: "Amiele Admin",
+            email: "admin@amiele.et",
+            role: "admin",
+          });
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      } else {
+        setUser(null);
+        setProfile(null);
       }
       setLoading(false);
     });

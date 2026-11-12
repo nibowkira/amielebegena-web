@@ -26,15 +26,31 @@ export default function WhatsAppFloating() {
     };
   }, [isOpen]);
 
+  const [isLocked, setIsLocked] = useState(false);
+
+  useEffect(() => {
+    const checkLocked = () => {
+      const locked =
+        document.body.getAttribute("data-scroll-locked") === "1" ||
+        document.body.style.overflow === "hidden";
+      setIsLocked(locked);
+    };
+    checkLocked();
+    const observer = new MutationObserver(checkLocked);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["style", "data-scroll-locked"] });
+    return () => observer.disconnect();
+  }, []);
+
   // Suppress floating widget in admin, affiliate portal, when cart or checkout modal is open,
-  // or on product pages that already have the dedicated sticky "Inquire on WhatsApp" bar.
+  // when any modal/drawer locks the screen, or on product pages that already have the dedicated sticky bar.
   if (
     pathname?.startsWith("/admin") ||
     pathname?.startsWith("/affiliate") ||
     pathname?.startsWith("/affiliate-dashboard") ||
     pathname?.startsWith("/about-product") ||
     cartOpen ||
-    isCheckoutModalOpen
+    isCheckoutModalOpen ||
+    isLocked
   ) {
     return null;
   }

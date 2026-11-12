@@ -2,14 +2,23 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../../../context/AuthContext";
 import { submitAffiliateApplication } from "../../../lib/api";
-import { CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, X } from "lucide-react";
+import { CheckCircle2, AlertCircle, ArrowRight, ArrowLeft, X, Loader2 } from "lucide-react";
 
 export default function AffiliateApplyPage() {
-  const { user, profile } = useAuth();
+  const router = useRouter();
+  const { user, profile, loading: authLoading } = useAuth();
 
   const [activeStep, setActiveStep] = useState<1 | 2>(1);
+
+  // Authentication guard
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login?redirect=/affiliate/apply");
+    }
+  }, [user, authLoading, router]);
 
   // Form inputs
   const [fullName, setFullName] = useState("");
@@ -79,6 +88,14 @@ export default function AffiliateApplyPage() {
     }
     setSubmitting(false);
   };
+
+  if (authLoading || !user) {
+    return (
+      <div className="w-full min-h-[75vh] py-16 px-4 sm:px-8 flex items-center justify-center bg-[#FAF8F5]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#14231b]" />
+      </div>
+    );
+  }
 
   // If user is already an approved affiliate
   if (profile?.role === "affiliate") {

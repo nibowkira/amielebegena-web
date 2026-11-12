@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import { useCurrency } from "../context/CurrencyContext";
 import { createGuestOrder } from "../lib/api";
+import { supabase } from "../lib/supabase";
 import PremiumModal from "./ui/PremiumModal";
 import { useScrollLock } from "../lib/useScrollLock";
 import {
@@ -17,15 +19,40 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+// Email typo helper for C9
+function checkEmailTypo(email: string): string | null {
+  if (!email || !email.includes("@")) return null;
+  const parts = email.split("@");
+  if (parts.length !== 2) return null;
+  const domain = parts[1].toLowerCase().trim();
+  const typoMap: Record<string, string> = {
+    "gamil.com": "gmail.com",
+    "gmial.com": "gmail.com",
+    "gmai.com": "gmail.com",
+    "gnail.com": "gmail.com",
+    "yaho.com": "yahoo.com",
+    "yahooo.com": "yahoo.com",
+    "hotmial.com": "hotmail.com",
+    "hotmaill.com": "hotmail.com",
+    "outlok.com": "outlook.com",
+  };
+  if (typoMap[domain]) {
+    return `${parts[0]}@${typoMap[domain]}`;
+  }
+  return null;
+}
+
 export default function WhatsAppModal() {
   const {
     isCheckoutModalOpen,
     closeCheckoutModal,
     items,
+    directOrderItem,
     subtotalUSD,
     clearCart,
     referralCode,
   } = useCart();
+  const { user, profile } = useAuth();
   const { formatPrice } = useCurrency();
 
   const [formData, setFormData] = useState({
@@ -36,18 +63,44 @@ export default function WhatsAppModal() {
     notes: "",
   });
 
+  // Autofill name, phone, and email if user is logged in
+  useEffect(() => {
+    if (user || profile) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || profile?.fullName || user?.user_metadata?.full_name || "",
+        phone: prev.phone || profile?.phone || "",
+        email: prev.email || user?.email || "",
+      }));
+    }
+  }, [user, profile]);
+
   const [submitting, setSubmitting] = useState(false);
   const [successOrder, setSuccessOrder] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Active items: if direct order, use ONLY directOrderItem; otherwise use cart items
+  const activeItems = directOrderItem ? [directOrderItem] : items;
+  const primaryItem = activeItems[0];
+  const effectiveSubtotal = directOrderItem
+    ? (Number(directOrderItem.price) || 85) * (Number(directOrderItem.quantity) || 1)
+    : subtotalUSD > 0
+    ? subtotalUSD
+    : items.reduce(
+        (sum, i) => sum + (Number(i.price) || 85) * (Number(i.quantity) || 1),
+        0
+      );
+
+  const emailSuggestion = checkEmailTypo(formData.email);
 
   // Lock background window scrolling while checkout modal is open
   useScrollLock(isCheckoutModalOpen);
 
   if (!isCheckoutModalOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (items.length === 0) {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (activeItems.length === 0) {
       setErrorMsg("Your cart is empty. Please select an authentic Begena instrument or accessory before placing an order.");
       return;
     }
@@ -59,70 +112,112 @@ export default function WhatsAppModal() {
     setSubmitting(true);
     setErrorMsg(null);
 
-    const productNames = items.map((i) => `${i.quantity}x ${i.name}`).join(", ");
-    const primaryProductId = items[0]?.productId || undefined;
-    const totalQty = items.reduce((sum, i) => sum + i.quantity, 0);
+    // C7: 15-second AbortController timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    const result = await createGuestOrder({
-      customer_name: formData.name.trim(),
-      phone: formData.phone.trim(),
-      customer_email: formData.email.trim() || undefined,
-      country: formData.country.trim(),
-      product_id: primaryProductId,
-      product_name: productNames || "Amiele Begena Instrument",
-      quantity: totalQty || 1,
-      referral_code: referralCode,
-      notes: formData.notes.trim() || "Website WhatsApp Checkout",
-    });
+    try {
+      const productNames = activeItems.map((i) => `${i.quantity}x ${i.name}`).join(", ");
+      const totalQty = activeItems.reduce((sum, i) => sum + i.quantity, 0);
 
-    if (result && result.success) {
-      const orderNum =
-        result.order_number ||
-        `AM-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
-      setSuccessOrder(orderNum);
+      let orderNum = "";
+      let orderSuccess = false;
 
-      // Compose WhatsApp formatted message
-      const itemsText = items
-        .map((i) => `• ${i.quantity}x ${i.name} (${formatPrice(i.price * i.quantity, i.currency)})`)
-        .join("\n");
-      const refText = referralCode ? `\n🏷️ Referral Code: ${referralCode}` : "";
-      const waText = encodeURIComponent(
-        `ሰላም Amiele Begena! I would like to confirm my instrument order:\n\n` +
-          `📦 Order Number: ${orderNum}\n` +
-          `👤 Customer: ${formData.name}\n` +
-          `📞 Phone: ${formData.phone}\n` +
-          `🌍 Delivery Destination: ${formData.country}\n` +
-          `✉️ Email: ${formData.email || "N/A"}\n\n` +
-          `🎵 Selected Instruments:\n${itemsText || "• 1x Begena Instrument"}\n\n` +
-          `💰 Subtotal: ${formatPrice(subtotalUSD, "USD")}${refText}\n\n` +
-          `📝 Notes / Tuning: ${formData.notes || "Standard David Harp Pentatonic"}\n\n` +
-          `Please provide final shipping confirmation and payment instructions. Ameseginalehu!`
+      // Unified checkout routed through the backend API
+      // Backend validates product IDs, enforces rate limiting, and attaches customer_id for authenticated sessions
+      const result = await createGuestOrder(
+        {
+          customer_name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          customer_email: formData.email.trim() || user?.email || undefined,
+          country: formData.country.trim(),
+          product_id: activeItems[0]?.productId,
+          product_name: productNames || "Amiele Begena Instrument",
+          quantity: totalQty || 1,
+          referral_code: referralCode,
+          notes: formData.notes.trim() || "Website WhatsApp Checkout",
+          items: activeItems.map((i) => ({
+            product_id: i.productId,
+            product_name: i.name,
+            quantity: i.quantity,
+            price: i.price,
+          })),
+        },
+        controller.signal
       );
 
-      // Open WhatsApp in new tab
-      window.open(`https://wa.me/251969189470?text=${waText}`, "_blank");
-      clearCart();
-    } else {
-      setErrorMsg(
-        result?.error ||
-          "We could not register your order. Please review your details and try again."
-      );
-    }
+      if (result && result.success) {
+        orderNum =
+          result.order_number ||
+          `AM-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+        orderSuccess = true;
+      } else {
+        setErrorMsg(
+          result?.error ||
+            "We could not register your order. Please review your details and try again."
+        );
+        return;
+      }
 
-    setSubmitting(false);
-  };
+      clearTimeout(timeoutId);
 
-  const primaryItem = items[0];
-  const effectiveSubtotal =
-    subtotalUSD > 0
-      ? subtotalUSD
-      : items.reduce(
-          (sum, i) => sum + (Number(i.price) || 85) * (Number(i.quantity) || 1),
-          0
+      if (orderSuccess && orderNum) {
+        setSuccessOrder(orderNum);
+
+        // Notify open tabs/windows to reload orders immediately
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("amiele_order_created", { detail: { orderNumber: orderNum } })
+          );
+        }
+
+        // Compose WhatsApp formatted message
+        const itemsText = activeItems
+          .map((i) => `• ${i.quantity}x ${i.name} (${formatPrice(i.price * i.quantity, i.currency)})`)
+          .join("\n");
+        const refText = referralCode ? `\n🏷️ Referral Code: ${referralCode}` : "";
+        const waText = encodeURIComponent(
+          `ሰላም Amiele Begena! I would like to confirm my instrument order:\n\n` +
+            `📦 Order Number: ${orderNum}\n` +
+            `👤 Customer: ${formData.name}\n` +
+            `📞 Phone: ${formData.phone}\n` +
+            `🌍 Delivery Destination: ${formData.country}\n` +
+            `✉️ Email: ${formData.email || user?.email || "N/A"}\n\n` +
+            `🎵 Selected Instruments:\n${itemsText || "• 1x Begena Instrument"}\n\n` +
+            `💰 Subtotal: ${formatPrice(effectiveSubtotal, "USD")}${refText}\n\n` +
+            `📝 Notes / Tuning: ${formData.notes || "Standard David Harp Pentatonic"}\n\n` +
+            `Please provide final shipping confirmation and payment instructions. Ameseginalehu!`
         );
 
+        // Open WhatsApp in new tab
+        window.open(`https://wa.me/251969189470?text=${waText}`, "_blank");
+        if (!directOrderItem) {
+          clearCart();
+        }
+      }
+    } catch (err: any) {
+      if (err.name === "AbortError") {
+        setErrorMsg("Request timed out after 15 seconds. Please check your connection and retry.");
+      } else {
+        setErrorMsg(err.message || "Failed to submit order. Please try again.");
+      }
+    } finally {
+      // C7: submitting is ALWAYS reset in a finally block so the button is never stuck gray
+      clearTimeout(timeoutId);
+      setSubmitting(false);
+    }
+  };
+
+  // C8: Submit is disabled while an error shows or required fields are invalid
+  const isSubmitDisabled =
+    submitting ||
+    !!errorMsg ||
+    !formData.name.trim() ||
+    !formData.phone.trim() ||
+    activeItems.length === 0;
+
   // Footer for the Order Modal: On mobile, Submit is full-width with Cancel below it
-  const modalFooter = items.length === 0 ? (
+  const modalFooter = activeItems.length === 0 ? (
     <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4">
       <button
         type="button"
@@ -145,8 +240,8 @@ export default function WhatsAppModal() {
       <button
         type="submit"
         form="amiele-order-form"
-        disabled={submitting}
-        className="w-full sm:w-auto px-6 py-3 rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-[0_4px_16px_rgba(37,211,102,0.32)] hover:shadow-[0_6px_22px_rgba(37,211,102,0.42)] active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#25D366] min-h-[46px] border border-white/20"
+        disabled={isSubmitDisabled}
+        className="w-full sm:w-auto px-6 py-3 rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-[0_4px_16px_rgba(37,211,102,0.32)] hover:shadow-[0_6px_22px_rgba(37,211,102,0.42)] active:scale-[0.99] transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#25D366] min-h-[46px] border border-white/20"
       >
         {submitting ? (
           <>
@@ -287,11 +382,11 @@ export default function WhatsAppModal() {
         /* ========================================================= */
         <form
           id="amiele-order-form"
-          onSubmit={handleSubmit}
+          onSubmit={(e) => handleSubmit(e)}
           className="space-y-5"
         >
           {/* Product Summary Card */}
-          {items.length > 0 && (
+          {activeItems.length > 0 && (
             <div className="p-4 sm:p-4.5 rounded-2xl bg-[#F8F5EF] border border-[#E8E1D6] flex items-center gap-4 shadow-xs">
               {primaryItem?.image ? (
                 <img
@@ -310,14 +405,14 @@ export default function WhatsAppModal() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#D9B32E]">
                     Handcrafted Begena
                   </span>
-                  {items.length > 1 && (
+                  {activeItems.length > 1 && (
                     <span className="px-2 py-0.5 rounded-full bg-[#14271D] text-white text-[10px] font-bold">
-                      +{items.length - 1} more
+                      +{activeItems.length - 1} more
                     </span>
                   )}
                 </div>
                 <h4 className="text-sm sm:text-base font-black text-[#14271D] truncate mt-0.5">
-                  {items.map((i) => `${i.quantity}x ${i.name}`).join(", ")}
+                  {activeItems.map((i) => `${i.quantity}x ${i.name}`).join(", ")}
                 </h4>
                 <p className="text-xs text-[#7D867F] font-medium truncate mt-0.5">
                   Master Workshop Direct • Authentic Sacred Sound • Pre-tuned
@@ -335,11 +430,23 @@ export default function WhatsAppModal() {
             </div>
           )}
 
-          {/* Error Message */}
+          {/* C7 Error Message with Retry Button */}
           {errorMsg && (
-            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2 shadow-2xs">
-              <span>⚠️</span>
-              <span>{errorMsg}</span>
+            <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="shrink-0">⚠️</span>
+                <span className="truncate">{errorMsg}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setErrorMsg(null);
+                  handleSubmit();
+                }}
+                className="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold shadow-2xs cursor-pointer shrink-0 transition-colors"
+              >
+                Retry
+              </button>
             </div>
           )}
 
@@ -355,7 +462,10 @@ export default function WhatsAppModal() {
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) => {
+                    setErrorMsg(null);
+                    setFormData({ ...formData, name: e.target.value });
+                  }}
                   placeholder="e.g. Yohannes Mengistu"
                   className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                 />
@@ -369,7 +479,10 @@ export default function WhatsAppModal() {
                   type="tel"
                   required
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) => {
+                    setErrorMsg(null);
+                    setFormData({ ...formData, phone: e.target.value });
+                  }}
                   placeholder="+251 9... or international"
                   className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                 />
@@ -385,10 +498,31 @@ export default function WhatsAppModal() {
                 <input
                   type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => {
+                    setErrorMsg(null);
+                    setFormData({ ...formData, email: e.target.value });
+                  }}
                   placeholder="you@domain.com"
                   className="w-full px-4 py-3 rounded-[14px] border border-[#E8E1D6] bg-[#FCFBF8] text-[16px] sm:text-sm font-semibold text-[#172820] placeholder-[#7D867F]/70 focus:bg-white focus:border-[#D9B32E] focus:ring-2 focus:ring-[#D9B32E]/20 outline-none transition-all shadow-2xs"
                 />
+                {/* C9: Email Typo Suggestion Banner */}
+                {emailSuggestion && (
+                  <div className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200/90 rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2 shadow-2xs">
+                    <span>
+                      Did you mean <strong>{emailSuggestion}</strong>?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setErrorMsg(null);
+                        setFormData({ ...formData, email: emailSuggestion });
+                      }}
+                      className="text-[10px] font-bold text-amber-900 bg-amber-200/60 hover:bg-amber-200 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                    >
+                      Use this
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-1.5">
@@ -438,7 +572,7 @@ export default function WhatsAppModal() {
                 ORDER SUBTOTAL
               </span>
               <div className="text-2xl sm:text-3xl font-black text-[#14271D] tracking-tight mt-0.5">
-                {formatPrice(subtotalUSD, "USD")}
+                {formatPrice(effectiveSubtotal, "USD")}
               </div>
             </div>
 

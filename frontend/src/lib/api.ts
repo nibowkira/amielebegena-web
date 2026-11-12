@@ -47,26 +47,40 @@ export async function fetchProductByIdOrSlug(idOrSlug: string): Promise<Product 
   }
 }
 
-export async function createGuestOrder(payload: {
-  customer_name: string;
-  phone: string;
-  customer_email?: string;
-  country?: string;
-  product_id?: string;
-  product_name?: string;
-  quantity?: number;
-  referral_code?: string | null;
-  notes?: string;
-}): Promise<{ success: boolean; order_number?: string; error?: string }> {
+export async function createGuestOrder(
+  payload: {
+    customer_name: string;
+    phone: string;
+    customer_email?: string;
+    country?: string;
+    product_id?: string;
+    product_name?: string;
+    quantity?: number;
+    referral_code?: string | null;
+    notes?: string;
+    items?: Array<{
+      product_id?: string;
+      product_name?: string;
+      quantity?: number;
+      price?: number;
+    }>;
+  },
+  signal?: AbortSignal
+): Promise<{ success: boolean; order_number?: string; error?: string }> {
   try {
+    const authHeaders = await getAuthHeader();
     const res = await fetch(`${API_BASE_URL}/orders/guest`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders },
       body: JSON.stringify(payload),
+      signal,
     });
     const json = await res.json();
     return json;
   } catch (error: any) {
+    if (error.name === "AbortError") {
+      return { success: false, error: "Network request timed out. Please check your connection and retry." };
+    }
     return { success: false, error: error.message || "Failed to submit order" };
   }
 }

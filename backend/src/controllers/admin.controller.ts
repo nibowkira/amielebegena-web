@@ -81,7 +81,7 @@ export const getAffiliateApplications = async (req: Request, res: Response) => {
 
     let query = supabase
       .from("affiliate_applications")
-      .select("*, profile:profiles(full_name, email, phone)")
+      .select("*, profile:profiles!user_id(full_name, email, phone)")
       .order("created_at", { ascending: false });
 
     if (status !== "all") {
@@ -103,12 +103,18 @@ export const reviewAffiliateApplication = async (req: Request, res: Response) =>
     const { id } = req.params;
     const { status, referral_code, rejection_reason } = req.body; // 'approved' or 'rejected'
 
+    const updatePayload: any = {
+      status,
+      reviewed_at: new Date().toISOString(),
+    };
+
+    if (rejection_reason !== undefined) {
+      updatePayload.rejection_reason = rejection_reason || null;
+    }
+
     const { data: application, error: appError } = await supabase
       .from("affiliate_applications")
-      .update({
-        status,
-        reviewed_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq("user_id", id)
       .select()
       .maybeSingle();
@@ -142,6 +148,12 @@ export const reviewAffiliateApplication = async (req: Request, res: Response) =>
         },
         { onConflict: "user_id" }
       );
+    } else if (status === "rejected" && targetUserId) {
+      // Ensure user role remains 'user' and remove from affiliates if any
+      await supabase
+        .from("profiles")
+        .update({ role: "user", updated_at: new Date().toISOString() })
+        .eq("id", targetUserId);
     }
 
     return res.json({ success: true, message: `Application ${status} successfully.`, application });

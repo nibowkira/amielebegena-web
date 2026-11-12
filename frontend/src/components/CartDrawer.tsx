@@ -43,8 +43,8 @@ export default function CartDrawer() {
   if (!isOpen) return null;
 
   const totalDisplay = items.length > 0
-    ? formatPrice(subtotalUSD, currency)
-    : formatPrice(0, currency);
+    ? formatPrice(subtotalUSD, "USD")
+    : formatPrice(0, "USD");
 
   return (
     <div

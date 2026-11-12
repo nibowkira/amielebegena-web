@@ -22,9 +22,11 @@ interface CuratedProduct {
 }
 
 export default function ProductsPage() {
-  const { addItem, openCheckoutModal } = useCart();
+  const { addItem, openDirectOrder } = useCart();
   const { formatPrice, currency } = useCurrency();
 
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeCategory, setActiveCategory] = useState<string>("በገና እና ክራር");
   const [sortBy, setSortBy] = useState<string>("newest");
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
@@ -285,8 +287,37 @@ export default function ProductsPage() {
     },
   ];
 
+  // Fetch live products to synchronize with Supabase (B1, B4)
+  useEffect(() => {
+    setIsLoading(true);
+    fetchProducts()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setDbProducts(data);
+        }
+      })
+      .catch((e) => console.warn("Failed to fetch live products in catalog:", e))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  // Merge curated catalogue with authoritative Supabase database records
+  const displayProducts = curatedProducts.map((cp) => {
+    const live = dbProducts.find((p) => p.slug === cp.slug || p.id === cp.id);
+    if (!live) return cp;
+    const priceNum = typeof live.price === "string" ? parseFloat(live.price) : Number(live.price);
+    const cover = live.images?.find((img) => img.isCover)?.storagePath || live.images?.[0]?.storagePath || cp.image;
+    return {
+      ...cp,
+      id: live.id,
+      name: live.name,
+      priceUSD: !isNaN(priceNum) && priceNum > 0 ? priceNum : cp.priceUSD,
+      image: cover,
+      description: live.description || live.shortDescription || cp.description,
+    };
+  });
+
   // Filtering based on collection
-  const filteredProducts = curatedProducts.filter((p) => {
+  const filteredProducts = displayProducts.filter((p) => {
     return p.category === activeCategory;
   });
 
@@ -320,7 +351,8 @@ export default function ProductsPage() {
   };
 
   const handleAddToCart = (p: CuratedProduct) => {
-    addItem({
+    const realDb = dbProducts.find((db) => db.slug === p.slug || db.id === p.id);
+    const targetProduct: Product = realDb || {
       id: p.id,
       name: p.name,
       slug: p.slug,
@@ -330,8 +362,9 @@ export default function ProductsPage() {
       stock: 50,
       featured: true,
       status: "active",
-      images: [{ storagePath: p.image, isCover: true }],
-    });
+      images: [{ id: "cover", productId: p.id, storagePath: p.image, isCover: true, sortOrder: 0 }],
+    };
+    addItem(targetProduct);
     setAddedItems((prev) => ({ ...prev, [p.id]: true }));
     setTimeout(() => {
       setAddedItems((prev) => ({ ...prev, [p.id]: false }));
@@ -339,7 +372,8 @@ export default function ProductsPage() {
   };
 
   const handleOrderWhatsApp = (p: CuratedProduct) => {
-    addItem({
+    const realDb = dbProducts.find((db) => db.slug === p.slug || db.id === p.id);
+    const targetProduct: Product = realDb || {
       id: p.id,
       name: p.name,
       slug: p.slug,
@@ -349,9 +383,9 @@ export default function ProductsPage() {
       stock: 50,
       featured: true,
       status: "active",
-      images: [{ storagePath: p.image, isCover: true }],
-    });
-    openCheckoutModal();
+      images: [{ id: "cover", productId: p.id, storagePath: p.image, isCover: true, sortOrder: 0 }],
+    };
+    openDirectOrder(targetProduct);
   };
 
   const handlePlayAudio = (p: CuratedProduct) => {
@@ -371,45 +405,106 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#FAF8F5] text-[#14231b] pb-24">
-      {/* Top Header Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top Kicker Label */}
-        <div className="text-center pt-8 pb-3">
-          <span className="text-[11px] sm:text-xs font-bold tracking-[0.25em] text-[#737874] uppercase">
-            ALL ITEMS
-          </span>
+    <div className="w-full max-w-full overflow-x-hidden min-h-screen bg-[#FAF8F5] text-[#14231b] pb-24">
+      {/* Mobile Sticky Top Area (< md): Pinned at top-[72px] below the 72px fixed navbar */}
+      <div className="md:hidden sticky top-[72px] z-30 w-full bg-[#FAF8F5]/98 backdrop-blur-md border-b border-[#14231b]/10 shadow-[0_4px_16px_rgba(20,39,29,0.06)] px-4 py-3 space-y-2.5">
+        {/* Title + Sort Row */}
+        <div className="flex items-center justify-between gap-2 min-w-0">
+          <div>
+            <span className="text-[10px] font-bold tracking-[0.2em] text-[#737874] uppercase block leading-none">
+              ALL ITEMS
+            </span>
+            <h1 className="text-xl min-[360px]:text-2xl font-black text-[#14231b] tracking-tight leading-tight">
+              Our Products
+            </h1>
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="relative shrink-0">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="appearance-none pl-3 pr-7 py-2 rounded-xl bg-[#EAE5DB] text-xs font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors min-h-[38px]"
+              aria-label="Sort products"
+            >
+              <option value="newest">Newest</option>
+              <option value="price-low">Price: Low</option>
+              <option value="price-high">Price: High</option>
+              <option value="name">Name (A-Z)</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-[#14231b] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
         </div>
 
-        {/* Title and Sort Bar Row */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-baseline justify-between gap-3 sm:gap-4 pb-6">
-          <h1 className="text-3xl min-[360px]:text-4xl sm:text-5xl font-black text-[#14231b] tracking-tight">
-            Our Products
-          </h1>
+        {/* Category Pills Row with Horizontal Scroll and Right Fade */}
+        <div className="relative w-full">
+          <div className="flex items-center gap-2 overflow-x-auto touch-pan-x overscroll-contain no-scrollbar pb-0.5">
+            {collections.map((col) => {
+              const isSelected = activeCategory === col.id;
+              return (
+                <button
+                  key={col.id}
+                  onClick={() => setActiveCategory(col.id)}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 min-h-[44px] ${
+                    isSelected
+                      ? "bg-[#14231b] text-white shadow-xs"
+                      : "bg-[#EDE8DF] text-[#14231b] hover:bg-[#EAE5DB]"
+                  }`}
+                  aria-pressed={isSelected}
+                >
+                  <span className="text-sm">{col.icon}</span>
+                  <span className="tracking-wide">{col.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          {/* Right-edge fade gradient */}
+          <div
+            className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#FAF8F5] via-[#FAF8F5]/80 to-transparent"
+            aria-hidden="true"
+          />
+        </div>
+      </div>
 
-          {/* Sort Selector: wraps neatly on narrow screens without being pushed to the edge */}
-          <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2 text-xs text-[#5b615e] w-full sm:w-auto">
-            <span className="font-semibold text-neutral-700">Sort by:</span>
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none pl-3 pr-8 py-2 rounded-xl bg-[#EAE5DB] text-xs font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors min-h-[38px]"
-              >
-                <option value="newest">Newest Arrivals</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="name">Name (A-Z)</option>
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-[#14231b] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Desktop Header Section (hidden on mobile, visible md: and above) */}
+        <div className="hidden md:block">
+          <div className="text-center pt-8 pb-3">
+            <span className="text-xs font-bold tracking-[0.25em] text-[#737874] uppercase">
+              ALL ITEMS
+            </span>
+          </div>
+
+          <div className="flex items-baseline justify-between gap-4 pb-6 border-b border-[#14231b]/10">
+            <h1 className="text-4xl lg:text-5xl font-black text-[#14231b] tracking-tight">
+              Our Products
+            </h1>
+
+            <div className="flex items-center gap-2 text-xs text-[#5b615e]">
+              <span className="font-semibold text-neutral-700">Sort by:</span>
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="appearance-none pl-3 pr-8 py-2 rounded-xl bg-[#EAE5DB] text-xs font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors min-h-[38px]"
+                  aria-label="Sort products desktop"
+                >
+                  <option value="newest">Newest Arrivals</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="name">Name (A-Z)</option>
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-[#14231b] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Main Content Layout: Left Sidebar + Right Product Grid */}
-        <div className="flex flex-col md:flex-row items-start gap-8 lg:gap-12 pt-2">
-          {/* Left Column: Category Collections Sidebar */}
-          <aside className="w-full md:w-60 lg:w-64 shrink-0 md:sticky md:top-24 space-y-4">
+        {/* Content Layout */}
+        <div className="flex flex-col md:flex-row items-start gap-6 lg:gap-10 pt-4 md:pt-8">
+          {/* Desktop Left Sidebar (hidden on mobile, visible md:) */}
+          <aside className="hidden md:block w-60 lg:w-64 shrink-0 sticky top-28 space-y-4">
             <div>
               <h3 className="text-xs font-black tracking-widest text-[#14231b] uppercase">
                 COLLECTIONS
@@ -417,198 +512,212 @@ export default function ProductsPage() {
               <p className="text-xs text-[#737874] mt-1 mb-3">Filter by Category</p>
             </div>
 
-            {/* Category Filter List with Right-Edge Fade Gradient on Mobile */}
-            <div className="relative w-full">
-              <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 no-scrollbar snap-x snap-mandatory touch-pan-x">
-                {collections.map((col) => {
-                  const isSelected = activeCategory === col.id;
-                  return (
-                    <button
-                      key={col.id}
-                      onClick={() => setActiveCategory(col.id)}
-                      className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap text-left shrink-0 snap-start min-h-[44px] ${
-                        isSelected
-                          ? "bg-[#14231b] text-white shadow-sm"
-                          : "bg-transparent text-[#14231b] hover:bg-[#EAE5DB]/60"
-                      }`}
-                    >
-                      <span className="text-base">{col.icon}</span>
-                      <span className="tracking-wide">{col.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              {/* Right-edge fade gradient for mobile horizontal scroll indicator */}
-              <div
-                className="pointer-events-none md:hidden absolute right-0 top-0 bottom-2 w-10 bg-gradient-to-l from-[#FAF8F5] via-[#FAF8F5]/80 to-transparent"
-                aria-hidden="true"
-              />
+            <div className="flex flex-col gap-1.5">
+              {collections.map((col) => {
+                const isSelected = activeCategory === col.id;
+                return (
+                  <button
+                    key={col.id}
+                    onClick={() => setActiveCategory(col.id)}
+                    className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer text-left w-full min-h-[44px] ${
+                      isSelected
+                        ? "bg-[#14231b] text-white shadow-xs"
+                        : "bg-transparent text-[#14231b] hover:bg-[#EDE8DF]"
+                    }`}
+                  >
+                    <span className="text-base">{col.icon}</span>
+                    <span className="tracking-wide">{col.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </aside>
 
-          {/* Right Column: Products Grid (2 columns on mobile matching screenshot, 3 columns on desktop) */}
-          <main className="flex-1 w-full">
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
-              {sortedProducts.map((product) => {
-                const isWishlisted = !!wishlist[product.id];
-                const isAdded = !!addedItems[product.id];
-                const isThisPlaying = audioModalProduct?.id === product.id && isPlayingAudio;
+          {/* Main Product Grid Container */}
+          <main className="flex-1 w-full min-w-0">
+            {/* Loading Skeleton State */}
+            {isLoading ? (
+              <div className="grid grid-cols-1 min-[481px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className="h-full flex flex-col justify-between rounded-2xl bg-white/70 p-3 sm:p-4 border border-[#14231b]/10 shadow-2xs space-y-3"
+                  >
+                    <div className="aspect-[4/5] w-full rounded-xl bg-neutral-200/60 animate-pulse" />
+                    <div className="space-y-2 pt-1">
+                      <div className="h-4 w-3/4 bg-neutral-200/70 rounded animate-pulse" />
+                      <div className="h-3 w-1/3 bg-neutral-200/70 rounded animate-pulse" />
+                    </div>
+                    <div className="pt-2 mt-auto">
+                      <div className="h-10 w-full bg-neutral-200/70 rounded-full animate-pulse" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : sortedProducts.length === 0 ? (
+              /* Empty State */
+              <div className="w-full py-16 px-4 text-center rounded-3xl bg-white/70 border border-[#14231b]/10 shadow-xs flex flex-col items-center justify-center space-y-4">
+                <div className="w-16 h-16 rounded-full bg-[#EDE8DF] flex items-center justify-center text-2xl">
+                  🎻
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-black text-[#14231b]">
+                    በዚህ ክፍል ውስጥ ምንም ምርት አልተገኘም
+                  </h3>
+                  <p className="text-xs text-[#737874]">
+                    No instruments currently listed under &ldquo;{activeCategory}&rdquo;.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveCategory(collections[0].id)}
+                  className="px-5 py-2.5 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white text-xs font-bold transition-all min-h-[44px] cursor-pointer"
+                >
+                  View All Instruments / ሁሉንም ይመልከቱ
+                </button>
+              </div>
+            ) : (
+              /* Product Grid */
+              <div className="grid grid-cols-1 min-[481px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                {sortedProducts.map((product) => {
+                  const isWishlisted = !!wishlist[product.id];
+                  const isAdded = !!addedItems[product.id];
+                  const isThisPlaying = audioModalProduct?.id === product.id && isPlayingAudio;
 
-                return (
-                  <div key={product.id} className="flex flex-col justify-between group">
-                    {/* Framed Image Container matching screenshot aesthetic */}
-                    <div className="relative aspect-[4/5] w-full rounded-2xl bg-[#EDE8DF] p-2.5 sm:p-5 flex items-center justify-center overflow-hidden shadow-xs">
-                      {/* Subtle diagonal background line accent matching Screenshot 2 */}
-                      <svg
-                        className="absolute inset-0 w-full h-full text-[#DFDAD0]/50 pointer-events-none stroke-current"
-                        viewBox="0 0 100 100"
-                        preserveAspectRatio="none"
-                      >
-                        <line x1="100" y1="0" x2="0" y2="100" strokeWidth="0.75" />
-                      </svg>
+                  return (
+                    <div
+                      key={product.id}
+                      className="h-full flex flex-col justify-between group rounded-2xl bg-white/60 hover:bg-white p-3 sm:p-4 border border-[#14231b]/10 hover:border-[#D4AF37]/50 shadow-2xs hover:shadow-md transition-all duration-300"
+                    >
+                      {/* Framed Image Container */}
+                      <div className="relative aspect-[4/5] w-full rounded-xl bg-[#EDE8DF] p-3 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
+                        <svg
+                          className="absolute inset-0 w-full h-full text-[#DFDAD0]/50 pointer-events-none stroke-current"
+                          viewBox="0 0 100 100"
+                          preserveAspectRatio="none"
+                        >
+                          <line x1="100" y1="0" x2="0" y2="100" strokeWidth="0.75" />
+                        </svg>
 
-                      {/* Centered Framed Photo */}
-                      <div
-                        onClick={() => setDetailsModalProduct(product)}
-                        className="relative w-[86%] h-[86%] rounded-xl overflow-hidden shadow-sm cursor-pointer"
-                      >
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
+                        <div
+                          onClick={() => setDetailsModalProduct(product)}
+                          className="relative w-[88%] h-[88%] rounded-lg overflow-hidden shadow-xs cursor-pointer"
+                        >
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </div>
+
+                        {/* Circular 44x44px Heart Wishlist Button */}
+                        <button
+                          onClick={() => toggleWishlist(product.id)}
+                          className="absolute top-2.5 right-2.5 min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-white/90 backdrop-blur-xs shadow-xs border border-black/5 flex items-center justify-center text-[#737874] hover:text-[#e63946] active:scale-95 transition-all cursor-pointer z-10"
+                          aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                        >
+                          <Heart
+                            className={`w-4 h-4 transition-colors ${
+                              isWishlisted ? "fill-[#e63946] text-[#e63946]" : "text-[#737874]"
+                            }`}
+                          />
+                        </button>
                       </div>
 
-                      {/* Circular Heart Wishlist Button at Top Right */}
-                      <button
-                        onClick={() => toggleWishlist(product.id)}
-                        className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white shadow-xs border border-black/5 flex items-center justify-center text-[#737874] hover:text-[#e63946] hover:scale-110 active:scale-95 transition-all cursor-pointer z-10"
-                        aria-label="Add to Wishlist"
-                      >
-                        <Heart
-                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
-                            isWishlisted ? "fill-[#e63946] text-[#e63946]" : "text-[#737874]"
-                          }`}
-                        />
-                      </button>
-                    </div>
+                      {/* Card Content & Details */}
+                      <div className="pt-3 flex-1 flex flex-col justify-between min-w-0">
+                        <div>
+                          <div className="flex items-start justify-between gap-2">
+                            <h2
+                              onClick={() => setDetailsModalProduct(product)}
+                              className="font-extrabold text-[#14231b] text-sm sm:text-base leading-tight cursor-pointer hover:underline line-clamp-2"
+                            >
+                              {product.name}
+                            </h2>
 
-                    {/* Card Information: Title, DETAILS, Audio [▶], and Price */}
-                    <div className="pt-2 sm:pt-3.5 space-y-2 sm:space-y-3">
-                      <div className="flex items-start justify-between gap-1 sm:gap-2">
-                        {/* Title & Details Button */}
-                        <div className="min-w-0 flex-1">
-                          <h2
-                            onClick={() => setDetailsModalProduct(product)}
-                            className="font-extrabold text-[#14231b] text-xs sm:text-base leading-tight cursor-pointer hover:underline line-clamp-2"
-                          >
-                            {product.name}
-                          </h2>
+                            {product.audioUrl && (
+                              <button
+                                onClick={() => handlePlayAudio(product)}
+                                className="min-w-[32px] min-h-[32px] w-8 h-8 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
+                                title="Play Audio Sample"
+                                aria-label={`Play audio sample for ${product.name}`}
+                              >
+                                {isThisPlaying ? (
+                                  <Pause className="w-3 h-3 fill-white text-white" />
+                                ) : (
+                                  <Play className="w-3 h-3 fill-white text-white ml-0.5" />
+                                )}
+                              </button>
+                            )}
+                          </div>
 
-                          <div className="flex items-center gap-1 pt-0.5 sm:pt-1">
+                          <div className="flex items-center gap-2 pt-1">
                             <button
                               onClick={() => setDetailsModalProduct(product)}
-                              className="text-[9px] sm:text-[10px] font-bold text-[#737874] hover:text-[#14231b] tracking-wider uppercase transition-colors cursor-pointer"
+                              className="text-[10px] font-bold text-[#737874] hover:text-[#14231b] tracking-wider uppercase transition-colors cursor-pointer"
                             >
                               DETAILS
                             </button>
                           </div>
                         </div>
 
-                        {/* Audio & Price matching screenshot */}
-                        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 text-right">
-                          {product.audioUrl && (
-                            <button
-                              onClick={() => handlePlayAudio(product)}
-                              className="w-5 h-5 rounded-full bg-[#14231b] text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer shrink-0"
-                              title="Play Audio Sample"
-                              aria-label={`Play audio sample for ${product.name}`}
-                            >
-                              {isThisPlaying ? (
-                                <Pause className="w-2 h-2 fill-white text-white" />
+                        {/* Bottom Row: Price & Actions Pinned at Bottom */}
+                        <div className="mt-auto pt-3 space-y-2 border-t border-[#14231b]/5">
+                          <div className="flex items-baseline justify-between">
+                            <span className="text-[10px] uppercase font-bold text-[#737874] tracking-wider">
+                              Price
+                            </span>
+                            <div className="font-extrabold text-sm sm:text-base text-[#14231b] leading-tight">
+                              {currency === "ETB" ? (
+                                <span>ETB {product.priceETB.toLocaleString()}</span>
                               ) : (
-                                <Play className="w-2 h-2 fill-white text-white ml-0.5" />
+                                formatPrice(product.priceUSD, "USD")
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Full-width ORDER VIA WHATSAPP Button + Add to Cart option */}
+                          <div className="flex flex-col gap-1.5 w-full">
+                            <button
+                              onClick={() => handleOrderWhatsApp(product)}
+                              className="w-full py-2.5 px-3 rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white text-xs font-bold leading-tight flex items-center justify-center gap-2 shadow-[0_3px_12px_rgba(37,211,102,0.28)] hover:shadow-[0_5px_18px_rgba(37,211,102,0.38)] active:scale-95 transition-all cursor-pointer min-h-[44px] border border-white/20"
+                            >
+                              <span className="w-4 h-4 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                                <svg className="w-2.5 h-2.5 fill-white shrink-0" viewBox="0 0 24 24">
+                                  <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
+                                </svg>
+                              </span>
+                              <span>ORDER VIA WHATSAPP</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleAddToCart(product)}
+                              className={`w-full py-1.5 px-3 rounded-full font-bold text-[10px] sm:text-xs tracking-wider uppercase transition-all active:scale-95 flex items-center justify-center gap-1.5 border min-h-[36px] cursor-pointer ${
+                                isAdded
+                                  ? "bg-[#2d6a4f] text-white border-[#2d6a4f]"
+                                  : "bg-[#FAF8F5] hover:bg-[#EDE8DF] text-[#14231b] border-[#14231b]/20"
+                              }`}
+                            >
+                              {isAdded ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                                  <span>ADDED TO CART</span>
+                                </>
+                              ) : (
+                                <>
+                                  <ShoppingBag className="w-3.5 h-3.5 text-[#14231b] shrink-0" />
+                                  <span>ADD TO CART</span>
+                                </>
                               )}
                             </button>
-                          )}
-                          <div className="font-extrabold text-[10px] min-[360px]:text-xs sm:text-base text-[#14231b] leading-tight text-right whitespace-nowrap">
-                            {currency === "ETB" ? (
-                              <div className="flex flex-col items-end sm:block">
-                                <span className="text-[9px] sm:text-xs font-bold">ETB</span>{" "}
-                                <span>{product.priceETB.toLocaleString()}</span>
-                              </div>
-                            ) : (
-                              formatPrice(product.priceUSD, "USD")
-                            )}
                           </div>
                         </div>
                       </div>
-
-                      {/* Dual Action Buttons matching Screenshot on mobile, Luxury Desktop on md: */}
-                      <div className="flex items-stretch gap-1 sm:gap-2 pt-0.5">
-                        {/* ADD TO CART Button */}
-                        <button
-                          onClick={() => handleAddToCart(product)}
-                          className={`flex-1 md:flex-none py-1.5 md:py-2.5 px-1 md:px-4 rounded-full font-bold text-[8px] min-[360px]:text-[9px] md:text-xs tracking-wide transition-all active:scale-95 flex items-center justify-center text-center shadow-xs md:shadow-sm border min-h-[36px] md:min-h-[42px] cursor-pointer ${
-                            isAdded
-                              ? "bg-[#2d6a4f] text-white border-[#2d6a4f]"
-                              : "bg-white hover:bg-gray-50 text-[#14231b] border-[#14231b] md:bg-[#0d1e16] md:hover:bg-[#07130d] md:text-white md:border-white/10"
-                          }`}
-                        >
-                          {/* Mobile Text (< md) */}
-                          <span className="md:hidden uppercase">
-                            {isAdded ? "ADDED" : "ADD TO CART"}
-                          </span>
-
-                          {/* Desktop Text (md: and above) */}
-                          <span className="hidden md:inline-flex items-center gap-2">
-                            {isAdded ? (
-                              <>
-                                <Check className="w-4 h-4 text-[#52b788] stroke-[2.5]" />
-                                <span>Added</span>
-                              </>
-                            ) : (
-                              <>
-                                <ShoppingBag className="w-4 h-4 text-[#f5c518] shrink-0 stroke-[2.2]" />
-                                <span>Add to Cart</span>
-                              </>
-                            )}
-                          </span>
-                        </button>
-
-                        {/* ORDER VIA WHATSAPP Button */}
-                        <button
-                          onClick={() => handleOrderWhatsApp(product)}
-                          className="flex-1 py-1 md:py-2.5 px-1 md:px-3 rounded-2xl md:rounded-full bg-[#25D366] hover:bg-[#20ba5a] md:bg-gradient-to-r md:from-[#1eb656] md:via-[#22c55e] md:to-[#25D366] md:hover:from-[#18a84e] md:hover:via-[#1eb656] md:hover:to-[#22c35e] text-white text-[7.5px] min-[360px]:text-[8.5px] md:text-xs font-bold leading-tight flex items-center justify-center shadow-xs md:shadow-[0_3px_12px_rgba(37,211,102,0.28)] md:hover:shadow-[0_5px_18px_rgba(37,211,102,0.38)] active:scale-95 transition-all cursor-pointer min-h-[36px] md:min-h-[42px] border border-transparent md:border-white/20"
-                        >
-                          {/* Mobile Stacked Text (< md) */}
-                          <div className="md:hidden flex flex-col items-center uppercase">
-                            <span>ORDER</span>
-                            <span className="flex items-center gap-0.5">
-                              <svg className="w-2.5 h-2.5 fill-current shrink-0" viewBox="0 0 24 24">
-                                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
-                              </svg>
-                              VIA
-                            </span>
-                            <span>WHATSAPP</span>
-                          </div>
-
-                          {/* Desktop Horizontal Text (md: and above) */}
-                          <div className="hidden md:flex items-center gap-1.5 sm:gap-2">
-                            <span className="w-4.5 h-4.5 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
-                              <svg className="w-3 h-3 fill-white shrink-0" viewBox="0 0 24 24">
-                                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
-                              </svg>
-                            </span>
-                            <span className="whitespace-nowrap">Order via WhatsApp</span>
-                          </div>
-                        </button>
-                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </main>
         </div>
       </div>
