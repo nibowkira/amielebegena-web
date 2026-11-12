@@ -550,8 +550,8 @@ export default function AdminDashboardPage() {
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#FAF8F5] text-[#1C1C1C]">
       {/* ================= MOBILE ADMIN TOP BAR (< lg) ================= */}
-      <div className="lg:hidden bg-[#07150D] text-white p-3 sm:p-4 border-b border-white/10 sticky top-0 z-30 shadow-md">
-        <div className="flex items-center justify-between gap-3">
+      <div className="lg:hidden bg-[#07150D] text-white border-b border-white/10 sticky top-0 z-30 shadow-md">
+        <div className="p-3 sm:p-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -580,6 +580,90 @@ export default function AdminDashboardPage() {
               Exit
             </Link>
           </div>
+        </div>
+
+        {/* Mobile Horizontal Pill Tabs Matching Screenshot 1 */}
+        <div className="px-3 pb-2.5 pt-0.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-pan-x">
+          <button
+            onClick={() => switchTab("dashboard")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+              activeTab === "dashboard"
+                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
+                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
+            }`}
+          >
+            Dashboard
+          </button>
+          <button
+            onClick={() => switchTab("products")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+              activeTab === "products"
+                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
+                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
+            }`}
+          >
+            Products
+          </button>
+          <button
+            onClick={() => switchTab("commissions")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+              activeTab === "commissions" || activeTab === "orders"
+                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
+                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
+            }`}
+          >
+            Orders
+          </button>
+          <button
+            onClick={() => switchTab("users")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+              activeTab === "users"
+                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
+                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
+            }`}
+          >
+            Users
+          </button>
+          <button
+            onClick={() => switchTab("applications")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+              activeTab === "applications"
+                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
+                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
+            }`}
+          >
+            Applications
+          </button>
+          <button
+            onClick={() => switchTab("withdrawals")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+              activeTab === "withdrawals"
+                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
+                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
+            }`}
+          >
+            Payouts
+          </button>
+          <button
+            onClick={() => switchTab("campaigns")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+              activeTab === "campaigns"
+                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
+                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
+            }`}
+          >
+            Campaigns
+          </button>
+          <button
+            onClick={() => switchTab("announcements")}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+              activeTab === "announcements"
+                ? "bg-[#f5c518] text-[#14231b] shadow-sm"
+                : "bg-[#14261d] text-white hover:bg-[#1e382b]"
+            }`}
+          >
+            Broadcast
+          </button>
         </div>
       </div>
 

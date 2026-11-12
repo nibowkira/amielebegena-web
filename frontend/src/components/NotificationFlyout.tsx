@@ -237,9 +237,9 @@ export default function NotificationFlyout({
         aria-expanded={isOpen}
       >
         <Bell className={iconClassName} />
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#e63946] text-white text-[10px] font-bold flex items-center justify-center shadow">
-            {unreadCount}
+        {(badgeCount !== undefined ? badgeCount : unreadCount) > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[17px] h-4 px-1 rounded-full bg-[#f3be3b] text-[#14231b] text-[10px] font-black flex items-center justify-center shadow-xs border border-white">
+            {badgeCount !== undefined ? badgeCount : unreadCount}
           </span>
         )}
       </button>

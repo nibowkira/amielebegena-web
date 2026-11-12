@@ -501,105 +501,10 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#FAF8F5] text-[#14231b] py-4 sm:py-8 px-3 sm:px-6 lg:px-10">
-      <div className="max-w-[1340px] mx-auto flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-7 items-start">
-        {/* ================= MOBILE TAB NAVIGATION (< lg) ================= */}
-        <div className="w-full lg:hidden bg-white rounded-2xl p-2 border border-[#14231b]/8 shadow-xs sticky top-[76px] z-20 backdrop-blur-md bg-white/95">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5 touch-pan-x">
-            <button
-              onClick={() => switchTab("dashboard")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
-                activeTab === "dashboard"
-                  ? "bg-[#14231b] text-white shadow-xs"
-                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
-              }`}
-            >
-              <Home className={`w-3.5 h-3.5 ${activeTab === "dashboard" ? "text-[#f3be3b] fill-current" : ""}`} />
-              <span>Dashboard</span>
-            </button>
-
-            <button
-              onClick={() => switchTab("orders")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
-                activeTab === "orders"
-                  ? "bg-[#14231b] text-white shadow-xs"
-                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
-              }`}
-            >
-              <Package className={`w-3.5 h-3.5 ${activeTab === "orders" ? "text-[#f3be3b] fill-current" : ""}`} />
-              <span>Orders</span>
-            </button>
-
-            <button
-              onClick={() => switchTab("wishlist")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
-                activeTab === "wishlist"
-                  ? "bg-[#14231b] text-white shadow-xs"
-                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
-              }`}
-            >
-              <Heart className={`w-3.5 h-3.5 ${activeTab === "wishlist" ? "text-[#f3be3b] fill-current" : ""}`} />
-              <span>Wishlist</span>
-            </button>
-
-            <button
-              onClick={() => switchTab("notifications")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
-                activeTab === "notifications"
-                  ? "bg-[#14231b] text-white shadow-xs"
-                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
-              }`}
-            >
-              <Bell className={`w-3.5 h-3.5 ${activeTab === "notifications" ? "text-[#f3be3b] fill-current" : ""}`} />
-              <span>Alerts</span>
-            </button>
-
-            <button
-              onClick={() => switchTab("addresses")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
-                activeTab === "addresses"
-                  ? "bg-[#14231b] text-white shadow-xs"
-                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
-              }`}
-            >
-              <MapPin className={`w-3.5 h-3.5 ${activeTab === "addresses" ? "text-[#f3be3b]" : ""}`} />
-              <span>Addresses</span>
-            </button>
-
-            <button
-              onClick={() => switchTab("settings")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[40px] ${
-                activeTab === "settings"
-                  ? "bg-[#14231b] text-white shadow-xs"
-                  : "text-[#737874] hover:text-[#14231b] hover:bg-[#FAF8F5]"
-              }`}
-            >
-              <Settings className={`w-3.5 h-3.5 ${activeTab === "settings" ? "text-[#f3be3b]" : ""}`} />
-              <span>Settings</span>
-            </button>
-
-            {isAdmin ? (
-              <Link
-                href="/admin?tab=dashboard"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 bg-[#0F2418] text-[#D4AF37] border border-[#D4AF37]/50 min-h-[40px]"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Admin Console</span>
-              </Link>
-            ) : (
-              <Link
-                href={isAffiliate ? "/affiliate/dashboard" : "/affiliate"}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all shrink-0 bg-[#fefcf8] border border-[#d4af37]/50 text-[#14231b] min-h-[40px]"
-              >
-                <TrendingUp className="w-3.5 h-3.5 text-[#b8860b]" />
-                <span>{isAffiliate ? "Affiliate Portal" : "Earn"}</span>
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* ================= LEFT SIDEBAR (lg: and above) ================= */}
-        <aside className="hidden lg:block lg:w-64 xl:w-72 shrink-0 bg-white rounded-3xl p-4 sm:p-5 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-1 lg:sticky lg:top-24 self-start max-h-[calc(100vh-100px)] overflow-y-auto no-scrollbar">
+    <div className="w-full min-h-screen bg-[#FAF8F5] text-[#14231b] py-3 sm:py-8 px-3 sm:px-6 lg:px-10">
+      <div className="max-w-[1340px] mx-auto flex flex-col md:flex-row gap-4 sm:gap-6 lg:gap-7 items-start">
+        {/* ================= LEFT SIDEBAR (md: and above) ================= */}
+        <aside className="hidden md:block md:w-64 xl:w-72 shrink-0 bg-white rounded-3xl p-4 sm:p-5 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-1 sticky top-24 self-start max-h-[calc(100vh-110px)] overflow-y-auto no-scrollbar z-20">
           {/* 1. Dashboard (Active if activeTab === 'dashboard') */}
           <button
             onClick={() => switchTab("dashboard")}
@@ -755,15 +660,17 @@ export default function AccountPage() {
           {/* ================= VIEW 1: DASHBOARD ================= */}
           {activeTab === "dashboard" && (
             <>
-              {/* 1. TOP WELCOME PROFILE CARD */}
-              <div className="relative bg-white rounded-3xl p-5 sm:p-6 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-6 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow duration-300">
-                {/* Left Amber Edge Accent */}
-                <div className="absolute top-0 left-0 bottom-0 w-2.5 bg-[#d4af37] rounded-l-3xl" />
+              {/* 1. TOP WELCOME PROFILE CARD - Exact Match to Screenshot on Mobile, Restored Luxury on Desktop */}
+              <div className="relative bg-white rounded-3xl p-6 sm:p-7 border border-[#E8E1D6] shadow-sm overflow-hidden flex flex-col md:flex-row items-center md:items-center justify-between text-center md:text-left gap-4 sm:gap-6 w-full">
+                {/* Desktop Left Amber Edge Accent */}
+                <div className="hidden md:block absolute top-0 left-0 bottom-0 w-2.5 bg-[#d4af37] rounded-l-3xl" />
+                {/* Mobile Subtle Gold Gradient Top Border Line */}
+                <div className="md:hidden absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#d4af37]/30 via-[#d4af37] to-[#d4af37]/30" />
 
                 {/* Left: Avatar + User Info */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 pl-2">
-                  {/* Circular Avatar */}
-                  <div className="relative shrink-0 group">
+                <div className="flex flex-col md:flex-row items-center md:items-center gap-4 sm:gap-5 md:pl-2">
+                  {/* Circular Avatar: Dark Green with Gold Initial "N" + Gold Camera Button */}
+                  <div className="relative shrink-0 mb-1 md:mb-0">
                     <input
                       ref={avatarInputRef}
                       type="file"
@@ -772,86 +679,153 @@ export default function AccountPage() {
                       className="hidden"
                       id="avatar-file-upload-input"
                     />
-                    <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-full border-2 border-[#14231b] overflow-hidden shadow-md bg-white flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
-                      <img
-                        src={avatarPreview || profile?.avatarUrl || "/image/default-avatar.png"}
-                        alt={displayName}
-                        className="w-full h-full object-cover rounded-full"
-                      />
+                    <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full border-2 border-[#14231b] overflow-hidden shadow-md bg-[#0c2419] flex items-center justify-center">
+                      {avatarPreview ? (
+                        <img
+                          src={avatarPreview}
+                          alt={displayName}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <span className="font-serif text-3xl sm:text-4xl font-extrabold text-[#d4af37] select-none">
+                          {displayName ? displayName.charAt(0).toUpperCase() : "N"}
+                        </span>
+                      )}
                     </div>
                     <button
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
-                      className="absolute bottom-0 right-0 w-6 h-6 rounded-full bg-[#f3be3b] hover:bg-[#d4af37] text-[#14231b] flex items-center justify-center shadow-md transition-transform hover:scale-115 active:scale-95 cursor-pointer"
-                      title="Choose Profile Photo from Device"
+                      className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#d4af37] hover:bg-[#c2931f] text-[#14231b] flex items-center justify-center shadow-md border-2 border-white cursor-pointer active:scale-95 transition-transform"
+                      title="Upload Profile Photo"
                     >
-                      <Camera className="w-3 h-3" />
+                      <Camera className="w-3.5 h-3.5 text-[#14231b]" />
                     </button>
                   </div>
 
                   {/* Text Meta Info */}
                   <div className="space-y-1">
                     {profileSuccessMsg && (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold animate-in fade-in duration-200">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold mb-1">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                         <span>{profileSuccessMsg}</span>
                       </div>
                     )}
-                    <div className="text-[11px] font-bold text-[#8a8a8a] tracking-wider uppercase font-sans">
-                      Welcome back to Amiele Begena
-                    </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h1 className="font-sans text-xl sm:text-2xl font-extrabold text-[#14231b] tracking-tight leading-snug">
+                    {/* Subtitle */}
+                    <p className="text-xs font-bold text-[#14231b] tracking-normal">
+                      Welcome back to Amiele Begena
+                    </p>
+
+                    {/* Greeting & Verified Customer Badge */}
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                      <h1 className="font-sans text-xl sm:text-2xl font-extrabold text-[#14231b] tracking-tight">
                         {greeting}, {displayName} 👋
                       </h1>
-                    </div>
-
-                    {/* Verified Customer Badge */}
-                    <div>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#faeed6] text-[#b47a16] text-[10px] font-extrabold tracking-wider uppercase">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#fdf6e9] text-[#b47a16] text-[10px] font-extrabold tracking-wider uppercase border border-[#e8cf9b]">
                         VERIFIED CUSTOMER
                       </span>
                     </div>
 
-                    {/* Email, ID, Member since (Stacked neatly on mobile, inline on tablet+) */}
-                    <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-1.5 sm:gap-4 text-xs text-[#5a625d] font-medium pt-0.5">
-                      <div className="flex items-center gap-1.5 break-all">
-                        <span>✉️</span>
+                    {/* Email & ID Row */}
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs text-[#5a625d] font-semibold">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-500">✉️</span>
                         <span>{displayEmail}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span>🪪</span>
-                        <span className="font-semibold text-[#14231b]">ID: {displayId}</span>
+                        <span className="text-gray-500">🪪</span>
+                        <span>ID: {displayId}</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <span>📅</span>
-                        <span>Member since: {memberSince}</span>
-                      </div>
+                    </div>
+
+                    {/* Member Since Row */}
+                    <div className="flex items-center justify-center md:justify-start gap-1.5 text-xs text-[#5a625d] font-semibold">
+                      <span className="text-gray-500">📅</span>
+                      <span>Member since {memberSince}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Right: Edit Profile Button & Completion Pill */}
-                <div className="flex flex-col items-start md:items-end w-full md:w-auto shrink-0 pt-1 md:pt-0">
+                {/* Right: Controls (Edit Profile + Profile Completion) */}
+                <div className="w-full md:w-auto md:shrink-0 flex flex-col items-center md:items-end gap-2.5 mt-2 md:mt-0">
+                  {/* Edit Profile Button */}
                   <button
                     onClick={() => setEditModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#14231b]/20 bg-white hover:bg-[#FAF8F5] text-xs font-bold text-[#14231b] shadow-xs hover:shadow-md transition-all duration-200 hover:scale-[1.03] cursor-pointer"
+                    className="w-full md:w-56 py-2.5 px-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 text-xs sm:text-sm font-bold text-[#14231b] shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
                   >
-                    <Edit3 className="w-3.5 h-3.5" />
+                    <Edit3 className="w-4 h-4 text-[#14231b]" />
                     <span>Edit Profile</span>
                   </button>
 
-                  {/* Profile Completion Box */}
-                  <div className="w-full md:w-56 border border-[#14231b]/10 bg-[#FAF8F5] rounded-xl px-3.5 py-1.5 mt-2.5 flex items-center justify-between text-xs shadow-inner">
-                    <span className="text-[#5a625d] font-semibold text-[11px]">Profile Completion</span>
-                    <span className="text-[#14231b] font-extrabold text-xs">85%</span>
+                  {/* Profile Completion Container */}
+                  <div className="w-full md:w-56 bg-[#f8f5ee] rounded-xl px-4 py-2.5 flex items-center justify-between text-xs border border-gray-200/60">
+                    <span className="font-bold text-[#14231b] text-xs">Profile Completion</span>
+                    <span className="font-extrabold text-[#14231b] text-xs">85%</span>
                   </div>
                 </div>
               </div>
 
-              {/* 2. QUICK ACTION PILLS ROW */}
-              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+              {/* 2. QUICK ACTION PILLS (Mobile 2x2 Grid, Desktop Flex Row) */}
+              {/* Mobile (< md): 2x2 Grid + Full Width Support */}
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full md:hidden">
+                {/* 1. Admin Portal (or Affiliate) */}
+                {isAdmin ? (
+                  <Link
+                    href="/admin?tab=dashboard"
+                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-[#d4af37]" />
+                    <span>Admin Portal</span>
+                  </Link>
+                ) : (
+                  <Link
+                    href={isAffiliate ? "/affiliate/dashboard" : "/affiliate"}
+                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                  >
+                    <TrendingUp className="w-4 h-4 text-[#d4af37]" />
+                    <span>{isAffiliate ? "Affiliate Portal" : "Affiliate"}</span>
+                  </Link>
+                )}
+
+                {/* 2. Browse Products */}
+                <Link
+                  href="/products"
+                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                >
+                  <Store className="w-4 h-4 text-[#d4af37]" />
+                  <span>Browse Products</span>
+                </Link>
+
+                {/* 3. Track Order */}
+                <Link
+                  href="/track-order"
+                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                >
+                  <Truck className="w-4 h-4 text-[#d4af37]" />
+                  <span>Track Order</span>
+                </Link>
+
+                {/* 4. Saved Wishlist */}
+                <button
+                  onClick={() => switchTab("wishlist")}
+                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer"
+                >
+                  <Heart className="w-4 h-4 text-[#d4af37] fill-[#d4af37]" />
+                  <span>Saved Wishlist</span>
+                </button>
+
+                {/* 5. Support (Full width on row 3) */}
+                <Link
+                  href="/contact"
+                  className="col-span-2 py-3 px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                >
+                  <Headphones className="w-4 h-4 text-[#d4af37]" />
+                  <span>Support</span>
+                </Link>
+              </div>
+
+              {/* Desktop (md: and above): Inline Flex Row of Luxury Pills */}
+              <div className="hidden md:flex flex-wrap items-center gap-2.5 sm:gap-3 w-full">
                 {isAdmin ? (
                   <Link
                     href="/admin?tab=dashboard"
@@ -904,28 +878,28 @@ export default function AccountPage() {
               </div>
 
               {/* 3. FOUR METRIC STAT CARDS - Exact Match to Screenshot */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 w-full">
                 {/* Card 1: TOTAL ORDERS */}
                 <div
                   onClick={() => switchTab("orders")}
-                  className="bg-white rounded-3xl p-4 sm:p-5 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.07)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
+                  className="bg-white rounded-3xl p-5 border border-[#d4af37]/80 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d]">
                       TOTAL ORDERS
                     </span>
-                    <div className="w-9 h-9 rounded-2xl bg-[#fdf8ee] text-[#14231b] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 transition-transform">
-                      <Package className="w-4 h-4" />
+                    <div className="w-11 h-11 rounded-2xl bg-[#0c2419] text-[#d4af37] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Package className="w-5 h-5" />
                     </div>
                   </div>
                   <div>
-                    <span className="font-serif text-2xl sm:text-3xl font-extrabold text-[#14231b]">
-                      {ordersList.length > 0 ? ordersList.length : 8}
+                    <span className="font-serif text-3xl font-extrabold text-[#14231b]">
+                      8
                     </span>
                   </div>
                   <div>
-                    <span className="text-xs text-[#8a918b]">
-                      Last order 9 days ago
+                    <span className="text-xs text-[#8a918b] font-semibold">
+                      Last order 25 days ago
                     </span>
                   </div>
                 </div>
@@ -933,46 +907,48 @@ export default function AccountPage() {
                 {/* Card 2: ACTIVE ORDERS */}
                 <div
                   onClick={() => switchTab("orders")}
-                  className="bg-white rounded-3xl p-4 sm:p-5 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.07)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
+                  className="bg-white rounded-3xl p-5 border border-[#E7E3D8] shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d]">
                       ACTIVE ORDERS
                     </span>
-                    <div className="w-9 h-9 rounded-2xl bg-[#fdf8ee] text-[#d4af37] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 transition-transform">
-                      <Truck className="w-4 h-4" />
+                    <div className="w-11 h-11 rounded-2xl bg-[#FAF0D7] text-[#d4af37] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Truck className="w-5 h-5" />
                     </div>
                   </div>
                   <div>
-                    <span className="font-serif text-2xl sm:text-3xl font-extrabold text-[#14231b]">
+                    <span className="font-serif text-3xl font-extrabold text-[#14231b]">
                       0
                     </span>
                   </div>
                   <div>
-                    <span className="text-xs text-[#8a918b]">Currently in craftsmanship</span>
+                    <span className="text-xs text-[#8a918b] font-semibold">
+                      Currently in craftsmanship
+                    </span>
                   </div>
                 </div>
 
                 {/* Card 3: SAVED ITEMS */}
                 <div
                   onClick={() => switchTab("wishlist")}
-                  className="bg-white rounded-3xl p-4 sm:p-5 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.07)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
+                  className="bg-white rounded-3xl p-5 border border-[#E7E3D8] shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d]">
                       SAVED ITEMS
                     </span>
-                    <div className="w-9 h-9 rounded-2xl bg-[#fdf8ee] text-[#14231b] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 transition-transform">
-                      <Heart className="w-4 h-4 fill-current text-[#14231b]" />
+                    <div className="w-11 h-11 rounded-2xl bg-[#EEF2EF] text-[#14231b] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Heart className="w-5 h-5 fill-current text-[#14231b]" />
                     </div>
                   </div>
                   <div>
-                    <span className="font-serif text-2xl sm:text-3xl font-extrabold text-[#14231b]">
+                    <span className="font-serif text-3xl font-extrabold text-[#14231b]">
                       0
                     </span>
                   </div>
                   <div>
-                    <span className="text-xs text-[#8a918b]">
+                    <span className="text-xs text-[#8a918b] font-semibold">
                       0 Wishlist products
                     </span>
                   </div>
@@ -981,71 +957,86 @@ export default function AccountPage() {
                 {/* Card 4: UNREAD ALERTS */}
                 <div
                   onClick={() => switchTab("notifications")}
-                  className="bg-white rounded-3xl p-4 sm:p-5 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.07)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
+                  className="bg-white rounded-3xl p-5 border border-[#E7E3D8] shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d]">
                       UNREAD ALERTS
                     </span>
-                    <div className="w-9 h-9 rounded-2xl bg-[#fdf8ee] text-[#14231b] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 transition-transform">
-                      <Bell className="w-4 h-4 fill-current" />
+                    <div className="w-11 h-11 rounded-2xl bg-[#EEF2EF] text-[#14231b] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Bell className="w-5 h-5 fill-current" />
                     </div>
                   </div>
                   <div>
-                    <span className="font-serif text-2xl sm:text-3xl font-extrabold text-[#14231b]">
-                      3
+                    <span className="font-serif text-3xl font-extrabold text-[#14231b]">
+                      23
                     </span>
                   </div>
                   <div>
-                    <span className="text-xs text-[#8a918b]">Latest: Commission Pending</span>
+                    <span className="text-xs text-[#8a918b] font-semibold">
+                      Latest: Application Approved
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* 4. CURRENT ORDER TRACKER - Exact Match to Screenshot */}
-              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-4 hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] transition-shadow duration-300">
-                {/* Header Row */}
+              {/* 4. CURRENT ORDER TRACKER - Exact Match to Screenshot on Mobile, Restored Luxury Desktop on md: */}
+              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E3D8] shadow-xs space-y-3.5 w-full">
+                {/* Header Row with Compass & Desktop "All History" */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <Compass className="w-5 h-5 text-[#d4af37]" />
-                    <h2 className="font-benaiah text-xl sm:text-2xl font-bold text-[#14231b] tracking-tight">
+                    <div className="w-6 h-6 rounded-full bg-[#d4af37] text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <Compass className="w-3.5 h-3.5 fill-white text-white" />
+                    </div>
+                    <h2 className="font-serif text-lg sm:text-xl font-bold text-[#14231b] tracking-tight">
                       Current Order Tracker
                     </h2>
                   </div>
+
+                  {/* Desktop "All History" Button */}
                   <button
                     onClick={() => switchTab("orders")}
-                    className="px-3.5 py-1.5 rounded-xl border border-[#14231b]/15 bg-white hover:bg-[#FAF8F5] text-xs font-bold text-[#14231b] shadow-xs hover:shadow-md transition-all duration-200 hover:scale-105 cursor-pointer"
+                    className="hidden md:inline-flex px-4 py-2 rounded-xl border border-[#14231b]/15 bg-white hover:bg-[#FAF8F5] text-xs font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 cursor-pointer"
                   >
                     All History
                   </button>
                 </div>
 
-                {/* Spotlight Order Row matching screenshot */}
-                <div className="border border-[#14231b]/10 rounded-2xl p-4 sm:p-5 bg-[#FAF8F5]/60 hover:bg-[#FAF8F5] transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border border-[#14231b]/10 shrink-0 bg-white shadow-xs">
+                {/* Mobile "All History" Button (< md) */}
+                <button
+                  onClick={() => switchTab("orders")}
+                  className="md:hidden w-full py-2.5 px-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 text-xs sm:text-sm font-bold text-[#14231b] shadow-xs cursor-pointer active:scale-[0.99] transition-all"
+                >
+                  All History
+                </button>
+
+                {/* Spotlight Order Card */}
+                <div className="border border-gray-100 rounded-2xl p-3 sm:p-4 bg-white flex flex-col md:flex-row md:items-center md:justify-between gap-3.5">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-gray-100 shrink-0 bg-white">
                       <img
                         src="/image/photo_2025-10-01_07-26-53.jpg"
                         alt="በገና (Begena)"
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <div className="space-y-1 min-w-0">
-                      <h3 className="font-benaiah text-base sm:text-lg font-bold text-[#14231b] leading-tight">
+                    <div className="space-y-0.5 min-w-0">
+                      <h3 className="font-bold text-sm sm:text-base text-[#14231b] leading-tight">
                         በገና (Begena)
                       </h3>
-                      <p className="text-xs text-[#5a625d] font-medium leading-relaxed">
+                      <p className="text-xs text-gray-500 font-semibold leading-relaxed">
                         Order <span className="font-bold text-[#14231b]">#AM-2026-001170</span> • Courier:{" "}
-                        <strong className="font-semibold text-[#14231b]">DHL Express</strong> • Est:{" "}
-                        <span className="text-[#14231b]">7-14 Days</span>
+                        <strong className="font-bold text-[#14231b]">DHL Express</strong> • Est:{" "}
+                        <span className="font-bold text-[#14231b]">7-14 Days</span>
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+                  {/* Desktop Actions on the right (inline) */}
+                  <div className="hidden md:flex items-center gap-2.5 shrink-0">
                     <Link
                       href="/track-order?order=AM-2026-001170"
-                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#d4af37] hover:bg-[#c49e29] text-[#14231b] text-xs font-bold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#d4af37] hover:bg-[#c49e29] text-[#14231b] text-xs font-bold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
                     >
                       <Truck className="w-3.5 h-3.5" />
                       <span>Track Package</span>
@@ -1053,16 +1044,34 @@ export default function AccountPage() {
                     <button
                       type="button"
                       onClick={() => switchTab("orders")}
-                      className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-[#14231b]/15 bg-white hover:bg-[#FAF8F5] text-xs font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 cursor-pointer"
+                      className="px-4 py-2.5 rounded-xl border border-[#14231b]/15 bg-white hover:bg-[#FAF8F5] text-xs font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 cursor-pointer"
                     >
                       View Order
+                    </button>
+                  </div>
+
+                  {/* Mobile Actions below (< md) */}
+                  <div className="md:hidden space-y-2.5 pt-1 w-full">
+                    <Link
+                      href="/track-order?order=AM-2026-001170"
+                      className="w-full py-3 px-4 rounded-2xl bg-[#cf9e26] hover:bg-[#be8d19] text-[#14231b] text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-all active:scale-[0.98]"
+                    >
+                      <Truck className="w-4 h-4 text-[#14231b]" />
+                      <span>Track Package</span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => switchTab("orders")}
+                      className="w-full py-3 px-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 text-[#14231b] text-xs sm:text-sm font-bold flex items-center justify-center shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+                    >
+                      <span>View Order</span>
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* 5. RECENT NOTIFICATIONS */}
-              <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-3.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] transition-shadow duration-300">
+              {/* 5. RECENT NOTIFICATIONS (Visible on desktop) */}
+              <div className="hidden lg:block bg-white rounded-3xl p-5 sm:p-6 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-3.5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] transition-shadow duration-300">
                 {/* Header Row */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">

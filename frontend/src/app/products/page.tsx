@@ -446,9 +446,9 @@ export default function ProductsPage() {
             </div>
           </aside>
 
-          {/* Right Column: Products Grid (3 columns on desktop matching screenshot) */}
+          {/* Right Column: Products Grid (2 columns on mobile matching screenshot, 3 columns on desktop) */}
           <main className="flex-1 w-full">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
               {sortedProducts.map((product) => {
                 const isWishlisted = !!wishlist[product.id];
                 const isAdded = !!addedItems[product.id];
@@ -457,7 +457,7 @@ export default function ProductsPage() {
                 return (
                   <div key={product.id} className="flex flex-col justify-between group">
                     {/* Framed Image Container matching screenshot aesthetic */}
-                    <div className="relative aspect-[4/5] w-full rounded-2xl bg-[#EDE8DF] p-4 sm:p-5 flex items-center justify-center overflow-hidden shadow-xs">
+                    <div className="relative aspect-[4/5] w-full rounded-2xl bg-[#EDE8DF] p-2.5 sm:p-5 flex items-center justify-center overflow-hidden shadow-xs">
                       {/* Subtle diagonal background line accent matching Screenshot 2 */}
                       <svg
                         className="absolute inset-0 w-full h-full text-[#DFDAD0]/50 pointer-events-none stroke-current"
@@ -470,7 +470,7 @@ export default function ProductsPage() {
                       {/* Centered Framed Photo */}
                       <div
                         onClick={() => setDetailsModalProduct(product)}
-                        className="relative w-[82%] h-[84%] rounded-xl overflow-hidden shadow-sm cursor-pointer"
+                        className="relative w-[86%] h-[86%] rounded-xl overflow-hidden shadow-sm cursor-pointer"
                       >
                         <img
                           src={product.image}
@@ -482,96 +482,126 @@ export default function ProductsPage() {
                       {/* Circular Heart Wishlist Button at Top Right */}
                       <button
                         onClick={() => toggleWishlist(product.id)}
-                        className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white shadow-sm border border-black/5 flex items-center justify-center text-[#737874] hover:text-[#e63946] hover:scale-110 active:scale-95 transition-all cursor-pointer z-10"
+                        className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white shadow-xs border border-black/5 flex items-center justify-center text-[#737874] hover:text-[#e63946] hover:scale-110 active:scale-95 transition-all cursor-pointer z-10"
                         aria-label="Add to Wishlist"
                       >
                         <Heart
-                          className={`w-4 h-4 transition-colors ${
+                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${
                             isWishlisted ? "fill-[#e63946] text-[#e63946]" : "text-[#737874]"
                           }`}
                         />
                       </button>
                     </div>
 
-                    {/* Card Information: Title, DETAILS [▶], and Price */}
-                    <div className="pt-3.5 space-y-3">
-                      <div className="flex items-start justify-between gap-2">
+                    {/* Card Information: Title, DETAILS, Audio [▶], and Price */}
+                    <div className="pt-2 sm:pt-3.5 space-y-2 sm:space-y-3">
+                      <div className="flex items-start justify-between gap-1 sm:gap-2">
                         {/* Title & Details Button */}
-                        <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                        <div className="min-w-0 flex-1">
                           <h2
                             onClick={() => setDetailsModalProduct(product)}
-                            className="font-extrabold text-[#14231b] text-base leading-snug cursor-pointer hover:underline"
+                            className="font-extrabold text-[#14231b] text-xs sm:text-base leading-tight cursor-pointer hover:underline line-clamp-2"
                           >
                             {product.name}
                           </h2>
 
-                          <div className="inline-flex items-center gap-1 shrink-0">
+                          <div className="flex items-center gap-1 pt-0.5 sm:pt-1">
                             <button
                               onClick={() => setDetailsModalProduct(product)}
-                              className="text-[10px] font-bold text-[#737874] hover:text-[#14231b] tracking-wider uppercase transition-colors cursor-pointer"
+                              className="text-[9px] sm:text-[10px] font-bold text-[#737874] hover:text-[#14231b] tracking-wider uppercase transition-colors cursor-pointer"
                             >
                               DETAILS
                             </button>
-                            {product.audioUrl && (
-                              <button
-                                onClick={() => handlePlayAudio(product)}
-                                className="w-5 h-5 rounded-full bg-[#14231b] text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer"
-                                title="Play Audio Sample"
-                                aria-label={`Play audio sample for ${product.name}`}
-                              >
-                                {isThisPlaying ? (
-                                  <Pause className="w-2 h-2 fill-white text-white" />
-                                ) : (
-                                  <Play className="w-2 h-2 fill-white text-white ml-0.5" />
-                                )}
-                              </button>
-                            )}
                           </div>
                         </div>
 
-                        {/* Price */}
-                        <div className="font-extrabold text-sm sm:text-base text-[#14231b] whitespace-nowrap shrink-0 text-right">
-                          {currency === "ETB"
-                            ? `ETB ${product.priceETB.toLocaleString()}`
-                            : formatPrice(product.priceUSD, "USD")}
+                        {/* Audio & Price matching screenshot */}
+                        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 text-right">
+                          {product.audioUrl && (
+                            <button
+                              onClick={() => handlePlayAudio(product)}
+                              className="w-5 h-5 rounded-full bg-[#14231b] text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-transform cursor-pointer shrink-0"
+                              title="Play Audio Sample"
+                              aria-label={`Play audio sample for ${product.name}`}
+                            >
+                              {isThisPlaying ? (
+                                <Pause className="w-2 h-2 fill-white text-white" />
+                              ) : (
+                                <Play className="w-2 h-2 fill-white text-white ml-0.5" />
+                              )}
+                            </button>
+                          )}
+                          <div className="font-extrabold text-[10px] min-[360px]:text-xs sm:text-base text-[#14231b] leading-tight text-right whitespace-nowrap">
+                            {currency === "ETB" ? (
+                              <div className="flex flex-col items-end sm:block">
+                                <span className="text-[9px] sm:text-xs font-bold">ETB</span>{" "}
+                                <span>{product.priceETB.toLocaleString()}</span>
+                              </div>
+                            ) : (
+                              formatPrice(product.priceUSD, "USD")
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      {/* Dual Action Buttons: ADD TO CART + ORDER VIA WHATSAPP */}
-                      <div className="flex items-center gap-2 pt-1">
-                        {/* ADD TO CART Pill matching user's custom design */}
+                      {/* Dual Action Buttons matching Screenshot on mobile, Luxury Desktop on md: */}
+                      <div className="flex items-stretch gap-1 sm:gap-2 pt-0.5">
+                        {/* ADD TO CART Button */}
                         <button
                           onClick={() => handleAddToCart(product)}
-                          className={`px-4 py-2.5 rounded-full font-bold text-xs sm:text-[13px] tracking-wide transition-all active:scale-95 shrink-0 flex items-center justify-center gap-2 cursor-pointer shadow-sm border ${
+                          className={`flex-1 md:flex-none py-1.5 md:py-2.5 px-1 md:px-4 rounded-full font-bold text-[8px] min-[360px]:text-[9px] md:text-xs tracking-wide transition-all active:scale-95 flex items-center justify-center text-center shadow-xs md:shadow-sm border min-h-[36px] md:min-h-[42px] cursor-pointer ${
                             isAdded
-                              ? "bg-[#2d6a4f] text-white border-[#52b788]"
-                              : "bg-[#0d1e16] hover:bg-[#07130d] text-white border-white/10"
+                              ? "bg-[#2d6a4f] text-white border-[#2d6a4f]"
+                              : "bg-white hover:bg-gray-50 text-[#14231b] border-[#14231b] md:bg-[#0d1e16] md:hover:bg-[#07130d] md:text-white md:border-white/10"
                           }`}
                         >
-                          {isAdded ? (
-                            <>
-                              <Check className="w-4 h-4 text-[#52b788] stroke-[2.5]" />
-                              <span>Added</span>
-                            </>
-                          ) : (
-                            <>
-                              <ShoppingBag className="w-4 h-4 text-[#f5c518] shrink-0 stroke-[2.2]" />
-                              <span>Add to Cart</span>
-                            </>
-                          )}
+                          {/* Mobile Text (< md) */}
+                          <span className="md:hidden uppercase">
+                            {isAdded ? "ADDED" : "ADD TO CART"}
+                          </span>
+
+                          {/* Desktop Text (md: and above) */}
+                          <span className="hidden md:inline-flex items-center gap-2">
+                            {isAdded ? (
+                              <>
+                                <Check className="w-4 h-4 text-[#52b788] stroke-[2.5]" />
+                                <span>Added</span>
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingBag className="w-4 h-4 text-[#f5c518] shrink-0 stroke-[2.2]" />
+                                <span>Add to Cart</span>
+                              </>
+                            )}
+                          </span>
                         </button>
 
-                        {/* Upgraded Luxury Emerald ORDER VIA WHATSAPP Pill */}
+                        {/* ORDER VIA WHATSAPP Button */}
                         <button
                           onClick={() => handleOrderWhatsApp(product)}
-                          className="flex-1 py-2.5 px-3 rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white text-xs sm:text-[13px] font-bold tracking-wide flex items-center justify-center gap-1.5 sm:gap-2 transition-all active:scale-95 shadow-[0_3px_12px_rgba(37,211,102,0.28)] hover:shadow-[0_5px_18px_rgba(37,211,102,0.38)] cursor-pointer whitespace-nowrap border border-white/20 min-h-[42px]"
+                          className="flex-1 py-1 md:py-2.5 px-1 md:px-3 rounded-2xl md:rounded-full bg-[#25D366] hover:bg-[#20ba5a] md:bg-gradient-to-r md:from-[#1eb656] md:via-[#22c55e] md:to-[#25D366] md:hover:from-[#18a84e] md:hover:via-[#1eb656] md:hover:to-[#22c35e] text-white text-[7.5px] min-[360px]:text-[8.5px] md:text-xs font-bold leading-tight flex items-center justify-center shadow-xs md:shadow-[0_3px_12px_rgba(37,211,102,0.28)] md:hover:shadow-[0_5px_18px_rgba(37,211,102,0.38)] active:scale-95 transition-all cursor-pointer min-h-[36px] md:min-h-[42px] border border-transparent md:border-white/20"
                         >
-                          <span className="w-4.5 h-4.5 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
-                            <svg className="w-3 h-3 fill-white shrink-0" viewBox="0 0 24 24">
-                              <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
-                            </svg>
-                          </span>
-                          <span>Order via WhatsApp</span>
+                          {/* Mobile Stacked Text (< md) */}
+                          <div className="md:hidden flex flex-col items-center uppercase">
+                            <span>ORDER</span>
+                            <span className="flex items-center gap-0.5">
+                              <svg className="w-2.5 h-2.5 fill-current shrink-0" viewBox="0 0 24 24">
+                                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
+                              </svg>
+                              VIA
+                            </span>
+                            <span>WHATSAPP</span>
+                          </div>
+
+                          {/* Desktop Horizontal Text (md: and above) */}
+                          <div className="hidden md:flex items-center gap-1.5 sm:gap-2">
+                            <span className="w-4.5 h-4.5 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                              <svg className="w-3 h-3 fill-white shrink-0" viewBox="0 0 24 24">
+                                <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
+                              </svg>
+                            </span>
+                            <span className="whitespace-nowrap">Order via WhatsApp</span>
+                          </div>
                         </button>
                       </div>
                     </div>

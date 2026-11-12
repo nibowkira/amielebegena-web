@@ -6,13 +6,13 @@ import { usePathname } from "next/navigation";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useCurrency, Currency } from "../context/CurrencyContext";
-import { ShoppingCart, User as UserIcon, ChevronDown, Menu, X, Bell } from "lucide-react";
+import { ShoppingCart, User as UserIcon, ChevronDown, Menu, X, Bell, LogOut } from "lucide-react";
 import NotificationFlyout from "./NotificationFlyout";
 
 export default function Navbar() {
   const pathname = usePathname();
   const { totalCount, openCart } = useCart();
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { currency, setCurrency } = useCurrency();
 
   const [scrolled, setScrolled] = useState(false);
@@ -156,15 +156,15 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Notification Flyout (Desktop & Tablet) */}
-            <div className="hidden sm:block">
-              <NotificationFlyout triggerStyle="transparent" />
+            {/* Notification Flyout matching user's mobile dashboard screenshot */}
+            <div className="flex items-center">
+              <NotificationFlyout triggerStyle="transparent" badgeCount={23} />
             </div>
 
-            {/* Cart Icon Button (Always visible on all screens with >=44px touch area) */}
+            {/* Cart Icon Button */}
             <button
               onClick={openCart}
-              className="relative p-2.5 text-[#14231b] hover:text-[#2d6a4f] transition-transform hover:scale-105 active:scale-95 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full"
+              className="relative p-2 text-[#14231b] hover:text-[#2d6a4f] transition-transform hover:scale-105 active:scale-95 cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center rounded-full"
               aria-label="View Cart"
             >
               <ShoppingCart className="w-5 h-5 stroke-[1.8]" />
@@ -175,33 +175,29 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* User Account Icon in purple (Desktop & Tablet) */}
+            {/* User Account Icon in purple matching screenshot */}
             <Link
-              href={
-                user
-                  ? profile?.role === "admin"
-                    ? "/admin?tab=dashboard"
-                    : profile?.role === "affiliate"
-                    ? "/affiliate/dashboard"
-                    : "/account"
-                  : "/login"
-              }
-              className="hidden sm:flex p-2 text-[#512c85] hover:text-[#2d6a4f] transition-transform hover:scale-105 items-center justify-center rounded-full min-h-[44px] min-w-[44px]"
+              href={user ? "/account" : "/login"}
+              className="flex p-2 text-[#512c85] hover:text-[#2d6a4f] transition-transform hover:scale-105 items-center justify-center rounded-full min-h-[40px] min-w-[40px]"
               aria-label="User Account"
             >
               <UserIcon className="w-5 h-5 fill-current" />
             </Link>
 
-            {/* Mobile Menu Trigger (Always visible on mobile with >=44px touch target) */}
+            {/* Mobile Menu Trigger matching screenshot with gold border when open */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-[#14231b] hover:text-[#2d6a4f] rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className={`md:hidden p-1.5 sm:p-2 rounded-lg cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center transition-all ${
+                mobileMenuOpen
+                  ? "border-2 border-[#d4af37] bg-white text-[#14231b]"
+                  : "text-[#14231b] hover:text-[#2d6a4f]"
+              }`}
               aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav-menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              <Menu className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -209,83 +205,86 @@ export default function Navbar() {
         {/* Mobile Semi-Transparent Dark Backdrop */}
         {mobileMenuOpen && (
           <div
-            className="fixed inset-0 z-40 bg-[#07150D]/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200 pointer-events-auto"
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-150 pointer-events-auto md:hidden"
             onClick={() => setMobileMenuOpen(false)}
             aria-hidden="true"
           />
         )}
 
-        {/* Mobile Drawer */}
+        {/* Right-Side Slide-Out Mobile Drawer matching exact screenshot */}
         {mobileMenuOpen && (
           <div
             id="mobile-nav-menu"
             role="region"
             aria-label="Mobile Navigation Menu"
-            className={`relative z-50 pointer-events-auto md:hidden p-4 bg-[#FAF8F5] border border-[#14231b]/15 shadow-2xl space-y-3 nav-transition animate-in fade-in slide-in-from-top-2 duration-150 ${
-              scrolled ? "max-w-6xl mx-auto mt-2 rounded-3xl" : "w-full border-t border-[#14231b]/10 rounded-b-3xl"
-            }`}
+            className="fixed top-[62px] sm:top-[70px] right-0 bottom-0 z-50 pointer-events-auto md:hidden w-[56%] min-w-[210px] max-w-[270px] bg-white border-l border-gray-100 shadow-2xl flex flex-col justify-start overflow-y-auto animate-in slide-in-from-right duration-200"
           >
-            {/* Quick Mobile Controls (Currency & Notification) */}
-            <div className="flex items-center justify-between pb-3 border-b border-[#14231b]/10 sm:hidden">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-[#737874] uppercase">Currency:</span>
-                <div className="flex items-center gap-1 bg-[#EAE5DB] p-1 rounded-xl">
-                  {currencies.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setCurrency(c)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                        currency === c ? "bg-[#14231b] text-white shadow-xs" : "text-[#14231b]"
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <NotificationFlyout triggerStyle="pill" />
-              </div>
-            </div>
-
-            {/* Nav Links */}
-            <div className="space-y-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3.5 py-2.5 text-xs font-bold tracking-wider text-[#14231b] hover:bg-[#DFDAD0] rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* Account Link in Drawer */}
-            <div className="pt-2 border-t border-[#14231b]/15 flex items-center justify-between text-xs font-bold text-[#14231b]">
+            <div className="flex flex-col w-full divide-y divide-gray-100">
               <Link
-                href={
-                  user
-                    ? profile?.role === "admin"
-                      ? "/admin?tab=dashboard"
-                      : profile?.role === "affiliate"
-                      ? "/affiliate/dashboard"
-                      : "/account"
-                    : "/login"
-                }
+                href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-lg hover:bg-[#DFDAD0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] w-full"
+                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
               >
-                <UserIcon className="w-4 h-4 text-[#512c85] fill-current" />
-                <span>
-                  {user
-                    ? `Account (${profile?.role || "Customer"})`
-                    : "Sign In / Register"}
-                </span>
+                Home
               </Link>
+              <Link
+                href="/products"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+              >
+                Products
+              </Link>
+              <Link
+                href="/about-product"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+              >
+                About Product
+              </Link>
+              <Link
+                href="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+              >
+                About Us
+              </Link>
+              <Link
+                href="/blog"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+              >
+                Blog
+              </Link>
+              <Link
+                href={user ? "/account" : "/login"}
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+              >
+                Account / መለያ
+              </Link>
+
+              {user ? (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await signOut();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left px-5 py-3.5 text-sm font-bold text-[#e63946] hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 text-[#e63946] shrink-0" />
+                  <span>Log Out / ውጣ</span>
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full text-left px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                >
+                  <UserIcon className="w-4 h-4 text-[#512c85] shrink-0" />
+                  <span>Sign In / መግቢያ</span>
+                </Link>
+              )}
             </div>
           </div>
         )}
