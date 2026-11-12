@@ -17,6 +17,7 @@ import {
   Clock,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { useScrollLock } from "../lib/useScrollLock";
 
 export interface NotificationItem {
   id: string;
@@ -216,61 +217,19 @@ export default function NotificationFlyout({
     };
   }, [isOpen, mounted]);
 
-  // Lock background scrolling and movement when notification flyout is open
+  // Lock background scrolling safely via reference-counted hook
+  useScrollLock(isOpen);
+
+  // Close on Escape key
   useEffect(() => {
     if (!isOpen) return;
-
-    // Save previous styles
-    const prevBodyOverflow = document.body.style.overflow;
-    const prevBodyTouchAction = document.body.style.touchAction;
-    const prevBodyPaddingRight = document.body.style.paddingRight;
-    const prevDocOverflow = document.documentElement.style.overflow;
-
-    // Compensate scrollbar width to prevent page horizontal jitter
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
-
-    document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none";
-    document.documentElement.style.overflow = "hidden";
-
-    // Block background wheel and touch gestures outside the popover
-    const handleBackgroundMovement = (e: WheelEvent | TouchEvent) => {
-      if (popoverRef.current && popoverRef.current.contains(e.target as Node)) {
-        return; // Allow scrolling inside the notification list
-      }
-      if (e.cancelable) {
-        e.preventDefault();
-      }
-    };
-
-    // Close on Escape key
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsOpen(false);
       }
     };
-
-    window.addEventListener("wheel", handleBackgroundMovement, {
-      passive: false,
-    });
-    window.addEventListener("touchmove", handleBackgroundMovement, {
-      passive: false,
-    });
     window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = prevBodyOverflow;
-      document.body.style.touchAction = prevBodyTouchAction;
-      document.body.style.paddingRight = prevBodyPaddingRight;
-      document.documentElement.style.overflow = prevDocOverflow;
-      window.removeEventListener("wheel", handleBackgroundMovement);
-      window.removeEventListener("touchmove", handleBackgroundMovement);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
   // Close when clicking outside

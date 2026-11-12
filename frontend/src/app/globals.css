@@ -104,20 +104,31 @@
 }
 
 html {
-  scroll-behavior: smooth;
-  max-width: 100vw;
-  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  width: 100%;
+}
+
+@media (min-width: 769px) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
   background-color: #FAF8F5;
   color: #14231b;
   font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow-x: clip;
   margin: 0;
   padding: 0;
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 /* Maintain light beige background during browser autofill */
@@ -269,10 +280,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Mobile-First Global Safety Standards */
-html,
-body {
-  overflow-x: clip;
+html {
   max-width: 100%;
+}
+
+body {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 img,

@@ -3,55 +3,79 @@
 import { useEffect } from "react";
 
 /**
- * Hook to lock background window scrolling while an overlay (modal, cart drawer, dialog) is open.
- * Locks both html and body overflow and intercepts window wheel events outside scrollable areas.
+ * Robust Reference-Counted Scroll Lock
+ * Prevents race conditions and rigid/unscrollable stuck states when multiple overlays
+ * (CartDrawer, WhatsAppModal, PremiumModal, NotificationFlyout, Mobile Nav Drawer)
+ * mount, toggle, or unmount in any order.
  */
-export function useScrollLock(isLocked: boolean) {
-  useEffect(() => {
-    if (!isLocked) return;
-    if (typeof window === "undefined" || typeof document === "undefined") return;
 
-    const htmlEl = document.documentElement;
-    const bodyEl = document.body;
+let lockCount = 0;
+let originalHtmlOverflow: string = "";
+let originalBodyOverflow: string = "";
+let originalBodyTouchAction: string = "";
+let originalBodyOverscroll: string = "";
 
-    const originalHtmlOverflow = htmlEl.style.overflow;
-    const originalBodyOverflow = bodyEl.style.overflow;
-    const originalOverscroll = bodyEl.style.overscrollBehavior;
+export function applyScrollLock() {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
 
-    // Lock both html and body so window cannot scroll behind modal/drawer
+  const htmlEl = document.documentElement;
+  const bodyEl = document.body;
+
+  if (lockCount === 0) {
+    // Snapshot original styles only on the initial lock
+    originalHtmlOverflow = htmlEl.style.overflow;
+    originalBodyOverflow = bodyEl.style.overflow;
+    originalBodyTouchAction = bodyEl.style.touchAction;
+    originalBodyOverscroll = bodyEl.style.overscrollBehavior;
+
+    // Lock scrolling on html and body cleanly
     htmlEl.style.overflow = "hidden";
     bodyEl.style.overflow = "hidden";
     bodyEl.style.overscrollBehavior = "none";
+  }
 
-    // Block background wheel movement while preserving scrolling within the modal/drawer
-    const handleWheel = (e: WheelEvent) => {
-      let target = e.target as HTMLElement | null;
-      let canScroll = false;
-      while (target && target !== bodyEl && target !== htmlEl) {
-        if (target.scrollHeight > target.clientHeight) {
-          const style = window.getComputedStyle(target);
-          if (
-            (style.overflowY === "auto" || style.overflowY === "scroll") &&
-            target.clientHeight > 0
-          ) {
-            canScroll = true;
-            break;
-          }
-        }
-        target = target.parentElement;
-      }
-      if (!canScroll) {
-        e.preventDefault();
-      }
-    };
+  lockCount++;
+}
 
-    window.addEventListener("wheel", handleWheel, { passive: false });
+export function releaseScrollLock() {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+
+  const htmlEl = document.documentElement;
+  const bodyEl = document.body;
+
+  lockCount = Math.max(0, lockCount - 1);
+
+  if (lockCount === 0) {
+    // Restore only when ALL active overlays/drawers have fully closed
+    htmlEl.style.overflow = originalHtmlOverflow || "";
+    bodyEl.style.overflow = originalBodyOverflow || "";
+    bodyEl.style.touchAction = originalBodyTouchAction || "";
+    bodyEl.style.overscrollBehavior = originalBodyOverscroll || "";
+  }
+}
+
+/**
+ * Failsafe unlock: call on page/route transitions to ensure body/html
+ * are 100% liberated and never left rigid or stuck.
+ */
+export function forceUnlockScroll() {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+
+  lockCount = 0;
+  document.documentElement.style.overflow = "";
+  document.body.style.overflow = "";
+  document.body.style.touchAction = "";
+  document.body.style.overscrollBehavior = "";
+}
+
+export function useScrollLock(isLocked: boolean) {
+  useEffect(() => {
+    if (!isLocked) return;
+
+    applyScrollLock();
 
     return () => {
-      htmlEl.style.overflow = originalHtmlOverflow || "";
-      bodyEl.style.overflow = originalBodyOverflow || "";
-      bodyEl.style.overscrollBehavior = originalOverscroll || "";
-      window.removeEventListener("wheel", handleWheel);
+      releaseScrollLock();
     };
   }, [isLocked]);
 }

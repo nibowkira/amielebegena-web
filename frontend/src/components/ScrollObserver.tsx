@@ -2,11 +2,14 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { forceUnlockScroll } from "../lib/useScrollLock";
 
 export default function ScrollObserver() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // Failsafe: Ensure clean unlocked scrolling on every route transition
+    forceUnlockScroll();
     const handleScrollAnimations = () => {
       const elements = document.querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale");
 

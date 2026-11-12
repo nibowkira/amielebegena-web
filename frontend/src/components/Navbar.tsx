@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCurrency, Currency } from "../context/CurrencyContext";
 import { ShoppingCart, User as UserIcon, ChevronDown, Menu, X, Bell, LogOut } from "lucide-react";
 import NotificationFlyout from "./NotificationFlyout";
+import { useScrollLock, forceUnlockScroll } from "../lib/useScrollLock";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -19,6 +20,9 @@ export default function Navbar() {
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Prevent background window scrolling while mobile navigation menu is open
+  useScrollLock(mobileMenuOpen);
+
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY || document.documentElement.scrollTop || window.pageYOffset || 0;
@@ -29,10 +33,11 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu and dropdowns on route changes
+  // Close mobile menu, dropdowns, and release any active scroll lock on route changes
   useEffect(() => {
     setMobileMenuOpen(false);
     setCurrencyOpen(false);
+    forceUnlockScroll();
   }, [pathname]);
 
   // Keyboard accessibility: close open menus on Escape key
