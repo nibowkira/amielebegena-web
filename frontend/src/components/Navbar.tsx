@@ -158,9 +158,12 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Notification Flyout - Desktop header only (moved into menu on mobile) */}
-            <div className="hidden md:flex items-center">
-              <NotificationFlyout triggerStyle="transparent" />
+            {/* Notification Flyout - Visible on mobile and desktop */}
+            <div className="flex items-center">
+              <NotificationFlyout
+                triggerStyle="transparent"
+                buttonClassName="relative min-w-[44px] min-h-[44px] w-11 h-11 text-[#14231b] hover:text-[#2d6a4f] transition-transform active:scale-95 cursor-pointer flex items-center justify-center rounded-full"
+              />
             </div>
 
             {/* Cart Icon Button - Always visible on mobile and desktop */}
