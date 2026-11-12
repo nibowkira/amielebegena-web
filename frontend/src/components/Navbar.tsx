@@ -119,16 +119,16 @@ export default function Navbar() {
 
           {/* Right Actions: Clean layout keeping >=8px gap, secondary items moved to drawer on mobile */}
           <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 shrink-0">
-            {/* Currency Switcher Pill (Desktop & Tablet) */}
-            <div className="relative hidden sm:block">
+            {/* Currency Switcher Pill - visible on mobile & desktop matching reference */}
+            <div className="relative">
               <button
                 onClick={() => setCurrencyOpen(!currencyOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#14231b]/20 bg-[#DFDAD0]/50 text-xs font-bold text-[#14231b] hover:bg-[#DFDAD0] transition-all cursor-pointer min-h-[38px]"
+                className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-md sm:rounded-lg border border-[#14231b] sm:border-[#14231b]/20 bg-white sm:bg-[#DFDAD0]/50 text-xs font-bold text-[#14231b] hover:bg-[#DFDAD0] transition-all cursor-pointer min-h-[32px] sm:min-h-[38px]"
                 aria-label="Select currency"
               >
                 <span>{currency}</span>
                 <ChevronDown
-                  className={`w-3 h-3 text-[#14231b] transition-transform ${
+                  className={`w-3.5 h-3.5 text-[#14231b] transition-transform ${
                     currencyOpen ? "rotate-180" : ""
                   }`}
                 />
@@ -156,8 +156,8 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Notification Flyout matching user's mobile dashboard screenshot */}
-            <div className="flex items-center">
+            {/* Notification Flyout - Visible on Tablet/Desktop, hidden on mobile header matching reference */}
+            <div className="hidden sm:flex items-center">
               <NotificationFlyout triggerStyle="transparent" badgeCount={23} />
             </div>
 
@@ -184,15 +184,11 @@ export default function Navbar() {
               <UserIcon className="w-5 h-5 fill-current" />
             </Link>
 
-            {/* Mobile Menu Trigger matching screenshot with gold border when open */}
+            {/* Mobile Menu Trigger matching screenshot with clean icon */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`md:hidden p-1.5 sm:p-2 rounded-lg cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center transition-all ${
-                mobileMenuOpen
-                  ? "border-2 border-[#d4af37] bg-white text-[#14231b]"
-                  : "text-[#14231b] hover:text-[#2d6a4f]"
-              }`}
+              className="md:hidden p-1.5 sm:p-2 text-[#14231b] hover:text-[#2d6a4f] rounded-lg cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center transition-colors"
               aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav-menu"
@@ -202,10 +198,10 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Semi-Transparent Dark Backdrop */}
+        {/* Mobile Semi-Transparent Dark Backdrop below header */}
         {mobileMenuOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-150 pointer-events-auto md:hidden"
+            className="fixed top-16 sm:top-20 inset-x-0 bottom-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-150 pointer-events-auto md:hidden"
             onClick={() => setMobileMenuOpen(false)}
             aria-hidden="true"
           />
@@ -217,74 +213,51 @@ export default function Navbar() {
             id="mobile-nav-menu"
             role="region"
             aria-label="Mobile Navigation Menu"
-            className="fixed top-[62px] sm:top-[70px] right-0 bottom-0 z-50 pointer-events-auto md:hidden w-[56%] min-w-[210px] max-w-[270px] bg-white border-l border-gray-100 shadow-2xl flex flex-col justify-start overflow-y-auto animate-in slide-in-from-right duration-200"
+            className="fixed top-16 sm:top-20 right-0 bottom-0 z-50 pointer-events-auto md:hidden w-[54%] min-w-[210px] max-w-[270px] bg-white border-l border-gray-100 shadow-2xl flex flex-col justify-start overflow-y-auto animate-in slide-in-from-right duration-200"
           >
-            <div className="flex flex-col w-full divide-y divide-gray-100">
+            <div className="flex flex-col w-full divide-y divide-gray-100 border-b border-gray-100">
               <Link
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
               >
                 Home
               </Link>
               <Link
                 href="/products"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
               >
                 Products
               </Link>
               <Link
                 href="/about-product"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
               >
                 About Product
               </Link>
               <Link
                 href="/about"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
               >
                 About Us
               </Link>
               <Link
                 href="/blog"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
               >
                 Blog
               </Link>
               <Link
                 href={user ? "/account" : "/login"}
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
+                className="px-6 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 transition-colors"
               >
                 Account / መለያ
               </Link>
-
-              {user ? (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await signOut();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full text-left px-5 py-3.5 text-sm font-bold text-[#e63946] hover:bg-red-50 flex items-center gap-2 transition-colors cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4 text-[#e63946] shrink-0" />
-                  <span>Log Out / ውጣ</span>
-                </button>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-left px-5 py-3.5 text-sm font-bold text-[#14231b] hover:bg-gray-50 flex items-center gap-2 transition-colors"
-                >
-                  <UserIcon className="w-4 h-4 text-[#512c85] shrink-0" />
-                  <span>Sign In / መግቢያ</span>
-                </Link>
-              )}
             </div>
           </div>
         )}

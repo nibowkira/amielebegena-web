@@ -661,11 +661,11 @@ export default function AccountPage() {
           {activeTab === "dashboard" && (
             <>
               {/* 1. TOP WELCOME PROFILE CARD - Exact Match to Screenshot on Mobile, Restored Luxury on Desktop */}
-              <div className="relative bg-white rounded-3xl p-6 sm:p-7 border border-[#E8E1D6] shadow-sm overflow-hidden flex flex-col md:flex-row items-center md:items-center justify-between text-center md:text-left gap-4 sm:gap-6 w-full">
+              <div className="relative bg-white rounded-[32px] p-6 sm:p-7 border border-[#E8E1D6] shadow-sm overflow-hidden flex flex-col md:flex-row items-center md:items-center justify-between text-center md:text-left gap-4 sm:gap-6 w-full">
                 {/* Desktop Left Amber Edge Accent */}
                 <div className="hidden md:block absolute top-0 left-0 bottom-0 w-2.5 bg-[#d4af37] rounded-l-3xl" />
                 {/* Mobile Subtle Gold Gradient Top Border Line */}
-                <div className="md:hidden absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-[#d4af37]/30 via-[#d4af37] to-[#d4af37]/30" />
+                <div className="md:hidden absolute top-0 inset-x-6 sm:inset-x-10 h-1 bg-gradient-to-r from-[#d4af37]/40 via-[#d4af37] to-[#d4af37]/40 rounded-full" />
 
                 {/* Left: Avatar + User Info */}
                 <div className="flex flex-col md:flex-row items-center md:items-center gap-4 sm:gap-5 md:pl-2">
@@ -679,7 +679,7 @@ export default function AccountPage() {
                       className="hidden"
                       id="avatar-file-upload-input"
                     />
-                    <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full border-2 border-[#14231b] overflow-hidden shadow-md bg-[#0c2419] flex items-center justify-center">
+                    <div className="w-22 h-22 sm:w-24 sm:h-24 rounded-full border-2 border-[#14231b] overflow-hidden shadow-md bg-[#0c2419] flex items-center justify-center">
                       {avatarPreview ? (
                         <img
                           src={avatarPreview}
@@ -712,7 +712,7 @@ export default function AccountPage() {
                     )}
 
                     {/* Subtitle */}
-                    <p className="text-xs font-bold text-[#14231b] tracking-normal">
+                    <p className="text-xs font-bold text-[#14231b] tracking-normal mb-0.5">
                       Welcome back to Amiele Begena
                     </p>
 
@@ -727,38 +727,38 @@ export default function AccountPage() {
                     </div>
 
                     {/* Email & ID Row */}
-                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs text-[#5a625d] font-semibold">
+                    <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs text-[#5a625d] font-semibold pt-0.5">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-gray-500">✉️</span>
+                        <span>✉️</span>
                         <span>{displayEmail}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-gray-500">🪪</span>
+                        <span>🪪</span>
                         <span>ID: {displayId}</span>
                       </div>
                     </div>
 
                     {/* Member Since Row */}
-                    <div className="flex items-center justify-center md:justify-start gap-1.5 text-xs text-[#5a625d] font-semibold">
-                      <span className="text-gray-500">📅</span>
+                    <div className="flex items-center justify-center md:justify-start gap-1.5 text-xs text-[#5a625d] font-semibold pb-1">
+                      <span>📅</span>
                       <span>Member since {memberSince}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Right: Controls (Edit Profile + Profile Completion) */}
-                <div className="w-full md:w-auto md:shrink-0 flex flex-col items-center md:items-end gap-2.5 mt-2 md:mt-0">
-                  {/* Edit Profile Button */}
+                <div className="w-full md:w-auto md:shrink-0 flex flex-col items-center md:items-end gap-2 mt-2 md:mt-0">
+                  {/* Edit Profile Button (Fully rounded pill matching photo) */}
                   <button
                     onClick={() => setEditModalOpen(true)}
-                    className="w-full md:w-56 py-2.5 px-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 text-xs sm:text-sm font-bold text-[#14231b] shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
+                    className="w-full md:w-56 py-3 px-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-xs sm:text-sm font-bold text-[#14231b] shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
                   >
                     <Edit3 className="w-4 h-4 text-[#14231b]" />
                     <span>Edit Profile</span>
                   </button>
 
                   {/* Profile Completion Container */}
-                  <div className="w-full md:w-56 bg-[#f8f5ee] rounded-xl px-4 py-2.5 flex items-center justify-between text-xs border border-gray-200/60">
+                  <div className="w-full md:w-56 bg-[#f4f1ea] rounded-2xl px-5 py-3 flex items-center justify-between text-xs border border-gray-200/50 mt-1">
                     <span className="font-bold text-[#14231b] text-xs">Profile Completion</span>
                     <span className="font-extrabold text-[#14231b] text-xs">85%</span>
                   </div>
@@ -772,7 +772,7 @@ export default function AccountPage() {
                 {isAdmin ? (
                   <Link
                     href="/admin?tab=dashboard"
-                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
                   >
                     <ShieldCheck className="w-4 h-4 text-[#d4af37]" />
                     <span>Admin Portal</span>
@@ -780,7 +780,7 @@ export default function AccountPage() {
                 ) : (
                   <Link
                     href={isAffiliate ? "/affiliate/dashboard" : "/affiliate"}
-                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
                   >
                     <TrendingUp className="w-4 h-4 text-[#d4af37]" />
                     <span>{isAffiliate ? "Affiliate Portal" : "Affiliate"}</span>
@@ -790,7 +790,7 @@ export default function AccountPage() {
                 {/* 2. Browse Products */}
                 <Link
                   href="/products"
-                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
                 >
                   <Store className="w-4 h-4 text-[#d4af37]" />
                   <span>Browse Products</span>
@@ -799,7 +799,7 @@ export default function AccountPage() {
                 {/* 3. Track Order */}
                 <Link
                   href="/track-order"
-                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
                 >
                   <Truck className="w-4 h-4 text-[#d4af37]" />
                   <span>Track Order</span>
@@ -808,7 +808,7 @@ export default function AccountPage() {
                 {/* 4. Saved Wishlist */}
                 <button
                   onClick={() => switchTab("wishlist")}
-                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer"
+                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer"
                 >
                   <Heart className="w-4 h-4 text-[#d4af37] fill-[#d4af37]" />
                   <span>Saved Wishlist</span>
@@ -817,7 +817,7 @@ export default function AccountPage() {
                 {/* 5. Support (Full width on row 3) */}
                 <Link
                   href="/contact"
-                  className="col-span-2 py-3 px-4 rounded-full bg-white hover:bg-[#FAF8F5] border border-[#E7E3D8] shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                  className="col-span-2 py-3 px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
                 >
                   <Headphones className="w-4 h-4 text-[#d4af37]" />
                   <span>Support</span>
