@@ -648,7 +648,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#FAF8F5] text-[#14231b] py-3 sm:py-8 px-3 sm:px-6 lg:px-10">
+    <div className="w-full min-h-screen bg-[#FAF8F5] text-[#14231b] py-3 sm:py-8 px-4 sm:px-6 lg:px-10">
       <div className="max-w-[1340px] mx-auto flex flex-col md:flex-row gap-4 sm:gap-6 lg:gap-7 items-start">
         {/* ================= LEFT SIDEBAR (md: and above) ================= */}
         <aside className="hidden md:block md:w-64 xl:w-72 shrink-0 bg-white rounded-3xl p-4 sm:p-5 border border-[#14231b]/8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] space-y-1 sticky top-24 self-start max-h-[calc(100vh-110px)] overflow-y-auto no-scrollbar z-20">
@@ -1386,28 +1386,26 @@ export default function AccountPage() {
                 </>
               )}
 
-              {/* 3. FOUR METRIC STAT CARDS - Exact Match to Screenshot */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 w-full">
+              {/* 3. FOUR METRIC STAT CARDS - Compact 2-col on Mobile (<768px), Restored Luxury Desktop */}
+              <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4 w-full">
                 {/* Card 1: TOTAL ORDERS */}
                 <div
                   onClick={() => switchTab("orders")}
-                  className="bg-white rounded-3xl p-5 border border-[#d4af37]/80 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
+                  className="bg-white rounded-3xl p-3 md:p-5 border border-[#d4af37]/80 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between min-h-[110px] md:min-h-0 group cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d]">
+                  <div className="flex items-start justify-between gap-1.5 md:gap-2">
+                    <span className="text-[10px] min-[380px]:text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d] leading-tight pt-0.5">
                       TOTAL ORDERS
                     </span>
-                    <div className="w-11 h-11 rounded-2xl bg-[#0c2419] text-[#d4af37] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-                      <Package className="w-5 h-5" />
+                    <div className="w-8 h-8 md:w-11 md:h-11 rounded-xl md:rounded-2xl bg-[#0c2419] text-[#d4af37] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Package className="w-4 h-4 md:w-5 md:h-5" />
                     </div>
                   </div>
-                  <div>
-                    <span className="font-serif text-3xl font-extrabold text-[#14231b]">
+                  <div className="mt-2 md:mt-2.5 space-y-0.5 md:space-y-1">
+                    <span className="font-serif text-2xl md:text-3xl font-extrabold text-[#14231b] leading-tight block">
                       {ordersList.length}
                     </span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-[#8a918b] font-semibold">
+                    <span className="text-[11px] md:text-xs text-[#8a918b] font-semibold line-clamp-2 leading-snug block">
                       {ordersList.length > 0 && ordersList[0].created_at
                         ? `Last order ${new Date(ordersList[0].created_at).toLocaleDateString()}`
                         : "No orders placed yet"}
@@ -1418,23 +1416,21 @@ export default function AccountPage() {
                 {/* Card 2: ACTIVE ORDERS */}
                 <div
                   onClick={() => switchTab("orders")}
-                  className="bg-white rounded-3xl p-5 border border-[#E7E3D8] shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
+                  className="bg-white rounded-3xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between min-h-[110px] md:min-h-0 group cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d]">
+                  <div className="flex items-start justify-between gap-1.5 md:gap-2">
+                    <span className="text-[10px] min-[380px]:text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d] leading-tight pt-0.5">
                       ACTIVE ORDERS
                     </span>
-                    <div className="w-11 h-11 rounded-2xl bg-[#FAF0D7] text-[#d4af37] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-                      <Truck className="w-5 h-5" />
+                    <div className="w-8 h-8 md:w-11 md:h-11 rounded-xl md:rounded-2xl bg-[#FAF0D7] text-[#d4af37] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Truck className="w-4 h-4 md:w-5 md:h-5" />
                     </div>
                   </div>
-                  <div>
-                    <span className="font-serif text-3xl font-extrabold text-[#14231b]">
+                  <div className="mt-2 md:mt-2.5 space-y-0.5 md:space-y-1">
+                    <span className="font-serif text-2xl md:text-3xl font-extrabold text-[#14231b] leading-tight block">
                       {ordersList.filter((o) => o.status !== "Delivered" && o.status !== "Cancelled" && o.fulfillment_status !== "Delivered" && o.fulfillment_status !== "Cancelled").length}
                     </span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-[#8a918b] font-semibold">
+                    <span className="text-[11px] md:text-xs text-[#8a918b] font-semibold line-clamp-2 leading-snug block">
                       {ordersList.filter((o) => o.status !== "Delivered" && o.status !== "Cancelled" && o.fulfillment_status !== "Delivered" && o.fulfillment_status !== "Cancelled").length > 0
                         ? "Currently in craftsmanship / shipping"
                         : "No active orders"}
@@ -1445,23 +1441,21 @@ export default function AccountPage() {
                 {/* Card 3: SAVED ITEMS */}
                 <div
                   onClick={() => switchTab("wishlist")}
-                  className="bg-white rounded-3xl p-5 border border-[#E7E3D8] shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
+                  className="bg-white rounded-3xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between min-h-[110px] md:min-h-0 group cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d]">
+                  <div className="flex items-start justify-between gap-1.5 md:gap-2">
+                    <span className="text-[10px] min-[380px]:text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d] leading-tight pt-0.5">
                       SAVED ITEMS
                     </span>
-                    <div className="w-11 h-11 rounded-2xl bg-[#EEF2EF] text-[#14231b] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-                      <Heart className="w-5 h-5 fill-current text-[#14231b]" />
+                    <div className="w-8 h-8 md:w-11 md:h-11 rounded-xl md:rounded-2xl bg-[#EEF2EF] text-[#14231b] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Heart className="w-4 h-4 md:w-5 md:h-5 fill-current text-[#14231b]" />
                     </div>
                   </div>
-                  <div>
-                    <span className="font-serif text-3xl font-extrabold text-[#14231b]">
+                  <div className="mt-2 md:mt-2.5 space-y-0.5 md:space-y-1">
+                    <span className="font-serif text-2xl md:text-3xl font-extrabold text-[#14231b] leading-tight block">
                       0
                     </span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-[#8a918b] font-semibold">
+                    <span className="text-[11px] md:text-xs text-[#8a918b] font-semibold line-clamp-2 leading-snug block">
                       0 Wishlist products
                     </span>
                   </div>
@@ -1470,23 +1464,21 @@ export default function AccountPage() {
                 {/* Card 4: UNREAD ALERTS */}
                 <div
                   onClick={() => switchTab("notifications")}
-                  className="bg-white rounded-3xl p-5 border border-[#E7E3D8] shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-2.5 group cursor-pointer"
+                  className="bg-white rounded-3xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between min-h-[110px] md:min-h-0 group cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d]">
+                  <div className="flex items-start justify-between gap-1.5 md:gap-2">
+                    <span className="text-[10px] min-[380px]:text-[11px] font-extrabold tracking-wider uppercase text-[#6b726d] leading-tight pt-0.5">
                       UNREAD ALERTS
                     </span>
-                    <div className="w-11 h-11 rounded-2xl bg-[#EEF2EF] text-[#14231b] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-                      <Bell className="w-5 h-5 fill-current" />
+                    <div className="w-8 h-8 md:w-11 md:h-11 rounded-xl md:rounded-2xl bg-[#EEF2EF] text-[#14231b] flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                      <Bell className="w-4 h-4 md:w-5 md:h-5 fill-current" />
                     </div>
                   </div>
-                  <div>
-                    <span className="font-serif text-3xl font-extrabold text-[#14231b]">
+                  <div className="mt-2 md:mt-2.5 space-y-0.5 md:space-y-1">
+                    <span className="font-serif text-2xl md:text-3xl font-extrabold text-[#14231b] leading-tight block">
                       {unreadCount}
                     </span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-[#8a918b] font-semibold truncate block">
+                    <span className="text-[11px] md:text-xs text-[#8a918b] font-semibold line-clamp-2 leading-snug block">
                       {notifications.length > 0
                         ? `Latest: ${notifications[0].sender || notifications[0].actionText}`
                         : "No unread alerts"}

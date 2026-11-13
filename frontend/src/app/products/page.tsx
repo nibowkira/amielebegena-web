@@ -795,42 +795,6 @@ export default function ProductsPage() {
         onPlay={() => setIsPlayingAudio(true)}
       />
 
-      {/* Floating Audio Sample Player */}
-      {audioModalProduct && audioModalProduct.audioUrl && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md p-4 rounded-3xl bg-[#14231b] border border-[#2d4d3c] shadow-2xl text-white flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <button
-              onClick={() => handlePlayAudio(audioModalProduct)}
-              className="w-10 h-10 rounded-full bg-[#25D366] text-white flex items-center justify-center shrink-0 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
-            >
-              {isPlayingAudio ? (
-                <Pause className="w-5 h-5 fill-white" />
-              ) : (
-                <Play className="w-5 h-5 fill-white ml-0.5" />
-              )}
-            </button>
-            <div className="truncate">
-              <h4 className="font-bold text-sm text-white truncate">
-                {audioModalProduct.name}
-              </h4>
-              <p className="text-[11px] text-[#52b788]">Acoustic Pentatonic Sample</p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => {
-              if (audioRef.current) audioRef.current.pause();
-              setIsPlayingAudio(false);
-              setAudioModalProduct(null);
-            }}
-            className="p-1.5 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors cursor-pointer"
-            aria-label="Close audio player"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
       {/* Product Details Modal */}
       {detailsModalProduct && (
         <div
