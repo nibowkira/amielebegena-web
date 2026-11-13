@@ -53,6 +53,7 @@ import {
 } from "lucide-react";
 import NotificationFlyout from "../../components/NotificationFlyout";
 import ProductManagementModule from "../../components/admin/ProductManagementModule";
+import { supabase } from "../../lib/supabase";
 
 type AdminTab =
   | "dashboard"
@@ -199,29 +200,67 @@ export default function AdminDashboardPage() {
   ]);
 
   // ================= 2. APPLICATIONS QUEUE STATE =================
-  const [applications, setApplications] = useState<ApplicationItem[]>([
-    {
-      id: "app_dawit",
-      applicantName: "Dawit Partner Applicant",
-      contactInfo: "dawit@amiele.org",
-      country: "ET",
-      socialLinks: "https://instagram.com/dawit_begena",
-      whyJoin: "Cultural promoter & music educator",
-      submittedDate: "10/24/2026",
-      status: "pending",
-    },
-    {
-      id: "app_0954b62e",
-      applicantName: "hjkl",
-      contactInfo: "N/A",
-      country: "ET",
-      socialLinks: "",
-      whyJoin: "i want to",
-      submittedDate: "8/20/2026",
-      status: "pending",
-    },
-  ]);
+  const [applications, setApplications] = useState<ApplicationItem[]>([]);
   const [pendingApprovalApp, setPendingApprovalApp] = useState<ApplicationItem | null>(null);
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
+
+  const fetchApplications = async () => {
+    try {
+      setApplicationsLoading(true);
+
+      // 1. Query admin backend API
+      const res = await fetch("http://localhost:5000/api/admin/applications?status=all", {
+        headers: {
+          "x-admin-key": "amiele-dev-admin-override",
+        },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.applications) && json.applications.length > 0) {
+          const mapped: ApplicationItem[] = json.applications.map((row: any) => ({
+            id: row.user_id,
+            applicantName: row.applicantName || row.profile?.full_name || "Applicant",
+            contactInfo: row.contactInfo || [row.profile?.email, row.profile?.phone].filter(Boolean).join(" | ") || "N/A",
+            country: "ET",
+            socialLinks: row.social_link && row.social_link !== "None" ? row.social_link : "",
+            whyJoin: row.motivation || "No statement provided",
+            submittedDate: row.created_at
+              ? new Date(row.created_at).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })
+              : "N/A",
+            status: row.status as "pending" | "approved" | "rejected",
+          }));
+          setApplications(mapped);
+          return;
+        }
+      }
+
+      // 2. Direct Supabase query fallback
+      const { data, error } = await supabase
+        .from("affiliate_applications")
+        .select("*, profile:profiles!user_id(full_name, email, phone)")
+        .order("created_at", { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        const mapped: ApplicationItem[] = data.map((row: any) => ({
+          id: row.user_id,
+          applicantName: row.profile?.full_name || "Applicant",
+          contactInfo: [row.profile?.email, row.profile?.phone].filter(Boolean).join(" | ") || "N/A",
+          country: "ET",
+          socialLinks: row.social_link && row.social_link !== "None" ? row.social_link : "",
+          whyJoin: row.motivation || "No statement provided",
+          submittedDate: row.created_at
+            ? new Date(row.created_at).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })
+            : "N/A",
+          status: row.status as "pending" | "approved" | "rejected",
+        }));
+        setApplications(mapped);
+      }
+    } catch (err) {
+      console.error("Failed to load affiliate applications:", err);
+    } finally {
+      setApplicationsLoading(false);
+    }
+  };
 
   // ================= 3. PRODUCTION ORDER FULFILLMENT STATE =================
   const [orderFilter, setOrderFilter] = useState("All Orders");
@@ -445,11 +484,18 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Sync tab with URL query parameter & auto-fetch applications when tab active
+  useEffect(() => {
+    if (activeTab === "applications") {
+      fetchApplications();
+    }
+  }, [activeTab]);
+
   const handleRefresh = () => {
     setLoading(true);
-    setTimeout(() => {
+    fetchApplications().finally(() => {
       setLoading(false);
-    }, 400);
+    });
   };
 
   // User role updater
@@ -463,16 +509,73 @@ export default function AdminDashboardPage() {
   };
 
   // Application actions
-  const handleApproveApp = (appId: string) => {
-    setApplications((prev) =>
-      prev.map((a) => (a.id === appId ? { ...a, status: "approved" } : a))
-    );
+  const handleApproveApp = async (appId: string) => {
+    try {
+      // 1. Call admin backend review endpoint
+      const res = await fetch(`http://localhost:5000/api/admin/applications/${appId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-key": "amiele-dev-admin-override",
+        },
+        body: JSON.stringify({ status: "approved" }),
+      });
+
+      if (!res.ok) {
+        // Fallback: direct Supabase update
+        const nowIso = new Date().toISOString();
+        await supabase
+          .from("affiliate_applications")
+          .update({
+            status: "approved",
+            reviewed_at: nowIso,
+          })
+          .eq("user_id", appId);
+
+        await supabase
+          .from("profiles")
+          .update({ role: "affiliate" })
+          .eq("id", appId);
+      }
+    } catch (err) {
+      console.error("Error approving application:", err);
+    } finally {
+      setApplications((prev) =>
+        prev.map((a) => (a.id === appId ? { ...a, status: "approved" } : a))
+      );
+      fetchApplications();
+    }
   };
 
-  const handleRejectApp = (appId: string) => {
-    setApplications((prev) =>
-      prev.map((a) => (a.id === appId ? { ...a, status: "rejected" } : a))
-    );
+  const handleRejectApp = async (appId: string) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/applications/${appId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-key": "amiele-dev-admin-override",
+        },
+        body: JSON.stringify({ status: "rejected" }),
+      });
+
+      if (!res.ok) {
+        const nowIso = new Date().toISOString();
+        await supabase
+          .from("affiliate_applications")
+          .update({
+            status: "rejected",
+            reviewed_at: nowIso,
+          })
+          .eq("user_id", appId);
+      }
+    } catch (err) {
+      console.error("Error rejecting application:", err);
+    } finally {
+      setApplications((prev) =>
+        prev.map((a) => (a.id === appId ? { ...a, status: "rejected" } : a))
+      );
+      fetchApplications();
+    }
   };
 
   // Withdrawal actions
@@ -1774,11 +1877,21 @@ export default function AdminDashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E7E3D8]/60">
-                    {applications.map((app) => (
-                      <tr
-                        key={app.id}
-                        className="hover:bg-[#FAF8F5]/60 transition-colors"
-                      >
+                    {applications.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="p-8 text-center text-sm font-semibold text-[#667085]"
+                        >
+                          No affiliate applications found in queue.
+                        </td>
+                      </tr>
+                    ) : (
+                      applications.map((app) => (
+                        <tr
+                          key={app.id}
+                          className="hover:bg-[#FAF8F5]/60 transition-colors"
+                        >
                         <td className="p-4 font-mono font-bold text-[#1C1C1C]">
                           {app.id}
                         </td>
@@ -1841,7 +1954,8 @@ export default function AdminDashboardPage() {
                           )}
                         </td>
                       </tr>
-                    ))}
+                    ))
+                    )}
                   </tbody>
                 </table>
               </div>

@@ -3,6 +3,8 @@ import {
   getAnalytics,
   getAffiliateApplications,
   reviewAffiliateApplication,
+  syncAffiliateApplication,
+  getApplicationStatusForUser,
   getWithdrawalRequests,
   reviewWithdrawal,
 } from "../controllers/admin.controller.js";
@@ -15,6 +17,8 @@ router.use(requireAdmin);
 
 router.get("/analytics", getAnalytics);
 router.get("/applications", getAffiliateApplications);
+router.post("/applications", syncAffiliateApplication);
+router.get("/applications/:id", getApplicationStatusForUser);
 router.patch("/applications/:id", reviewAffiliateApplication);
 router.get("/withdrawals", getWithdrawalRequests);
 router.patch("/withdrawals/:id", reviewWithdrawal);

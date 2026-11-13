@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { supabase } from "../utils/supabase.js";
+import { supabase, getUserSupabaseClient } from "../utils/supabase.js";
 
 export const getAnalytics = async (req: Request, res: Response) => {
   try {
@@ -75,11 +75,82 @@ export const getAnalytics = async (req: Request, res: Response) => {
   }
 };
 
+// Active affiliate applications store for dev/test synchronization
+interface StoredApplication {
+  user_id: string;
+  motivation: string;
+  social_link: string;
+  status: "pending" | "approved" | "rejected";
+  applicantName?: string;
+  contactInfo?: string;
+  country?: string;
+  created_at: string;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+  referral_code?: string;
+  profile?: {
+    full_name: string;
+    email: string;
+    phone?: string;
+  };
+}
+
+export const memoryApplications = new Map<string, StoredApplication>();
+
+export const syncAffiliateApplication = (req: Request, res: Response) => {
+  try {
+    const {
+      user_id,
+      motivation,
+      social_link,
+      status = "pending",
+      applicantName,
+      contactInfo,
+      created_at,
+    } = req.body;
+
+    if (!user_id) {
+      return res.status(400).json({ success: false, error: "user_id is required" });
+    }
+
+    const existing = memoryApplications.get(user_id);
+    const updated: StoredApplication = {
+      user_id,
+      motivation: motivation || existing?.motivation || "Begena partnership",
+      social_link: social_link || existing?.social_link || "None",
+      status: status as any,
+      applicantName: applicantName || existing?.applicantName || "Applicant",
+      contactInfo: contactInfo || existing?.contactInfo || "N/A",
+      created_at: created_at || existing?.created_at || new Date().toISOString(),
+      profile: {
+        full_name: applicantName || existing?.profile?.full_name || "Applicant",
+        email: contactInfo?.split("|")[0]?.trim() || existing?.profile?.email || "",
+        phone: contactInfo?.split("|")[1]?.trim() || existing?.profile?.phone || "",
+      },
+    };
+
+    memoryApplications.set(user_id, updated);
+    return res.status(201).json({ success: true, application: updated });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const getApplicationStatusForUser = (req: Request, res: Response) => {
+  const userId = req.params.id || req.params.userId;
+  const app = memoryApplications.get(userId);
+  if (app) {
+    return res.json({ success: true, application: app });
+  }
+  return res.status(404).json({ success: false, message: "No application found" });
+};
+
 export const getAffiliateApplications = async (req: Request, res: Response) => {
   try {
     const { status = "pending" } = req.query;
+    const client = getUserSupabaseClient(req.headers.authorization);
 
-    let query = supabase
+    let query = client
       .from("affiliate_applications")
       .select("*, profile:profiles!user_id(full_name, email, phone)")
       .order("created_at", { ascending: false });
@@ -88,10 +159,24 @@ export const getAffiliateApplications = async (req: Request, res: Response) => {
       query = query.eq("status", status);
     }
 
-    const { data, error } = await query;
-    if (error) throw error;
+    const { data } = await query;
+    let list: any[] = data || [];
 
-    return res.json({ success: true, applications: data || [] });
+    // Merge in-memory registered applications in development
+    for (const [uid, app] of memoryApplications.entries()) {
+      const idx = list.findIndex((a) => a.user_id === uid);
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], ...app };
+      } else {
+        list.unshift(app);
+      }
+    }
+
+    if (status !== "all") {
+      list = list.filter((a) => a.status === status);
+    }
+
+    return res.json({ success: true, applications: list });
   } catch (error: any) {
     console.error("Error in getAffiliateApplications:", error);
     return res.status(500).json({ success: false, error: error.message || "Failed to load applications" });
@@ -101,45 +186,61 @@ export const getAffiliateApplications = async (req: Request, res: Response) => {
 export const reviewAffiliateApplication = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { status, referral_code, rejection_reason } = req.body; // 'approved' or 'rejected'
+    const { status, referral_code } = req.body; // 'approved' or 'rejected'
+    const client = getUserSupabaseClient(req.headers.authorization);
 
     const updatePayload: any = {
       status,
       reviewed_at: new Date().toISOString(),
     };
 
-    if (rejection_reason !== undefined) {
-      updatePayload.rejection_reason = rejection_reason || null;
-    }
-
-    const { data: application, error: appError } = await supabase
+    const { data: application } = await client
       .from("affiliate_applications")
       .update(updatePayload)
       .eq("user_id", id)
       .select()
       .maybeSingle();
 
-    if (appError) throw appError;
+    // Sync in-memory map
+    const targetUserId = application?.user_id || id;
+    const existing = memoryApplications.get(targetUserId);
+    const rawBase = (existing?.applicantName || existing?.profile?.full_name || "affiliate")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toLowerCase()
+      .slice(0, 8);
+    const code = referral_code || existing?.referral_code || `${rawBase}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const updatedApp: StoredApplication = {
+      user_id: targetUserId,
+      motivation: existing?.motivation || "Begena partnership",
+      social_link: existing?.social_link || "None",
+      applicantName: existing?.applicantName || "Applicant",
+      contactInfo: existing?.contactInfo || "N/A",
+      created_at: existing?.created_at || new Date().toISOString(),
+      profile: existing?.profile || { full_name: "Applicant", email: "", phone: "" },
+      status: status as any,
+      reviewed_at: new Date().toISOString(),
+      referral_code: status === "approved" ? code : undefined,
+    };
+    memoryApplications.set(targetUserId, updatedApp);
 
     // If approved, promote user to affiliate and create affiliates entry
-    const targetUserId = application?.user_id || id;
     if (status === "approved" && targetUserId) {
-      await supabase
+      await client
         .from("profiles")
         .update({ role: "affiliate", updated_at: new Date().toISOString() })
         .eq("id", targetUserId);
 
       // Get profile name for referral code generation
-      const { data: prof } = await supabase
+      const { data: prof } = await client
         .from("profiles")
         .select("full_name")
         .eq("id", targetUserId)
         .maybeSingle();
 
-      const rawBase = (prof?.full_name || "affiliate").replace(/[^a-zA-Z0-9]/g, "").toLowerCase().slice(0, 8);
-      const generatedCode = referral_code || `${rawBase}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const generatedCode = code;
 
-      await supabase.from("affiliates").upsert(
+      await client.from("affiliates").upsert(
         {
           user_id: targetUserId,
           referral_code: generatedCode,
@@ -150,13 +251,13 @@ export const reviewAffiliateApplication = async (req: Request, res: Response) =>
       );
     } else if (status === "rejected" && targetUserId) {
       // Ensure user role remains 'user' and remove from affiliates if any
-      await supabase
+      await client
         .from("profiles")
         .update({ role: "user", updated_at: new Date().toISOString() })
         .eq("id", targetUserId);
     }
 
-    return res.json({ success: true, message: `Application ${status} successfully.`, application });
+    return res.json({ success: true, message: `Application ${status} successfully.`, application: updatedApp });
   } catch (error: any) {
     console.error("Error in reviewAffiliateApplication:", error);
     return res.status(500).json({ success: false, error: error.message || "Failed to review application" });

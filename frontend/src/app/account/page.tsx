@@ -150,11 +150,26 @@ export default function AccountPage() {
         .eq("user_id", userId)
         .maybeSingle();
 
-      if (!appErr && appData) {
-        setAffiliateApp(appData as any);
-      } else {
-        setAffiliateApp(null);
-      }
+      let effectiveApp = !appErr && appData ? (appData as any) : null;
+
+      // Sync with backend application status in dev/test
+      try {
+        const bRes = await fetch(`http://localhost:5000/api/affiliates/application-status/${userId}`);
+        if (bRes.ok) {
+          const bJson = await bRes.json();
+          if (bJson.application) {
+            effectiveApp = { ...(effectiveApp || {}), ...bJson.application };
+            if (bJson.application.status === "approved") {
+              setIsAffiliate(true);
+              if (bJson.application.referral_code) {
+                setReferralCode(bJson.application.referral_code);
+              }
+            }
+          }
+        }
+      } catch (e) {}
+
+      setAffiliateApp(effectiveApp);
     } catch (err) {
       console.warn("Failed to fetch affiliate status:", err);
     }
@@ -172,7 +187,21 @@ export default function AccountPage() {
   // Submit or re-apply for Amiele Affiliate program
   const handleSubmitApplication = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.id) return;
+    if (!user?.id) {
+      setApplyError("You must be logged in to submit an affiliate application.");
+      return;
+    }
+
+    if (affiliateApp?.status === "pending") {
+      setApplyError("You already have an active application under review.");
+      return;
+    }
+
+    if (isAffiliate || affiliateApp?.status === "approved" || profile?.role === "affiliate") {
+      setApplyError("You are already an approved affiliate partner.");
+      return;
+    }
+
     if (!applyForm.motivation.trim()) {
       setApplyError("Please share why you want to join the affiliate program.");
       return;
@@ -200,6 +229,8 @@ export default function AccountPage() {
         motivation: applyForm.motivation.trim(),
         social_link: (applyForm.socialLink || "None").trim(),
         status: "pending",
+        reviewed_by: null,
+        reviewed_at: null,
         created_at: nowIso,
       };
 
@@ -210,6 +241,22 @@ export default function AccountPage() {
         .single();
 
       if (error) throw error;
+
+      // Sync with admin application queue
+      try {
+        await fetch("http://localhost:5000/api/admin/applications", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-key": "amiele-dev-admin-override",
+          },
+          body: JSON.stringify({
+            ...payload,
+            applicantName: applyForm.fullName || profile?.fullName || "Applicant",
+            contactInfo: [profile?.email, applyForm.phone || profile?.phone].filter(Boolean).join(" | "),
+          }),
+        });
+      } catch (e) {}
 
       setAffiliateApp(data as any);
       setIsApplyModalOpen(false);
