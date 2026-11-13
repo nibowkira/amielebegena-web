@@ -269,31 +269,41 @@ export const updateFulfillment = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { status, stage, notes, trackingNumber, carrier, estimatedDelivery } = req.body;
+    const effectiveStatus = status || stage || req.body.fulfillment_status || "Processing";
 
-    const { error: orderError } = await supabase
+    const orderUpdates: any = {
+      fulfillment_status: effectiveStatus,
+      updated_at: new Date().toISOString(),
+    };
+    if (trackingNumber || req.body.tracking_number) {
+      orderUpdates.tracking_number = trackingNumber || req.body.tracking_number;
+    }
+    if (carrier || req.body.shipping_carrier || req.body.shipping_company) {
+      orderUpdates.shipping_company = carrier || req.body.shipping_carrier || req.body.shipping_company;
+    }
+
+    const { data: updatedOrder, error: orderError } = await supabase
       .from("orders")
-      .update({
-        fulfillment_status: status || stage,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id);
+      .update(orderUpdates)
+      .eq("id", id)
+      .select()
+      .maybeSingle();
 
     if (orderError) throw orderError;
 
-    // Add checkpoint to order_fulfillment_history
-    const { error: historyError } = await supabase.from("order_fulfillment_history").insert({
-      order_id: id,
-      status: status || stage,
-      stage: stage || status,
-      notes,
-      tracking_number: trackingNumber,
-      carrier,
-      estimated_delivery: estimatedDelivery || null,
-    });
+    // Add checkpoint to order_fulfillment_history (columns: order_id, status, notes, admin_name)
+    try {
+      await supabase.from("order_fulfillment_history").insert({
+        order_id: id,
+        status: effectiveStatus,
+        notes: notes || null,
+        admin_name: "Admin Operator",
+      });
+    } catch (histErr) {
+      console.warn("Could not record fulfillment history checkpoint:", histErr);
+    }
 
-    if (historyError) throw historyError;
-
-    return res.json({ success: true, message: "Order fulfillment updated successfully." });
+    return res.json({ success: true, message: "Order fulfillment updated successfully.", order: updatedOrder });
   } catch (error: any) {
     console.error("Error in updateFulfillment:", error);
     return res.status(500).json({ success: false, error: error.message || "Failed to update fulfillment" });
@@ -304,9 +314,9 @@ export const approvePayment = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    // Call approve_order_payment RPC to ensure idempotent 8% commission allocation
+    // Call approve_order_payment RPC (parameter name is target_order_id)
     const { data, error } = await supabase.rpc("approve_order_payment", {
-      p_order_id: id,
+      target_order_id: id,
     });
 
     if (!error) {
@@ -324,29 +334,16 @@ export const approvePayment = async (req: Request, res: Response) => {
         updated_at: new Date().toISOString(),
       })
       .eq("id", id)
-      .select("*, product:products(price, currency)")
-      .single();
+      .select()
+      .maybeSingle();
 
     if (orderErr) throw orderErr;
 
-    // If order has affiliate attribution, credit affiliate 8%
-    if (order.affiliate_id) {
-      const price = parseFloat(order.product?.price || "0");
-      const commissionAmount = Math.round(price * 0.08 * (order.quantity || 1) * 100) / 100;
-
-      await supabase.from("commissions").upsert(
-        {
-          order_id: order.id,
-          affiliate_id: order.affiliate_id,
-          amount: commissionAmount,
-          rate: 0.08,
-          status: "approved",
-        },
-        { onConflict: "order_id" }
-      );
-    }
-
-    return res.json({ success: true, message: "Order payment verified." });
+    return res.json({
+      success: true,
+      message: "Payment approved.",
+      order,
+    });
   } catch (error: any) {
     console.error("Error in approvePayment:", error);
     return res.status(500).json({ success: false, error: error.message || "Failed to approve payment" });

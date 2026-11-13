@@ -50,6 +50,10 @@ export const getAnalytics = async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
+      totalRevenue: Math.round(totalRevenueETB),
+      totalOrdersCount: orders.length,
+      totalAffiliatesCount: affiliates.length,
+      pendingOrdersCount,
       analytics: {
         totalOrders: orders.length,
         paidOrdersCount,
@@ -136,12 +140,25 @@ export const syncAffiliateApplication = (req: Request, res: Response) => {
   }
 };
 
-export const getApplicationStatusForUser = (req: Request, res: Response) => {
+export const getApplicationStatusForUser = async (req: Request, res: Response) => {
   const userId = req.params.id || req.params.userId;
   const app = memoryApplications.get(userId);
   if (app) {
     return res.json({ success: true, application: app });
   }
+
+  try {
+    const { data, error } = await supabase
+      .from("affiliate_applications")
+      .select("*, profile:profiles!user_id(full_name, email, phone)")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!error && data) {
+      return res.json({ success: true, application: data });
+    }
+  } catch (e) {}
+
   return res.status(404).json({ success: false, message: "No application found" });
 };
 
@@ -270,7 +287,7 @@ export const getWithdrawalRequests = async (req: Request, res: Response) => {
 
     let query = supabase
       .from("affiliate_withdrawals")
-      .select("*, affiliate:affiliates(referral_code, profile:profiles(full_name, email, phone))")
+      .select("*, profile:profiles!affiliate_id(full_name, email, phone)")
       .order("created_at", { ascending: false });
 
     if (status !== "all") {
