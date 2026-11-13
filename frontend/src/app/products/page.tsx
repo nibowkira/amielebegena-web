@@ -468,33 +468,31 @@ export default function ProductsPage() {
           )}
         </div>
 
-        {/* Category Pills Row with Horizontal Scroll and Right Fade */}
-        <div className="relative w-full">
-          <div className="flex items-center gap-2 overflow-x-auto touch-pan-x overscroll-contain no-scrollbar pb-0.5">
-            {collections.map((col) => {
+        {/* Rigid Category Bar (Fixed 2-column layout, non-scrollable) */}
+        <div className="w-full">
+          <div className="grid grid-cols-2 gap-2 w-full">
+            {collections.map((col, idx) => {
               const isSelected = activeCategory === col.id;
+              const isLastOdd = idx === collections.length - 1 && collections.length % 2 !== 0;
               return (
                 <button
                   key={col.id}
                   onClick={() => setActiveCategory(col.id)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 min-h-[44px] ${
+                  className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer min-h-[44px] w-full text-center ${
+                    isLastOdd ? "col-span-2" : "col-span-1"
+                  } ${
                     isSelected
                       ? "bg-[#14231b] text-white shadow-xs"
                       : "bg-[#EDE8DF] text-[#14231b] hover:bg-[#EAE5DB]"
                   }`}
                   aria-pressed={isSelected}
                 >
-                  <span className="text-sm">{col.icon}</span>
-                  <span className="tracking-wide">{col.label}</span>
+                  <span className="text-sm shrink-0">{col.icon}</span>
+                  <span className="tracking-wide truncate">{col.label}</span>
                 </button>
               );
             })}
           </div>
-          {/* Right-edge fade gradient */}
-          <div
-            className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#FAF8F5] via-[#FAF8F5]/80 to-transparent"
-            aria-hidden="true"
-          />
         </div>
       </div>
 
