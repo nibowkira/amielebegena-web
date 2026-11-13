@@ -84,6 +84,24 @@ function notifySubscribers() {
   subscribers.forEach((callback) => callback([...globalNotifications]));
 }
 
+function getLocalReadIds(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem("amiele_read_notifications");
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveLocalReadIds(ids: string[] | Set<string>) {
+  if (typeof window === "undefined") return;
+  try {
+    const arr = Array.from(ids);
+    localStorage.setItem("amiele_read_notifications", JSON.stringify(arr));
+  } catch {}
+}
+
 async function fetchRealNotifications() {
   try {
     const { data, error } = await supabase
@@ -92,15 +110,51 @@ async function fetchRealNotifications() {
       .order("created_at", { ascending: false })
       .limit(50);
 
+    const readIds = getLocalReadIds();
+
     if (error) {
       console.warn("Supabase notifications query error:", error.message);
-      return;
     }
 
-    if (data) {
-      globalNotifications = data.map(mapRowToNotification);
-      notifySubscribers();
+    if (data && data.length > 0) {
+      globalNotifications = data.map((row) => {
+        const item = mapRowToNotification(row);
+        if (readIds.has(item.id)) {
+          item.isUnread = false;
+        }
+        return item;
+      });
+    } else {
+      // Elegant starter notifications for Amiele storefront
+      const defaultNotifs: NotificationItem[] = [
+        {
+          id: "welcome-notif-1",
+          sender: "ዓሚኤል በገና (Amiele)",
+          timeAgo: "15m ago",
+          actionText: "Welcome to Amiele Begena — explore our sacred handcrafted instruments.",
+          badgeType: "info",
+          isUnread: true,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: "welcome-notif-2",
+          sender: "Instrument Care Guide",
+          timeAgo: "2h ago",
+          actionText: "Learn how to preserve and tune your Begena and Kirar instruments with our master care guide.",
+          badgeType: "package",
+          isUnread: true,
+          createdAt: new Date(Date.now() - 7200000).toISOString(),
+        },
+      ];
+      globalNotifications = defaultNotifs.map((item) => {
+        if (readIds.has(item.id)) {
+          item.isUnread = false;
+        }
+        return item;
+      });
     }
+
+    notifySubscribers();
   } catch (err) {
     console.warn("Error fetching real notifications:", err);
   }
@@ -144,24 +198,38 @@ export function useNotificationStore() {
   const unreadCount = notifications.filter((n) => n.isUnread).length;
 
   const markAsRead = async (id: string) => {
+    const readIds = getLocalReadIds();
+    readIds.add(id);
+    saveLocalReadIds(readIds);
+
     globalNotifications = globalNotifications.map((n) =>
       n.id === id ? { ...n, isUnread: false } : n
     );
     notifySubscribers();
 
     try {
-      await supabase.from("notifications").update({ is_read: true }).eq("id", id);
+      await supabase.from("notifications").update({ is_read: true, read_at: new Date().toISOString() }).eq("id", id);
     } catch (e) {
       console.warn("Failed to mark notification read in Supabase:", e);
     }
   };
 
   const markAllAsRead = async () => {
+    const readIds = getLocalReadIds();
+    globalNotifications.forEach((n) => readIds.add(n.id));
+    saveLocalReadIds(readIds);
+
     globalNotifications = globalNotifications.map((n) => ({ ...n, isUnread: false }));
     notifySubscribers();
 
     try {
-      await supabase.from("notifications").update({ is_read: true }).eq("is_read", false);
+      const unreadIds = globalNotifications.map((n) => n.id);
+      if (unreadIds.length > 0) {
+        await supabase
+          .from("notifications")
+          .update({ is_read: true, read_at: new Date().toISOString() })
+          .in("id", unreadIds);
+      }
     } catch (e) {
       console.warn("Failed to mark all read in Supabase:", e);
     }
@@ -235,11 +303,15 @@ export default function NotificationFlyout({
   // Close when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
       if (
         containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        !containerRef.current.contains(target) &&
+        popoverRef.current &&
+        !popoverRef.current.contains(target)
       ) {
         setIsOpen(false);
+        onOpenChange?.(false);
       }
     }
     if (isOpen) {
@@ -248,7 +320,7 @@ export default function NotificationFlyout({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, onOpenChange]);
 
   // Handle invitation buttons
   const handleAction = (id: string, decision: "accepted" | "declined") => {
@@ -256,9 +328,16 @@ export default function NotificationFlyout({
     markAsRead(id);
   };
 
-  // Mark all as read
+  // Mark single as read
   const handleMarkAsRead = (id: string) => {
     markAsRead(id);
+  };
+
+  // Mark all as read
+  const handleMarkAllAsRead = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await markAllAsRead();
   };
 
   const filteredNotifications = notifications.filter((n) => {
@@ -558,7 +637,7 @@ export default function NotificationFlyout({
             </Link>
             <button
               type="button"
-              onClick={markAllAsRead}
+              onClick={handleMarkAllAsRead}
               className="text-[#b8860b] hover:text-[#8c6508] font-bold text-[10.5px] hover:underline cursor-pointer"
             >
               Mark all as read
