@@ -415,16 +415,16 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden min-h-screen bg-[#FAF8F5] text-[#14231b] pb-24">
+    <div className="w-full max-w-full min-h-screen bg-[#FAF8F5] text-[#14231b] pb-24">
       {/* Mobile Sticky Top Area (< md): Pinned at top-[72px] below the 72px fixed navbar */}
-      <div className="md:hidden sticky top-[72px] z-30 w-full bg-[#FAF8F5]/98 backdrop-blur-md border-b border-[#14231b]/10 shadow-[0_4px_16px_rgba(20,39,29,0.06)] px-4 py-3 space-y-2.5">
+      <div className="md:hidden sticky top-[72px] z-30 w-full bg-[#FAF8F5]/98 backdrop-blur-md border-b border-[#14231b]/10 shadow-[0_2px_10px_rgba(20,39,29,0.05)] px-4 py-2 space-y-1.5">
         {/* Title + Sort Row */}
         <div className="flex items-center justify-between gap-2 min-w-0">
           <div>
-            <span className="text-[10px] font-bold tracking-[0.2em] text-[#737874] uppercase block leading-none">
+            <span className="text-[9px] font-bold tracking-[0.2em] text-[#737874] uppercase block leading-none">
               ALL ITEMS
             </span>
-            <h1 className="text-xl min-[360px]:text-2xl font-black text-[#14231b] tracking-tight leading-tight">
+            <h1 className="text-base min-[360px]:text-lg font-black text-[#14231b] tracking-tight leading-tight">
               Our Products
             </h1>
           </div>
@@ -434,7 +434,7 @@ export default function ProductsPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none pl-3 pr-7 py-2 rounded-xl bg-[#EAE5DB] text-xs font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors min-h-[44px]"
+              className="appearance-none pl-2.5 pr-6 py-1.5 rounded-lg bg-[#EAE5DB] text-[11px] font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors min-h-[34px]"
               aria-label="Sort products"
             >
               <option value="newest">Newest</option>
@@ -442,7 +442,7 @@ export default function ProductsPage() {
               <option value="price-high">Price: High</option>
               <option value="name">Name (A-Z)</option>
             </select>
-            <ChevronDown className="w-3.5 h-3.5 text-[#14231b] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <ChevronDown className="w-3 h-3 text-[#14231b] absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 
@@ -454,13 +454,13 @@ export default function ProductsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search instruments, parts, books..."
-            className="w-full pl-8.5 pr-8 py-2 rounded-xl bg-[#EAE5DB]/70 focus:bg-white text-xs text-[#14231b] placeholder:text-[#737874] border border-[#14231b]/10 focus:border-[#d4af37] focus:outline-none transition-all min-h-[40px]"
+            className="w-full pl-8 pr-7 py-1.5 rounded-xl bg-[#EAE5DB]/70 focus:bg-white text-xs text-[#14231b] placeholder:text-[#737874] border border-[#14231b]/10 focus:border-[#d4af37] focus:outline-none transition-all h-[34px] min-h-[34px]"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#737874] hover:text-[#14231b] cursor-pointer"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#737874] hover:text-[#14231b] cursor-pointer"
               aria-label="Clear search"
             >
               <X className="w-3.5 h-3.5" />
@@ -468,19 +468,16 @@ export default function ProductsPage() {
           )}
         </div>
 
-        {/* Rigid Category Bar (Fixed 2-column layout, non-scrollable) */}
-        <div className="w-full">
-          <div className="grid grid-cols-2 gap-2 w-full">
-            {collections.map((col, idx) => {
+        {/* Category Pills Row with Horizontal Scroll and Right Fade */}
+        <div className="relative w-full">
+          <div className="flex items-center gap-1.5 overflow-x-auto touch-pan-x overscroll-contain no-scrollbar py-0.5 pr-8">
+            {collections.map((col) => {
               const isSelected = activeCategory === col.id;
-              const isLastOdd = idx === collections.length - 1 && collections.length % 2 !== 0;
               return (
                 <button
                   key={col.id}
                   onClick={() => setActiveCategory(col.id)}
-                  className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer min-h-[44px] w-full text-center ${
-                    isLastOdd ? "col-span-2" : "col-span-1"
-                  } ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 min-h-[44px] h-[44px] ${
                     isSelected
                       ? "bg-[#14231b] text-white shadow-xs"
                       : "bg-[#EDE8DF] text-[#14231b] hover:bg-[#EAE5DB]"
@@ -488,16 +485,21 @@ export default function ProductsPage() {
                   aria-pressed={isSelected}
                 >
                   <span className="text-sm shrink-0">{col.icon}</span>
-                  <span className="tracking-wide truncate">{col.label}</span>
+                  <span className="tracking-wide">{col.label}</span>
                 </button>
               );
             })}
           </div>
+          {/* Right-edge fade gradient */}
+          <div
+            className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#FAF8F5] via-[#FAF8F5]/80 to-transparent"
+            aria-hidden="true"
+          />
         </div>
       </div>
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 md:pt-0">
         {/* Desktop Header Section (hidden on mobile, visible md: and above) */}
         <div className="hidden md:block">
           <div className="text-center pt-8 pb-3">
@@ -646,7 +648,7 @@ export default function ProductsPage() {
               </div>
             ) : (
               /* Product Grid: 2 columns on phones (< 480px) and tablets (< 768px), 3 columns at lg (1024px+), 4 at xl */
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8 pb-32 sm:pb-24">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8 pb-32 sm:pb-24 scroll-mt-[215px] md:scroll-mt-0">
                 {sortedProducts.map((product) => {
                   const isWishlisted = !!wishlist[product.id];
                   const isAdded = !!addedItems[product.id];
@@ -655,7 +657,7 @@ export default function ProductsPage() {
                   return (
                     <div
                       key={product.id}
-                      className="h-full flex flex-col justify-between group rounded-[22px] sm:rounded-2xl bg-[#FAF8F4] text-[#172820] border border-[#E8E1D6] p-2.5 sm:p-4 shadow-[0_4px_20px_rgba(20,39,29,0.06)] hover:shadow-md transition-all duration-300"
+                      className="h-full flex flex-col justify-between group rounded-[22px] sm:rounded-2xl bg-[#FAF8F4] text-[#172820] border border-[#E8E1D6] p-2.5 sm:p-4 shadow-[0_4px_20px_rgba(20,39,29,0.06)] hover:shadow-md transition-all duration-300 scroll-mt-[215px] md:scroll-mt-0"
                     >
                       {/* Framed Image Container: 4:5 fixed aspect ratio, object-cover */}
                       <div className="relative aspect-[4/5] w-full rounded-t-xl sm:rounded-xl overflow-hidden shrink-0 bg-[#EDE8DF] shadow-2xs">
