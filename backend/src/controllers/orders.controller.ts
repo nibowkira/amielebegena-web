@@ -149,6 +149,9 @@ export const trackOrder = async (req: Request, res: Response) => {
     });
 
     if (!error && data) {
+      if (data.error || data.success === false) {
+        return res.status(404).json(data);
+      }
       return res.json(data);
     }
 

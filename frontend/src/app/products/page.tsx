@@ -7,7 +7,7 @@ import { initialProducts } from "../../data/products";
 import { Product } from "../../lib/types";
 import { fetchProducts } from "../../lib/api";
 import { useScrollLock } from "../../lib/useScrollLock";
-import { Heart, Play, Pause, ChevronDown, Check, Volume2, X, Info, ShoppingBag } from "lucide-react";
+import { Heart, Play, Pause, ChevronDown, Check, Volume2, X, Info, ShoppingBag, Search } from "lucide-react";
 
 interface CuratedProduct {
   id: string;
@@ -29,6 +29,7 @@ export default function ProductsPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeCategory, setActiveCategory] = useState<string>("በገና እና ክራር");
   const [sortBy, setSortBy] = useState<string>("newest");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
   const [audioModalProduct, setAudioModalProduct] = useState<CuratedProduct | null>(null);
@@ -316,8 +317,17 @@ export default function ProductsPage() {
     };
   });
 
-  // Filtering based on collection
+  // Filtering based on collection and search query
   const filteredProducts = displayProducts.filter((p) => {
+    const q = searchQuery.toLowerCase().trim();
+    if (q) {
+      return (
+        p.name.toLowerCase().includes(q) ||
+        (p.description && p.description.toLowerCase().includes(q)) ||
+        p.category.toLowerCase().includes(q) ||
+        p.slug.toLowerCase().includes(q)
+      );
+    }
     return p.category === activeCategory;
   });
 
@@ -424,7 +434,7 @@ export default function ProductsPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none pl-3 pr-7 py-2 rounded-xl bg-[#EAE5DB] text-xs font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors min-h-[38px]"
+              className="appearance-none pl-3 pr-7 py-2 rounded-xl bg-[#EAE5DB] text-xs font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors min-h-[44px]"
               aria-label="Sort products"
             >
               <option value="newest">Newest</option>
@@ -434,6 +444,28 @@ export default function ProductsPage() {
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-[#14231b] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
+        </div>
+
+        {/* Mobile Search Input Bar */}
+        <div className="relative w-full">
+          <Search className="w-3.5 h-3.5 text-[#737874] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search instruments, parts, books..."
+            className="w-full pl-8.5 pr-8 py-2 rounded-xl bg-[#EAE5DB]/70 focus:bg-white text-xs text-[#14231b] placeholder:text-[#737874] border border-[#14231b]/10 focus:border-[#d4af37] focus:outline-none transition-all min-h-[40px]"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#737874] hover:text-[#14231b] cursor-pointer"
+              aria-label="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         {/* Category Pills Row with Horizontal Scroll and Right Fade */}
@@ -481,21 +513,45 @@ export default function ProductsPage() {
               Our Products
             </h1>
 
-            <div className="flex items-center gap-2 text-xs text-[#5b615e]">
-              <span className="font-semibold text-neutral-700">Sort by:</span>
-              <div className="relative">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none pl-3 pr-8 py-2 rounded-xl bg-[#EAE5DB] text-xs font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors min-h-[38px]"
-                  aria-label="Sort products desktop"
-                >
-                  <option value="newest">Newest Arrivals</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="name">Name (A-Z)</option>
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 text-[#14231b] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <div className="flex items-center gap-3">
+              {/* Desktop Search Bar */}
+              <div className="relative w-64 lg:w-72">
+                <Search className="w-3.5 h-3.5 text-[#737874] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search catalog..."
+                  className="w-full pl-8.5 pr-8 py-2 rounded-xl bg-[#EAE5DB]/70 focus:bg-white text-xs text-[#14231b] placeholder:text-[#737874] border border-[#14231b]/10 focus:border-[#d4af37] focus:outline-none transition-all min-h-[38px]"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#737874] hover:text-[#14231b] cursor-pointer"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-[#5b615e]">
+                <span className="font-semibold text-neutral-700">Sort by:</span>
+                <div className="relative">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="appearance-none pl-3 pr-8 py-2 rounded-xl bg-[#EAE5DB] text-xs font-bold text-[#14231b] cursor-pointer focus:outline-none border border-black/5 hover:bg-[#ded9ce] transition-colors min-h-[38px]"
+                    aria-label="Sort products desktop"
+                  >
+                    <option value="newest">Newest Arrivals</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="name">Name (A-Z)</option>
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-[#14231b] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
               </div>
             </div>
           </div>
@@ -558,27 +614,41 @@ export default function ProductsPage() {
               /* Empty State */
               <div className="w-full py-16 px-4 text-center rounded-3xl bg-white/70 border border-[#14231b]/10 shadow-xs flex flex-col items-center justify-center space-y-4">
                 <div className="w-16 h-16 rounded-full bg-[#EDE8DF] flex items-center justify-center text-2xl">
-                  🎻
+                  {searchQuery ? "🔍" : "🎻"}
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-lg font-black text-[#14231b]">
-                    በዚህ ክፍል ውስጥ ምንም ምርት አልተገኘም
+                    {searchQuery
+                      ? `ምንም የተገኘ ውጤት የለም (${searchQuery})`
+                      : "በዚህ ክፍል ውስጥ ምንም ምርት አልተገኘም"}
                   </h3>
                   <p className="text-xs text-[#737874]">
-                    No instruments currently listed under &ldquo;{activeCategory}&rdquo;.
+                    {searchQuery
+                      ? `No products matched "${searchQuery}". Try a different keyword.`
+                      : `No instruments currently listed under "${activeCategory}".`}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveCategory(collections[0].id)}
-                  className="px-5 py-2.5 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white text-xs font-bold transition-all min-h-[44px] cursor-pointer"
-                >
-                  View All Instruments / ሁሉንም ይመልከቱ
-                </button>
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="px-5 py-2.5 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white text-xs font-bold transition-all min-h-[44px] cursor-pointer"
+                  >
+                    Clear Search / ፍለጋውን አጽዳ
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setActiveCategory(collections[0].id)}
+                    className="px-5 py-2.5 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white text-xs font-bold transition-all min-h-[44px] cursor-pointer"
+                  >
+                    View All Instruments / ሁሉንም ይመልከቱ
+                  </button>
+                )}
               </div>
             ) : (
-              /* Product Grid */
-              <div className="grid grid-cols-1 min-[481px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+              /* Product Grid: 2 columns on phones (< 480px) and tablets (< 768px), 3 columns at lg (1024px+), 4 at xl */
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8 pb-32 sm:pb-24">
                 {sortedProducts.map((product) => {
                   const isWishlisted = !!wishlist[product.id];
                   const isAdded = !!addedItems[product.id];
@@ -587,21 +657,13 @@ export default function ProductsPage() {
                   return (
                     <div
                       key={product.id}
-                      className="h-full flex flex-col justify-between group rounded-2xl bg-white/60 hover:bg-white p-3 sm:p-4 border border-[#14231b]/10 hover:border-[#D4AF37]/50 shadow-2xs hover:shadow-md transition-all duration-300"
+                      className="h-full flex flex-col justify-between group rounded-[22px] sm:rounded-2xl bg-[#FAF8F4] text-[#172820] border border-[#E8E1D6] p-2.5 sm:p-4 shadow-[0_4px_20px_rgba(20,39,29,0.06)] hover:shadow-md transition-all duration-300"
                     >
-                      {/* Framed Image Container */}
-                      <div className="relative aspect-[4/5] w-full rounded-xl bg-[#EDE8DF] p-3 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
-                        <svg
-                          className="absolute inset-0 w-full h-full text-[#DFDAD0]/50 pointer-events-none stroke-current"
-                          viewBox="0 0 100 100"
-                          preserveAspectRatio="none"
-                        >
-                          <line x1="100" y1="0" x2="0" y2="100" strokeWidth="0.75" />
-                        </svg>
-
+                      {/* Framed Image Container: 4:5 fixed aspect ratio, object-cover */}
+                      <div className="relative aspect-[4/5] w-full rounded-t-xl sm:rounded-xl overflow-hidden shrink-0 bg-[#EDE8DF] shadow-2xs">
                         <div
                           onClick={() => setDetailsModalProduct(product)}
-                          className="relative w-[88%] h-[88%] rounded-lg overflow-hidden shadow-xs cursor-pointer"
+                          className="w-full h-full cursor-pointer overflow-hidden"
                         >
                           <img
                             src={product.image}
@@ -610,10 +672,10 @@ export default function ProductsPage() {
                           />
                         </div>
 
-                        {/* Circular 44x44px Heart Wishlist Button */}
+                        {/* Circular 44x44px Heart Wishlist Button on image corner */}
                         <button
                           onClick={() => toggleWishlist(product.id)}
-                          className="absolute top-2.5 right-2.5 min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-white/90 backdrop-blur-xs shadow-xs border border-black/5 flex items-center justify-center text-[#737874] hover:text-[#e63946] active:scale-95 transition-all cursor-pointer z-10"
+                          className="absolute top-2 right-2 min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-white/90 backdrop-blur-xs shadow-xs border border-black/5 flex items-center justify-center text-[#737874] hover:text-[#e63946] active:scale-95 transition-all cursor-pointer z-10"
                           aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
                         >
                           <Heart
@@ -625,12 +687,12 @@ export default function ProductsPage() {
                       </div>
 
                       {/* Card Content & Details */}
-                      <div className="pt-3 flex-1 flex flex-col justify-between min-w-0">
+                      <div className="pt-2.5 sm:pt-3 flex-1 flex flex-col justify-between min-w-0">
                         <div>
-                          <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start justify-between gap-1.5 sm:gap-2">
                             <h2
                               onClick={() => setDetailsModalProduct(product)}
-                              className="font-extrabold text-[#14231b] text-sm sm:text-base leading-tight cursor-pointer hover:underline line-clamp-2"
+                              className="font-extrabold text-[#14231b] text-xs sm:text-base leading-tight cursor-pointer hover:underline line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] flex items-center"
                             >
                               {product.name}
                             </h2>
@@ -638,36 +700,36 @@ export default function ProductsPage() {
                             {product.audioUrl && (
                               <button
                                 onClick={() => handlePlayAudio(product)}
-                                className="min-w-[32px] min-h-[32px] w-8 h-8 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
+                                className="min-w-[28px] min-h-[28px] w-7 h-7 sm:min-w-[32px] sm:min-h-[32px] sm:w-8 sm:h-8 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
                                 title="Play Audio Sample"
                                 aria-label={`Play audio sample for ${product.name}`}
                               >
                                 {isThisPlaying ? (
-                                  <Pause className="w-3 h-3 fill-white text-white" />
+                                  <Pause className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white text-white" />
                                 ) : (
-                                  <Play className="w-3 h-3 fill-white text-white ml-0.5" />
+                                  <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white text-white ml-0.5" />
                                 )}
                               </button>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 pt-1">
+                          <div className="flex items-center gap-2 pt-0.5 sm:pt-1">
                             <button
                               onClick={() => setDetailsModalProduct(product)}
-                              className="text-[10px] font-bold text-[#737874] hover:text-[#14231b] tracking-wider uppercase transition-colors cursor-pointer"
+                              className="text-[9.5px] sm:text-[10px] font-bold text-[#737874] hover:text-[#14231b] tracking-wider uppercase transition-colors cursor-pointer min-h-[32px] sm:min-h-[44px] inline-flex items-center"
                             >
                               DETAILS
                             </button>
                           </div>
                         </div>
 
-                        {/* Bottom Row: Price & Actions Pinned at Bottom */}
-                        <div className="mt-auto pt-3 space-y-2 border-t border-[#14231b]/5">
-                          <div className="flex items-baseline justify-between">
-                            <span className="text-[10px] uppercase font-bold text-[#737874] tracking-wider">
+                        {/* Bottom Row: Price & Actions Pinned at Bottom with mt-auto */}
+                        <div className="mt-auto pt-2 sm:pt-3 space-y-1.5 sm:space-y-2 border-t border-[#14231b]/5">
+                          <div className="flex items-baseline justify-between min-w-0">
+                            <span className="text-[9px] sm:text-[10px] uppercase font-bold text-[#737874] tracking-wider shrink-0 mr-1">
                               Price
                             </span>
-                            <div className="font-extrabold text-sm sm:text-base text-[#14231b] leading-tight">
+                            <div className="font-extrabold text-xs sm:text-base text-[#14231b] leading-tight truncate whitespace-nowrap">
                               {currency === "ETB" ? (
                                 <span>ETB {product.priceETB.toLocaleString()}</span>
                               ) : (
@@ -680,19 +742,20 @@ export default function ProductsPage() {
                           <div className="flex flex-col gap-1.5 w-full">
                             <button
                               onClick={() => handleOrderWhatsApp(product)}
-                              className="w-full py-2.5 px-3 rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white text-xs font-bold leading-tight flex items-center justify-center gap-2 shadow-[0_3px_12px_rgba(37,211,102,0.28)] hover:shadow-[0_5px_18px_rgba(37,211,102,0.38)] active:scale-95 transition-all cursor-pointer min-h-[44px] border border-white/20"
+                              className="w-full py-2 sm:py-2.5 px-2 sm:px-3 rounded-full bg-gradient-to-r from-[#1eb656] via-[#22c55e] to-[#25D366] hover:from-[#18a84e] hover:via-[#1eb656] hover:to-[#22c35e] text-white text-[11px] sm:text-xs font-bold leading-tight flex items-center justify-center gap-1.5 sm:gap-2 shadow-[0_3px_12px_rgba(37,211,102,0.28)] hover:shadow-[0_5px_18px_rgba(37,211,102,0.38)] active:scale-95 transition-all cursor-pointer min-h-[44px] border border-white/20"
                             >
                               <span className="w-4 h-4 rounded-full bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
                                 <svg className="w-2.5 h-2.5 fill-white shrink-0" viewBox="0 0 24 24">
                                   <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.11 6.84C8.95 6.84 8.7 6.9 8.5 7.12C8.28 7.34 7.69 7.9 7.69 9.03C7.69 10.17 8.52 11.27 8.64 11.43C8.75 11.59 10.27 13.93 12.61 14.93C14.55 15.77 14.95 15.6 15.38 15.56C15.81 15.52 16.78 15 16.98 14.41C17.18 13.82 17.18 13.33 17.12 13.22C17.06 13.11 16.9 13.06 16.66 12.94C16.41 12.82 15.2 12.23 14.97 12.15C14.75 12.07 14.59 12.03 14.43 12.27C14.26 12.51 13.8 13.06 13.66 13.22C13.52 13.38 13.38 13.4 13.13 13.28C12.89 13.16 12.11 12.9 11.18 12.07C10.46 11.43 9.97 10.63 9.83 10.39C9.69 10.15 9.82 10.02 9.94 9.9C10.05 9.79 10.19 9.61 10.31 9.47C10.43 9.33 10.47 9.23 10.55 9.07C10.63 8.91 10.59 8.77 10.53 8.65C10.47 8.53 9.99 7.35 9.79 6.88C9.6 6.42 9.4 6.48 9.25 6.47C9.11 6.46 8.95 6.46 8.79 6.46L9.11 6.84Z" />
                                 </svg>
                               </span>
-                              <span>ORDER VIA WHATSAPP</span>
+                              <span className="sm:hidden">ORDER</span>
+                              <span className="hidden sm:inline">ORDER VIA WHATSAPP</span>
                             </button>
 
                             <button
                               onClick={() => handleAddToCart(product)}
-                              className={`w-full py-1.5 px-3 rounded-full font-bold text-[10px] sm:text-xs tracking-wider uppercase transition-all active:scale-95 flex items-center justify-center gap-1.5 border min-h-[36px] cursor-pointer ${
+                              className={`w-full py-1.5 px-2 sm:px-3 rounded-full font-bold text-[10px] sm:text-xs tracking-wider uppercase transition-all active:scale-95 flex items-center justify-center gap-1.5 border min-h-[44px] cursor-pointer ${
                                 isAdded
                                   ? "bg-[#2d6a4f] text-white border-[#2d6a4f]"
                                   : "bg-[#FAF8F5] hover:bg-[#EDE8DF] text-[#14231b] border-[#14231b]/20"
@@ -701,12 +764,14 @@ export default function ProductsPage() {
                               {isAdded ? (
                                 <>
                                   <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />
-                                  <span>ADDED TO CART</span>
+                                  <span className="sm:hidden">ADDED</span>
+                                  <span className="hidden sm:inline">ADDED TO CART</span>
                                 </>
                               ) : (
                                 <>
                                   <ShoppingBag className="w-3.5 h-3.5 text-[#14231b] shrink-0" />
-                                  <span>ADD TO CART</span>
+                                  <span className="sm:hidden">CART</span>
+                                  <span className="hidden sm:inline">ADD TO CART</span>
                                 </>
                               )}
                             </button>

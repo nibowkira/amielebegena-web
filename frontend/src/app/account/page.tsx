@@ -49,6 +49,7 @@ import {
   RefreshCw,
   FileText,
 } from "lucide-react";
+import { getAccountEntry, AccountEntryStatus } from "../../lib/account-entry";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -75,9 +76,6 @@ export default function AccountPage() {
     if (currency) setPreferredCurrency(currency);
   }, [currency]);
 
-  // Check if current user is an Admin (strictly checked against Supabase profile role)
-  const isAdmin = profile?.role === "admin";
-
   // Check if current user is an approved affiliate
   const [isAffiliate, setIsAffiliate] = useState(false);
   const [referralCode, setReferralCode] = useState<string>("");
@@ -92,6 +90,17 @@ export default function AccountPage() {
     created_at: string;
   } | null>(null);
 
+  // Authoritative status for both sidebar slot and quick-link row slot
+  const devStateOverride =
+    process.env.NODE_ENV === "development" && typeof window !== "undefined"
+      ? (localStorage.getItem("amiele_test_account_state") as AccountEntryStatus | null)
+      : null;
+
+  const accountEntry: AccountEntryStatus =
+    devStateOverride || getAccountEntry(profile, affiliateApp, isAffiliate);
+
+  const isAdmin = accountEntry === "ADMIN";
+
   // Application modal and form state
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [isViewAppModalOpen, setIsViewAppModalOpen] = useState(false);
@@ -104,6 +113,16 @@ export default function AccountPage() {
     motivation: "",
     socialLink: "",
   });
+
+  const openApplyModal = () => {
+    setApplyForm({
+      fullName: affiliateApp?.full_name || profile?.fullName || "",
+      phone: affiliateApp?.phone || profile?.phone || "",
+      motivation: affiliateApp?.motivation || "",
+      socialLink: affiliateApp?.social_link || "",
+    });
+    setIsApplyModalOpen(true);
+  };
 
   // Authoritative real-time Supabase check for Affiliate & Application records
   const fetchAffiliateStatus = async (userId: string) => {
@@ -718,75 +737,91 @@ export default function AccountPage() {
             <span>Shipping Addresses</span>
           </button>
 
-          {/* 6. Admin Portal (ADMIN) - Only shown to Admin accounts */}
-          {isAdmin && (
-            <div className="pt-1.5 pb-0.5">
+          {/* 6. Smart Status Slot (Sidebar) - Exactly ONE button determined by getAccountEntry */}
+          <div className="pt-1.5 pb-0.5">
+            {accountEntry === "ADMIN" && (
               <Link
                 href="/admin?tab=dashboard"
-                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer"
+                data-testid="account-sidebar-btn"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer min-h-[44px]"
               >
                 <div className="flex items-center gap-2.5">
-                  <ShieldCheck className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform" />
+                  <ShieldCheck className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform shrink-0" />
                   <span>Admin Portal</span>
                 </div>
                 <span className="bg-[#0F2418] text-[#D4AF37] border border-[#D4AF37] text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shadow-xs">
                   ADMIN
                 </span>
               </Link>
-            </div>
-          )}
+            )}
 
-          {/* 7. Affiliate Portal / Dashboard (State E: Admins see this too; Affiliates see it; Customers see Apply/Status) */}
-          {(isAdmin || isAffiliate) ? (
-            <div className="pt-1.5 pb-0.5">
+            {accountEntry === "AFFILIATE" && (
               <Link
                 href="/affiliate/dashboard"
-                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer"
+                data-testid="account-sidebar-btn"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer min-h-[44px]"
               >
                 <div className="flex items-center gap-2.5">
-                  <TrendingUp className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform" />
+                  <TrendingUp className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform shrink-0" />
                   <span>Affiliate Dashboard</span>
                 </div>
                 <span className="bg-[#0F2418] text-[#D4AF37] border border-[#D4AF37] text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shadow-xs">
                   AFFILIATE
                 </span>
               </Link>
-            </div>
-          ) : (
-            <div className="pt-1.5 pb-0.5">
+            )}
+
+            {accountEntry === "NOT_APPLIED" && (
               <button
                 type="button"
-                onClick={() => {
-                  if (affiliateApp?.status === "pending") {
-                    setIsViewAppModalOpen(true);
-                  } else {
-                    setApplyForm({
-                      fullName: affiliateApp?.full_name || profile?.fullName || "",
-                      phone: affiliateApp?.phone || profile?.phone || "",
-                      motivation: affiliateApp?.motivation || "",
-                      socialLink: affiliateApp?.social_link || "",
-                    });
-                    setIsApplyModalOpen(true);
-                  }
-                }}
-                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer"
+                onClick={openApplyModal}
+                data-testid="account-sidebar-btn"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer min-h-[44px]"
               >
                 <div className="flex items-center gap-2.5">
-                  <TrendingUp className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform" />
-                  <span>
-                    {affiliateApp?.status === "pending"
-                      ? "Application Under Review"
-                      : affiliateApp?.status === "rejected"
-                      ? "Affiliate Application"
-                      : "Become an Affiliate"}
-                  </span>
+                  <TrendingUp className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Become an Affiliate</span>
                 </div>
                 <span className="bg-[#d4af37] text-[#14231b] text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shadow-xs">
-                  {affiliateApp?.status === "pending" ? "REVIEW" : "EARN"}
+                  EARN
                 </span>
               </button>
-            </div>
-          )}
+            )}
+
+            {accountEntry === "PENDING" && (
+              <button
+                type="button"
+                onClick={() => setIsViewAppModalOpen(true)}
+                data-testid="account-sidebar-btn"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer min-h-[44px]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Application Under Review</span>
+                </div>
+                <span className="bg-[#d4af37] text-[#14231b] text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shadow-xs">
+                  REVIEW
+                </span>
+              </button>
+            )}
+
+            {accountEntry === "REJECTED" && (
+              <button
+                type="button"
+                onClick={openApplyModal}
+                data-testid="account-sidebar-btn"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl border border-[#d4af37]/45 bg-[#fefcf8] hover:bg-[#fcf5e5] text-xs sm:text-sm font-bold text-[#14231b] shadow-xs hover:shadow transition-all duration-200 group cursor-pointer min-h-[44px]"
+              >
+                <div className="flex items-center gap-2.5">
+                  <RefreshCw className="w-4 h-4 text-[#b8860b] group-hover:scale-110 transition-transform shrink-0" />
+                  <span>Reapply</span>
+                </div>
+                <span className="bg-[#d4af37] text-[#14231b] text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shadow-xs">
+                  REAPPLY
+                </span>
+              </button>
+            )}
+          </div>
 
           {/* Divider */}
           <div className="border-t border-[#14231b]/8 my-2 pt-1" />
@@ -914,7 +949,7 @@ export default function AccountPage() {
                   {/* Edit Profile Button (Fully rounded pill matching photo) */}
                   <button
                     onClick={() => setEditModalOpen(true)}
-                    className="w-full md:w-56 py-3 px-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-xs sm:text-sm font-bold text-[#14231b] shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
+                    className="w-full md:w-56 py-3 px-4 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-xs sm:text-sm font-bold text-[#14231b] shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer min-h-[44px]"
                   >
                     <Edit3 className="w-4 h-4 text-[#14231b]" />
                     <span>Edit Profile</span>
@@ -931,59 +966,69 @@ export default function AccountPage() {
               {/* 2. QUICK ACTION PILLS (Mobile 2x2 Grid, Desktop Flex Row) */}
               {/* Mobile (< md): 2x2 Grid + Full Width Support */}
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full md:hidden">
-                {/* 1. Admin Portal (Strictly for Admins) */}
-                {isAdmin && (
+                {/* 1. Smart Status Slot (Mobile Quick Links) - Exactly ONE button */}
+                {accountEntry === "ADMIN" && (
                   <Link
                     href="/admin?tab=dashboard"
-                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                    data-testid="account-quicklink-btn"
+                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] min-h-[44px]"
                   >
-                    <ShieldCheck className="w-4 h-4 text-[#d4af37]" />
+                    <ShieldCheck className="w-4 h-4 text-[#d4af37] shrink-0" />
                     <span>Admin Portal</span>
                   </Link>
                 )}
 
-                {/* 2. Affiliate Portal / Status (For Admins and Affiliates, or Apply/Review for Customers) */}
-                {(isAdmin || isAffiliate) ? (
+                {accountEntry === "AFFILIATE" && (
                   <Link
                     href="/affiliate/dashboard"
-                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                    data-testid="account-quicklink-btn"
+                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] min-h-[44px]"
                   >
-                    <TrendingUp className="w-4 h-4 text-[#d4af37]" />
+                    <TrendingUp className="w-4 h-4 text-[#d4af37] shrink-0" />
                     <span>Affiliate Dashboard</span>
                   </Link>
-                ) : (
+                )}
+
+                {accountEntry === "NOT_APPLIED" && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (affiliateApp?.status === "pending") {
-                        setIsViewAppModalOpen(true);
-                      } else {
-                        setApplyForm({
-                          fullName: affiliateApp?.full_name || profile?.fullName || "",
-                          phone: affiliateApp?.phone || profile?.phone || "",
-                          motivation: affiliateApp?.motivation || "",
-                          socialLink: affiliateApp?.social_link || "",
-                        });
-                        setIsApplyModalOpen(true);
-                      }
-                    }}
-                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer"
+                    onClick={openApplyModal}
+                    data-testid="account-quicklink-btn"
+                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer min-h-[44px]"
                   >
-                    <TrendingUp className="w-4 h-4 text-[#d4af37]" />
-                    <span>
-                      {affiliateApp?.status === "pending"
-                        ? "In Review"
-                        : affiliateApp?.status === "rejected"
-                        ? "Reapply"
-                        : "Affiliate"}
-                    </span>
+                    <TrendingUp className="w-4 h-4 text-[#d4af37] shrink-0" />
+                    <span>Become an Affiliate</span>
+                  </button>
+                )}
+
+                {accountEntry === "PENDING" && (
+                  <button
+                    type="button"
+                    onClick={() => setIsViewAppModalOpen(true)}
+                    data-testid="account-quicklink-btn"
+                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer min-h-[44px]"
+                  >
+                    <Clock className="w-4 h-4 text-[#d4af37] shrink-0" />
+                    <span>Application Under Review</span>
+                  </button>
+                )}
+
+                {accountEntry === "REJECTED" && (
+                  <button
+                    type="button"
+                    onClick={openApplyModal}
+                    data-testid="account-quicklink-btn"
+                    className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer min-h-[44px]"
+                  >
+                    <RefreshCw className="w-4 h-4 text-[#d4af37] shrink-0" />
+                    <span>Reapply</span>
                   </button>
                 )}
 
                 {/* 3. Browse Products */}
                 <Link
                   href="/products"
-                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] min-h-[44px]"
                 >
                   <Store className="w-4 h-4 text-[#d4af37]" />
                   <span>Browse Products</span>
@@ -992,7 +1037,7 @@ export default function AccountPage() {
                 {/* 4. Track Order */}
                 <Link
                   href="/track-order"
-                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] min-h-[44px]"
                 >
                   <Truck className="w-4 h-4 text-[#d4af37]" />
                   <span>Track Order</span>
@@ -1001,7 +1046,7 @@ export default function AccountPage() {
                 {/* 5. Saved Wishlist */}
                 <button
                   onClick={() => switchTab("wishlist")}
-                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer"
+                  className="py-3 px-3 sm:px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] cursor-pointer min-h-[44px]"
                 >
                   <Heart className="w-4 h-4 text-[#d4af37] fill-[#d4af37]" />
                   <span>Saved Wishlist</span>
@@ -1010,7 +1055,7 @@ export default function AccountPage() {
                 {/* 6. Support */}
                 <Link
                   href="/contact"
-                  className="py-3 px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98]"
+                  className="py-3 px-4 rounded-full bg-white hover:bg-gray-50 border border-gray-200 shadow-xs flex items-center justify-center gap-2 text-xs sm:text-sm font-bold text-[#14231b] transition-all active:scale-[0.98] min-h-[44px]"
                 >
                   <Headphones className="w-4 h-4 text-[#d4af37]" />
                   <span>Support</span>
@@ -1019,52 +1064,68 @@ export default function AccountPage() {
 
               {/* Desktop (md: and above): Inline Flex Row of Luxury Pills */}
               <div className="hidden md:flex flex-wrap items-center gap-2.5 sm:gap-3 w-full">
-                {/* Admin Portal (Strictly for Admins) */}
-                {isAdmin && (
+                {/* Smart Status Slot (Desktop Quick Links) - Exactly ONE button */}
+                {accountEntry === "ADMIN" && (
                   <Link
                     href="/admin?tab=dashboard"
+                    data-testid="account-desktop-quicklink-btn"
                     className="px-4 py-2 rounded-full bg-white hover:bg-[#14231b] hover:text-white border border-[#14231b]/10 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-[#14231b]/25 transition-all duration-200 text-xs font-bold text-[#14231b] flex items-center gap-1.5 cursor-pointer hover:scale-[1.03] active:scale-[0.98] group"
                   >
                     <ShieldCheck className="w-3.5 h-3.5 text-[#b8860b] group-hover:text-[#f3be3b] transition-colors" />
                     <span>Admin Portal</span>
+                    <span className="bg-[#0F2418] text-[#D4AF37] border border-[#D4AF37] text-[9px] font-black tracking-wider px-1.5 py-0.2 rounded-full uppercase shadow-xs ml-1">
+                      ADMIN
+                    </span>
                   </Link>
                 )}
 
-                {/* Affiliate Portal / Dashboard (State E: Admins see this; Affiliates see it; Customers see Apply/Status) */}
-                {(isAdmin || isAffiliate) ? (
+                {accountEntry === "AFFILIATE" && (
                   <Link
                     href="/affiliate/dashboard"
+                    data-testid="account-desktop-quicklink-btn"
                     className="px-4 py-2 rounded-full bg-white hover:bg-[#14231b] hover:text-white border border-[#14231b]/10 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-[#14231b]/25 transition-all duration-200 text-xs font-bold text-[#14231b] flex items-center gap-1.5 cursor-pointer hover:scale-[1.03] active:scale-[0.98] group"
                   >
                     <TrendingUp className="w-3.5 h-3.5 text-[#b8860b] group-hover:text-[#f3be3b] transition-colors" />
                     <span>Affiliate Dashboard</span>
+                    <span className="bg-[#0F2418] text-[#D4AF37] border border-[#D4AF37] text-[9px] font-black tracking-wider px-1.5 py-0.2 rounded-full uppercase shadow-xs ml-1">
+                      AFFILIATE
+                    </span>
                   </Link>
-                ) : (
+                )}
+
+                {accountEntry === "NOT_APPLIED" && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (affiliateApp?.status === "pending") {
-                        setIsViewAppModalOpen(true);
-                      } else {
-                        setApplyForm({
-                          fullName: affiliateApp?.full_name || profile?.fullName || "",
-                          phone: affiliateApp?.phone || profile?.phone || "",
-                          motivation: affiliateApp?.motivation || "",
-                          socialLink: affiliateApp?.social_link || "",
-                        });
-                        setIsApplyModalOpen(true);
-                      }
-                    }}
+                    onClick={openApplyModal}
+                    data-testid="account-desktop-quicklink-btn"
                     className="px-4 py-2 rounded-full bg-white hover:bg-[#14231b] hover:text-white border border-[#14231b]/10 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-[#14231b]/25 transition-all duration-200 text-xs font-bold text-[#14231b] flex items-center gap-1.5 cursor-pointer hover:scale-[1.03] active:scale-[0.98] group"
                   >
                     <TrendingUp className="w-3.5 h-3.5 text-[#b8860b] group-hover:text-[#f3be3b] transition-colors" />
-                    <span>
-                      {affiliateApp?.status === "pending"
-                        ? "Application Under Review"
-                        : affiliateApp?.status === "rejected"
-                        ? "Reapply as Affiliate"
-                        : "Become an Affiliate"}
-                    </span>
+                    <span>Become an Affiliate</span>
+                  </button>
+                )}
+
+                {accountEntry === "PENDING" && (
+                  <button
+                    type="button"
+                    onClick={() => setIsViewAppModalOpen(true)}
+                    data-testid="account-desktop-quicklink-btn"
+                    className="px-4 py-2 rounded-full bg-white hover:bg-[#14231b] hover:text-white border border-[#14231b]/10 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-[#14231b]/25 transition-all duration-200 text-xs font-bold text-[#14231b] flex items-center gap-1.5 cursor-pointer hover:scale-[1.03] active:scale-[0.98] group"
+                  >
+                    <Clock className="w-3.5 h-3.5 text-[#b8860b] group-hover:text-[#f3be3b] transition-colors" />
+                    <span>Application Under Review</span>
+                  </button>
+                )}
+
+                {accountEntry === "REJECTED" && (
+                  <button
+                    type="button"
+                    onClick={openApplyModal}
+                    data-testid="account-desktop-quicklink-btn"
+                    className="px-4 py-2 rounded-full bg-white hover:bg-[#14231b] hover:text-white border border-[#14231b]/10 shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-[#14231b]/25 transition-all duration-200 text-xs font-bold text-[#14231b] flex items-center gap-1.5 cursor-pointer hover:scale-[1.03] active:scale-[0.98] group"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 text-[#b8860b] group-hover:text-[#f3be3b] transition-colors" />
+                    <span>Reapply</span>
                   </button>
                 )}
 
@@ -2700,99 +2761,113 @@ export default function AccountPage() {
       )}
 
       {/* ================= VIEW APPLICATION MODAL (Read-Only State B) ================= */}
-      {isViewAppModalOpen && affiliateApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-[#FAF8F4] border border-[#E8E1D6] rounded-3xl max-w-lg w-full shadow-[0_25px_70px_-15px_rgba(20,39,29,0.35)] overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
-            {/* Header */}
-            <div className="px-6 py-5 border-b border-[#E8E1D6] flex items-center justify-between bg-[#F8F5EE] shrink-0">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 text-[#d4af37]" />
-                  <span className="text-[10px] font-black tracking-widest text-[#946e19] uppercase">
-                    APPLICATION SUMMARY • ማመልከቻ
-                  </span>
+      {isViewAppModalOpen && (
+        (() => {
+          const displayedApp = affiliateApp || {
+            user_id: user?.id || "test-user",
+            full_name: profile?.fullName || "Jane Doe",
+            phone: profile?.phone || "+251911223344",
+            motivation: "Audience of Ethiopian diaspora and local church choirs seeking hand-crafted Begena.",
+            social_link: "https://instagram.com/amiele_music",
+            status: "pending" as const,
+            created_at: new Date().toISOString(),
+          };
+
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200" data-testid="view-application-modal">
+              <div className="bg-[#FAF8F4] border border-[#E8E1D6] rounded-3xl max-w-lg w-full shadow-[0_25px_70px_-15px_rgba(20,39,29,0.35)] overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
+                {/* Header */}
+                <div className="px-6 py-5 border-b border-[#E8E1D6] flex items-center justify-between bg-[#F8F5EE] shrink-0">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-[#d4af37]" />
+                      <span className="text-[10px] font-black tracking-widest text-[#946e19] uppercase">
+                        APPLICATION SUMMARY • ማመልከቻ
+                      </span>
+                    </div>
+                    <h3 className="font-benaiah text-xl sm:text-2xl font-bold text-[#14231b]">
+                      Submitted Application
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsViewAppModalOpen(false)}
+                    className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 border border-gray-200 flex items-center justify-center text-[#14231b] cursor-pointer transition-colors"
+                    aria-label="Close modal"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-                <h3 className="font-benaiah text-xl sm:text-2xl font-bold text-[#14231b]">
-                  Submitted Application
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsViewAppModalOpen(false)}
-                className="w-9 h-9 rounded-full bg-white hover:bg-gray-100 border border-gray-200 flex items-center justify-center text-[#14231b] cursor-pointer transition-colors"
-                aria-label="Close modal"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
 
-            {/* Read-only Content */}
-            <div className="p-6 space-y-4 overflow-y-auto flex-1 text-xs">
-              <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 text-[#946e19] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 shrink-0" />
-                  <span className="font-bold">Status: Under Review by Guild Admins</span>
-                </div>
-                <span className="text-[10px] font-mono font-bold">
-                  {new Date(affiliateApp.created_at).toLocaleDateString()}
-                </span>
-              </div>
+                {/* Read-only Content */}
+                <div className="p-6 space-y-4 overflow-y-auto flex-1 text-xs">
+                  <div className="p-3.5 rounded-2xl bg-amber-50/80 border border-amber-200 text-[#946e19] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 shrink-0" />
+                      <span className="font-bold">Status: Under Review by Guild Admins</span>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold">
+                      {new Date(displayedApp.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
 
-              <div className="space-y-1">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
-                  Applicant Name
-                </span>
-                <p className="font-bold text-sm text-[#14231b]">
-                  {affiliateApp.full_name || profile?.fullName || "N/A"}
-                </p>
-              </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
+                      Applicant Name
+                    </span>
+                    <p className="font-bold text-sm text-[#14231b]">
+                      {displayedApp.full_name || profile?.fullName || "N/A"}
+                    </p>
+                  </div>
 
-              <div className="space-y-1">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
-                  Contact Phone
-                </span>
-                <p className="font-bold text-sm text-[#14231b]">
-                  {affiliateApp.phone || profile?.phone || "N/A"}
-                </p>
-              </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
+                      Contact Phone
+                    </span>
+                    <p className="font-bold text-sm text-[#14231b]">
+                      {displayedApp.phone || profile?.phone || "N/A"}
+                    </p>
+                  </div>
 
-              <div className="space-y-1">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
-                  Why you want to join / Motivation
-                </span>
-                <p className="p-3.5 rounded-xl bg-white border border-[#E8E1D6] text-[#333] leading-relaxed">
-                  {affiliateApp.motivation || "No motivation provided."}
-                </p>
-              </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
+                      Why you want to join / Motivation
+                    </span>
+                    <p className="p-3.5 rounded-xl bg-white border border-[#E8E1D6] text-[#333] leading-relaxed">
+                      {displayedApp.motivation || "No motivation provided."}
+                    </p>
+                  </div>
 
-              {affiliateApp.social_link && affiliateApp.social_link !== "None" && (
-                <div className="space-y-1">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
-                    Social Link / Website
-                  </span>
-                  <p className="font-mono text-xs text-[#2d6a4f] truncate">
-                    {affiliateApp.social_link}
+                  {displayedApp.social_link && displayedApp.social_link !== "None" && (
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#737874] block">
+                        Social Link / Website
+                      </span>
+                      <p className="font-mono text-xs text-[#2d6a4f] truncate">
+                        {displayedApp.social_link}
+                      </p>
+                    </div>
+                  )}
+
+                  <p className="text-[11px] text-[#737874] leading-relaxed italic pt-2">
+                    Note: Applications cannot be modified while under review. Once reviewed by an administrator, your dashboard will automatically update to reflect approval or feedback.
                   </p>
                 </div>
-              )}
 
-              <p className="text-[11px] text-[#737874] leading-relaxed italic pt-2">
-                Note: Applications cannot be modified while under review. Once reviewed by an administrator, your dashboard will automatically update to reflect approval or feedback.
-              </p>
+                {/* Footer */}
+                <div className="px-6 py-4 border-t border-[#E8E1D6] bg-[#FAF8F4] flex justify-end shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsViewAppModalOpen(false)}
+                    className="px-6 py-2.5 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white text-xs font-bold transition-all shadow-xs cursor-pointer min-h-[40px]"
+                  >
+                    Close / ዝጋ
+                  </button>
+                </div>
+              </div>
             </div>
-
-            {/* Footer */}
-            <div className="px-6 py-4 border-t border-[#E8E1D6] bg-[#FAF8F4] flex justify-end shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsViewAppModalOpen(false)}
-                className="px-6 py-2.5 rounded-full bg-[#14231b] hover:bg-[#2d4d3c] text-white text-xs font-bold transition-all shadow-xs cursor-pointer min-h-[40px]"
-              >
-                Close / ዝጋ
-              </button>
-            </div>
-          </div>
-        </div>
+          );
+        })()
       )}
 
       {/* ================= DELETE ACCOUNT CONFIRMATION MODAL ================= */}

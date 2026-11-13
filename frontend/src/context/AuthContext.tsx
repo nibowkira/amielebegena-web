@@ -80,6 +80,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: "admin@amiele.et",
             role: "admin",
           });
+        } else if (devRole === "affiliate") {
+          setUser({
+            id: "dev-affiliate-id",
+            email: "partner@amiele.et",
+            app_metadata: {},
+            user_metadata: { full_name: "Amiele Partner" },
+            aud: "authenticated",
+            created_at: new Date().toISOString(),
+          } as any);
+          setProfile({
+            id: "dev-affiliate-id",
+            fullName: "Amiele Partner",
+            email: "partner@amiele.et",
+            role: "affiliate",
+          });
+        } else if (devRole === "customer" || devRole === "user") {
+          setUser({
+            id: "dev-customer-id",
+            email: "jane@amiele.et",
+            app_metadata: {},
+            user_metadata: { full_name: "Jane Doe" },
+            aud: "authenticated",
+            created_at: new Date().toISOString(),
+          } as any);
+          setProfile({
+            id: "dev-customer-id",
+            fullName: "Jane Doe",
+            email: "jane@amiele.et",
+            role: "customer",
+          });
         } else {
           setUser(null);
           setProfile(null);

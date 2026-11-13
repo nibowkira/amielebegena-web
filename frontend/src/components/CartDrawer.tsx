@@ -316,29 +316,24 @@ export default function CartDrawer() {
 
             {/* Checkout Button */}
             <button
+              type="button"
               onClick={handleCheckout}
-              className="w-full transition-all cursor-pointer"
+              disabled={items.length === 0}
+              className={`w-full transition-all min-h-[48px] flex items-center justify-center font-bold ${
+                items.length === 0
+                  ? "bg-[#738077]/50 text-white/60 cursor-not-allowed"
+                  : "bg-[#1b3022] hover:bg-[#264a33] text-white cursor-pointer active:scale-[0.99] shadow-md"
+              }`}
               style={{
-                backgroundColor: items.length === 0 ? "#738077" : "#1b3022",
-                color: "#ffffff",
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: "0.95rem",
-                fontWeight: 600,
+                fontSize: "1.05rem",
                 padding: "14px 24px",
                 borderRadius: "999px",
                 border: "none",
                 letterSpacing: "0.02em",
               }}
-              onMouseEnter={(e) => {
-                if (items.length > 0) {
-                  (e.target as HTMLButtonElement).style.backgroundColor = "#264a33";
-                }
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLButtonElement).style.backgroundColor = items.length === 0 ? "#738077" : "#1b3022";
-              }}
             >
-              Checkout
+              {items.length === 0 ? "Cart is Empty" : `Proceed to Checkout (${items.reduce((sum, i) => sum + i.quantity, 0)})`}
             </button>
           </div>
         </div>

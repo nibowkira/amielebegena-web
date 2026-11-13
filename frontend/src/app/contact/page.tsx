@@ -10,6 +10,11 @@ export default function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
+    const text = `📬 New Atelier Inquiry from Amiele Begena Website:\n\nName: ${form.name}\nEmail: ${form.email || "Not provided"}\nSubject: ${form.subject || "Custom Instrument Commission"}\n\nMessage:\n${form.message}`;
+    const whatsappUrl = `https://wa.me/251969189470?text=${encodeURIComponent(text)}`;
+    if (typeof window !== "undefined") {
+      window.open(whatsappUrl, "_blank");
+    }
   };
 
   return (
@@ -46,7 +51,7 @@ export default function ContactPage() {
                     href="https://wa.me/251969189470"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#52b788] hover:underline"
+                    className="text-[#52b788] hover:underline min-h-[44px] inline-flex items-center"
                   >
                     +251 969 189 470
                   </a>
@@ -67,7 +72,7 @@ export default function ContactPage() {
                 href="https://wa.me/251969189470"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full py-3 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+                className="w-full py-3 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all min-h-[44px]"
               >
                 <MessageSquare className="w-4 h-4 fill-current" />
                 <span>Start Direct WhatsApp Chat</span>
@@ -80,12 +85,35 @@ export default function ContactPage() {
         <div className="md:col-span-7">
           <div className="rounded-3xl border border-[#d4af37]/25 bg-[#0f1a14]/90 p-6 sm:p-8 shadow-xl">
             {submitted ? (
-              <div className="text-center py-12 space-y-4">
+              <div className="text-center py-10 space-y-4">
                 <CheckCircle2 className="w-12 h-12 text-[#52b788] mx-auto" />
-                <h3 className="font-serif text-2xl font-bold text-[#fbf8f2]">Message Received</h3>
-                <p className="text-xs text-[#fbf8f2]/70 max-w-sm mx-auto">
-                  Our workshop concierge will respond within 24 hours via email or WhatsApp.
+                <h3 className="font-serif text-2xl font-bold text-[#fbf8f2]">Inquiry Dispatched to Concierge</h3>
+                <p className="text-xs text-[#fbf8f2]/80 max-w-sm mx-auto leading-relaxed">
+                  Your inquiry has been formatted. If your WhatsApp window didn't open automatically, tap below to chat directly with our Addis Ababa workshop:
                 </p>
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <a
+                    href={`https://wa.me/251969189470?text=${encodeURIComponent(
+                      `📬 Atelier Inquiry:\nName: ${form.name}\nEmail: ${form.email || "N/A"}\nSubject: ${form.subject || "Custom Commission"}\n\n${form.message}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white text-xs font-bold transition-all shadow-md min-h-[44px]"
+                  >
+                    <MessageSquare className="w-4 h-4 fill-current" />
+                    <span>Open WhatsApp Chat Now</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSubmitted(false);
+                      setForm({ name: "", email: "", subject: "", message: "" });
+                    }}
+                    className="inline-flex items-center justify-center px-4 py-3 rounded-xl border border-white/20 hover:border-white/40 text-white text-xs font-semibold transition-all min-h-[44px]"
+                  >
+                    Send Another Inquiry
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">

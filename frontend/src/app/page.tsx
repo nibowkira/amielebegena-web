@@ -7,6 +7,7 @@ import { useCurrency } from "../context/CurrencyContext";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { fetchProducts } from "../lib/api";
 import { Product } from "../lib/types";
+import { initialProducts } from "../data/products";
 
 export default function HomePage() {
   const { openDirectOrder } = useCart();
@@ -116,14 +117,16 @@ export default function HomePage() {
 
 
 
-  const [liveProducts, setLiveProducts] = useState<Product[]>([]);
+  const [liveProducts, setLiveProducts] = useState<Product[]>(initialProducts);
 
   useEffect(() => {
-    fetchProducts().then((data) => {
-      if (data && data.length > 0) {
-        setLiveProducts(data);
-      }
-    }).catch((e) => console.warn("Failed to fetch home products:", e));
+    fetchProducts()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setLiveProducts(data);
+        }
+      })
+      .catch((e) => console.warn("Failed to fetch home products:", e));
   }, []);
 
   // Products matching exact Screenshot 4, backed by real Supabase products
@@ -161,7 +164,9 @@ export default function HomePage() {
   ];
 
   const favoriteProducts = defaultFavoriteProducts.map((def) => {
-    const live = liveProducts.find((p) => p.slug === def.slug || p.id === def.id);
+    const live = liveProducts.find(
+      (p) => p.slug === def.slug || p.id === def.id || (def.slug === "mesenko-wood" && p.slug === "masinko")
+    );
     if (!live) return def;
     const cover = live.images?.find((img) => img.isCover)?.storagePath || live.images?.[0]?.storagePath || def.image;
     const priceNum = typeof live.price === "string" ? parseFloat(live.price) : Number(live.price);
@@ -179,7 +184,10 @@ export default function HomePage() {
   });
 
   const handleOrderWhatsApp = (product: (typeof favoriteProducts)[0]) => {
-    const targetProduct: Product = (product as any)._realProduct || {
+    const realDb = liveProducts.find(
+      (db) => db.slug === product.slug || db.id === product.id || (product.slug === "mesenko-wood" && db.slug === "masinko")
+    );
+    const targetProduct: Product = realDb || (product as any)._realProduct || {
       id: product.id,
       name: product.name,
       slug: product.slug,
@@ -291,14 +299,27 @@ export default function HomePage() {
           </p>
 
           {/* Call to Action Pill Button */}
-          <div className="reveal pt-4">
+          <div className="reveal pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <Link
               href="/products"
-              className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full border border-[#345c47] bg-[#152e22]/90 hover:bg-[#1f4232] text-white font-benaiah text-sm font-bold tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all group"
+              className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full border border-[#345c47] bg-[#152e22]/90 hover:bg-[#1f4232] text-white font-benaiah text-sm font-bold tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all group min-h-[46px]"
             >
-              <span>መሣሪያዎቹን ይመልከቱ</span>
+              <span>መሣሪያዎቹን ይመልከቱ / Explore Instruments</span>
               <span className="text-base group-hover:translate-x-1 transition-transform">→</span>
             </Link>
+          </div>
+
+          {/* Trust Guarantees Bar */}
+          <div className="reveal pt-1 flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] sm:text-xs text-[#a2b5ab] font-medium">
+            <span className="flex items-center gap-1.5">
+              <span className="text-[#d4af37]">✦</span> 100% Handcrafted in Addis Ababa
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-[#25D366]">✦</span> Worldwide Express Delivery
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-[#d4af37]">✦</span> Master Artisan Sound Guarantee
+            </span>
           </div>
         </div>
       </section>
@@ -434,7 +455,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={prevTestimonial}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 min-[380px]:w-10 min-[380px]:h-10 rounded-full bg-[#13271d]/90 backdrop-blur-md border border-[#d4af37]/60 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-90 transition-all cursor-pointer shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#13271d]/90 backdrop-blur-md border border-[#d4af37]/60 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-90 transition-all cursor-pointer shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
                 aria-label="Previous review"
               >
                 <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
@@ -444,7 +465,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={nextTestimonial}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 min-[380px]:w-10 min-[380px]:h-10 rounded-full bg-[#13271d]/90 backdrop-blur-md border border-[#d4af37]/60 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-90 transition-all cursor-pointer shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-[#13271d]/90 backdrop-blur-md border border-[#d4af37]/60 flex items-center justify-center text-[#d4af37] hover:border-[#d4af37] hover:bg-[#1a3325] active:scale-90 transition-all cursor-pointer shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
                 aria-label="Next review"
               >
                 <ChevronRight className="w-5 h-5 stroke-[2.5]" />
@@ -461,13 +482,17 @@ export default function HomePage() {
                     role="tab"
                     aria-selected={testimonialIndex === dotIdx}
                     onClick={() => setTestimonialIndex(dotIdx)}
-                    className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                      testimonialIndex === dotIdx
-                        ? "bg-[#d4af37] w-6"
-                        : "bg-[#213b2c] w-2 hover:bg-[#52b788]"
-                    }`}
+                    className="p-3.5 flex items-center justify-center cursor-pointer min-w-[44px] min-h-[44px]"
                     aria-label={`Go to review ${dotIdx + 1} of ${testimonials.length}`}
-                  />
+                  >
+                    <span
+                      className={`h-2 rounded-full transition-all duration-300 block ${
+                        testimonialIndex === dotIdx
+                          ? "bg-[#d4af37] w-6"
+                          : "bg-[#213b2c] w-2 hover:bg-[#52b788]"
+                      }`}
+                    />
+                  </button>
                 ))}
               </div>
             </div>

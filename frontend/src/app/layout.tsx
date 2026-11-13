@@ -18,7 +18,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Amiele Begena (ዓሚኤል በገና) — Sacred Ethiopian Musical Instruments",
+  metadataBase: new URL("https://amielebegena.vercel.app"),
+  title: {
+    default: "Amiele Begena (ዓሚኤል በገና) — Sacred Ethiopian Musical Instruments",
+    template: "%s | Amiele Begena",
+  },
   description:
     "Preserving ancient acoustic heritage and sacred Ethiopian craftsmanship. Handcrafted Begena (Harp of David), Kirar, Masinko, and liturgical accessories made in Addis Ababa with worldwide shipping.",
   keywords: [
@@ -35,6 +39,29 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "Amiele Begena (ዓሚኤል በገና) — Sacred Ethiopian Musical Instruments",
+    description:
+      "Handcrafted Begena, Kirar, Masinko, and liturgical accessories crafted in Addis Ababa with worldwide express shipping.",
+    url: "https://amielebegena.vercel.app",
+    siteName: "Amiele Begena",
+    images: [
+      {
+        url: "/image/photo_2025-10-01_07-26-53.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Amiele Begena Sacred Ethiopian Traditional Instruments",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Amiele Begena (ዓሚኤል በገና) — Sacred Ethiopian Musical Instruments",
+    description: "Handcrafted Begena, Kirar, and Masinko made in Addis Ababa with worldwide shipping.",
+    images: ["/image/photo_2025-10-01_07-26-53.jpg"],
   },
 };
 

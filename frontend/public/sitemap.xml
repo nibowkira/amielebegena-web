@@ -14,15 +14,33 @@
   </url>
   <url>
     <loc>https://amielebegena.vercel.app/about</loc>
-    <lastmod>2026-10-17</lastmod>
+    <lastmod>2026-11-13</lastmod>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://amielebegena.vercel.app/about-us</loc>
-    <lastmod>2026-10-17</lastmod>
-    <priority>0.8</priority>
-    <changefreq>monthly</changefreq>
+    <loc>https://amielebegena.vercel.app/about-product</loc>
+    <lastmod>2026-11-13</lastmod>
+    <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielebegena.vercel.app/about-product/begena</loc>
+    <lastmod>2026-11-13</lastmod>
+    <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielebegena.vercel.app/about-product/kirar</loc>
+    <lastmod>2026-11-13</lastmod>
+    <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://amielebegena.vercel.app/about-product/mesenko-wood</loc>
+    <lastmod>2026-11-13</lastmod>
+    <priority>0.9</priority>
+    <changefreq>weekly</changefreq>
   </url>
   <url>
     <loc>https://amielebegena.vercel.app/affiliate</loc>

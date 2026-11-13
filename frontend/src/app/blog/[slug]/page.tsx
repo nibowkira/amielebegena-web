@@ -37,7 +37,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         <div className="reveal">
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 text-xs font-bold text-[#14231b] hover:text-[#2d6a4f] transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#14231b] hover:text-[#2d6a4f] transition-colors min-h-[44px]"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>ወደ መጣጥፎች ተመለስ (Back to Knowledge Center)</span>

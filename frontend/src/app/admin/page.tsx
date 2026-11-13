@@ -606,7 +606,7 @@ export default function AdminDashboardPage() {
         <button
           type="button"
           onClick={() => setMobileAdminMenuOpen(!mobileAdminMenuOpen)}
-          className="p-2.5 rounded-xl border border-gray-300/80 bg-neutral-100/80 hover:bg-neutral-200 text-[#1C1C1C] active:scale-95 transition-all cursor-pointer min-h-[42px] min-w-[42px] flex items-center justify-center shadow-2xs"
+          className="p-2.5 rounded-xl border border-gray-300/80 bg-neutral-100/80 hover:bg-neutral-200 text-[#1C1C1C] active:scale-95 transition-all cursor-pointer min-h-[44px] min-w-[44px] w-11 h-11 flex items-center justify-center shadow-2xs"
           aria-label="Toggle Admin Navigation"
         >
           {mobileAdminMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5 stroke-[2.2]" />}
@@ -615,7 +615,7 @@ export default function AdminDashboardPage() {
         {/* Right: Notification icon replaces Admin Console title */}
         <NotificationFlyout
           triggerStyle="circle"
-          buttonClassName="w-10 h-10 rounded-full bg-white border border-gray-300/80 flex items-center justify-center text-[#14231b] shadow-2xs hover:bg-[#F4F1EA] transition-all cursor-pointer relative"
+          buttonClassName="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-white border border-gray-300/80 flex items-center justify-center text-[#14231b] shadow-2xs hover:bg-[#F4F1EA] transition-all cursor-pointer relative"
         />
       </div>
 
@@ -783,7 +783,7 @@ export default function AdminDashboardPage() {
 
           <Link
             href="/account"
-            className="flex items-center gap-2 text-gray-400 hover:text-white text-xs font-semibold px-2 py-2 transition-colors min-h-[38px]"
+            className="flex items-center gap-2 text-gray-400 hover:text-white text-xs font-semibold px-2 py-2 transition-colors min-h-[44px]"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Exit Console</span>

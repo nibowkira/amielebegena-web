@@ -100,7 +100,6 @@ function AffiliatePortalContent() {
   const [darkMode, setDarkMode] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showNotifications, setShowNotifications] = useState(false);
   const [copied, setCopied] = useState(false);
   const [couponCopied, setCouponCopied] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
@@ -735,7 +734,7 @@ ${baseUrl}/?ref=${activeCode}`,
       {/* ========================================================= */}
       {/* 2. MAIN CONTENT AREA (Ivory / Clean Off-White)            */}
       {/* ========================================================= */}
-      <main className="flex-1 min-w-0 px-3.5 py-4 sm:px-6 sm:py-6 lg:px-12 lg:py-9 space-y-6 sm:space-y-8 w-full bg-[#FAF8F4] transition-colors duration-200 dark:bg-[#080d0a]">
+      <main className="flex-1 min-w-0 px-4 py-4 sm:px-6 sm:py-6 lg:px-12 lg:py-9 space-y-6 sm:space-y-8 w-full bg-[#FAF8F4] transition-colors duration-200 dark:bg-[#080d0a]">
         {/* Top Header Bar */}
         <div className="flex items-center justify-between pb-2 gap-3">
           <div className="flex items-center gap-3">
@@ -814,53 +813,19 @@ ${baseUrl}/?ref=${activeCode}`,
               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
 
-            {/* Clean Bell Notification Button with amber badge matching screenshot */}
+            {/* Clean Bell Notification Flyout with amber badge matching design system */}
             <div className="relative">
-              <button
-                onClick={() => setShowNotifications(!showNotifications)}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs relative ${
+              <NotificationFlyout
+                triggerStyle="circle"
+                buttonClassName={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs relative ${
                   darkMode
                     ? "bg-[#112419] border border-white/10 text-gray-300 hover:bg-white/10"
                     : "bg-white border border-[#E8E2D8] text-[#14231b] hover:bg-[#f8f5ee]"
                 }`}
-                title="Notifications"
-                aria-label="View notifications"
-              >
-                <Bell className="w-4 h-4 text-[#14231b] dark:text-gray-300" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#f5c518] text-[#14231b] text-[10px] font-black flex items-center justify-center shadow-xs">
-                  1
-                </span>
-              </button>
+                iconClassName="w-4 h-4 text-[#14231b] dark:text-gray-300"
+              />
             </div>
           </div>
-        </div>
-
-        {/* Mobile Quick Tab Navigation (< md) */}
-        <div className="md:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1.5 touch-pan-x -mx-3.5 px-3.5 border-b border-gray-200/50 dark:border-white/5">
-          {[
-            { id: "dashboard", label: "Overview" },
-            { id: "referrals", label: "Referrals" },
-            { id: "commissions", label: "Commissions" },
-            { id: "payouts", label: "Payouts" },
-            { id: "marketing", label: "Marketing" },
-            { id: "campaigns", label: "Campaigns" },
-            { id: "achievements", label: "Badges" },
-            { id: "broadcasts", label: "Broadcasts" },
-            { id: "settings", label: "Settings" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                activeTab === tab.id
-                  ? "bg-[#14231b] text-[#f5c518] shadow-xs dark:bg-[#f5c518] dark:text-[#14231b]"
-                  : "bg-white/80 dark:bg-[#112419] text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-white/10 hover:bg-gray-100"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
         </div>
 
         {/* ========================================================= */}
@@ -882,23 +847,23 @@ ${baseUrl}/?ref=${activeCode}`,
               </h1>
             </div>
 
-            {/* 8 Stats Cards (2 rows of 4 cards) - Exact Match to Reference Image */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
+            {/* 8 Stats Cards (Mobile: Compact 2-column grid, Desktop: 2 rows of 4 cards) */}
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               {/* Card 1: Available Balance (Yellow Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-2xl p-3 sm:p-5 md:p-6 lg:p-7 shadow-[0_2px_8px_rgba(20,35,27,0.04)] border border-[#E8E1D6] dark:border-white/10 flex flex-col justify-between min-h-[96px] md:min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] last:odd:col-span-2 ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
                 {/* Yellow Left Accent Capsule */}
-                <span className="absolute left-0 top-6 bottom-6 w-[4.5px] rounded-r-full bg-[#f5c518]" />
+                <span className="absolute left-0 top-3 bottom-3 md:top-6 md:bottom-6 w-[3px] md:w-[4.5px] rounded-r-full bg-[#f5c518]" />
 
-                <span className="font-benaiah text-[11px] font-bold tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block">
+                <span className="font-benaiah text-[10px] min-[380px]:text-[11px] font-bold tracking-[0.08em] min-[380px]:tracking-[0.12em] md:tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block leading-tight truncate">
                   AVAILABLE BALANCE
                 </span>
-                <div className="mt-5 flex items-baseline">
+                <div className="mt-2 md:mt-5 flex items-baseline">
                   <span
-                    className={`font-benaiah text-2xl sm:text-[28px] lg:text-[30px] font-black tracking-tight ${
+                    className={`font-benaiah text-base min-[360px]:text-lg min-[390px]:text-xl md:text-[28px] lg:text-[30px] font-black tracking-tight truncate ${
                       darkMode ? "text-white" : "text-[#14231b]"
                     }`}
                   >
@@ -907,44 +872,21 @@ ${baseUrl}/?ref=${activeCode}`,
                 </div>
               </div>
 
-              {/* Card 2: Total Earnings (Dark Left Accent Capsule) */}
+              {/* Card 2: Pending Commissions (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-2xl p-3 sm:p-5 md:p-6 lg:p-7 shadow-[0_2px_8px_rgba(20,35,27,0.04)] border border-[#E8E1D6] dark:border-white/10 flex flex-col justify-between min-h-[96px] md:min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] last:odd:col-span-2 ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
                 {/* Dark Left Accent Capsule */}
-                <span className="absolute left-0 top-6 bottom-6 w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
+                <span className="absolute left-0 top-3 bottom-3 md:top-6 md:bottom-6 w-[3px] md:w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
 
-                <span className="font-benaiah text-[11px] font-bold tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block">
-                  TOTAL EARNINGS
-                </span>
-                <div className="mt-5 flex items-baseline">
-                  <span
-                    className={`font-benaiah text-2xl sm:text-[28px] lg:text-[30px] font-black tracking-tight ${
-                      darkMode ? "text-white" : "text-[#14231b]"
-                    }`}
-                  >
-                    ETB {stats.totalEarnings.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-
-              {/* Card 3: Pending Commissions (Dark Left Accent Capsule) */}
-              <div
-                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
-                  darkMode ? "bg-[#0d1a12]" : "bg-white"
-                }`}
-              >
-                {/* Dark Left Accent Capsule */}
-                <span className="absolute left-0 top-6 bottom-6 w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
-
-                <span className="font-benaiah text-[11px] font-bold tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block leading-tight max-w-[130px]">
+                <span className="font-benaiah text-[10px] min-[380px]:text-[11px] font-bold tracking-[0.08em] min-[380px]:tracking-[0.12em] md:tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block leading-tight truncate">
                   PENDING COMMISSIONS
                 </span>
-                <div className="mt-5 flex items-baseline">
+                <div className="mt-2 md:mt-5 flex items-baseline">
                   <span
-                    className={`font-benaiah text-2xl sm:text-[28px] lg:text-[30px] font-black tracking-tight ${
+                    className={`font-benaiah text-base min-[360px]:text-lg min-[390px]:text-xl md:text-[28px] lg:text-[30px] font-black tracking-tight truncate ${
                       darkMode ? "text-white" : "text-[#14231b]"
                     }`}
                   >
@@ -953,21 +895,44 @@ ${baseUrl}/?ref=${activeCode}`,
                 </div>
               </div>
 
-              {/* Card 4: Total Paid Out (Dark Left Accent Capsule) */}
+              {/* Card 3: Total Earnings (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-2xl p-3 sm:p-5 md:p-6 lg:p-7 shadow-[0_2px_8px_rgba(20,35,27,0.04)] border border-[#E8E1D6] dark:border-white/10 flex flex-col justify-between min-h-[96px] md:min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] last:odd:col-span-2 ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
                 {/* Dark Left Accent Capsule */}
-                <span className="absolute left-0 top-6 bottom-6 w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
+                <span className="absolute left-0 top-3 bottom-3 md:top-6 md:bottom-6 w-[3px] md:w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
 
-                <span className="font-benaiah text-[11px] font-bold tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block">
+                <span className="font-benaiah text-[10px] min-[380px]:text-[11px] font-bold tracking-[0.08em] min-[380px]:tracking-[0.12em] md:tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block leading-tight truncate">
+                  TOTAL EARNINGS
+                </span>
+                <div className="mt-2 md:mt-5 flex items-baseline">
+                  <span
+                    className={`font-benaiah text-base min-[360px]:text-lg min-[390px]:text-xl md:text-[28px] lg:text-[30px] font-black tracking-tight truncate ${
+                      darkMode ? "text-white" : "text-[#14231b]"
+                    }`}
+                  >
+                    ETB {stats.totalEarnings.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 4: Total Paid Out (Dark Left Accent Capsule) */}
+              <div
+                className={`relative rounded-2xl p-3 sm:p-5 md:p-6 lg:p-7 shadow-[0_2px_8px_rgba(20,35,27,0.04)] border border-[#E8E1D6] dark:border-white/10 flex flex-col justify-between min-h-[96px] md:min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] last:odd:col-span-2 ${
+                  darkMode ? "bg-[#0d1a12]" : "bg-white"
+                }`}
+              >
+                {/* Dark Left Accent Capsule */}
+                <span className="absolute left-0 top-3 bottom-3 md:top-6 md:bottom-6 w-[3px] md:w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
+
+                <span className="font-benaiah text-[10px] min-[380px]:text-[11px] font-bold tracking-[0.08em] min-[380px]:tracking-[0.12em] md:tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block leading-tight truncate">
                   TOTAL PAID OUT
                 </span>
-                <div className="mt-5 flex items-baseline">
+                <div className="mt-2 md:mt-5 flex items-baseline">
                   <span
-                    className={`font-benaiah text-2xl sm:text-[28px] lg:text-[30px] font-black tracking-tight ${
+                    className={`font-benaiah text-base min-[360px]:text-lg min-[390px]:text-xl md:text-[28px] lg:text-[30px] font-black tracking-tight truncate ${
                       darkMode ? "text-white" : "text-[#14231b]"
                     }`}
                   >
@@ -978,19 +943,19 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 5: Total Clicks (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-2xl p-3 sm:p-5 md:p-6 lg:p-7 shadow-[0_2px_8px_rgba(20,35,27,0.04)] border border-[#E8E1D6] dark:border-white/10 flex flex-col justify-between min-h-[96px] md:min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] last:odd:col-span-2 ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
                 {/* Dark Left Accent Capsule */}
-                <span className="absolute left-0 top-6 bottom-6 w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
+                <span className="absolute left-0 top-6 bottom-6 w-[3px] md:w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
 
-                <span className="font-benaiah text-[11px] font-bold tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block">
+                <span className="font-benaiah text-[10px] min-[380px]:text-[11px] font-bold tracking-[0.08em] min-[380px]:tracking-[0.12em] md:tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block leading-tight truncate">
                   TOTAL CLICKS
                 </span>
-                <div className="mt-5 flex items-baseline">
+                <div className="mt-2 md:mt-5 flex items-baseline">
                   <span
-                    className={`font-benaiah text-2xl sm:text-[28px] lg:text-[30px] font-black tracking-tight ${
+                    className={`font-benaiah text-base min-[360px]:text-lg min-[390px]:text-xl md:text-[28px] lg:text-[30px] font-black tracking-tight truncate ${
                       darkMode ? "text-white" : "text-[#14231b]"
                     }`}
                   >
@@ -1001,19 +966,19 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 6: Total Referrals (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-2xl p-3 sm:p-5 md:p-6 lg:p-7 shadow-[0_2px_8px_rgba(20,35,27,0.04)] border border-[#E8E1D6] dark:border-white/10 flex flex-col justify-between min-h-[96px] md:min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] last:odd:col-span-2 ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
                 {/* Dark Left Accent Capsule */}
-                <span className="absolute left-0 top-6 bottom-6 w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
+                <span className="absolute left-0 top-3 bottom-3 md:top-6 md:bottom-6 w-[3px] md:w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
 
-                <span className="font-benaiah text-[11px] font-bold tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block">
+                <span className="font-benaiah text-[10px] min-[380px]:text-[11px] font-bold tracking-[0.08em] min-[380px]:tracking-[0.12em] md:tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block leading-tight truncate">
                   TOTAL REFERRALS
                 </span>
-                <div className="mt-5 flex items-baseline">
+                <div className="mt-2 md:mt-5 flex items-baseline">
                   <span
-                    className={`font-benaiah text-2xl sm:text-[28px] lg:text-[30px] font-black tracking-tight ${
+                    className={`font-benaiah text-base min-[360px]:text-lg min-[390px]:text-xl md:text-[28px] lg:text-[30px] font-black tracking-tight truncate ${
                       darkMode ? "text-white" : "text-[#14231b]"
                     }`}
                   >
@@ -1024,19 +989,19 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 7: Paid Orders (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-2xl p-3 sm:p-5 md:p-6 lg:p-7 shadow-[0_2px_8px_rgba(20,35,27,0.04)] border border-[#E8E1D6] dark:border-white/10 flex flex-col justify-between min-h-[96px] md:min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] last:odd:col-span-2 ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
                 {/* Dark Left Accent Capsule */}
-                <span className="absolute left-0 top-6 bottom-6 w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
+                <span className="absolute left-0 top-3 bottom-3 md:top-6 md:bottom-6 w-[3px] md:w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
 
-                <span className="font-benaiah text-[11px] font-bold tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block">
+                <span className="font-benaiah text-[10px] min-[380px]:text-[11px] font-bold tracking-[0.08em] min-[380px]:tracking-[0.12em] md:tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block leading-tight truncate">
                   PAID ORDERS
                 </span>
-                <div className="mt-5 flex items-baseline">
+                <div className="mt-2 md:mt-5 flex items-baseline">
                   <span
-                    className={`font-benaiah text-2xl sm:text-[28px] lg:text-[30px] font-black tracking-tight ${
+                    className={`font-benaiah text-base min-[360px]:text-lg min-[390px]:text-xl md:text-[28px] lg:text-[30px] font-black tracking-tight truncate ${
                       darkMode ? "text-white" : "text-[#14231b]"
                     }`}
                   >
@@ -1047,19 +1012,19 @@ ${baseUrl}/?ref=${activeCode}`,
 
               {/* Card 8: Conversion Rate (Dark Left Accent Capsule) */}
               <div
-                className={`relative rounded-[22px] p-4 sm:p-7 shadow-[0_2px_12px_rgba(20,35,27,0.04)] border border-[#E8E2D8] dark:border-white/10 flex flex-col justify-between min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] ${
+                className={`relative rounded-2xl p-3 sm:p-5 md:p-6 lg:p-7 shadow-[0_2px_8px_rgba(20,35,27,0.04)] border border-[#E8E1D6] dark:border-white/10 flex flex-col justify-between min-h-[96px] md:min-h-[145px] transition-all hover:shadow-[0_6px_24px_rgba(20,35,27,0.08)] last:odd:col-span-2 ${
                   darkMode ? "bg-[#0d1a12]" : "bg-white"
                 }`}
               >
                 {/* Dark Left Accent Capsule */}
-                <span className="absolute left-0 top-6 bottom-6 w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
+                <span className="absolute left-0 top-3 bottom-3 md:top-6 md:bottom-6 w-[3px] md:w-[4.5px] rounded-r-full bg-[#14231b] dark:bg-white/30" />
 
-                <span className="font-benaiah text-[11px] font-bold tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block">
+                <span className="font-benaiah text-[10px] min-[380px]:text-[11px] font-bold tracking-[0.08em] min-[380px]:tracking-[0.12em] md:tracking-[0.14em] text-[#6b7280] dark:text-[#8ea396] uppercase block leading-tight truncate">
                   CONVERSION RATE
                 </span>
-                <div className="mt-5 flex items-baseline">
+                <div className="mt-2 md:mt-5 flex items-baseline">
                   <span
-                    className={`font-benaiah text-2xl sm:text-[28px] lg:text-[30px] font-black tracking-tight ${
+                    className={`font-benaiah text-base min-[360px]:text-lg min-[390px]:text-xl md:text-[28px] lg:text-[30px] font-black tracking-tight truncate ${
                       darkMode ? "text-white" : "text-[#14231b]"
                     }`}
                   >
@@ -1585,15 +1550,12 @@ ${baseUrl}/?ref=${activeCode}`,
                   Overview
                 </div>
 
-                {/* Notification Bell Button */}
-                <button
-                  onClick={() => setShowNotifications(true)}
-                  className="relative w-12 h-12 rounded-full bg-white/90 dark:bg-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100 dark:border-white/10 flex items-center justify-center text-gray-600 dark:text-gray-200 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                  title="Notifications"
-                >
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-[#f5c518]" />
-                </button>
+                {/* Notification Bell Flyout */}
+                <NotificationFlyout
+                  triggerStyle="circle"
+                  buttonClassName="relative w-12 h-12 rounded-full bg-white/90 dark:bg-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-gray-100 dark:border-white/10 flex items-center justify-center text-gray-600 dark:text-gray-200 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  iconClassName="w-5 h-5"
+                />
               </div>
 
               {/* Inner Elevated Balance Card */}

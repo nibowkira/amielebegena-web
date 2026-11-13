@@ -337,7 +337,7 @@ export default function WhatsAppModal() {
             </button>
           </div>
         </div>
-      ) : items.length === 0 ? (
+      ) : activeItems.length === 0 ? (
         /* ========================================================= */
         /* EMPTY CART STATE                                          */
         /* ========================================================= */

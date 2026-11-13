@@ -67,7 +67,7 @@ export default function BlogIndexPage() {
 
                     <Link
                       href={`/blog/${post.slug}`}
-                      className="font-benaiah font-bold text-xs text-[#14231b] group-hover:text-[#2d6a4f] inline-flex items-center gap-1 transition-colors"
+                      className="font-benaiah font-bold text-xs text-[#14231b] group-hover:text-[#2d6a4f] inline-flex items-center gap-1 transition-colors min-h-[44px]"
                     >
                       <span>Read Article</span>
                       <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />

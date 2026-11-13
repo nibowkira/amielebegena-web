@@ -80,7 +80,7 @@ export default function AboutPage() {
               <div className="space-y-2 pt-2">
                 <a
                   href="tel:0964261817"
-                  className="flex items-center gap-3 text-sm font-bold text-[#14231b] hover:text-[#2d6a4f] transition-colors"
+                  className="flex items-center gap-3 text-sm font-bold text-[#14231b] hover:text-[#2d6a4f] transition-colors min-h-[44px]"
                 >
                   <div className="w-8 h-8 rounded-full bg-[#14231b]/5 flex items-center justify-center text-[#e63946]">
                     <Phone className="w-4 h-4 fill-current" />
@@ -89,7 +89,7 @@ export default function AboutPage() {
                 </a>
                 <a
                   href="tel:0969189470"
-                  className="flex items-center gap-3 text-sm font-bold text-[#14231b] hover:text-[#2d6a4f] transition-colors"
+                  className="flex items-center gap-3 text-sm font-bold text-[#14231b] hover:text-[#2d6a4f] transition-colors min-h-[44px]"
                 >
                   <div className="w-8 h-8 rounded-full bg-[#14231b]/5 flex items-center justify-center text-[#e63946]">
                     <Phone className="w-4 h-4 fill-current" />

@@ -7,6 +7,8 @@ import { supabase } from "../../../lib/supabase";
 import { ProductImage, ProductCraftsmanshipDetails } from "../../../lib/types";
 import CraftsmanshipFAQ from "../../../components/about-product/CraftsmanshipFAQ";
 import ProductAudioSample from "../../../components/about-product/ProductAudioSample";
+import ProductActions from "../../../components/about-product/ProductActions";
+import { Product } from "../../../lib/types";
 import {
   Sparkles,
   ArrowRight,
@@ -178,14 +180,14 @@ export default async function AboutProductDetailPage({ params }: PageProps) {
             >
               <Link
                 href="/"
-                className="hover:text-[#14231b] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d4af37] rounded px-0.5"
+                className="hover:text-[#14231b] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d4af37] rounded px-0.5 max-sm:min-h-[44px] max-sm:inline-flex max-sm:items-center"
               >
                 Home
               </Link>
               <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#d4af37] shrink-0" />
               <Link
                 href="/about-product"
-                className="hover:text-[#14231b] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d4af37] rounded px-0.5 shrink-0"
+                className="hover:text-[#14231b] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#d4af37] rounded px-0.5 shrink-0 max-sm:min-h-[44px] max-sm:inline-flex max-sm:items-center"
               >
                 About Product
               </Link>
@@ -213,7 +215,7 @@ export default async function AboutProductDetailPage({ params }: PageProps) {
                         key={item.id}
                         href={`/about-product/${item.slug}`}
                         aria-current={isActive ? "page" : undefined}
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[36px] flex items-center justify-center snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] ${
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer min-h-[44px] flex items-center justify-center snap-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] ${
                           isActive
                             ? "bg-[#14231b] text-[#FAF8F5] shadow-sm border border-[#d4af37]"
                             : "bg-white/90 hover:bg-white text-[#5b615e] hover:text-[#14231b] border border-[#E7E3D8]"
@@ -290,26 +292,24 @@ export default async function AboutProductDetailPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* Hero Action Buttons */}
-              <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row w-full sm:w-auto items-stretch sm:items-center justify-center lg:justify-start gap-2.5 sm:gap-3">
-                <Link
-                  href="/products"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[46px] rounded-full bg-[#14231b] hover:bg-[#0f2418] text-[#FAF8F5] text-xs font-bold uppercase tracking-wider transition-all shadow-md hover:shadow-lg cursor-pointer text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
-                >
-                  <span>Explore In Storefront</span>
-                  <ArrowRight className="w-4 h-4 text-[#d4af37]" />
-                </Link>
-
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 min-h-[46px] rounded-full bg-white hover:bg-[#FAF8F5] text-[#14231b] border border-[#E7E3D8] text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
-                >
-                  <MessageCircle className="w-4 h-4 text-[#25D366]" />
-                  <span>Inquire with Atelier</span>
-                </a>
-              </div>
+              {/* Hero Action Buttons: Add to Cart, WhatsApp Order, and Custom Inquiries */}
+              <ProductActions
+                product={{
+                  id: rawProduct.id,
+                  name: rawProduct.name,
+                  slug: rawProduct.slug,
+                  category: rawProduct.category,
+                  price: rawProduct.price || 0,
+                  currency: rawProduct.currency || "USD",
+                  stock: rawProduct.stock ?? 50,
+                  featured: Boolean(rawProduct.featured),
+                  status: rawProduct.status || "active",
+                  images: images,
+                  shortDescription: rawProduct.short_description,
+                  description: rawProduct.description,
+                }}
+                whatsappUrl={whatsappUrl}
+              />
             </div>
 
             {/* Right: Cover Image Feature */}

@@ -10,7 +10,6 @@ import {
   ShoppingCart,
   User as UserIcon,
   ChevronDown,
-  ChevronRight,
   Menu,
   X,
   Bell,
@@ -30,9 +29,6 @@ export default function Navbar() {
   const { totalCount, openCart } = useCart();
   const { user, profile, signOut } = useAuth();
   const { currency, setCurrency } = useCurrency();
-
-  const displayName =
-    profile?.fullName || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member";
 
   const [scrolled, setScrolled] = useState(false);
   const [currencyOpen, setCurrencyOpen] = useState(false);
@@ -110,7 +106,7 @@ export default function Navbar() {
           }`}
         >
           {/* Brand Logo in Benaiah Font (Scaled appropriately on small mobile screens to prevent crowding) */}
-          <Link href="/" className="flex items-center gap-2 group shrink-0">
+          <Link href="/" className="flex items-center gap-2 group shrink-0 max-md:min-h-[44px]">
             <span className="font-benaiah text-base min-[360px]:text-lg min-[380px]:text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#14231b] tracking-wide group-hover:text-[#2d6a4f] transition-colors whitespace-nowrap">
               ዓሚኤል በገና
             </span>
@@ -181,8 +177,8 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Notification Flyout - Desktop header only (moved into hamburger menu on mobile) */}
-            <div className="hidden md:flex items-center">
+            {/* Notification Flyout - In the navbar header for all viewports */}
+            <div className="flex items-center">
               <NotificationFlyout
                 triggerStyle="transparent"
                 buttonClassName="relative min-w-[44px] min-h-[44px] w-11 h-11 text-[#14231b] hover:text-[#2d6a4f] transition-transform active:scale-95 cursor-pointer flex items-center justify-center rounded-full"
@@ -287,83 +283,20 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-[#14231b] hover:bg-[#EAE5D9] transition-colors cursor-pointer"
+                  className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full flex items-center justify-center text-[#14231b] hover:bg-[#EAE5D9] transition-colors cursor-pointer"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5 stroke-[2]" />
                 </button>
               </div>
 
-              {/* 2. User Profile Card */}
-              {user ? (
-                <Link
-                  href="/account"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="bg-white rounded-2xl p-3 border border-[#E8E1D6] shadow-2xs flex items-center justify-between gap-3 transition-all hover:border-[#d4af37]/60 group shrink-0"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-full bg-[#14231b] border-2 border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] font-serif font-black text-sm shrink-0 overflow-hidden shadow-2xs">
-                      {profile?.avatarUrl ? (
-                        <img
-                          src={profile.avatarUrl}
-                          alt={displayName}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span>{displayName.slice(0, 2).toUpperCase()}</span>
-                      )}
-                    </div>
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-xs sm:text-sm text-[#14231b] truncate">
-                          {displayName}
-                        </span>
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 inline-block" />
-                      </div>
-                      <p className="text-[11px] text-[#737874] truncate font-medium">
-                        {user.email || "customer@amiele.et"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="w-7 h-7 rounded-full bg-[#FAF8F5] border border-[#E8E1D6] flex items-center justify-center text-[#14231b] shrink-0 group-hover:bg-[#14231b] group-hover:text-white transition-colors">
-                    <ChevronRight className="w-4 h-4" />
-                  </div>
-                </Link>
-              ) : (
-                <Link
-                  href={`/login?redirect=${encodeURIComponent(pathname || "/")}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="bg-white rounded-2xl p-3 border border-[#E8E1D6] shadow-2xs flex items-center justify-between gap-3 transition-all hover:border-[#d4af37]/60 group shrink-0"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-11 h-11 rounded-full bg-[#14231b] border-2 border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] shrink-0 shadow-2xs">
-                      <UserIcon className="w-5 h-5 text-[#d4af37]" />
-                    </div>
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-xs sm:text-sm text-[#14231b] truncate">
-                          Guest / እንግዳ
-                        </span>
-                        <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 inline-block" />
-                      </div>
-                      <p className="text-[11px] text-[#737874] truncate font-medium">
-                        Sign in for your orders / ይግቡ
-                      </p>
-                    </div>
-                  </div>
-                  <div className="w-7 h-7 rounded-full bg-[#FAF8F5] border border-[#E8E1D6] flex items-center justify-center text-[#14231b] shrink-0 group-hover:bg-[#14231b] group-hover:text-white transition-colors">
-                    <ChevronRight className="w-4 h-4" />
-                  </div>
-                </Link>
-              )}
-
-              {/* 3. Navigation Links List */}
+              {/* Navigation Links List */}
               <div className="w-full space-y-1 pt-1">
-                {/* 1. Home / ዋና ገጽ */}
+                {/* 1. Home */}
                 <Link
                   href="/"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all min-h-[44px] ${
                     pathname === "/"
                       ? "bg-[#14231b] text-white shadow-xs"
                       : "text-[#14231b] hover:bg-white"
@@ -378,7 +311,7 @@ export default function Navbar() {
                         pathname === "/" ? "text-[#d4af37]" : "text-[#737874]"
                       }`}
                     />
-                    <span className="font-bold text-sm truncate">Home / ዋና ገጽ</span>
+                    <span className="font-bold text-sm truncate">Home</span>
                   </div>
                   <span
                     className={`text-xs font-mono font-bold tracking-wider shrink-0 ${
@@ -389,11 +322,11 @@ export default function Navbar() {
                   </span>
                 </Link>
 
-                {/* 2. Products / ምርቶች */}
+                {/* 2. Products */}
                 <Link
                   href="/products"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all min-h-[44px] ${
                     pathname.startsWith("/products")
                       ? "bg-[#14231b] text-white shadow-xs"
                       : "text-[#14231b] hover:bg-white"
@@ -408,22 +341,15 @@ export default function Navbar() {
                         pathname.startsWith("/products") ? "text-[#d4af37]" : "text-[#737874]"
                       }`}
                     />
-                    <span className="font-bold text-sm truncate">Products / ምርቶች</span>
+                    <span className="font-bold text-sm truncate">Products</span>
                   </div>
-                  <span
-                    className={`text-xs font-bold shrink-0 ${
-                      pathname.startsWith("/products") ? "text-[#d4af37]" : "text-[#737874]"
-                    }`}
-                  >
-                    በገናዎች
-                  </span>
                 </Link>
 
-                {/* 3. About Product / ስለ በገና */}
+                {/* 3. About Product */}
                 <Link
                   href="/about-product"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all min-h-[44px] ${
                     pathname.startsWith("/about-product")
                       ? "bg-[#14231b] text-white shadow-xs"
                       : "text-[#14231b] hover:bg-white"
@@ -438,15 +364,15 @@ export default function Navbar() {
                         pathname.startsWith("/about-product") ? "text-[#d4af37]" : "text-[#737874]"
                       }`}
                     />
-                    <span className="font-bold text-sm truncate">About Product / ስለ በገና</span>
+                    <span className="font-bold text-sm truncate">About Product</span>
                   </div>
                 </Link>
 
-                {/* 4. About Us / ስለ እኛ */}
+                {/* 4. About Us */}
                 <Link
                   href="/about"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all min-h-[44px] ${
                     pathname === "/about"
                       ? "bg-[#14231b] text-white shadow-xs"
                       : "text-[#14231b] hover:bg-white"
@@ -461,7 +387,7 @@ export default function Navbar() {
                         pathname === "/about" ? "text-[#d4af37]" : "text-[#737874]"
                       }`}
                     />
-                    <span className="font-bold text-sm truncate">About Us / ስለ እኛ</span>
+                    <span className="font-bold text-sm truncate">About Us</span>
                   </div>
                 </Link>
 
@@ -469,15 +395,15 @@ export default function Navbar() {
                 <div className="w-full">
                   <NotificationFlyout
                     triggerStyle="menu-row"
-                    buttonClassName="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#14231b] hover:bg-white transition-all cursor-pointer group"
+                    buttonClassName="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#14231b] hover:bg-white transition-all cursor-pointer group min-h-[44px]"
                   />
                 </div>
 
-                {/* 6. Account / መለያ */}
+                {/* 6. Account */}
                 <Link
                   href={user ? "/account" : "/login"}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl transition-all min-h-[44px] ${
                     pathname.startsWith("/account")
                       ? "bg-[#14231b] text-white shadow-xs"
                       : "text-[#14231b] hover:bg-white"
@@ -492,7 +418,7 @@ export default function Navbar() {
                         pathname.startsWith("/account") ? "text-[#d4af37]" : "text-[#737874]"
                       }`}
                     />
-                    <span className="font-bold text-sm truncate">Account / መለያ</span>
+                    <span className="font-bold text-sm truncate">Account</span>
                   </div>
                 </Link>
 
@@ -501,11 +427,11 @@ export default function Navbar() {
                   <Link
                     href="/admin?tab=dashboard"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#14231b] hover:bg-white transition-all group"
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#14231b] hover:bg-white transition-all group min-h-[44px]"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <ShieldCheck className="w-5 h-5 text-[#b8860b] shrink-0" />
-                      <span className="font-bold text-sm truncate">Admin Portal / የአስተዳዳሪ</span>
+                      <span className="font-bold text-sm truncate">Admin Portal</span>
                     </div>
                     <span className="bg-[#0F2418] text-[#D4AF37] border border-[#D4AF37] text-[9px] font-black tracking-wider px-2 py-0.5 rounded-full uppercase shrink-0">
                       ADMIN
@@ -518,11 +444,11 @@ export default function Navbar() {
                   <Link
                     href="/affiliate/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#14231b] hover:bg-white transition-all group"
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#14231b] hover:bg-white transition-all group min-h-[44px]"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <TrendingUp className="w-5 h-5 text-[#2d6a4f] shrink-0" />
-                      <span className="font-bold text-sm truncate">Affiliate Portal / ተባባሪ</span>
+                      <span className="font-bold text-sm truncate">Affiliate Portal</span>
                     </div>
                     <span className="bg-[#2d6a4f]/15 text-[#2d6a4f] text-[10px] font-black px-2 py-0.5 rounded-full shrink-0">
                       8%
@@ -538,10 +464,10 @@ export default function Navbar() {
                       await signOut();
                       setMobileMenuOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-red-600 hover:bg-red-50 text-sm font-bold transition-all cursor-pointer text-left"
+                    className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-red-600 hover:bg-red-50 text-sm font-bold transition-all cursor-pointer text-left min-h-[44px]"
                   >
                     <LogOut className="w-5 h-5 shrink-0" />
-                    <span>Sign Out / ውጣ</span>
+                    <span>Sign Out</span>
                   </button>
                 )}
               </div>
@@ -551,7 +477,7 @@ export default function Navbar() {
             <div className="pt-3 border-t border-[#E8E1D6]/80 space-y-3 shrink-0">
               <div>
                 <span className="text-[10px] font-extrabold tracking-widest uppercase text-[#737874] block mb-2 font-sans">
-                  CURRENCY / የገንዘብ አይነት
+                  CURRENCY
                 </span>
                 {/* Segmented Currency Tabs */}
                 <div className="w-full bg-[#EAE5D9] p-1.5 rounded-2xl flex items-center justify-between border border-[#E8E1D6]">
@@ -560,7 +486,7 @@ export default function Navbar() {
                       key={c}
                       type="button"
                       onClick={() => setCurrency(c)}
-                      className={`py-2 px-3 flex-1 flex items-center justify-center gap-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                      className={`py-2 px-3 flex-1 flex items-center justify-center gap-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer min-h-[44px] ${
                         currency === c
                           ? "bg-[#14231b] text-white shadow-xs"
                           : "text-[#14231b]/75 hover:text-[#14231b]"

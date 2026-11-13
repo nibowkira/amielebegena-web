@@ -51,11 +51,11 @@ export default function Footer() {
               DISCOVERY
             </h4>
             <ul className="space-y-1 sm:space-y-2 font-medium">
-              <li><Link href="/" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors">Home</Link></li>
-              <li><Link href="/products" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors">Products</Link></li>
-              <li><Link href="/about-product" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors">About Product</Link></li>
-              <li><Link href="/about" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="/contact" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors">Contact</Link></li>
+              <li><Link href="/" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors max-md:py-2.5 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">Home</Link></li>
+              <li><Link href="/products" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors max-md:py-2.5 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">Products</Link></li>
+              <li><Link href="/about-product" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors max-md:py-2.5 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">About Product</Link></li>
+              <li><Link href="/about" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors max-md:py-2.5 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">About Us</Link></li>
+              <li><Link href="/contact" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors max-md:py-2.5 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">Contact</Link></li>
             </ul>
           </div>
 
@@ -122,11 +122,11 @@ export default function Footer() {
               PARTNERS & SERVICES
             </h4>
             <ul className="space-y-1 sm:space-y-2 font-medium">
-              <li><Link href="/affiliate" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors">Affiliate Program</Link></li>
-              <li><Link href="/track-order" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors">Track Order</Link></li>
-              <li><Link href="/shipping" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors">Shipping</Link></li>
-              <li><Link href="/sustainability" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors">Sustainability</Link></li>
-              <li><Link href="/success-wall" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors">Success Wall</Link></li>
+              <li><Link href="/affiliate" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors max-md:py-2.5 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">Affiliate Program</Link></li>
+              <li><Link href="/track-order" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors max-md:py-2.5 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">Track Order</Link></li>
+              <li><Link href="/shipping" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors max-md:py-2.5 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">Shipping</Link></li>
+              <li><Link href="/sustainability" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors max-md:py-2.5 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">Sustainability</Link></li>
+              <li><Link href="/success-wall" className="inline-block py-1 sm:py-0 text-[#fbf8f2]/80 hover:text-white transition-colors max-md:py-2.5 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">Success Wall</Link></li>
             </ul>
           </div>
 
@@ -136,9 +136,9 @@ export default function Footer() {
               CONTACT
             </h4>
             <div className="space-y-1.5 font-medium text-xs">
-              <p><a href="tel:0964261817" className="text-[#fbf8f2]/80 hover:text-[#52b788]">0964261817</a></p>
-              <p><a href="tel:0969189470" className="text-[#fbf8f2]/80 hover:text-[#52b788]">0969189470</a></p>
-              <p><a href="mailto:amielebegena@gmail.com" className="text-[#fbf8f2]/80 hover:text-[#52b788] break-all">amielebegena@gmail.com</a></p>
+              <p><a href="tel:0964261817" className="text-[#fbf8f2]/80 hover:text-[#52b788] max-md:min-h-[44px] max-md:inline-flex max-md:items-center">0964261817</a></p>
+              <p><a href="tel:0969189470" className="text-[#fbf8f2]/80 hover:text-[#52b788] max-md:min-h-[44px] max-md:inline-flex max-md:items-center">0969189470</a></p>
+              <p><a href="mailto:amielebegena@gmail.com" className="text-[#fbf8f2]/80 hover:text-[#52b788] break-all max-md:min-h-[44px] max-md:inline-flex max-md:items-center">amielebegena@gmail.com</a></p>
               <p className="text-[11px] text-[#fbf8f2]/50 pt-1 leading-snug">
                 Mexico Square,<br />Addis Ababa, Ethiopia
               </p>
@@ -164,7 +164,7 @@ export default function Footer() {
               />
               <button
                 type="submit"
-                className="absolute right-0 min-h-[36px] min-w-[36px] flex items-center justify-end text-xs font-bold tracking-wider text-white hover:text-[#52b788] transition-colors cursor-pointer uppercase"
+                className="absolute right-0 min-h-[44px] min-w-[44px] flex items-center justify-end text-xs font-bold tracking-wider text-white hover:text-[#52b788] transition-colors cursor-pointer uppercase"
                 aria-label="Subscribe"
               >
                 {subscribed ? <Check className="w-3.5 h-3.5 text-[#52b788]" /> : "JOIN"}
@@ -177,8 +177,8 @@ export default function Footer() {
         <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#fbf8f2]/40 gap-4 font-light">
           <p>© 2026 AMIELEBEGENA. ALL RIGHTS RESERVED.</p>
           <div className="flex items-center gap-6 font-medium">
-            <Link href="/privacy-policy" className="hover:text-white transition-colors py-2">PRIVACY POLICY</Link>
-            <Link href="/terms" className="hover:text-white transition-colors py-2">TERMS OF ARCHIVE</Link>
+            <Link href="/privacy-policy" className="hover:text-white transition-colors py-2 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">PRIVACY POLICY</Link>
+            <Link href="/terms" className="hover:text-white transition-colors py-2 max-md:min-h-[44px] max-md:inline-flex max-md:items-center">TERMS OF ARCHIVE</Link>
           </div>
         </div>
       </div>

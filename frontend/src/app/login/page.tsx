@@ -90,7 +90,7 @@ function LoginForm() {
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
-            className={`flex-1 text-center pb-3.5 pt-1 font-bold text-xs sm:text-[13px] tracking-wider transition-colors cursor-pointer ${
+            className={`flex-1 text-center pb-3.5 pt-1 font-bold text-xs sm:text-[13px] tracking-wider transition-colors cursor-pointer min-h-[44px] flex items-center justify-center ${
               mode === "login"
                 ? "text-[#14231b] border-b-2 border-[#14231b] -mb-[1px]"
                 : "text-[#9ca3af] hover:text-[#14231b] border-b-2 border-transparent -mb-[1px]"
@@ -105,7 +105,7 @@ function LoginForm() {
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
-            className={`flex-1 text-center pb-3.5 pt-1 font-bold text-xs sm:text-[13px] tracking-wider transition-colors cursor-pointer ${
+            className={`flex-1 text-center pb-3.5 pt-1 font-bold text-xs sm:text-[13px] tracking-wider transition-colors cursor-pointer min-h-[44px] flex items-center justify-center ${
               mode === "register"
                 ? "text-[#14231b] border-b-2 border-[#14231b] -mb-[1px]"
                 : "text-[#9ca3af] hover:text-[#14231b] border-b-2 border-transparent -mb-[1px]"

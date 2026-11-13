@@ -96,7 +96,7 @@ export default function PremiumModal({
             <button
               type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-white border border-[#E8E1D6] text-[#7D867F] hover:text-[#172820] hover:bg-[#F8F5EF] flex items-center justify-center transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D9B32E]/30"
+              className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-white border border-[#E8E1D6] text-[#7D867F] hover:text-[#172820] hover:bg-[#F8F5EF] flex items-center justify-center transition-all shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#D9B32E]/30"
               aria-label="Close modal"
             >
               <X className="w-4 h-4 stroke-[2.5]" />
