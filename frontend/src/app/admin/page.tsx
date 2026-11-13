@@ -792,7 +792,7 @@ export default function AdminDashboardPage() {
       </aside>
 
       {/* ================= RIGHT MAIN WORKSPACE ================= */}
-      <main className="flex-1 min-w-0 p-3.5 sm:p-6 lg:p-8 space-y-6 overflow-y-auto max-h-screen w-full max-w-full">
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto max-h-screen w-full max-w-full">
         {/* =========================================================================
             TAB: PRODUCT MANAGEMENT CONSOLE
         ========================================================================= */}
@@ -916,222 +916,222 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* 12 Executive KPI Cards Grid (4 Columns x 3 Rows) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+            {/* 12 Executive KPI Cards Grid (4 Columns x 3 Rows on Desktop, 2 Columns on Mobile) */}
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               {/* Card 1: TOTAL REVENUE */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] lg:text-xs font-extrabold uppercase tracking-wider text-[#667085]">
                     TOTAL REVENUE
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF3E0] border border-[#FAF3E0] text-[#c59a27] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-[#FAF3E0] border border-[#FAF3E0] text-[#c59a27] flex items-center justify-center shrink-0">
                     <Wallet className="w-4 h-4 text-[#c59a27]" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#1C1C1C]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[18px] max-md:min-[380px]:text-[20px] font-extrabold text-[#1C1C1C]">
                     ETB 76,500
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">Confirmed & Paid Sales</span>
+                <span className="text-xs text-[#667085] line-clamp-2">Confirmed & Paid Sales</span>
               </div>
 
               {/* Card 2: REVENUE THIS MONTH */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] lg:text-xs font-extrabold uppercase tracking-wider text-[#667085]">
                     REVENUE THIS MONTH
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF3E0] border border-[#FAF3E0] text-[#c59a27] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-[#FAF3E0] border border-[#FAF3E0] text-[#c59a27] flex items-center justify-center shrink-0">
                     <TrendingUp className="w-4 h-4 text-[#c59a27]" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#1C1C1C]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[22px] font-extrabold text-[#1C1C1C]">
                     ETB 0
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">Current Calendar Month</span>
+                <span className="text-xs text-[#667085] line-clamp-2">Current Calendar Month</span>
               </div>
 
               {/* Card 3: TOTAL ORDERS */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     TOTAL ORDERS
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <ShoppingBag className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#1C1C1C]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[22px] font-extrabold text-[#1C1C1C]">
                     89
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">All Orders Recorded</span>
+                <span className="text-xs text-[#667085] line-clamp-2">All Orders Recorded</span>
               </div>
 
               {/* Card 4: PENDING ORDERS */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     PENDING ORDERS
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
                     <Clock className="w-4 h-4" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#F59E0B]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[22px] font-extrabold text-[#F59E0B]">
                     80
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">Awaiting Admin Approval</span>
+                <span className="text-xs text-[#667085] line-clamp-2">Awaiting Admin Approval</span>
               </div>
 
               {/* Card 5: CONFIRMED ORDERS */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     CONFIRMED ORDERS
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                     <CheckCheck className="w-4 h-4" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#2563EB]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[22px] font-extrabold text-[#2563EB]">
                     9
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">Payment Verified</span>
+                <span className="text-xs text-[#667085] line-clamp-2">Payment Verified</span>
               </div>
 
               {/* Card 6: SHIPPED ORDERS */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     SHIPPED ORDERS
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <Truck className="w-4 h-4" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#1C1C1C]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[22px] font-extrabold text-[#1C1C1C]">
                     0
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">In Dispatch / Logistics</span>
+                <span className="text-xs text-[#667085] line-clamp-2">In Dispatch / Logistics</span>
               </div>
 
               {/* Card 7: DELIVERED ORDERS */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     DELIVERED ORDERS
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                     <PackageCheck className="w-4 h-4" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#16A34A]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[22px] font-extrabold text-[#16A34A]">
                     0
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">Completed Deliveries</span>
+                <span className="text-xs text-[#667085] line-clamp-2">Completed Deliveries</span>
               </div>
 
               {/* Card 8: TOTAL CUSTOMERS */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     TOTAL CUSTOMERS
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <Users className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#1C1C1C]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[22px] font-extrabold text-[#1C1C1C]">
                     33
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">Unique Buyer Identities</span>
+                <span className="text-xs text-[#667085] line-clamp-2">Unique Buyer Identities</span>
               </div>
 
               {/* Card 9: TOTAL AFFILIATES */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     TOTAL AFFILIATES
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <UserCheck className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#1C1C1C]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[22px] font-extrabold text-[#1C1C1C]">
                     7
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">Active Partners</span>
+                <span className="text-xs text-[#667085] line-clamp-2">Active Partners</span>
               </div>
 
               {/* Card 10: TOP AFFILIATE */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-benaiah text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="font-benaiah text-[10px] min-[380px]:text-[11px] md:text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     TOP AFFILIATE
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <Award className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#1C1C1C]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[22px] font-extrabold text-[#1C1C1C]">
                     jane
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">Lifetime Top Producer</span>
+                <span className="text-xs text-[#667085] line-clamp-2">Lifetime Top Producer</span>
               </div>
 
               {/* Card 11: TOP AFFILIATE SALES */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     TOP AFFILIATE SALES
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <Flame className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#1C1C1C]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[18px] max-md:min-[380px]:text-[20px] font-extrabold text-[#1C1C1C]">
                     ETB 4,500
                   </span>
                 </div>
-                <span className="text-xs text-[#667085]">Associated Gross Volume</span>
+                <span className="text-xs text-[#667085] line-clamp-2">Associated Gross Volume</span>
               </div>
 
               {/* Card 12: ACTIVE CAMPAIGNS */}
-              <div className="bg-white rounded-[24px] sm:rounded-2xl p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between space-y-2">
+              <div className="bg-white rounded-[24px] sm:rounded-2xl p-3 md:p-5 border border-[#E7E3D8] shadow-xs flex flex-col justify-between max-md:min-h-[110px] space-y-2 max-md:last:odd:col-span-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
+                  <span className="text-[10px] min-[380px]:text-[11px] md:text-[11px] font-extrabold uppercase tracking-wider text-[#667085]">
                     ACTIVE CAMPAIGNS
                   </span>
-                  <div className="w-9 h-9 sm:w-8 sm:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 md:w-9 md:h-9 lg:w-8 lg:h-8 rounded-xl bg-[#FAF8F5] border border-[#E7E3D8] text-[#14231b] flex items-center justify-center shrink-0">
                     <Activity className="w-4 h-4 text-[#b8860b]" />
                   </div>
                 </div>
                 <div>
-                  <span className="text-2xl sm:text-[28px] font-extrabold text-[#1C1C1C]">
+                  <span className="text-2xl sm:text-[28px] max-md:text-[22px] font-extrabold text-[#1C1C1C]">
                     5
                   </span>
                 </div>
-                <span className="text-[11px] text-[#667085]">Live Promotional Banners</span>
+                <span className="text-[11px] text-[#667085] line-clamp-2">Live Promotional Banners</span>
               </div>
             </div>
 
@@ -1571,23 +1571,23 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Row 4: Performance Summary */}
-            <div className="bg-white rounded-2xl p-5 border border-[#E7E3D8] shadow-xs space-y-3">
+            <div className="bg-white rounded-2xl p-4 md:p-5 border border-[#E7E3D8] shadow-xs space-y-2.5 md:space-y-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-[#1C1C1C]">
                 Performance Summary
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 pt-1">
-                <div className="flex items-center justify-between sm:pr-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 sm:gap-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100 pt-1">
+                <div className="flex items-center justify-between pb-1.5 sm:pb-0 sm:pr-4">
                   <div>
-                    <span className="text-[10px] font-bold text-[#667085] uppercase block">
+                    <span className="text-[11px] md:text-[10px] font-bold text-[#667085] uppercase block max-md:leading-tight">
                       REVENUE GROWTH
                     </span>
-                    <span className="text-xl sm:text-2xl font-extrabold text-[#1C1C1C]">
+                    <span className="text-xl sm:text-2xl max-md:text-[20px] font-extrabold text-[#1C1C1C] max-md:leading-tight">
                       +100%
                     </span>
-                    <span className="text-[10px] text-[#667085] block">vs last month</span>
+                    <span className="text-xs md:text-[10px] md:leading-[15px] text-[#667085] block max-md:leading-tight">vs last month</span>
                   </div>
-                  <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
+                  <svg width="60" height="24" viewBox="0 0 60 24" fill="none" className="max-md:w-16 max-md:h-7 shrink-0">
                     <path
                       d="M2 20L15 15L30 18L45 8L58 4"
                       stroke="#16A34A"
@@ -1597,19 +1597,19 @@ export default function AdminDashboardPage() {
                   </svg>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 sm:pt-0 sm:px-4">
+                <div className="flex items-center justify-between py-1.5 sm:py-0 sm:px-4">
                   <div>
-                    <span className="text-[10px] font-bold text-[#667085] uppercase block">
+                    <span className="text-[11px] md:text-[10px] font-bold text-[#667085] uppercase block max-md:leading-tight">
                       AFFILIATE CONVERSION
                     </span>
-                    <span className="text-xl sm:text-2xl font-extrabold text-[#1C1C1C]">
+                    <span className="text-xl sm:text-2xl max-md:text-[20px] font-extrabold text-[#1C1C1C] max-md:leading-tight">
                       129%
                     </span>
-                    <span className="text-[10px] text-[#667085] block">
+                    <span className="text-xs md:text-[10px] md:leading-[15px] text-[#667085] block max-md:leading-tight">
                       Click to Sale Rate
                     </span>
                   </div>
-                  <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
+                  <svg width="60" height="24" viewBox="0 0 60 24" fill="none" className="max-md:w-16 max-md:h-7 shrink-0">
                     <path
                       d="M2 18L15 20L30 14L45 16L58 5"
                       stroke="#16A34A"
@@ -1619,19 +1619,19 @@ export default function AdminDashboardPage() {
                   </svg>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 sm:pt-0 sm:px-4">
+                <div className="flex items-center justify-between py-1.5 sm:py-0 sm:px-4">
                   <div>
-                    <span className="text-[10px] font-bold text-[#667085] uppercase block">
+                    <span className="text-[11px] md:text-[10px] font-bold text-[#667085] uppercase block max-md:leading-tight">
                       ORDER CONVERSION
                     </span>
-                    <span className="text-xl sm:text-2xl font-extrabold text-[#1C1C1C]">
+                    <span className="text-xl sm:text-2xl max-md:text-[20px] font-extrabold text-[#1C1C1C] max-md:leading-tight">
                       10%
                     </span>
-                    <span className="text-[10px] text-[#667085] block">
+                    <span className="text-xs md:text-[10px] md:leading-[15px] text-[#667085] block max-md:leading-tight">
                       Visit to Order Rate
                     </span>
                   </div>
-                  <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
+                  <svg width="60" height="24" viewBox="0 0 60 24" fill="none" className="max-md:w-16 max-md:h-7 shrink-0">
                     <path
                       d="M2 20L15 12L30 16L45 9L58 4"
                       stroke="#16A34A"
@@ -1641,19 +1641,19 @@ export default function AdminDashboardPage() {
                   </svg>
                 </div>
 
-                <div className="flex items-center justify-between pt-3 sm:pt-0 sm:pl-4">
+                <div className="flex items-center justify-between pt-1.5 sm:pt-0 sm:pl-4">
                   <div>
-                    <span className="text-[10px] font-bold text-[#667085] uppercase block">
+                    <span className="text-[11px] md:text-[10px] font-bold text-[#667085] uppercase block max-md:leading-tight">
                       CUSTOMER RETENTION
                     </span>
-                    <span className="text-xl sm:text-2xl font-extrabold text-[#1C1C1C]">
+                    <span className="text-xl sm:text-2xl max-md:text-[20px] font-extrabold text-[#1C1C1C] max-md:leading-tight">
                       6%
                     </span>
-                    <span className="text-[10px] text-[#667085] block">
+                    <span className="text-xs md:text-[10px] md:leading-[15px] text-[#667085] block max-md:leading-tight">
                       Returning Customers
                     </span>
                   </div>
-                  <svg width="60" height="24" viewBox="0 0 60 24" fill="none">
+                  <svg width="60" height="24" viewBox="0 0 60 24" fill="none" className="max-md:w-16 max-md:h-7 shrink-0">
                     <path
                       d="M2 18L15 14L30 18L45 10L58 6"
                       stroke="#16A34A"
